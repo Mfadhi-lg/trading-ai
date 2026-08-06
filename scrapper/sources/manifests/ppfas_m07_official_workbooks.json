@@ -1,0 +1,91 @@
+{
+  "publisher": "ppfas",
+  "source_page": "https://amc.ppfas.com/downloads/portfolio-disclosure/",
+  "retrieved_on": "2026-08-05",
+  "workbooks": [
+    {
+      "month": "2025-07",
+      "filename": "PPFAS_Monthly_Portfolio_Report_July_31_2025.xls",
+      "official_url": "https://amc.ppfas.com/downloads/portfolio-disclosure/2025/PPFAS_Monthly_Portfolio_Report_July_31_2025.xls?08082025_1=",
+      "sha256": "241fdde33a42281ae50c73e19647f7d73f32fee61f7711e07085e6724d92b207",
+      "format": "legacy_biff8_xls"
+    },
+    {
+      "month": "2025-08",
+      "filename": "PPFAS_Monthly_Portfolio_Report_August_31_2025.xls",
+      "official_url": "https://amc.ppfas.com/downloads/portfolio-disclosure/2025/PPFAS_Monthly_Portfolio_Report_August_31_2025.xls?09092025=",
+      "sha256": "33103f75470bb71e0a6d75aab069c1e4acdd93126b646959dcae277fe7bbbd9d",
+      "format": "legacy_biff8_xls"
+    },
+    {
+      "month": "2025-09",
+      "filename": "PPFAS_Monthly_Portfolio_Report_September_30_2025.xls",
+      "official_url": "https://amc.ppfas.com/downloads/portfolio-disclosure/2025/PPFAS_Monthly_Portfolio_Report_September_30_2025.xls?09102025_1=",
+      "sha256": "794b3d87f9488131c701e188ba158a98238750e14671cfbde11e2acb493fe3d5",
+      "format": "ooxml_in_xls_extension"
+    },
+    {
+      "month": "2025-10",
+      "filename": "PPFAS_Monthly_Portfolio_Report_October_31_2025.xls",
+      "official_url": "https://amc.ppfas.com/downloads/portfolio-disclosure/2025/PPFAS_Monthly_Portfolio_Report_October_31_2025.xls?07112025=",
+      "sha256": "81b88a5e35fbe977e99676328133c3aa73f76c1eb2846077e71a2c59be45fc0d",
+      "format": "legacy_biff8_xls"
+    },
+    {
+      "month": "2025-11",
+      "filename": "PPFAS_Monthly_Portfolio_Report_November_30_2025.xls",
+      "official_url": "https://amc.ppfas.com/downloads/portfolio-disclosure/2025/PPFAS_Monthly_Portfolio_Report_November_30_2025.xls?09122025=",
+      "sha256": "ce4b5f0cdd36af5eecf962fbe90710d7c9d557936553a42ad9065b667c95a732",
+      "format": "ooxml_in_xls_extension"
+    },
+    {
+      "month": "2025-12",
+      "filename": "PPFAS_Monthly_Portfolio_Report_December_31_2025.xls",
+      "official_url": "https://amc.ppfas.com/downloads/portfolio-disclosure/2025/PPFAS_Monthly_Portfolio_Report_December_31_2025.xls?08012025_1=",
+      "sha256": "58d49b515cc918f2f6089f6dd5cc312101fc386c935f472b3b920dc05a227356",
+      "format": "ooxml_in_xls_extension"
+    },
+    {
+      "month": "2026-01",
+      "filename": "PPFAS_Monthly_Portfolio_Report_January_31_2026.xls",
+      "official_url": "https://amc.ppfas.com/downloads/portfolio-disclosure/2026/PPFAS_Monthly_Portfolio_Report_January_31_2026.xls?31012026_1=",
+      "sha256": "3af9bf64ec47d19862baf0011813a15fb84367eccaa4714c0415ef30a28e647c",
+      "format": "ooxml_in_xls_extension"
+    },
+    {
+      "month": "2026-02",
+      "filename": "PPFAS_Monthly_Portfolio_Report_February_28_2026.xls",
+      "official_url": "https://amc.ppfas.com/downloads/portfolio-disclosure/2026/PPFAS_Monthly_Portfolio_Report_February_28_2026.xls?09032026=",
+      "sha256": "77bc9fa79f0cac1c24e1803d8b13d48ac8efaaa8c7dc6b39973e6fa7283595d0",
+      "format": "legacy_biff8_xls"
+    },
+    {
+      "month": "2026-03",
+      "filename": "PPFAS_Monthly_Portfolio_Report_March_31_2026.xls",
+      "official_url": "https://amc.ppfas.com/downloads/portfolio-disclosure/2026/PPFAS_Monthly_Portfolio_Report_March_31_2026.xls?08042026_3=",
+      "sha256": "ce56622318fd1b00af583425be25ce74bd06955bde62cf7ca78735a6ea5c453a",
+      "format": "ooxml_in_xls_extension"
+    },
+    {
+      "month": "2026-04",
+      "filename": "PPFAS_Monthly_Portfolio_Report_April_30_2026.xls",
+      "official_url": "https://amc.ppfas.com/downloads/portfolio-disclosure/2026/PPFAS_Monthly_Portfolio_Report_April_30_2026.xls?08052026_1=",
+      "sha256": "b94dd9850e6fdb598400bca91df559c9af12b83131afe9a011c444016e231d9f",
+      "format": "ooxml_in_xls_extension"
+    },
+    {
+      "month": "2026-05",
+      "filename": "PPFAS_Monthly_Portfolio_Report_May_31_2026.xls",
+      "official_url": "https://amc.ppfas.com/downloads/portfolio-disclosure/2026/PPFAS_Monthly_Portfolio_Report_May_31_2026.xls?09062026=",
+      "sha256": "4aa830be206c69e937fc40fb91e756776f1b3063fb3e72c25b4019471b4ab671",
+      "format": "ooxml_in_xls_extension"
+    },
+    {
+      "month": "2026-06",
+      "filename": "PPFAS_Monthly_Portfolio_Report_June_30_2026.xls",
+      "official_url": "https://amc.ppfas.com/downloads/portfolio-disclosure/2026/PPFAS_Monthly_Portfolio_Report_June_30_2026.xls?08072026_1=",
+      "sha256": "b0e6b22a4eb71dd9db192f7e29b3f8ea83198ee14920defb0519a1b80642d24e",
+      "format": "ooxml_in_xls_extension"
+    }
+  ]
+}

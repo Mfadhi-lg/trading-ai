@@ -1,0 +1,2 @@
+-- Compatibility pointer for readers of the original draft.
+-- Runtime schema changes live in db/migrations/ and are applied in filename order.

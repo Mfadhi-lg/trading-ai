@@ -1,0 +1,31 @@
+{
+  "comparison_observation_count": 54,
+  "current_observation_count": 135,
+  "first_fund_observations": [
+    ["aum", "current", "Jun-2026", "-", null, "INR_CRORE", "10000000", "dash"],
+    ["aum_percentage", "current", "Jun-2026", "-%", null, "PERCENT_POINT", "1", "dash"],
+    ["shares_held", "current", "Jun-2026", "-", null, "COUNT", "1", "dash"],
+    ["month_change", "current", "Jun-2026", "-", null, "COUNT", "1", "dash"],
+    ["month_change_percentage", "current", "Jun-2026", "-%", null, "PERCENT_POINT", "1", "dash"],
+    ["shares_held", "comparison", "May-2026", "3,800,000", "3800000", "COUNT", "1", null],
+    ["month_change_percentage", "comparison", "May-2026", "0%", "0", "PERCENT_POINT", "1", null]
+  ],
+  "fund_count": 27,
+  "metric_counts": {
+    "aum": 27,
+    "aum_percentage": 27,
+    "month_change": 27,
+    "month_change_percentage": 54,
+    "shares_held": 54
+  },
+  "missing_counts": {
+    "dash": 12,
+    "present": 177
+  },
+  "observation_count": 189,
+  "unit_counts": {
+    "COUNT": 81,
+    "INR_CRORE": 27,
+    "PERCENT_POINT": 81
+  }
+}

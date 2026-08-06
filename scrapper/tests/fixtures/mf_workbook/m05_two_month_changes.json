@@ -1,0 +1,50 @@
+{
+  "publisher": "ppfas",
+  "scheme_code": "M05TEST",
+  "previous_month": "2026-05",
+  "current_month": "2026-06",
+  "securities": [
+    {
+      "case": "new_entry_absent",
+      "isin": "IN0020240076",
+      "previous": null,
+      "current": {"quantity": "5", "weight": "0.50"}
+    },
+    {
+      "case": "new_entry_zero",
+      "isin": "IN002025Z187",
+      "previous": {"quantity": "0", "weight": "0.00"},
+      "current": {"quantity": "6", "weight": "0.60"}
+    },
+    {
+      "case": "complete_exit_absent",
+      "isin": "IN002025Z229",
+      "previous": {"quantity": "8", "weight": "1.20"},
+      "current": null
+    },
+    {
+      "case": "complete_exit_zero",
+      "isin": "IN002025Z294",
+      "previous": {"quantity": "9", "weight": "1.30"},
+      "current": {"quantity": "0", "weight": "0.00"}
+    },
+    {
+      "case": "quantity_increase",
+      "isin": "IN002025Z419",
+      "previous": {"quantity": "10.00", "weight": "2.00"},
+      "current": {"quantity": "12.50", "weight": "2.25"}
+    },
+    {
+      "case": "quantity_decrease",
+      "isin": "IN002026X073",
+      "previous": {"quantity": "10", "weight": "3.00"},
+      "current": {"quantity": "4", "weight": "1.50"}
+    },
+    {
+      "case": "unchanged",
+      "isin": "IN002026X081",
+      "previous": {"quantity": "7", "weight": "4.50"},
+      "current": {"quantity": "7.0", "weight": "4.50"}
+    }
+  ]
+}

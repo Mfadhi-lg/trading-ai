@@ -1,0 +1,79 @@
+{
+  "companies": [
+    {
+      "symbol": "LAURUSLABS",
+      "company_name": "Laurus Labs Ltd",
+      "source_company_id": "1273603",
+      "warehouse_id": "12723395",
+      "selection_reason": "mature consolidated manufacturer with long history and all document families",
+      "main_sha256": "9ae8a96ac2309609ed1fae10a58d1b7e4517c370ef2b5d289f51591448d88990",
+      "peer_sha256": "2bf82ae48268d1cd3c89f9bd81d8f81fbdce913815e42fd56bda84c720ac88e4",
+      "metrics": 9,
+      "financials": {"balance_sheet": 120, "cash_flow": 72, "pnl": 156, "quarters": 156, "ratios": 72},
+      "growth": 16,
+      "shareholding": {"quarterly": 60, "yearly": 55},
+      "documents": {"announcement": 5, "annual_report": 13, "concall_notes": 44, "concall_ppt": 44, "concall_recording": 11, "concall_transcript": 44, "credit_rating": 6, "drhp": 1},
+      "peers": 81
+    },
+    {
+      "symbol": "NTPCGREEN",
+      "company_name": "NTPC Green Energy Ltd",
+      "source_company_id": "1285166",
+      "warehouse_id": "129816617",
+      "selection_reason": "newly listed company with short statements, blank cells, and no concall list",
+      "main_sha256": "5897be654bc3cdd71db8d80c98403f5a540b817f7cfd4800bf98e0799cca3eff",
+      "peer_sha256": "14be14f0032e27e7f95bbc5c8513a4618ebd0fde1c506784c76d5ae308bebf2e",
+      "metrics": 9,
+      "financials": {"balance_sheet": 40, "cash_flow": 24, "pnl": 60, "quarters": 132, "ratios": 24},
+      "growth": 16,
+      "shareholding": {"quarterly": 35, "yearly": 15},
+      "documents": {"announcement": 5, "annual_report": 1, "credit_rating": 6, "drhp": 1},
+      "peers": 72
+    },
+    {
+      "symbol": "HDFCBANK",
+      "company_name": "HDFC Bank Ltd",
+      "source_company_id": "1298",
+      "warehouse_id": "6596237",
+      "selection_reason": "banking statement structure with Revenue, no Borrowings drill-down, and Government holders",
+      "main_sha256": "d1e0c1c776e5cd03e7e8bc6b86bd05f0743bd9d45cdce7609b7de69a37c0d980",
+      "peer_sha256": "b482d896ed8f2b003c85a527dd4539285b9161b21efde8a38ede36abc34725fe",
+      "metrics": 9,
+      "financials": {"balance_sheet": 132, "cash_flow": 72, "pnl": 156, "quarters": 182, "ratios": 12},
+      "growth": 16,
+      "shareholding": {"quarterly": 60, "yearly": 66},
+      "documents": {"announcement": 5, "annual_report": 15, "concall_notes": 27, "concall_ppt": 27, "concall_recording": 13, "concall_transcript": 27, "credit_rating": 6},
+      "peers": 72
+    },
+    {
+      "symbol": "TCS",
+      "company_name": "Tata Consultancy Services Ltd",
+      "source_company_id": "3365",
+      "warehouse_id": "6599230",
+      "selection_reason": "mature asset-light services company with Government holder rows and long document history",
+      "main_sha256": "da08c5d4728b0ed1eabc471dd209d5aa7c9023ade4db6bee80c4ee7d9faf7521",
+      "peer_sha256": "1f4c02dab6c3ed81b7ce21c8211d1adb984ce0c7077ad322de36e215ac1184d9",
+      "metrics": 9,
+      "financials": {"balance_sheet": 120, "cash_flow": 72, "pnl": 156, "quarters": 156, "ratios": 72},
+      "growth": 16,
+      "shareholding": {"quarterly": 72, "yearly": 66},
+      "documents": {"announcement": 5, "annual_report": 15, "concall_notes": 43, "concall_ppt": 43, "concall_recording": 11, "concall_transcript": 43, "credit_rating": 6},
+      "peers": 72
+    },
+    {
+      "symbol": "ETERNAL",
+      "company_name": "Eternal Ltd",
+      "source_company_id": "1274894",
+      "warehouse_id": "68088707",
+      "selection_reason": "young platform company with loss history, Others/Government holders, and no credit-rating list",
+      "main_sha256": "e2a59fd020fd1ded5dff662ce8d13636e0446a5389b5a890b0f68bca49fb95c3",
+      "peer_sha256": "14995cab9f5422283766740cded294ffd1f0128e161972d99bf55a1c62fa30a8",
+      "metrics": 9,
+      "financials": {"balance_sheet": 90, "cash_flow": 54, "pnl": 120, "quarters": 156, "ratios": 54},
+      "growth": 16,
+      "shareholding": {"quarterly": 72, "yearly": 36},
+      "documents": {"announcement": 5, "annual_report": 6, "concall_notes": 23, "concall_ppt": 23, "concall_recording": 9, "concall_transcript": 23, "drhp": 1},
+      "peers": 72
+    }
+  ]
+}

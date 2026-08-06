@@ -1,0 +1,143 @@
+{
+  "manifest_version": "1.3.0",
+  "page_type": "screener_company",
+  "fixture_contract": "LAURUSLABS consolidated and standalone, NTPCGREEN consolidated, and the five-company P02 pilot saved 2026-08-04",
+  "status_definitions": {
+    "capture": "Persist source-faithful content and normalized observations where applicable.",
+    "metadata_only": "Inventory the control or linked component, but do not treat it as page data.",
+    "conditional": "Capture when the stated access or response condition is met; never synthesize a missing value.",
+    "deferred": "Known source data intentionally excluded under an explicit, versioned deferral decision."
+  },
+  "deferral_approvals": [
+    {
+      "id": "S14-CHART-SERIES",
+      "approved": true,
+      "approved_in": "S14",
+      "reason": "The response contains chart controls and an empty canvas, not the plotted time series. Each first-party chart request must be saved as its own immutable supplemental response before parsing."
+    },
+    {
+      "id": "S14-FINANCIAL-SCHEDULES",
+      "approved": true,
+      "approved_in": "S14",
+      "reason": "The main response exposes only schedule keys and plus markers. Expanded schedules require dedicated first-party response fixtures and separate source-faithful tables."
+    },
+    {
+      "id": "S14-SHAREHOLDER-DRILLDOWNS",
+      "approved": true,
+      "approved_in": "S14",
+      "reason": "Holder-level drill-down rows are not present in the saved main response. They require dedicated first-party response fixtures and must retain their frequency and classification."
+    },
+    {
+      "id": "S14-KEY-POINTS",
+      "approved": true,
+      "approved_in": "S14",
+      "reason": "The long source commentary and its modal continuation are inventoried but deferred from the structured Phase 1 contract; About prose and its citation remain captured."
+    },
+    {
+      "id": "S14-LINKED-PANELS",
+      "approved": true,
+      "approved_in": "S14",
+      "reason": "Related-party transactions, corporate actions, and trade details are linked first-party panels rather than values embedded in the company response. Each needs a dedicated fixture before capture."
+    }
+  ],
+  "regions": [
+    {"code": "company_header", "selector": "#top", "status": "capture", "source": "main_response_html", "implementation": "identity, quote_header, ratio_panel, company_profile"},
+    {"code": "chart", "selector": "section#chart", "status": "deferred", "source": "first_party_chart_requests", "deferral_approval": "S14-CHART-SERIES"},
+    {"code": "pros_cons", "selector": "section#analysis", "status": "capture", "source": "main_response_html", "implementation": "pros_cons source section and company_text observations"},
+    {"code": "peer_table", "selector": "section#peers", "status": "capture", "source": "/api/company/{warehouse_id}/peers/", "implementation": "supplemental screener-peer-table parse artifact"},
+    {"code": "quarterly_results", "selector": "section#quarters", "status": "capture", "source": "main_response_html", "implementation": "quarters source section and financial observations"},
+    {"code": "profit_loss", "selector": "section#profit-loss", "status": "capture", "source": "main_response_html", "implementation": "pnl and growth source sections"},
+    {"code": "balance_sheet", "selector": "section#balance-sheet", "status": "capture", "source": "main_response_html", "implementation": "balance_sheet source section and financial observations"},
+    {"code": "cash_flow", "selector": "section#cash-flow", "status": "capture", "source": "main_response_html", "implementation": "cash_flow source section and financial observations"},
+    {"code": "annual_ratios", "selector": "section#ratios", "status": "capture", "source": "main_response_html", "implementation": "ratios source section and financial observations"},
+    {"code": "insights", "selector": "section#insights", "status": "conditional", "source": "main_response_html plus /insights/company/{company_id}/quarter/", "condition": "Authenticated or premium response exposes real values; the public fixture contains labels plus an explicit login gate and masked decoy cells."},
+    {"code": "shareholding", "selector": "section#shareholding", "status": "capture", "source": "main_response_html", "implementation": "quarterly and yearly shareholding source sections"},
+    {"code": "document_links", "selector": "section#documents", "status": "capture", "source": "main_response_html", "implementation": "document_links source section and normalized metadata"}
+  ],
+  "profile_blocks": [
+    {"heading": "About", "status": "capture", "source": "#top .company-profile .about", "implementation": "company_text and company_profile_links"},
+    {"heading": "Key Points", "status": "deferred", "source": "#top .company-profile .commentary and /wiki/company/{company_id}/commentary/v2/", "deferral_approval": "S14-KEY-POINTS"}
+  ],
+  "tables": [
+    {"section": "quarters", "table_index": 0, "code": "quarterly_results", "status": "capture", "source": "main_response_html"},
+    {"section": "profit-loss", "table_index": 0, "code": "profit_loss", "status": "capture", "source": "main_response_html"},
+    {"section": "profit-loss", "table_index": 1, "code": "compounded_sales_growth", "status": "capture", "source": "main_response_html"},
+    {"section": "profit-loss", "table_index": 2, "code": "compounded_profit_growth", "status": "capture", "source": "main_response_html"},
+    {"section": "profit-loss", "table_index": 3, "code": "stock_price_cagr", "status": "capture", "source": "main_response_html"},
+    {"section": "profit-loss", "table_index": 4, "code": "return_on_equity", "status": "capture", "source": "main_response_html"},
+    {"section": "balance-sheet", "table_index": 0, "code": "balance_sheet", "status": "capture", "source": "main_response_html"},
+    {"section": "cash-flow", "table_index": 0, "code": "cash_flow", "status": "capture", "source": "main_response_html"},
+    {"section": "ratios", "table_index": 0, "code": "annual_ratios", "status": "capture", "source": "main_response_html"},
+    {"section": "insights", "table_index": 0, "code": "yearly_insights", "status": "conditional", "source": "main_response_html", "condition": "Only labels and the login gate are trustworthy in the public fixture; aria-hidden masked filler cells are never data."},
+    {"section": "shareholding", "table_index": 0, "code": "quarterly_shareholding", "status": "capture", "source": "main_response_html"},
+    {"section": "shareholding", "table_index": 1, "code": "yearly_shareholding", "status": "capture", "source": "main_response_html"}
+  ],
+  "document_lists": [
+    {"heading": "Announcements", "code": "announcements", "status": "capture", "source": "main_response_html"},
+    {"heading": "Annual reports", "code": "annual_reports", "status": "capture", "source": "main_response_html"},
+    {"heading": "Credit ratings", "code": "credit_ratings", "status": "conditional", "source": "main_response_html", "condition": "The source omits this whole list when it has no credit-rating artifact for the company; preserve every listed link when present and do not synthesize a row when absent."},
+    {"heading": "Concalls", "code": "concalls", "status": "conditional", "source": "main_response_html", "condition": "The source renders this list only after at least one concall artifact exists; preserve every listed link when present and do not synthesize a row when the whole list is absent."}
+  ],
+  "controls": [
+    {"key": "input:quick-ratio-search", "code": "custom_ratio_picker", "status": "conditional", "source": "authenticated top ratio panel", "condition": "Authenticated account configuration may add custom ratios; public absence means unavailable_without_auth."},
+    {"key": "input:search-peer-comparison", "code": "detailed_peer_search", "status": "metadata_only", "source": "page control"},
+    {"key": "options:company-chart-days", "code": "chart_period_filter", "status": "metadata_only", "source": "page control"},
+    {"key": "options:company-chart-metrics", "code": "chart_metric_filter", "status": "metadata_only", "source": "page control"},
+    {"key": "tab:yearly-insights", "code": "yearly_insights_tab", "status": "metadata_only", "source": "page control"},
+    {"key": "tab:quarterly-insights", "code": "quarterly_insights_tab", "status": "conditional", "source": "/insights/company/{company_id}/quarter/", "condition": "Enabled only for an entitled response."},
+    {"key": "tab:quarterly-shp", "code": "quarterly_shareholding_tab", "status": "metadata_only", "source": "page control"},
+    {"key": "tab:yearly-shp", "code": "yearly_shareholding_tab", "status": "metadata_only", "source": "page control"},
+    {"key": "swap:#company-announcements-tab:Recent", "code": "recent_announcements_filter", "status": "metadata_only", "source": "page control"},
+    {"key": "swap:#company-announcements-tab:Important", "code": "important_announcements_filter", "status": "metadata_only", "source": "page control"},
+    {"key": "swap:#company-announcements-tab:Search", "code": "announcement_search_filter", "status": "metadata_only", "source": "page control"},
+    {"key": "group:benchmarks", "code": "peer_benchmark_links", "status": "metadata_only", "source": "main_response_html"}
+  ],
+  "chart_series": [
+    {"label": "Price", "request_metrics": "Price-DMA50-DMA200-Volume", "status": "deferred", "source": "first_party_chart_request", "deferral_approval": "S14-CHART-SERIES"},
+    {"label": "PE Ratio", "request_metrics": "Price to Earning-Median PE-EPS", "status": "deferred", "source": "first_party_chart_request", "deferral_approval": "S14-CHART-SERIES"},
+    {"label": "Sales & Margin", "request_metrics": "GPM-OPM-NPM-Quarter Sales", "status": "deferred", "source": "first_party_chart_request", "deferral_approval": "S14-CHART-SERIES"},
+    {"label": "EV / EBITDA", "request_metrics": "EV Multiple-Median EV Multiple-EBITDA", "status": "deferred", "source": "first_party_chart_request", "deferral_approval": "S14-CHART-SERIES"},
+    {"label": "Price to Book", "request_metrics": "Price to book value-Median PBV-Book value", "status": "deferred", "source": "first_party_chart_request", "deferral_approval": "S14-CHART-SERIES"},
+    {"label": "Market Cap / Sales", "request_metrics": "Market Cap to Sales-Median Market Cap to Sales-Sales", "status": "deferred", "source": "first_party_chart_request", "deferral_approval": "S14-CHART-SERIES"}
+  ],
+  "expandable_schedules": [
+    {"section": "quarters", "schedule_key": "Sales", "status": "deferred", "source": "Company.showSchedule", "presence_condition": "Non-financial statements label the operating-income line Sales; banks can use Revenue instead.", "deferral_approval": "S14-FINANCIAL-SCHEDULES"},
+    {"section": "quarters", "schedule_key": "Revenue", "status": "deferred", "source": "Company.showSchedule", "presence_condition": "Banking statements can label the operating-income line Revenue instead of Sales.", "deferral_approval": "S14-FINANCIAL-SCHEDULES"},
+    {"section": "quarters", "schedule_key": "Expenses", "status": "deferred", "source": "Company.showSchedule", "deferral_approval": "S14-FINANCIAL-SCHEDULES"},
+    {"section": "quarters", "schedule_key": "Other Income", "status": "deferred", "source": "Company.showSchedule", "deferral_approval": "S14-FINANCIAL-SCHEDULES"},
+    {"section": "quarters", "schedule_key": "Net Profit", "status": "deferred", "source": "Company.showSchedule", "deferral_approval": "S14-FINANCIAL-SCHEDULES"},
+    {"section": "profit-loss", "schedule_key": "Sales", "status": "deferred", "source": "Company.showSchedule", "presence_condition": "Non-financial statements label the operating-income line Sales; banks can use Revenue instead.", "deferral_approval": "S14-FINANCIAL-SCHEDULES"},
+    {"section": "profit-loss", "schedule_key": "Revenue", "status": "deferred", "source": "Company.showSchedule", "presence_condition": "Banking statements can label the operating-income line Revenue instead of Sales.", "deferral_approval": "S14-FINANCIAL-SCHEDULES"},
+    {"section": "profit-loss", "schedule_key": "Expenses", "status": "deferred", "source": "Company.showSchedule", "deferral_approval": "S14-FINANCIAL-SCHEDULES"},
+    {"section": "profit-loss", "schedule_key": "Other Income", "status": "deferred", "source": "Company.showSchedule", "deferral_approval": "S14-FINANCIAL-SCHEDULES"},
+    {"section": "profit-loss", "schedule_key": "Net Profit", "status": "deferred", "source": "Company.showSchedule", "deferral_approval": "S14-FINANCIAL-SCHEDULES"},
+    {"section": "balance-sheet", "schedule_key": "Borrowings", "status": "deferred", "source": "Company.showSchedule", "presence_condition": "The source exposes this schedule for non-bank balance sheets; bank liabilities can use a different statement structure without a Borrowings drill-down.", "deferral_approval": "S14-FINANCIAL-SCHEDULES"},
+    {"section": "balance-sheet", "schedule_key": "Other Liabilities", "status": "deferred", "source": "Company.showSchedule", "deferral_approval": "S14-FINANCIAL-SCHEDULES"},
+    {"section": "balance-sheet", "schedule_key": "Fixed Assets", "status": "deferred", "source": "Company.showSchedule", "deferral_approval": "S14-FINANCIAL-SCHEDULES"},
+    {"section": "balance-sheet", "schedule_key": "Other Assets", "status": "deferred", "source": "Company.showSchedule", "deferral_approval": "S14-FINANCIAL-SCHEDULES"},
+    {"section": "cash-flow", "schedule_key": "Cash from Operating Activity", "status": "deferred", "source": "Company.showSchedule", "deferral_approval": "S14-FINANCIAL-SCHEDULES"},
+    {"section": "cash-flow", "schedule_key": "Cash from Investing Activity", "status": "deferred", "source": "Company.showSchedule", "deferral_approval": "S14-FINANCIAL-SCHEDULES"},
+    {"section": "cash-flow", "schedule_key": "Cash from Financing Activity", "status": "deferred", "source": "Company.showSchedule", "deferral_approval": "S14-FINANCIAL-SCHEDULES"}
+  ],
+  "shareholder_drilldowns": [
+    {"frequency": "quarterly", "classification": "promoters", "status": "deferred", "source": "Company.showShareholders", "presence_condition": "The source omits this drill-down when the company has no Promoters category for that frequency.", "deferral_approval": "S14-SHAREHOLDER-DRILLDOWNS"},
+    {"frequency": "quarterly", "classification": "foreign_institutions", "status": "deferred", "source": "Company.showShareholders", "deferral_approval": "S14-SHAREHOLDER-DRILLDOWNS"},
+    {"frequency": "quarterly", "classification": "domestic_institutions", "status": "deferred", "source": "Company.showShareholders", "deferral_approval": "S14-SHAREHOLDER-DRILLDOWNS"},
+    {"frequency": "quarterly", "classification": "public", "status": "deferred", "source": "Company.showShareholders", "deferral_approval": "S14-SHAREHOLDER-DRILLDOWNS"},
+    {"frequency": "quarterly", "classification": "government", "status": "deferred", "source": "Company.showShareholders", "presence_condition": "Rendered only when the source has a Government category for that frequency.", "deferral_approval": "S14-SHAREHOLDER-DRILLDOWNS"},
+    {"frequency": "quarterly", "classification": "others", "status": "deferred", "source": "Company.showShareholders", "presence_condition": "Rendered only when the source has an Others category for that frequency.", "deferral_approval": "S14-SHAREHOLDER-DRILLDOWNS"},
+    {"frequency": "yearly", "classification": "promoters", "status": "deferred", "source": "Company.showShareholders", "presence_condition": "The source omits this drill-down when the company has no Promoters category for that frequency.", "deferral_approval": "S14-SHAREHOLDER-DRILLDOWNS"},
+    {"frequency": "yearly", "classification": "foreign_institutions", "status": "deferred", "source": "Company.showShareholders", "deferral_approval": "S14-SHAREHOLDER-DRILLDOWNS"},
+    {"frequency": "yearly", "classification": "domestic_institutions", "status": "deferred", "source": "Company.showShareholders", "deferral_approval": "S14-SHAREHOLDER-DRILLDOWNS"},
+    {"frequency": "yearly", "classification": "public", "status": "deferred", "source": "Company.showShareholders", "deferral_approval": "S14-SHAREHOLDER-DRILLDOWNS"},
+    {"frequency": "yearly", "classification": "government", "status": "deferred", "source": "Company.showShareholders", "presence_condition": "Rendered only when the source has a Government category for that frequency.", "deferral_approval": "S14-SHAREHOLDER-DRILLDOWNS"},
+    {"frequency": "yearly", "classification": "others", "status": "deferred", "source": "Company.showShareholders", "presence_condition": "Rendered only when the source has an Others category for that frequency.", "deferral_approval": "S14-SHAREHOLDER-DRILLDOWNS"}
+  ],
+  "linked_components": [
+    {"code": "related_party_transactions", "selector": "[data-title='Related Party Transactions']", "status": "deferred", "source": "/results/rpt/{company_id}/{scope}/", "deferral_approval": "S14-LINKED-PANELS"},
+    {"code": "corporate_actions", "selector": "[data-title='Corporate actions']", "status": "deferred", "source": "/company/actions/{company_id}/", "deferral_approval": "S14-LINKED-PANELS"},
+    {"code": "company_trades", "selector": "[data-title$=' trades']", "status": "deferred", "source": "/trades/company-{company_id}/", "presence_condition": "The main page exposes this action only for some companies; absence of the action carries no embedded trade data.", "deferral_approval": "S14-LINKED-PANELS"},
+    {"code": "all_announcements", "selector": "#documents a[href*='corp-announcements']", "status": "metadata_only", "source": "BSE announcements landing page"},
+    {"code": "export_follow_alerts_and_edit_controls", "selector": "#top form, section#chart [data-title^='Alerts'], section#peers a[href^='/user/columns/']", "status": "metadata_only", "source": "operational page controls"}
+  ]
+}

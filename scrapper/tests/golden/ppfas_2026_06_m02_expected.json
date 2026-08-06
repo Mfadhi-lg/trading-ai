@@ -1,0 +1,78 @@
+{
+  "manifest_version": "0.4.0",
+  "detected_publisher": "ppfas",
+  "detected_disclosure_month": "2026-06",
+  "workbook_format": "ooxml_in_xls_extension",
+  "date_system": "1900",
+  "sheet_count": 7,
+  "portfolio_sheet_count": 7,
+  "non_portfolio_sheet_count": 0,
+  "cell_count": 16467,
+  "nonempty_cell_count": 7942,
+  "formula_count": 28,
+  "merged_range_count": 70,
+  "table_count": 19,
+  "sheets": [
+    {
+      "sheet_position": 0, "sheet_name_raw": "PPFCF", "classification": "portfolio", "scheme_code": "PPFCF",
+      "cell_count": 2946, "nonempty_cell_count": 1512, "formula_count": 2, "merged_range_count": 11,
+      "tables": [
+        {"table_kind": "primary_portfolio", "start_row": 4, "end_row": 151, "source_total_rows": [40, 70, 75, 77, 78, 85, 87, 88, 126, 135, 140, 141, 145, 148, 149, 151]},
+        {"table_kind": "derivatives", "start_row": 153, "end_row": 186, "source_total_rows": [185, 186]},
+        {"table_kind": "supporting_disclosures", "start_row": 187, "end_row": 350, "source_total_rows": []}
+      ]
+    },
+    {
+      "sheet_position": 1, "sheet_name_raw": "PPLF", "classification": "portfolio", "scheme_code": "PPLF",
+      "cell_count": 1531, "nonempty_cell_count": 714, "formula_count": 0, "merged_range_count": 15,
+      "tables": [
+        {"table_kind": "primary_portfolio", "start_row": 4, "end_row": 72, "source_total_rows": [12, 14, 15, 32, 53, 60, 61, 65, 66, 69, 70, 72]},
+        {"table_kind": "supporting_disclosures", "start_row": 73, "end_row": 204, "source_total_rows": []}
+      ]
+    },
+    {
+      "sheet_position": 2, "sheet_name_raw": "PPTSF", "classification": "portfolio", "scheme_code": "PPTSF",
+      "cell_count": 1350, "nonempty_cell_count": 550, "formula_count": 0, "merged_range_count": 10,
+      "tables": [
+        {"table_kind": "primary_portfolio", "start_row": 4, "end_row": 67, "source_total_rows": [48, 52, 54, 55, 60, 61, 64, 65, 67]},
+        {"table_kind": "supporting_disclosures", "start_row": 68, "end_row": 162, "source_total_rows": []}
+      ]
+    },
+    {
+      "sheet_position": 3, "sheet_name_raw": "PPCHF", "classification": "portfolio", "scheme_code": "PPCHF",
+      "cell_count": 2526, "nonempty_cell_count": 1175, "formula_count": 6, "merged_range_count": 11,
+      "tables": [
+        {"table_kind": "primary_portfolio", "start_row": 4, "end_row": 133, "source_total_rows": [14, 23, 28, 30, 31, 111, 113, 114, 118, 119, 123, 126, 127, 130, 131, 133]},
+        {"table_kind": "derivatives", "start_row": 135, "end_row": 145, "source_total_rows": [144, 145]},
+        {"table_kind": "supporting_disclosures", "start_row": 146, "end_row": 297, "source_total_rows": []}
+      ]
+    },
+    {
+      "sheet_position": 4, "sheet_name_raw": "PPAF", "classification": "portfolio", "scheme_code": "PPAF",
+      "cell_count": 3287, "nonempty_cell_count": 1757, "formula_count": 4, "merged_range_count": 9,
+      "tables": [
+        {"table_kind": "primary_portfolio", "start_row": 4, "end_row": 109, "source_total_rows": [80, 82, 83, 94, 97, 98, 102, 103, 106, 107, 109]},
+        {"table_kind": "derivatives", "start_row": 111, "end_row": 190, "source_total_rows": [189, 190]},
+        {"table_kind": "supporting_disclosures", "start_row": 191, "end_row": 379, "source_total_rows": []}
+      ]
+    },
+    {
+      "sheet_position": 5, "sheet_name_raw": "PPDAAF", "classification": "portfolio", "scheme_code": "PPDAAF",
+      "cell_count": 2758, "nonempty_cell_count": 1322, "formula_count": 14, "merged_range_count": 10,
+      "tables": [
+        {"table_kind": "primary_portfolio", "start_row": 4, "end_row": 133, "source_total_rows": [16, 40, 44, 46, 47, 114, 116, 117, 121, 122, 126, 127, 130, 131, 133]},
+        {"table_kind": "derivatives", "start_row": 135, "end_row": 161, "source_total_rows": [160, 161]},
+        {"table_kind": "supporting_disclosures", "start_row": 162, "end_row": 315, "source_total_rows": []}
+      ]
+    },
+    {
+      "sheet_position": 6, "sheet_name_raw": "PPLCF", "classification": "portfolio", "scheme_code": "PPLCF",
+      "cell_count": 2069, "nonempty_cell_count": 912, "formula_count": 2, "merged_range_count": 4,
+      "tables": [
+        {"table_kind": "primary_portfolio", "start_row": 4, "end_row": 125, "source_total_rows": [112, 114, 115, 119, 122, 123, 125]},
+        {"table_kind": "derivatives", "start_row": 127, "end_row": 133, "source_total_rows": [132, 133]},
+        {"table_kind": "supporting_disclosures", "start_row": 134, "end_row": 226, "source_total_rows": []}
+      ]
+    }
+  ]
+}

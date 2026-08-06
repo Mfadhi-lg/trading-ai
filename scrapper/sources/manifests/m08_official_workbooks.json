@@ -1,0 +1,42 @@
+{
+  "retrieved_on": "2026-08-05",
+  "source_scope": "exactly two consecutive months from two additional official AMCs",
+  "publishers": [
+    {
+      "publisher": "groww",
+      "source_page": "https://www.growwmf.in/statutory-disclosure/portfolio",
+      "workbooks": [
+        {
+          "month": "2026-05",
+          "filename": "Monthly_Portfolio_May_31_2026.xlsx",
+          "official_url": "https://assets-netstorage.growwmf.in/compliance_docs/Statutory%20Disclosure/Portfolio/2026%20-2027/Monthly%20Portfolio-%20May%2031%2C%202026.xlsx",
+          "sha256": "37d3a08a687ec4d8957b7031d2b1bf162ca73ac69fb3adb36a8c453a014a1186"
+        },
+        {
+          "month": "2026-06",
+          "filename": "Monthly_Portfolio_June_30_2026.xlsx",
+          "official_url": "https://assets-netstorage.growwmf.in/compliance_docs/Statutory%20Disclosure/Portfolio/2026%20-2027/Monthly%20Portfolio-%20June%2030%2C%202026.xlsx",
+          "sha256": "dfdf10963e561b64b10d49b78b66c0c0c79552e75d8f52d0fc97dba5086a4a4b"
+        }
+      ]
+    },
+    {
+      "publisher": "motilal_oswal",
+      "source_page": "https://www.motilaloswalmf.com/mutual-funds/motilal-oswal-large-and-midcap-fund",
+      "workbooks": [
+        {
+          "month": "2026-05",
+          "filename": "YO20.xlsx",
+          "official_url": "https://www.motilaloswalmf.com/content/dam/motilal-mf/sheets/fund-csvs/Month_End_Portfolio_May_2026/YO20.xlsx",
+          "sha256": "4fd019fd2610cbeae8c85c1c3cb4afa0f50510ef6a007b7d9e38d11a89f14562"
+        },
+        {
+          "month": "2026-06",
+          "filename": "YO20.xlsx",
+          "official_url": "https://www.motilaloswalmf.com/content/dam/motilal-mf/sheets/fund-csvs/Month_End_Portfolio_June_2026/YO20.xlsx",
+          "sha256": "33836e2598fbf10fd5aef33359f86f8e2bf88e6b90ed23aa5ec60b8dd7431b0c"
+        }
+      ]
+    }
+  ]
+}

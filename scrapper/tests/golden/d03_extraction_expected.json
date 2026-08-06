@@ -1,0 +1,35 @@
+{
+  "d03_presentation.pptx": {
+    "content_sha256": "c79680258baf25a7a488f51dc330aa12297fc42c8698afe9898a13eb56a8af30",
+    "element_kinds": [
+      ["text_block", "text_block", "table", "chart"],
+      ["image"]
+    ],
+    "native_pages": 1,
+    "ocr_pages": 1,
+    "origins": ["native", "ocr"],
+    "page_count": 2,
+    "status": "ok"
+  },
+  "d03_scanned.pdf": {
+    "content_sha256": "6ac7219a384f5eb670428ecd0aadd7aa51b0c3f6c20a0f1223fb8a769d8a817b",
+    "element_kinds": [["image"]],
+    "native_pages": 0,
+    "ocr_pages": 1,
+    "origins": ["ocr"],
+    "page_count": 1,
+    "status": "ok"
+  },
+  "d03_text.pdf": {
+    "content_sha256": "ed7b4c6f2e0b698dd9fa6370cb2d6d09423ef87360035ad8cf308d3945f28026",
+    "element_kinds": [
+      ["text_block", "text_block", "table", "text_block", "text_block", "image"],
+      ["text_block", "text_block"]
+    ],
+    "native_pages": 2,
+    "ocr_pages": 0,
+    "origins": ["native", "native"],
+    "page_count": 2,
+    "status": "ok"
+  }
+}

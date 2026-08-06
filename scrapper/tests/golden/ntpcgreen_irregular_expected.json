@@ -1,0 +1,67 @@
+{
+  "company_name": "NTPC Green Energy Ltd",
+  "nse_symbol": "NTPCGREEN",
+  "reporting_scope": "consolidated",
+  "source_company_id": "1285166",
+  "source_warehouse_id": "129816617",
+  "canonical_url": null,
+  "source_cell_counts": {
+    "quarters": 156,
+    "pnl": 78,
+    "balance_sheet": 55,
+    "cash_flow": 35,
+    "ratios": 35,
+    "growth": 36,
+    "shareholding_quarterly": 48,
+    "shareholding_yearly": 24
+  },
+  "observation_counts": {
+    "quarters": 132,
+    "pnl": 60,
+    "balance_sheet": 40,
+    "cash_flow": 24,
+    "ratios": 24,
+    "growth": 16,
+    "shareholding_quarterly": 35,
+    "shareholding_yearly": 15,
+    "documents": 13,
+    "peers": 72
+  },
+  "period_counts": {
+    "quarters": 11,
+    "pnl": 5,
+    "balance_sheet": 4,
+    "cash_flow": 4,
+    "ratios": 4,
+    "shareholding_quarterly": 7,
+    "shareholding_yearly": 3
+  },
+  "blank_counts": {
+    "quarters": 11,
+    "pnl": 2,
+    "balance_sheet": 0,
+    "cash_flow": 0,
+    "ratios": 9,
+    "growth": 9
+  },
+  "growth_missing": [
+    "compounded_sales_growth:10y:%",
+    "compounded_sales_growth:5y:%",
+    "compounded_profit_growth:10y:%",
+    "compounded_profit_growth:5y:%",
+    "stock_price_cagr:10y:%",
+    "stock_price_cagr:5y:%",
+    "stock_price_cagr:3y:%",
+    "return_on_equity:10y:%",
+    "return_on_equity:5y:%"
+  ],
+  "document_type_counts": {
+    "announcement": 5,
+    "annual_report": 1,
+    "credit_rating": 6,
+    "drhp": 1
+  },
+  "peer_source_cell_count": 99,
+  "peer_subject_metric_count": 9,
+  "peer_subject_url": "/company/NTPCGREEN/consolidated/"
+}

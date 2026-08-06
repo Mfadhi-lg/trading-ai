@@ -1,0 +1,24 @@
+{
+  "month_link_count": 91,
+  "first": {
+    "position": 0,
+    "display_text": "Jul 2026",
+    "source_period": "2026-07",
+    "source_url": "https://trendlyne.com/equity/monthly-mutual-fund-share-holding/357598/RBA/Jul-2026/restaurant-brands-asia-ltd/",
+    "is_active": false
+  },
+  "active": {
+    "position": 1,
+    "display_text": "Jun 2026",
+    "source_period": "2026-06",
+    "source_url": "https://trendlyne.com/equity/monthly-mutual-fund-share-holding/357598/RBA/Jun-2026/restaurant-brands-asia-ltd/",
+    "is_active": true
+  },
+  "last": {
+    "position": 90,
+    "display_text": "Jan 2019",
+    "source_period": "2019-01",
+    "source_url": "https://trendlyne.com/equity/monthly-mutual-fund-share-holding/357598/RBA/Jan-2019/restaurant-brands-asia-ltd/",
+    "is_active": false
+  }
+}

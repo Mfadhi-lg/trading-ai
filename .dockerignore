@@ -1,0 +1,10 @@
+.git
+.DS_Store
+OLD
+**/__pycache__
+**/*.pyc
+scrapper/.venv
+scrapper/store
+.screener_session
+*.db
+*.sqlite*

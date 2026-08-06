@@ -1,0 +1,19 @@
+{
+  "state": "accepted",
+  "validation_status": "passed",
+  "scheme_count": 7,
+  "active_equity_scheme_count": 3,
+  "all_holding_count": 727,
+  "active_equity_holding_count": 298,
+  "all_feature_eligible_count": 586,
+  "active_equity_feature_eligible_count": 264,
+  "classifications": {
+    "PPAF": ["arbitrage", true, "arbitrage"],
+    "PPCHF": ["active", false, "conservative_hybrid"],
+    "PPDAAF": ["active", false, "dynamic_asset_allocation"],
+    "PPFCF": ["active", true, "flexi_cap"],
+    "PPLCF": ["active", true, "large_cap"],
+    "PPLF": ["active", false, "liquid"],
+    "PPTSF": ["active", true, "elss"]
+  }
+}

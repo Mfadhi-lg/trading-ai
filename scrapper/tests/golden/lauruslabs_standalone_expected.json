@@ -1,0 +1,59 @@
+{
+  "company_name": "Laurus Labs Ltd",
+  "nse_symbol": "LAURUSLABS",
+  "reporting_scope": "standalone",
+  "source_company_id": "1273603",
+  "source_warehouse_id": "12723394",
+  "canonical_url": "https://www.screener.in/company/LAURUSLABS/consolidated/",
+  "identity_field_count": 7,
+  "metric_count": 9,
+  "financial_counts": {
+    "quarters": 156,
+    "pnl": 156,
+    "balance_sheet": 120,
+    "cash_flow": 72,
+    "ratios": 72
+  },
+  "source_cell_counts": {
+    "quarters": 182,
+    "pnl": 182,
+    "balance_sheet": 143,
+    "cash_flow": 91,
+    "ratios": 91,
+    "growth": 36,
+    "shareholding_quarterly": 78,
+    "shareholding_yearly": 72
+  },
+  "growth_count": 16,
+  "shareholding_counts": {
+    "quarterly": 60,
+    "yearly": 55
+  },
+  "document_link_count": 168,
+  "commentary_counts": {
+    "pro": 0,
+    "con": 3
+  },
+  "quarter_sales_first": [
+    "Jun 2023",
+    "1,108",
+    "1108"
+  ],
+  "quarter_sales_last": [
+    "Jun 2026",
+    "1,757",
+    "1757"
+  ],
+  "pnl_sales_first": [
+    "Mar 2015",
+    "1326"
+  ],
+  "pnl_sales_last": [
+    "TTM",
+    "6413"
+  ],
+  "peer_source_cell_count": 110,
+  "peer_observation_count": 81,
+  "peer_subject_metric_count": 9,
+  "peer_subject_url": "/company/LAURUSLABS/"
+}

@@ -1,0 +1,43 @@
+{
+  "duration_coverage": "0.920000",
+  "engine": "fixture-transcriber@1.0.0",
+  "language": "en",
+  "model_version": "fixture-en@sha256:abc123",
+  "origin": "machine_generated",
+  "segments": [
+    {
+      "confidence": "0.91",
+      "position": 0,
+      "range": [0, 600],
+      "speaker": "unknown",
+      "text": " Welcome to the quarterly earnings call.",
+      "uncertainty": {
+        "average_log_probability": "-0.09",
+        "no_speech_probability": "0.01"
+      }
+    },
+    {
+      "confidence": "0.87",
+      "position": 1,
+      "range": [650, 1200],
+      "speaker": "unknown",
+      "text": " Revenue grew during the quarter.",
+      "uncertainty": {
+        "average_log_probability": "-0.14",
+        "no_speech_probability": "0.02"
+      }
+    }
+  ],
+  "validation_codes": [
+    "machine_transcript_confidence_valid",
+    "machine_transcript_duration_coverage_recorded",
+    "machine_transcript_edge_coverage",
+    "machine_transcript_language_detected",
+    "machine_transcript_neutral_speakers",
+    "machine_transcript_segments_present",
+    "machine_transcript_text_nonempty",
+    "machine_transcript_timestamp_ranges_valid",
+    "machine_transcript_timestamps_monotonic",
+    "machine_transcript_within_media_duration"
+  ]
+}

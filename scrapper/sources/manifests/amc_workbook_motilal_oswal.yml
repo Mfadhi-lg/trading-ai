@@ -1,0 +1,37 @@
+{
+  "manifest_version": "1.0.0",
+  "publisher": "motilal_oswal",
+  "publisher_name": "Motilal Oswal Asset Management Company Limited",
+  "workbook_type": "fund_level_xlsx",
+  "workbook_components": [
+    {"code": "single_scheme_sheet", "status": "capture", "source": "YO20"},
+    {"code": "scheme_identity", "status": "capture", "source": "B1"},
+    {"code": "disclosure_month", "status": "capture", "source": "B2"},
+    {"code": "portfolio_table", "status": "capture", "source": "row 4 through GRAND TOTAL"},
+    {"code": "sector_summary", "status": "metadata_only", "source": "columns K:L"},
+    {"code": "supporting_disclosures", "status": "capture", "source": "all remaining cells"}
+  ],
+  "holdings_normalization": {
+    "normalization_rule_version": "motilal_oswal_holdings_v1",
+    "isin_rule_version": "iso6166_luhn_v1",
+    "name_fallback_rule_version": "exact_normalized_name_v1",
+    "currency": "INR",
+    "market_value_unit_code": "INR_LAKH",
+    "market_value_scale_multiplier": "100000"
+  },
+  "scheme_registry": {
+    "naming_rule_version": "motilal_oswal_scheme_name_v1",
+    "classification_rule_version": "motilal_oswal_scheme_classification_v1",
+    "classification_source": "official_workbook_scheme_title",
+    "valid_from_month": "2026-05",
+    "schemes": {
+      "YO20": {
+        "scheme_name": "Motilal Oswal Large and Midcap Fund",
+        "scheme_category": "large_and_mid_cap",
+        "scheme_management_type": "active",
+        "is_equity_scheme": true,
+        "valid_from_month": "2026-05"
+      }
+    }
+  }
+}

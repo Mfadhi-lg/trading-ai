@@ -1,0 +1,132 @@
+{
+  "inventory_schema_version": "0.1.0",
+  "observed_at": "2026-08-04",
+  "scope": "metadata-only feasibility; no portfolio files downloaded",
+  "bulk_download_status": "blocked_pending_terms_and_exact_request_review",
+  "trendlyne_status": "P03_paused_no_further_requests_or_fixture_expansion",
+  "regulatory_specification": {
+    "source_family": "sebi_mutual_fund_master_circular",
+    "publisher": "Securities and Exchange Board of India",
+    "page_url": "https://www.sebi.gov.in/legal/master-circulars/mar-2026/master-circular-for-mutual-funds_100491.html",
+    "document_url": "https://www.sebi.gov.in/sebi_data/attachdocs/mar-2026/1774024028162.pdf",
+    "document_date": "2026-03-20",
+    "relevant_contract": {
+      "paragraph": "6.1.1",
+      "format": "4C",
+      "general_frequency": "monthly",
+      "general_due_days_after_period_end": 10,
+      "mandated_core_fields": [
+        "mutual fund name",
+        "scheme name",
+        "portfolio period end",
+        "instrument name",
+        "ISIN",
+        "quantity",
+        "market value INR lakhs",
+        "percentage to NAV"
+      ]
+    },
+    "role": "semantic and validation specification; not a holdings source"
+  },
+  "amfi_directory": {
+    "source_family": "amfi_portfolio_directory",
+    "publisher": "Association of Mutual Funds in India",
+    "url": "https://www.amfiindia.com/online-center/portfolio-disclosure",
+    "terms_url": "https://www.amfiindia.com/terms-of-use",
+    "robots_url": "https://www.amfiindia.com/robots.txt",
+    "observed_counts": {
+      "amc_records": 57,
+      "unique_amfi_mf_ids": 57,
+      "nonempty_monthly_portfolio_urls": 51,
+      "blank_monthly_portfolio_urls": 6
+    },
+    "terms_review": {
+      "status": "permission_required_or_personal_noncommercial_only",
+      "finding": "AMFI states personal, non-commercial permitted use and restricts unapproved modification/reverse engineering.",
+      "bulk_eligibility": "blocked"
+    },
+    "proposed_role": "official metadata routing registry only, subject to rights approval"
+  },
+  "representative_amc_destinations": [
+    {
+      "amfi_mf_id": "9",
+      "fund_name": "HDFC Mutual Fund",
+      "publisher": "HDFC Asset Management Company Limited",
+      "monthly_disclosure_url": "https://www.hdfcfund.com/statutory-disclosure/portfolio/monthly-portfolio",
+      "observed_http_status": 403,
+      "index_shape": "not inspected; access boundary",
+      "terms_review": "pending",
+      "bulk_eligibility": "blocked",
+      "note": "Do not bypass the 403; obtain an authorized access path or classify inaccessible."
+    },
+    {
+      "amfi_mf_id": "22",
+      "fund_name": "SBI Mutual Fund",
+      "publisher": "SBI Funds Management Limited",
+      "monthly_disclosure_url": "https://www.sbimf.com/portfolios",
+      "observed_http_status": 200,
+      "index_shape": "dynamic page; file URLs not present in inspected server HTML",
+      "terms_review": "pending",
+      "bulk_eligibility": "blocked"
+    },
+    {
+      "amfi_mf_id": "21",
+      "fund_name": "Nippon India Mutual Fund",
+      "publisher": "Nippon Life India Asset Management Limited",
+      "monthly_disclosure_url": "https://mf.nipponindiaim.com/investor-service/downloads/factsheet-portfolio-and-other-disclosures",
+      "observed_http_status": 200,
+      "index_shape": "combined factsheet/portfolio/disclosure page; dedicated discovery adapter required",
+      "terms_review": "pending",
+      "bulk_eligibility": "blocked"
+    },
+    {
+      "amfi_mf_id": "28",
+      "fund_name": "UTI Mutual Fund",
+      "publisher": "UTI Asset Management Company Limited",
+      "monthly_disclosure_url": "https://www.utimf.com/downloads/consolidate-all-portfolio-disclosure",
+      "observed_http_status": 200,
+      "index_shape": "consolidated all-portfolio destination; file contract not downloaded",
+      "terms_review": "pending",
+      "bulk_eligibility": "blocked"
+    },
+    {
+      "amfi_mf_id": "17",
+      "fund_name": "Kotak Mahindra Mutual Fund",
+      "publisher": "Kotak Mahindra Asset Management Company Limited",
+      "monthly_disclosure_url": "https://www.kotakmf.com/Information/forms-and-downloads",
+      "observed_http_status": 200,
+      "index_shape": "multi-purpose forms/downloads page; filters/API must be inventoried",
+      "terms_review": "pending",
+      "bulk_eligibility": "blocked"
+    },
+    {
+      "amfi_mf_id": "20",
+      "fund_name": "ICICI Prudential Mutual Fund",
+      "publisher": "ICICI Prudential Asset Management Company Limited",
+      "monthly_disclosure_url": "https://www.icicipruamc.com/news-and-media/downloads?currentTabFilter=Disclosures&&subCatTabFilter=MonthlyPortfolioDisclosures",
+      "observed_http_status": 404,
+      "index_shape": "AMFI destination appears stale or changed",
+      "terms_review": "pending",
+      "bulk_eligibility": "blocked",
+      "note": "Resolve through official AMC navigation; do not construct guessed file URLs."
+    }
+  ],
+  "request_count_model": {
+    "current_amfi_destination_ceiling": 51,
+    "twelve_month_consolidated_file_floor": 612,
+    "formula": "index_page_requests + index_api_requests + portfolio_file_requests",
+    "per_scheme_case": "unknown until exact discovery inventory",
+    "approval_rule": "print and review exact URLs and host-grouped counts before any holdings request"
+  },
+  "next_allowed_work": [
+    "review each candidate AMC terms/copyright/file notices",
+    "inventory official disclosure index request mechanics without downloading portfolio files",
+    "produce an exact two-month, three-AMC pilot request plan after rights approval"
+  ],
+  "prohibited_until_approval": [
+    "bulk or sample portfolio workbook download",
+    "automated traversal of all AMC history",
+    "model ingestion of AMFI or AMC holdings",
+    "redistribution of source files or substantial source tables"
+  ]
+}

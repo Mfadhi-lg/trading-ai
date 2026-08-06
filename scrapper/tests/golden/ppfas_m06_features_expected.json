@@ -1,0 +1,63 @@
+{
+  "feature_counts": {"all_scheme": 2, "active_equity": 1},
+  "lineage_count": 11,
+  "features": {
+    "all_scheme:alpha": {
+      "active_fund_holder_count": 6,
+      "new_fund_entries": 3,
+      "complete_fund_exits": 1,
+      "funds_increasing_quantity": 1,
+      "funds_decreasing_quantity": 1,
+      "funds_unchanged": 1,
+      "gross_quantity_bought": "11",
+      "gross_quantity_sold": "5",
+      "net_quantity_change": "6",
+      "total_portfolio_weight": "3.2",
+      "portfolio_weight_change": "0.6",
+      "active_equity_holder_count": 2,
+      "passive_holder_count": 2,
+      "arbitrage_holder_count": 0,
+      "accumulation_breadth": 4,
+      "distribution_breadth": 2,
+      "active_fund_accumulation_breadth": 2
+    },
+    "active_equity:alpha": {
+      "active_fund_holder_count": 2,
+      "new_fund_entries": 1,
+      "complete_fund_exits": 0,
+      "funds_increasing_quantity": 1,
+      "funds_decreasing_quantity": 0,
+      "funds_unchanged": 0,
+      "gross_quantity_bought": "7",
+      "gross_quantity_sold": "0",
+      "net_quantity_change": "7",
+      "total_portfolio_weight": "1.7",
+      "portfolio_weight_change": "0.7",
+      "active_equity_holder_count": 2,
+      "passive_holder_count": 0,
+      "arbitrage_holder_count": 0,
+      "accumulation_breadth": 2,
+      "distribution_breadth": 0,
+      "active_fund_accumulation_breadth": 2
+    },
+    "all_scheme:beta_passive_only": {
+      "active_fund_holder_count": 2,
+      "new_fund_entries": 1,
+      "complete_fund_exits": 0,
+      "funds_increasing_quantity": 0,
+      "funds_decreasing_quantity": 0,
+      "funds_unchanged": 1,
+      "gross_quantity_bought": "10",
+      "gross_quantity_sold": "0",
+      "net_quantity_change": "10",
+      "total_portfolio_weight": "1",
+      "portfolio_weight_change": "0.8",
+      "active_equity_holder_count": 0,
+      "passive_holder_count": 1,
+      "arbitrage_holder_count": 1,
+      "accumulation_breadth": 1,
+      "distribution_breadth": 0,
+      "active_fund_accumulation_breadth": 0
+    }
+  }
+}

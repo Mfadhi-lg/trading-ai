@@ -1,0 +1,24 @@
+# Archived work (1.1 GB, superseded by scrapper/)
+OLD/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Scraped data and local stores
+scrapper/store/
+*.db
+*.sqlite
+*.sqlite3
+exchange-inbox/
+
+# Secrets
+.screener_session
+.env
+.env.*
+
+# macOS
+.DS_Store

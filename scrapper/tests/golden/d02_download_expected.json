@@ -1,0 +1,18 @@
+{
+  "target_url_count": 2,
+  "attempted_url_count": 2,
+  "skipped_url_count": 0,
+  "validated_url_count": 2,
+  "rejected_url_count": 0,
+  "unique_content_count": 1,
+  "status_counts": {
+    "validated": 2
+  },
+  "download_attempt_count": 2,
+  "download_source_path_count": 3,
+  "artifact_content_count": 1,
+  "distinct_download_blob_count": 1,
+  "redirect_count": 1,
+  "detected_media_type": "application/pdf",
+  "content_sha256": "68d3dbe223d4659eb030429ecc280a437eb6e9b042a59797cbbd9e16f56c1d56"
+}

@@ -1,0 +1,139 @@
+{
+  "manifest_version": "0.4.0",
+  "publisher": "ppfas",
+  "publisher_name": "PPFAS Asset Management Private Limited",
+  "workbook_type": "publisher_versioned_xls",
+  "workbook_format_variants": [
+    "legacy_biff8_xls",
+    "ooxml_in_xls_extension"
+  ],
+  "fixture_contract": {
+    "disclosure_month": "2026-06",
+    "content_sha256": "b0e6b22a4eb71dd9db192f7e29b3f8ea83198ee14920defb0519a1b80642d24e",
+    "official_url": "https://amc.ppfas.com/downloads/portfolio-disclosure/2026/PPFAS_Monthly_Portfolio_Report_June_30_2026.xls?08072026_1=",
+    "source_page": "https://amc.ppfas.com/downloads/portfolio-disclosure/"
+  },
+  "status_definitions": {
+    "capture": "Persist every declared OOXML cell and structural record without evaluating formulas.",
+    "conditional": "Capture only when the source sheet contains the named block.",
+    "not_present": "The fixture was checked and the component is not present."
+  },
+  "workbook_components": [
+    {"code": "sheet_order_and_visibility", "status": "capture", "source": "xl/workbook.xml"},
+    {"code": "scheme_identity", "status": "capture", "source": "sheet code and title cell B1"},
+    {"code": "disclosure_month", "status": "capture", "source": "statement cell B3 on every scheme sheet"},
+    {"code": "worksheet_cells", "status": "capture", "source": "xl/worksheets/*.xml plus shared strings and styles"},
+    {"code": "merged_ranges", "status": "capture", "source": "worksheet mergeCells"},
+    {"code": "cached_formulas", "status": "capture", "source": "worksheet formula and cached-value nodes"},
+    {"code": "primary_portfolio", "status": "capture", "source": "header row through GRAND TOTAL on every scheme sheet"},
+    {"code": "derivatives", "status": "conditional", "source": "Derivatives heading through its source Total row"},
+    {"code": "supporting_disclosures", "status": "capture", "source": "all remaining populated/styled worksheet cells"},
+    {"code": "non_portfolio_sheets", "status": "not_present", "source": "complete workbook sheet inventory"},
+    {"code": "normalized_primary_holdings", "status": "capture", "source": "instrument rows carrying a publisher security code in the primary portfolio table"},
+    {"code": "normalized_derivative_holdings", "status": "capture", "source": "instrument rows carrying a publisher security code in the derivatives table"},
+    {"code": "security_name_fallback", "status": "conditional", "source": "exact normalized-name evidence previously anchored by a structurally valid ISIN"},
+    {"code": "scheme_registry", "status": "capture", "source": "official scheme title plus versioned publisher-manifest classification"},
+    {"code": "accepted_scheme_month_pointer", "status": "conditional", "source": "complete passing source, normalization, and registry validation contract"}
+  ],
+  "holdings_normalization": {
+    "normalization_rule_version": "ppfas_holdings_v1",
+    "isin_rule_version": "iso6166_luhn_v1",
+    "name_fallback_rule_version": "exact_normalized_name_v1",
+    "currency": "INR",
+    "market_value_unit_code": "INR_LAKH",
+    "market_value_scale_multiplier": "100000",
+    "derivative_heading": "Index / Stock Futures",
+    "primary_instrument_headings": {
+      "Equity & Equity related": "equity",
+      "Arbitrage": "equity_arbitrage",
+      "Special situation": "equity_special_situation",
+      "(b) Reits": "reit",
+      "Equity & Equity related Foreign Investments": "foreign_equity",
+      "Debt Instruments": "debt",
+      "Money Market Instruments": "money_market",
+      "Certificate of Deposit": "certificate_of_deposit",
+      "Commercial Paper": "commercial_paper",
+      "Treasury Bill": "treasury_bill",
+      "Others": "other",
+      "Corporate Debt Market Development Fund": "corporate_debt_market_development_fund",
+      "Mutual Fund Units": "mutual_fund_unit",
+      "Reverse Repo / TREPS": "reverse_repo_treps"
+    },
+    "ignored_primary_headings": [
+      "(a) Listed / awaiting listing on Stock Exchanges",
+      "(a) Listed / awaiting listing on Stock Exchange",
+      "(b) Privately placed / Unlisted",
+      "(b) Unlisted",
+      "(b)",
+      "(c) Unlisted",
+      "Sub Total",
+      "Total",
+      "GRAND TOTAL",
+      "Net Receivables / (Payables)"
+    ]
+  },
+  "scheme_registry": {
+    "naming_rule_version": "ppfas_scheme_name_v1",
+    "classification_rule_version": "ppfas_scheme_classification_v1",
+    "classification_source": "official_workbook_scheme_title",
+    "valid_from_month": "2025-07",
+    "schemes": {
+      "PPFCF": {"scheme_category": "flexi_cap", "scheme_management_type": "active", "is_equity_scheme": true, "valid_from_month": "2025-07"},
+      "PPLF": {"scheme_category": "liquid", "scheme_management_type": "active", "is_equity_scheme": false, "valid_from_month": "2025-07"},
+      "PPTSF": {"scheme_category": "elss", "scheme_management_type": "active", "is_equity_scheme": true, "valid_from_month": "2025-07"},
+      "PPCHF": {"scheme_category": "conservative_hybrid", "scheme_management_type": "active", "is_equity_scheme": false, "valid_from_month": "2025-07"},
+      "PPAF": {"scheme_category": "arbitrage", "scheme_management_type": "arbitrage", "is_equity_scheme": true, "valid_from_month": "2025-07"},
+      "PPDAAF": {"scheme_category": "dynamic_asset_allocation", "scheme_management_type": "active", "is_equity_scheme": false, "valid_from_month": "2025-07"},
+      "PPLCF": {"scheme_category": "large_cap", "scheme_management_type": "active", "is_equity_scheme": true, "valid_from_month": "2026-02"}
+    }
+  },
+  "month_evidence": {
+    "coordinate": "B3",
+    "pattern": "^Monthly Portfolio Statement as on ([A-Z][a-z]+ [0-9]{1,2}, [0-9]{4})$"
+  },
+  "primary_table": {
+    "header_anchor": "Name of the Instrument",
+    "header_start_column": 2,
+    "end_anchor": "GRAND TOTAL",
+    "required_columns": [
+      {"column": 2, "label": "Name of the Instrument", "field_code": "security_name"},
+      {"column": 3, "label": "ISIN", "field_code": "isin"},
+      {"column": 4, "label": "Industry / Rating", "allowed_labels": ["Industry / Rating", "Industry", "Rating"], "field_code": "instrument_type_or_rating"},
+      {"column": 5, "label": "Quantity", "field_code": "quantity"},
+      {"column": 6, "label": "Market/Fair Value (Rs. in Lakhs)", "field_code": "market_value_lakh"},
+      {"column": 7, "label": "% to Net Assets", "field_code": "percentage_of_nav"}
+    ],
+    "optional_columns": [
+      {"column": 1, "field_code": "source_security_code"},
+      {"column": 8, "label": "YTM~", "field_code": "ytm"},
+      {"column": 9, "label": "YTC^", "field_code": "ytc"}
+    ]
+  },
+  "derivatives_table": {
+    "heading_anchor": "Derivatives",
+    "end_anchor": "Total",
+    "required_columns": [
+      {"column": 2, "label": "Name of the Instrument", "field_code": "instrument_name"},
+      {"column": 3, "label": "Long / (Short)", "field_code": "long_short"},
+      {"column": 4, "label": "Quantity", "field_code": "quantity"},
+      {"column": 5, "label": "Market value (Rs. in Lakhs)", "field_code": "market_value_lakh"},
+      {"column": 6, "label": "% to AUM", "field_code": "percentage_of_aum"}
+    ],
+    "optional_columns": [
+      {"column": 1, "field_code": "source_security_code"},
+      {"column": 7, "label": "Notes & Symbols", "field_code": "notes_symbols"}
+    ]
+  },
+  "non_portfolio_sheets": [
+    {"sheet_name": "Index", "classification": "non_portfolio", "valid_from_month": "2025-07", "valid_to_month": "2025-10"}
+  ],
+  "sheets": [
+    {"scheme_code": "PPFCF", "classification": "portfolio", "title_prefix": "Parag Parikh Flexi Cap Fund", "valid_from_month": "2025-07"},
+    {"scheme_code": "PPLF", "classification": "portfolio", "title_prefix": "Parag Parikh Liquid Fund", "valid_from_month": "2025-07"},
+    {"scheme_code": "PPTSF", "classification": "portfolio", "title_prefix": "Parag Parikh ELSS Tax Saver Fund", "valid_from_month": "2025-07"},
+    {"scheme_code": "PPCHF", "classification": "portfolio", "title_prefix": "Parag Parikh Conservative Hybrid Fund", "valid_from_month": "2025-07"},
+    {"scheme_code": "PPAF", "classification": "portfolio", "title_prefix": "Parag Parikh Arbitrage Fund", "valid_from_month": "2025-07"},
+    {"scheme_code": "PPDAAF", "classification": "portfolio", "title_prefix": "Parag Parikh Dynamic Asset Allocation Fund", "valid_from_month": "2025-07"},
+    {"scheme_code": "PPLCF", "classification": "portfolio", "title_prefix": "Parag Parikh Large Cap Fund", "valid_from_month": "2026-02"}
+  ]
+}

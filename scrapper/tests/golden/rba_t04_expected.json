@@ -1,0 +1,21 @@
+{
+  "computed_buyers": "1",
+  "computed_holders": "25",
+  "computed_net_change": "-8412818",
+  "computed_sellers": "10",
+  "headline_buyers": "1",
+  "headline_buyers_display": "1",
+  "headline_display_text": "1 MFs bought and 10 MFs sold Restaurant Brands Asia in the month of Jun 2026 for a net change of 8,412,818 stocks",
+  "headline_net_change": "8412818",
+  "headline_net_change_display": "8,412,818",
+  "headline_period_label_raw": "Jun 2026",
+  "headline_sellers": "10",
+  "headline_sellers_display": "10",
+  "period_end": "2026-06-30",
+  "period_label_raw": "Jun-2026",
+  "source_period": "2026-06",
+  "table_total_change": "-8412818",
+  "table_total_change_display": "-8,412,818",
+  "table_total_shares": "155895172",
+  "table_total_shares_display": "155,895,172"
+}

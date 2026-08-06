@@ -1,0 +1,32 @@
+{
+  "fixture_sha256": "78a636d57d64b66e48104e6c71ae430855482b2bb59c7462db2217297c2892ba",
+  "fixture_byte_size": 178593,
+  "resolved_source_period": "2026-05",
+  "canonical_period": "May-2026",
+  "month_link_count": 91,
+  "active_month_position": 2,
+  "logical_column_count": 10,
+  "source_cell_count": 293,
+  "fund_row_count": 27,
+  "observation_count": 243,
+  "current_observation_count": 135,
+  "comparison_observation_counts": {
+    "2026-04": 54,
+    "2026-03": 54
+  },
+  "computed_buyers": "4",
+  "computed_sellers": "5",
+  "computed_holders": "27",
+  "computed_net_change": "-1387808",
+  "table_total_change": "-1387808",
+  "headline_net_change": "1387808",
+  "exiting_fund": {
+    "source_scheme_id": "22082",
+    "scheme_name_raw": "Edelweiss Equity Savings Reg Gr",
+    "prior_source_period": "2026-04",
+    "prior_shares": "599374",
+    "current_source_period": "2026-05",
+    "current_shares": "0",
+    "current_month_change": "-599374"
+  }
+}

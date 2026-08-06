@@ -1,0 +1,272 @@
+{
+  "anomalies": {
+    "extraction_failures": [
+      {
+        "artifact_id": 6,
+        "error": {
+          "message": "No /Root object! - Is this really a PDF?",
+          "type": "PdfminerException"
+        },
+        "extraction_id": 3,
+        "failed_validation_codes": [
+          "document_pages_present"
+        ],
+        "status": "failed"
+      }
+    ],
+    "missing_official_transcripts": [
+      {
+        "artifact_id": 2,
+        "company_id": 1,
+        "outcome": "accepted",
+        "outcome_reason": "recording_fallback",
+        "period_key": "period_end:2026-06-30",
+        "recording_fallback_used": true
+      }
+    ],
+    "ocr_pages": [
+      {
+        "artifact_id": 1,
+        "extraction_confidence": "0.9700",
+        "extraction_id": 1,
+        "native_unusable_reason": "absent",
+        "page_kind": "slide",
+        "page_or_slide_number": 2
+      }
+    ],
+    "provenance_conflicts": [
+      {
+        "artifact_id": 1,
+        "kind": "primary_publisher_claim_conflict",
+        "values": [
+          "Conflicting Publisher Limited",
+          "Laurus Labs Limited"
+        ]
+      }
+    ],
+    "recording_fallbacks": [
+      {
+        "artifact_id": 2,
+        "company_id": 1,
+        "period_key": "period_end:2026-06-30"
+      }
+    ]
+  },
+  "artifacts": [
+    {
+      "artifact_type": "presentation",
+      "official_transcript_status": "not_applicable",
+      "outcome": "blocked",
+      "outcome_reason": "extraction_failed",
+      "period_key": "period_end:2024-03-31",
+      "recording_fallback_used": false,
+      "title_raw": "Q4 FY2024 presentation"
+    },
+    {
+      "artifact_type": "presentation",
+      "official_transcript_status": "not_applicable",
+      "outcome": "explicitly_missing",
+      "outcome_reason": "not_offered",
+      "period_key": "period_end:2025-03-31",
+      "recording_fallback_used": false,
+      "title_raw": "FY2025 presentation"
+    },
+    {
+      "artifact_type": "presentation",
+      "official_transcript_status": "not_applicable",
+      "outcome": "accepted",
+      "outcome_reason": "usable_extraction",
+      "period_key": "period_end:2026-06-30",
+      "recording_fallback_used": false,
+      "title_raw": "Q1 FY2026 Earnings Presentation"
+    },
+    {
+      "artifact_type": "transcript",
+      "official_transcript_status": "missing",
+      "outcome": "accepted",
+      "outcome_reason": "recording_fallback",
+      "period_key": "period_end:2026-06-30",
+      "recording_fallback_used": true,
+      "title_raw": "Q1 FY2026 Earnings Call Transcript"
+    },
+    {
+      "artifact_type": "recording",
+      "official_transcript_status": "not_applicable",
+      "outcome": "accepted",
+      "outcome_reason": "accepted_recording_normalization",
+      "period_key": "period_end:2026-06-30",
+      "recording_fallback_used": false,
+      "title_raw": "Q1 FY2026 Earnings Call Recording"
+    },
+    {
+      "artifact_type": "credit_rating",
+      "official_transcript_status": "not_applicable",
+      "outcome": "accepted",
+      "outcome_reason": "accepted_rating_normalization",
+      "period_key": "event:2026-07-15",
+      "recording_fallback_used": false,
+      "title_raw": "Laurus Labs Limited - Rating Rationale"
+    }
+  ],
+  "companies": [
+    {
+      "artifact_count": 6,
+      "artifact_type_counts": {
+        "credit_rating": 1,
+        "presentation": 3,
+        "recording": 1,
+        "transcript": 1
+      },
+      "company_id": 1,
+      "company_name": "Laurus Labs Limited",
+      "identifiers": [
+        {
+          "identifier_type": "NSE",
+          "identifier_value": "LAURUSLABS",
+          "is_current": 1,
+          "valid_from": null,
+          "valid_to": null
+        }
+      ],
+      "outcome_counts": {
+        "accepted": 4,
+        "blocked": 1,
+        "explicitly_missing": 1
+      },
+      "period_keys": [
+        "event:2026-07-15",
+        "period_end:2024-03-31",
+        "period_end:2025-03-31",
+        "period_end:2026-06-30"
+      ]
+    }
+  ],
+  "coverage_status": "complete",
+  "period_coverage": [
+    {
+      "artifact_count": 1,
+      "artifact_ids": [
+        4
+      ],
+      "artifact_type_counts": {
+        "credit_rating": 1
+      },
+      "company_id": 1,
+      "coverage_status": "accounted",
+      "event_date_values": [
+        "2026-07-15"
+      ],
+      "outcome_counts": {
+        "accepted": 1
+      },
+      "period_end_values": [],
+      "period_key": "event:2026-07-15"
+    },
+    {
+      "artifact_count": 1,
+      "artifact_ids": [
+        6
+      ],
+      "artifact_type_counts": {
+        "presentation": 1
+      },
+      "company_id": 1,
+      "coverage_status": "accounted",
+      "event_date_values": [
+        "2024-05-01"
+      ],
+      "outcome_counts": {
+        "blocked": 1
+      },
+      "period_end_values": [
+        "2024-03-31"
+      ],
+      "period_key": "period_end:2024-03-31"
+    },
+    {
+      "artifact_count": 1,
+      "artifact_ids": [
+        5
+      ],
+      "artifact_type_counts": {
+        "presentation": 1
+      },
+      "company_id": 1,
+      "coverage_status": "accounted",
+      "event_date_values": [
+        "2025-05-01"
+      ],
+      "outcome_counts": {
+        "explicitly_missing": 1
+      },
+      "period_end_values": [
+        "2025-03-31"
+      ],
+      "period_key": "period_end:2025-03-31"
+    },
+    {
+      "artifact_count": 3,
+      "artifact_ids": [
+        1,
+        2,
+        3
+      ],
+      "artifact_type_counts": {
+        "presentation": 1,
+        "recording": 1,
+        "transcript": 1
+      },
+      "company_id": 1,
+      "coverage_status": "accounted",
+      "event_date_values": [
+        "2026-07-24",
+        "2026-07-25"
+      ],
+      "outcome_counts": {
+        "accepted": 3
+      },
+      "period_end_values": [
+        "2026-06-30"
+      ],
+      "period_key": "period_end:2026-06-30"
+    }
+  ],
+  "pilot": {
+    "all_expected_artifacts_accounted": true,
+    "covered_artifact_types": [
+      "presentation",
+      "credit_rating",
+      "transcript",
+      "recording"
+    ],
+    "missing_artifact_types": [],
+    "required_artifact_types": [
+      "presentation",
+      "credit_rating",
+      "transcript",
+      "recording"
+    ],
+    "status": "complete"
+  },
+  "summary": {
+    "artifact_type_counts": {
+      "credit_rating": 1,
+      "presentation": 3,
+      "recording": 1,
+      "transcript": 1
+    },
+    "company_count": 1,
+    "expected_artifact_count": 6,
+    "extraction_failure_count": 1,
+    "missing_official_transcript_count": 1,
+    "ocr_page_count": 1,
+    "outcome_counts": {
+      "accepted": 4,
+      "blocked": 1,
+      "explicitly_missing": 1
+    },
+    "period_count": 4,
+    "provenance_conflict_count": 1,
+    "recording_fallback_count": 1
+  }
+}

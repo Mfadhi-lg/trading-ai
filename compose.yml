@@ -1,0 +1,97 @@
+services:
+  discovery:
+    build: .
+    command:
+      - screener-discover-results
+      - --query-role
+      - current_reporting_cycle
+      - --query
+      - Last result date > 202605
+    environment:
+      SCRAPER_STORE_PATH: /data
+      SCRAPER_DB_PATH: /data/scraper.db
+      SCREENER_SESSION_FILE: /run/secrets/screener_session
+    volumes:
+      - scraper-data:/data
+    secrets:
+      - screener_session
+    profiles: ["manual"]
+
+  # Universe refresh runs daily and carries no Screener session: exchange
+  # masters and result feeds are public. Mount operator-downloaded files at
+  # /inbox and use --file when a dataset URL is not confirmed for automation.
+  exchange-universe:
+    build: .
+    command:
+      - exchange-refresh-universe
+      - --dataset
+      - nse_equity_master
+      - --url
+      - https://nsearchives.nseindia.com/content/equities/EQUITY_L.csv
+    environment:
+      SCRAPER_STORE_PATH: /data
+      SCRAPER_DB_PATH: /data/scraper.db
+    volumes:
+      - scraper-data:/data
+      - ./exchange-inbox:/inbox:ro
+    profiles: ["manual"]
+
+  exchange-results:
+    build: .
+    command:
+      - exchange-discover-results
+      - --dataset
+      - nse_financial_results
+      - --file
+      - /inbox/nse-financial-results.csv
+    environment:
+      SCRAPER_STORE_PATH: /data
+      SCRAPER_DB_PATH: /data/scraper.db
+    volumes:
+      - scraper-data:/data
+      - ./exchange-inbox:/inbox:ro
+    profiles: ["manual"]
+
+  worker:
+    build: .
+    command: ["screener-company-worker", "--due", "--limit", "5"]
+    environment:
+      SCRAPER_STORE_PATH: /data
+      SCRAPER_DB_PATH: /data/scraper.db
+      SCREENER_SESSION_FILE: /run/secrets/screener_session
+      SCREENER_THROTTLE_SECONDS: "4"
+      SCREENER_THROTTLE_JITTER: "1.5"
+      SCREENER_WORKER_LIMIT: "5"
+    volumes:
+      - scraper-data:/data
+    secrets:
+      - screener_session
+    profiles: ["manual"]
+
+  daemon:
+    build: .
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        echo "Starting continuous scraper daemon..."
+        while true; do
+          python -m scrapper.cli screener-company-worker --due --limit 10
+          sleep 10
+        done
+    environment:
+      SCRAPER_STORE_PATH: /data
+      SCRAPER_DB_PATH: /data/scraper.db
+      SCREENER_SESSION_FILE: /run/secrets/screener_session
+      SCREENER_THROTTLE_SECONDS: "4"
+      SCREENER_THROTTLE_JITTER: "1.5"
+    volumes:
+      - scraper-data:/data
+    secrets:
+      - screener_session
+
+volumes:
+  scraper-data:
+
+secrets:
+  screener_session:
+    file: ${SCREENER_SESSION_FILE:-.screener_session}

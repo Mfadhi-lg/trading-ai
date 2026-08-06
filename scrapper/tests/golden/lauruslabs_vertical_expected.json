@@ -1,0 +1,180 @@
+{
+  "balance_expandable_rows": [
+    "Borrowings +",
+    "Other Liabilities +",
+    "Fixed Assets +",
+    "Other Assets +"
+  ],
+  "balance_first_period": "Mar 2015",
+  "balance_observation_count": 120,
+  "balance_period_types": [
+    "fiscal_year"
+  ],
+  "balance_source_cell_count": 143,
+  "balance_total_assets_first": "1888",
+  "balance_total_assets_last": "10511",
+  "cash_cfo_op_first": "-24",
+  "cash_cfo_op_unit": "PERCENT_POINT",
+  "cash_expandable_rows": [
+    "Cash from Operating Activity +",
+    "Cash from Investing Activity +",
+    "Cash from Financing Activity +"
+  ],
+  "cash_first_period": "Mar 2015",
+  "cash_observation_count": 72,
+  "cash_operating_first": "-65",
+  "cash_operating_last": "1624",
+  "cash_period_types": [
+    "fiscal_year"
+  ],
+  "cash_source_cell_count": 91,
+  "company_name": "Laurus Labs Ltd",
+  "company_profile_field_count": 6,
+  "company_profile_link_types": [
+    "website",
+    "bse",
+    "nse",
+    "about_source"
+  ],
+  "company_text_counts": {
+    "about": 1,
+    "commentary_disclosure": 1,
+    "commentary_methodology": 1,
+    "company_description": 1,
+    "con": 4,
+    "pro": 1
+  },
+  "document_available_count": 160,
+  "document_first_url": "https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=e4a19b33-9fe2-4bd0-a9a5-6e92fce415d9.pdf",
+  "document_last_url": "https://stockdiscovery.s3.amazonaws.com/insight/india/19736/Investor%20Presentation/IP-Dec16.pdf",
+  "document_link_count": 168,
+  "document_source_field_count": 168,
+  "document_type_counts": {
+    "announcement": 5,
+    "annual_report": 13,
+    "concall_notes": 44,
+    "concall_ppt": 44,
+    "concall_recording": 11,
+    "concall_transcript": 44,
+    "credit_rating": 6,
+    "drhp": 1
+  },
+  "document_unavailable_count": 8,
+  "financial_observation_count": 156,
+  "first_period": "Jun 2023",
+  "first_sales": "1182",
+  "growth_first_value": "14",
+  "growth_metric_labels": [
+    "Compounded Sales Growth",
+    "Compounded Profit Growth",
+    "Stock Price CAGR",
+    "Return on Equity"
+  ],
+  "growth_observation_count": 16,
+  "growth_profit_5y": "-2",
+  "growth_source_cell_count": 36,
+  "last_period": "Jun 2026",
+  "last_sales": "2026",
+  "metric_labels": [
+    "Market Cap",
+    "Current Price",
+    "High / Low",
+    "Stock P/E",
+    "Book Value",
+    "Dividend Yield",
+    "ROCE",
+    "ROE",
+    "Face Value"
+  ],
+  "nse_symbol": "LAURUSLABS",
+  "peer_company_count": 8,
+  "peer_median_market_cap": "2029.6",
+  "peer_metric_codes": [
+    "current_price",
+    "dividend_yield",
+    "market_cap",
+    "net_profit_latest_quarter",
+    "price_to_earnings",
+    "quarterly_profit_growth_yoy",
+    "quarterly_sales_growth_yoy",
+    "roce",
+    "sales_latest_quarter"
+  ],
+  "peer_observation_count": 81,
+  "peer_source_cell_count": 110,
+  "peer_subject_cmp": "1850.00",
+  "peer_subject_name": "Laurus Labs",
+  "pnl_first_net_profit": "68",
+  "pnl_first_period": "Mar 2015",
+  "pnl_first_sales": "1327",
+  "pnl_last_net_profit": "1091",
+  "pnl_last_period": "TTM",
+  "pnl_last_sales": "7270",
+  "pnl_observation_count": 156,
+  "pnl_period_types": [
+    "fiscal_year",
+    "ttm"
+  ],
+  "pnl_source_cell_count": 182,
+  "quarter_source_cell_count": 182,
+  "ratios_debtor_days_first": "78",
+  "ratios_debtor_days_last": "115",
+  "ratios_first_period": "Mar 2015",
+  "ratios_observation_count": 72,
+  "ratios_period_types": [
+    "fiscal_year"
+  ],
+  "ratios_roce_first": "14",
+  "ratios_roce_last": "18",
+  "ratios_source_cell_count": 91,
+  "ratios_units": [
+    "DAYS",
+    "PERCENT_POINT"
+  ],
+  "ratios_working_capital_days_first": "-0",
+  "reporting_scope": "consolidated",
+  "shareholding_first_period": "Sep 2023",
+  "shareholding_holder_codes": [
+    "promoters",
+    "foreign_institutions",
+    "domestic_institutions",
+    "public",
+    "no_of_shareholders"
+  ],
+  "shareholding_last_period": "Jun 2026",
+  "shareholding_no_of_shareholders_first": "402640",
+  "shareholding_no_of_shareholders_unit": "COUNT",
+  "shareholding_observation_count": 60,
+  "shareholding_promoters_first": "27.20",
+  "shareholding_promoters_last": "27.47",
+  "shareholding_regimes": [
+    "xbrl_sep_2022_plus"
+  ],
+  "shareholding_source_cell_count": 78,
+  "shareholding_units": [
+    "COUNT",
+    "PERCENT_POINT"
+  ],
+  "shareholding_yearly_source_cell_count": 72,
+  "shareholding_yearly_observation_count": 55,
+  "shareholding_yearly_regimes": [
+    "pre_sep_2022",
+    "xbrl_sep_2022_plus"
+  ],
+  "shareholding_yearly_units": [
+    "COUNT",
+    "PERCENT_POINT"
+  ],
+  "shareholding_yearly_holder_codes": [
+    "promoters",
+    "foreign_institutions",
+    "domestic_institutions",
+    "public",
+    "no_of_shareholders"
+  ],
+  "shareholding_yearly_first_period": "Mar 2017",
+  "shareholding_yearly_last_period": "Jun 2026",
+  "shareholding_yearly_promoters_first": "30.64",
+  "shareholding_yearly_promoters_last": "27.47",
+  "shareholding_yearly_no_of_shareholders_first": "56722"
+}

@@ -1,0 +1,100 @@
+{
+  "groww": {
+    "2026-05": {
+      "sheet_count": 59,
+      "portfolio_sheet_count": 59,
+      "non_portfolio_sheet_count": 0,
+      "cell_count": 53962,
+      "holding_count": 3155,
+      "valid_isin_count": 2996,
+      "missing_isin_count": 159,
+      "derivative_holding_count": 77
+    },
+    "2026-06": {
+      "sheet_count": 62,
+      "portfolio_sheet_count": 61,
+      "non_portfolio_sheet_count": 1,
+      "cell_count": 56734,
+      "holding_count": 3352,
+      "valid_isin_count": 3194,
+      "missing_isin_count": 158,
+      "derivative_holding_count": 75
+    },
+    "comparison": {
+      "generated_change_sets": 59,
+      "skipped_change_sets": 2,
+      "change_count": 3131,
+      "change_class_counts": {
+        "new_entry": 135,
+        "complete_exit": 137,
+        "quantity_increase": 1701,
+        "quantity_decrease": 767,
+        "unchanged": 391
+      },
+      "all_scheme_feature_count": 859,
+      "active_equity_feature_count": 197
+    },
+    "representative_feature": {
+      "isin_normalized": "INE040A01034",
+      "active_fund_holder_count": 13,
+      "new_fund_entries": 0,
+      "complete_fund_exits": 1,
+      "funds_increasing_quantity": 8,
+      "funds_decreasing_quantity": 3,
+      "funds_unchanged": 2,
+      "gross_quantity_bought": "133521",
+      "gross_quantity_sold": "171360",
+      "net_quantity_change": "-37839",
+      "total_portfolio_weight": "118.63",
+      "portfolio_weight_change": "-0.54"
+    }
+  },
+  "motilal_oswal": {
+    "2026-05": {
+      "sheet_count": 1,
+      "portfolio_sheet_count": 1,
+      "non_portfolio_sheet_count": 0,
+      "cell_count": 365,
+      "holding_count": 29,
+      "valid_isin_count": 29,
+      "missing_isin_count": 0
+    },
+    "2026-06": {
+      "sheet_count": 1,
+      "portfolio_sheet_count": 1,
+      "non_portfolio_sheet_count": 0,
+      "cell_count": 393,
+      "holding_count": 30,
+      "valid_isin_count": 29,
+      "missing_isin_count": 1
+    },
+    "comparison": {
+      "generated_change_sets": 1,
+      "skipped_change_sets": 0,
+      "change_count": 29,
+      "change_class_counts": {
+        "new_entry": 0,
+        "complete_exit": 0,
+        "quantity_increase": 11,
+        "quantity_decrease": 8,
+        "unchanged": 10
+      },
+      "all_scheme_feature_count": 29,
+      "active_equity_feature_count": 29
+    },
+    "representative_feature": {
+      "isin_normalized": "INE0LEZ01016",
+      "active_fund_holder_count": 1,
+      "new_fund_entries": 0,
+      "complete_fund_exits": 0,
+      "funds_increasing_quantity": 0,
+      "funds_decreasing_quantity": 1,
+      "funds_unchanged": 0,
+      "gross_quantity_bought": "0",
+      "gross_quantity_sold": "1268078",
+      "net_quantity_change": "-1268078",
+      "total_portfolio_weight": "3.37",
+      "portfolio_weight_change": "-0.35"
+    }
+  }
+}

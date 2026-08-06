@@ -1,0 +1,62 @@
+{
+  "coverage_status": "complete",
+  "queue_status": "settled",
+  "summary": {
+    "company_count": 1,
+    "event_count": 1,
+    "expectation_count": 2,
+    "check_event_count": 5,
+    "pending_retry_count": 0,
+    "review_count": 0,
+    "status_counts": {
+      "available": 2
+    }
+  },
+  "period_coverage": [
+    {
+      "company_id": 1,
+      "symbol": "FIXTURE",
+      "company_name": "Fixture Limited",
+      "event_id": 1,
+      "event_key": "earnings_call:q1-fy2026",
+      "period_key": "event:2026-07-20",
+      "artifact_types": {
+        "recording": {
+          "availability_status": "available",
+          "attempt_count": 2,
+          "next_check_at_utc": null,
+          "terminal_reason": "available"
+        },
+        "transcript": {
+          "availability_status": "available",
+          "attempt_count": 3,
+          "next_check_at_utc": null,
+          "terminal_reason": "available"
+        }
+      }
+    }
+  ],
+  "expectations": [
+    {
+      "artifact_type": "recording",
+      "availability_status": "available",
+      "attempt_count": 2,
+      "terminal_reason": "available",
+      "check_statuses": [
+        "expected_not_yet_published",
+        "available"
+      ]
+    },
+    {
+      "artifact_type": "transcript",
+      "availability_status": "available",
+      "attempt_count": 3,
+      "terminal_reason": "available",
+      "check_statuses": [
+        "expected_not_yet_published",
+        "expected_not_yet_published",
+        "available"
+      ]
+    }
+  ]
+}

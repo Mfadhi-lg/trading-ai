@@ -1,0 +1,32 @@
+{
+  "normalization_status": "accepted",
+  "normalized_audio": {
+    "byte_size": 40044,
+    "channel_count": 1,
+    "codec_name": "pcm_s16le",
+    "container_formats": [
+      "wav"
+    ],
+    "content_sha256": "93a85376b9993abded7a4aaf674ff132fe4432378374e474d88ef7d891bf361b",
+    "duration_ms": 1250,
+    "media_type": "audio/wav",
+    "sample_rate_hz": 16000
+  },
+  "preferred_content_is_source": true,
+  "relationship_type": "normalized_audio",
+  "resolution_basis": "primary_source_validated_download",
+  "schema_version": "1.0.0",
+  "source": {
+    "channel_count": 2,
+    "codec_name": "pcm_s16le",
+    "container_formats": [
+      "wav"
+    ],
+    "content_sha256": "d041562f49269f3381b30109089aebd8db56136f4ac377862095ee9e0b2af613",
+    "duration_ms": 1250,
+    "media_type": "audio/wav",
+    "resolution_path_count": 1,
+    "sample_rate_hz": 44100
+  },
+  "validation_rule_count": 11
+}

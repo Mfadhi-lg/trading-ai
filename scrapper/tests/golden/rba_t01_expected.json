@@ -1,0 +1,17 @@
+{
+  "active_month_raw": "Jun 2026",
+  "active_url_period_raw": "Jun-2026",
+  "bse_code": "543248",
+  "canonical_period": "latest",
+  "canonical_url": "https://trendlyne.com/equity/monthly-mutual-fund-share-holding/357598/RBA/latest/restaurant-brands-asia-ltd/",
+  "company_name_raw": "Restaurant Brands Asia Ltd.",
+  "heading_month_raw": "Jun 2026",
+  "identity_field_count": 5,
+  "period_field_count": 3,
+  "resolved_source_period": "2026-06",
+  "selected_month_raw": "Jun 2026",
+  "source_company_id": "357598",
+  "source_slug": "restaurant-brands-asia-ltd",
+  "source_symbol": "RBA"
+}
+

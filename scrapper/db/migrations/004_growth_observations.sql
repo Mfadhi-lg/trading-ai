@@ -1,0 +1,20 @@
+CREATE TABLE IF NOT EXISTS growth_observations (
+    growth_observation_id INTEGER PRIMARY KEY,
+    parse_id INTEGER NOT NULL REFERENCES parse_artifacts(parse_id) ON DELETE CASCADE,
+    reporting_scope TEXT NOT NULL,
+    metric_code TEXT,
+    metric_label_raw TEXT NOT NULL,
+    block_position INTEGER NOT NULL,
+    row_position INTEGER NOT NULL,
+    period_code TEXT,
+    period_label_raw TEXT NOT NULL,
+    display_value TEXT NOT NULL,
+    value_decimal TEXT,
+    unit_code TEXT,
+    missing_kind TEXT,
+    first_observed_at_utc TEXT NOT NULL,
+    source_published_at_utc TEXT,
+    available_at_utc TEXT NOT NULL,
+    availability_basis TEXT NOT NULL,
+    UNIQUE(parse_id, block_position, row_position)
+);

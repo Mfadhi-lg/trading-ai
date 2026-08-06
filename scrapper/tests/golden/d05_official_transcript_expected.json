@@ -1,0 +1,100 @@
+{
+  "boundaries": [
+    [
+      "prepared_remarks",
+      2,
+      "Presentation"
+    ],
+    [
+      "qa",
+      3,
+      "Moderator: We will now begin the question-and-answer session."
+    ]
+  ],
+  "content_sha256": "530bc24b991da866317c7c0859ca2d70e134479e3f18994f96e0406ffca3b83c",
+  "document_marker_raw": "Q1 FY2026 Earnings Conference Call Transcript",
+  "origin": "official",
+  "page_range": [
+    2,
+    4
+  ],
+  "recording_transcription_needed": false,
+  "segments": [
+    {
+      "fragment_pages": [
+        2
+      ],
+      "page_range": [
+        2,
+        2
+      ],
+      "position": 0,
+      "section": "prepared_remarks",
+      "speaker_raw": "Moderator",
+      "text_raw": "Ladies and gentlemen, welcome to the Fixture Limited earnings call."
+    },
+    {
+      "fragment_pages": [
+        2,
+        3
+      ],
+      "page_range": [
+        2,
+        3
+      ],
+      "position": 1,
+      "section": "prepared_remarks",
+      "speaker_raw": "Asha Rao",
+      "text_raw": "Thank you. We delivered a strong start to the financial year.\nRevenue grew eighteen percent and margins expanded during the quarter."
+    },
+    {
+      "fragment_pages": [
+        3
+      ],
+      "page_range": [
+        3,
+        3
+      ],
+      "position": 2,
+      "section": "qa",
+      "speaker_raw": "Moderator",
+      "text_raw": "We will now begin the question-and-answer session."
+    },
+    {
+      "fragment_pages": [
+        4
+      ],
+      "page_range": [
+        4,
+        4
+      ],
+      "position": 3,
+      "section": "qa",
+      "speaker_raw": "Ravi Shah - Analyst",
+      "text_raw": "Could you discuss the demand outlook for the second half?"
+    },
+    {
+      "fragment_pages": [
+        4
+      ],
+      "page_range": [
+        4,
+        4
+      ],
+      "position": 4,
+      "section": "qa",
+      "speaker_raw": "Asha Rao",
+      "text_raw": "We expect demand to remain resilient across our core markets."
+    }
+  ],
+  "validation_codes": [
+    "official_transcript_boundaries_ordered",
+    "official_transcript_document_marker",
+    "official_transcript_fragment_evidence_complete",
+    "official_transcript_page_ranges_valid",
+    "official_transcript_section_boundaries_explicit",
+    "official_transcript_segment_order_contiguous",
+    "official_transcript_segments_present",
+    "official_transcript_speaker_labels_present"
+  ]
+}

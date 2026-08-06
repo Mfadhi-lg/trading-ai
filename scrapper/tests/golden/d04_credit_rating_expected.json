@@ -1,0 +1,77 @@
+{
+  "action_date": "2026-07-15",
+  "actions": [
+    {
+      "action_code": "reaffirmed",
+      "amount_decimal": "150.00",
+      "evidence_fields": [
+        "action_date",
+        "amount",
+        "facility_or_instrument",
+        "outlook",
+        "rating",
+        "rating_action"
+      ],
+      "facility": "Long-term bank facilities",
+      "outlook_code": "stable",
+      "page": 1,
+      "rating_code": "CARE A+"
+    },
+    {
+      "action_code": "reaffirmed",
+      "amount_decimal": "50.00",
+      "evidence_fields": [
+        "action_date",
+        "amount",
+        "facility_or_instrument",
+        "rating",
+        "rating_action"
+      ],
+      "facility": "Short-term bank facilities",
+      "outlook_code": null,
+      "page": 2,
+      "rating_code": "CARE A1+"
+    },
+    {
+      "action_code": "upgraded",
+      "amount_decimal": "100.00",
+      "evidence_fields": [
+        "action_date",
+        "amount",
+        "facility_or_instrument",
+        "outlook",
+        "rating",
+        "rating_action"
+      ],
+      "facility": "Non-convertible debentures",
+      "outlook_code": "stable",
+      "page": 2,
+      "rating_code": "CARE A+"
+    }
+  ],
+  "agency_code": "care",
+  "content_sha256": "f1c0ba13d242217b04ffda70629a07016a2cc24756aed0b98a0ac042f9b9bb17",
+  "document_class": "rating_rationale",
+  "rationale_passages": [
+    {
+      "page": 1,
+      "text": "The rating assigned to the bank facilities continues to carry a Stable outlook."
+    }
+  ],
+  "source_table_pages": [
+    1,
+    2
+  ],
+  "validation_codes": [
+    "credit_rating_action_date_present",
+    "credit_rating_actions_present",
+    "credit_rating_actions_review_free",
+    "credit_rating_agency_identified",
+    "credit_rating_conflicts_absent",
+    "credit_rating_document_class_known",
+    "credit_rating_field_evidence_complete",
+    "credit_rating_rationale_passages_present",
+    "credit_rating_tables_present",
+    "credit_rating_tables_unambiguous"
+  ]
+}

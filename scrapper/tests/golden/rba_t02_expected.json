@@ -1,0 +1,52 @@
+{
+  "body_cell_count": 216,
+  "first_fund": {
+    "row_position": 2,
+    "scheme_name_raw": "SBI Conservative Hybrid Reg Gr",
+    "source_scheme_id": "6770",
+    "source_url": "https://trendlyne.com/mutual-fund/nav/6770/sbi-conservative-hybrid-fund-regular-growth/"
+  },
+  "first_fund_displays": [
+    "SBI Conservative Hybrid Reg Gr",
+    "-",
+    "-%",
+    "-",
+    "-",
+    "-%",
+    "3,800,000",
+    "0%"
+  ],
+  "footer_cell_count": 8,
+  "footer_displays": [
+    "Total:",
+    "",
+    "",
+    "155,895,172",
+    "-8,412,818",
+    "",
+    "168,107,990",
+    ""
+  ],
+  "fund_row_count": 27,
+  "header_cell_count": 10,
+  "header_fingerprint": [
+    [0, 0, "MF", 2, 1],
+    [0, 1, "Jun-2026", 1, 5],
+    [0, 6, "May-2026", 1, 2],
+    [1, 1, "AUM (Cr)", 1, 1],
+    [1, 2, "AUM %", 1, 1],
+    [1, 3, "Shares Held", 1, 1],
+    [1, 4, "Month Change", 1, 1],
+    [1, 5, "Month Change %", 1, 1],
+    [1, 6, "Shares Held", 1, 1],
+    [1, 7, "Month Change %", 1, 1]
+  ],
+  "last_fund": {
+    "row_position": 28,
+    "scheme_name_raw": "Altiva Hybrid Long-Short Reg Gr",
+    "source_scheme_id": "3289532",
+    "source_url": "https://trendlyne.com/mutual-fund/nav/3289532/altiva-hybrid-long-short-fund-regular-growth/"
+  },
+  "logical_column_count": 8,
+  "source_cell_count": 234
+}

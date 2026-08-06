@@ -1,0 +1,30 @@
+{
+  "manifest_version": "0.5.0",
+  "page_type": "trendlyne_monthly_mutual_fund_holdings",
+  "fixture_contract": "RBA latest and May-2026 responses saved 2026-08-04; selected pages resolve independently to 2026-06 and 2026-05",
+  "status_definitions": {
+    "capture": "Persist source-faithful content and normalized values where applicable.",
+    "metadata_only": "Inventory a visible control or link without treating it as canonical numeric data.",
+    "conditional": "Capture only when the named source field exists; never infer it from a scheme name.",
+    "deferred": "Known page data assigned to a named later execution chunk."
+  },
+  "deferral_approvals": [
+    {"id": "T02-FUND-CELLS", "approved": true, "approved_in": "T02", "reason": "Fund table headers, merged cells, scheme IDs, rows and totals require their own source-faithful golden contract."},
+    {"id": "T03-FUND-NORMALIZATION", "approved": true, "approved_in": "T03", "reason": "Typed AUM, shares and change observations follow source-cell capture."},
+    {"id": "T04-SUMMARY-ANOMALIES", "approved": true, "approved_in": "T04", "reason": "T04 captures the visible headline and footer totals and derives canonical current-month activity from fund rows. Multi-month embedded chart series and the fixture's next-month insight cards remain explicit deferrals until assigned a dedicated normalized contract; they are not used to compute T04 totals."},
+    {"id": "T05-MONTH-HISTORY", "approved": true, "approved_in": "T05", "reason": "All month links and older-month ingestion need a second immutable fixture and month-specific pointer tests."}
+  ],
+  "components": [
+    {"code": "company_identity", "selector": ".stock_info_card[data-myid]", "status": "capture", "source": "main_response_html", "implementation": "T01 identity source fields and verified source mapping"},
+    {"code": "selected_month", "selector": ".choose-month-styles button.dropdown-toggle", "status": "capture", "source": "main_response_html", "implementation": "T01 selected month and resolved_source_period"},
+    {"code": "active_month_link", "selector": ".mf-sh-month-dd-menu a.active", "status": "capture", "source": "main_response_html", "implementation": "T01 independent selected-month validation"},
+    {"code": "headline_summary", "selector": "#share-change-analysis h2", "status": "capture", "source": "main_response_html", "implementation": "T04 exact untrusted headline prose plus independently retained buyer, seller and net-change claims; never canonical"},
+    {"code": "holder_and_change_charts", "selector": "#share-change-histograms .tl_stacked_chart", "status": "deferred", "source": "embedded data-chartdata", "deferral_approval": "T04-SUMMARY-ANOMALIES"},
+    {"code": "buyer_seller_insight_cards", "selector": "#share-change-histograms #sc-insights", "status": "deferred", "source": "main_response_html", "deferral_approval": "T04-SUMMARY-ANOMALIES"},
+    {"code": "month_history_links", "selector": ".mf-sh-month-dd-menu a", "status": "capture", "source": "main_response_html", "implementation": "T05 ordered source fields plus typed month periods, source identities, active state, URLs and first-observed availability"},
+    {"code": "hide_index_arbitrage_control", "selector": "#prune_etf", "status": "conditional", "source": "data-prune-etf-url response", "condition": "Capture source-provided classification only when its dedicated response exposes a category field; retain all rows."},
+    {"code": "fund_table_cells", "selector": ".mf-shareholding-table table", "status": "capture", "source": "main_response_html", "implementation": "T02 headers, merged spans, scheme links and IDs, fund rows, and footer source cells"},
+    {"code": "fund_observations", "selector": ".mf-shareholding-table tbody", "status": "capture", "source": "captured fund table cells", "implementation": "T03 exact decimals, typed units and month periods, explicit missing kinds, all source schemes retained, and first-observed availability"},
+    {"code": "table_total", "selector": ".mf-shareholding-table tfoot", "status": "capture", "source": "main_response_html", "implementation": "T04 exact footer displays and typed shares/change totals stored independently from headline claims and row-derived values"}
+  ]
+}

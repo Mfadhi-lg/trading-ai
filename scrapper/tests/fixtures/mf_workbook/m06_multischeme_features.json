@@ -1,0 +1,69 @@
+{
+  "publisher": "ppfas",
+  "previous_month": "2026-05",
+  "current_month": "2026-06",
+  "securities": {
+    "alpha": "IN0020240076",
+    "beta_passive_only": "IN002025Z187"
+  },
+  "schemes": [
+    {
+      "code": "ACTIVE_A",
+      "management_type": "active",
+      "is_equity": true,
+      "holdings": {
+        "alpha": {"previous": ["10", "1.00"], "current": ["12", "1.20"]}
+      }
+    },
+    {
+      "code": "ACTIVE_B",
+      "management_type": "active",
+      "is_equity": true,
+      "holdings": {
+        "alpha": {"previous": null, "current": ["5", "0.50"]}
+      }
+    },
+    {
+      "code": "INDEX",
+      "management_type": "index",
+      "is_equity": true,
+      "holdings": {
+        "alpha": {"previous": ["10", "1.00"], "current": ["7", "0.70"]},
+        "beta_passive_only": {"previous": null, "current": ["10", "0.80"]}
+      }
+    },
+    {
+      "code": "ETF",
+      "management_type": "ETF",
+      "is_equity": true,
+      "holdings": {
+        "alpha": {"previous": ["4", "0.40"], "current": ["4", "0.40"]}
+      }
+    },
+    {
+      "code": "ARBITRAGE",
+      "management_type": "arbitrage",
+      "is_equity": true,
+      "holdings": {
+        "alpha": {"previous": ["2", "0.20"], "current": null},
+        "beta_passive_only": {"previous": ["2", "0.20"], "current": ["2", "0.20"]}
+      }
+    },
+    {
+      "code": "FOF",
+      "management_type": "fund_of_funds",
+      "is_equity": false,
+      "holdings": {
+        "alpha": {"previous": null, "current": ["1", "0.10"]}
+      }
+    },
+    {
+      "code": "UNKNOWN",
+      "management_type": "unknown",
+      "is_equity": false,
+      "holdings": {
+        "alpha": {"previous": null, "current": ["3", "0.30"]}
+      }
+    }
+  ]
+}

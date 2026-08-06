@@ -1,0 +1,20 @@
+{
+  "page_count": 4,
+  "candidate_url_count": 8,
+  "logical_artifact_count": 4,
+  "primary_source_candidate_count": 6,
+  "source_counts": {
+    "bse": 2,
+    "company_ir": 3,
+    "rating_agency": 1,
+    "screener": 2
+  },
+  "artifact_type_counts": {
+    "presentation": 3,
+    "credit_rating": 1,
+    "transcript": 3,
+    "recording": 1
+  },
+  "first_document_url": "https://www.bseindia.com/xml-data/corpfiling/AttachLive/q1-fy26-presentation.pdf",
+  "last_document_url": "https://www.lauruslabs.com/investors/q1-fy26/call-transcript.pdf"
+}

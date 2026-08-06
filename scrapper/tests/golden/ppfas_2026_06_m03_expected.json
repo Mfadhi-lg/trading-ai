@@ -1,0 +1,40 @@
+{
+  "summary": {
+    "holding_count": 727,
+    "primary_holding_count": 593,
+    "derivative_holding_count": 134,
+    "valid_isin_count": 586,
+    "missing_isin_count": 141,
+    "invalid_isin_count": 0,
+    "isin_match_count": 586,
+    "name_fallback_match_count": 0,
+    "unmatched_count": 141,
+    "manual_review_count": 0,
+    "security_count": 353,
+    "validation_rule_count": 8
+  },
+  "scheme_counts": {
+    "PPAF": 159,
+    "PPCHF": 103,
+    "PPDAAF": 122,
+    "PPFCF": 144,
+    "PPLCF": 108,
+    "PPLF": 45,
+    "PPTSF": 46
+  },
+  "instrument_type_counts": {
+    "certificate_of_deposit": 57,
+    "commercial_paper": 26,
+    "corporate_debt_market_development_fund": 2,
+    "debt": 146,
+    "derivative_future": 134,
+    "equity": 265,
+    "equity_arbitrage": 55,
+    "equity_special_situation": 3,
+    "foreign_equity": 4,
+    "mutual_fund_unit": 5,
+    "reit": 10,
+    "reverse_repo_treps": 7,
+    "treasury_bill": 13
+  }
+}

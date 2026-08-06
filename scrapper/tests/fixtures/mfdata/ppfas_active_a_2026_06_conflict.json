@@ -1,0 +1,29 @@
+{
+  "status": "success",
+  "data": {
+    "family_id": 8292,
+    "month": "2026-06",
+    "equity": [
+      {
+        "name": "alpha third-party label",
+        "isin": "IN0020240076",
+        "sector": "Test Sector",
+        "quantity": 999,
+        "market_value_cr": 0.01,
+        "weight_pct": 1.25,
+        "change_mom": 0.05
+      },
+      {
+        "name": "beta third-party-only",
+        "isin": "IN002025Z187",
+        "sector": "Test Sector",
+        "quantity": 10,
+        "market_value_cr": 0.02,
+        "weight_pct": 0.80,
+        "change_mom": 0.80
+      }
+    ],
+    "debt": [],
+    "other": []
+  }
+}

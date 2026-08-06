@@ -1,0 +1,31 @@
+{
+  "schema_version": "1.0.0",
+  "symbol": "LAURUSLABS",
+  "company_name": "Laurus Labs Limited",
+  "pages": [
+    {
+      "source": "bse",
+      "page_url": "https://www.bseindia.com/stock-share-price/corporates/ann.html?scrip=540222",
+      "publisher_claim": "Laurus Labs Limited",
+      "content_path": "d01_bse_filings.html"
+    },
+    {
+      "source": "company_ir",
+      "page_url": "https://www.lauruslabs.com/investors/financial-information/",
+      "publisher_claim": "Laurus Labs Limited",
+      "content_path": "d01_company_ir.html"
+    },
+    {
+      "source": "rating_agency",
+      "page_url": "https://www.careratings.com/company/Laurus-Labs-Limited",
+      "publisher_claim": "CARE Ratings Limited",
+      "content_path": "d01_rating_agency.html"
+    },
+    {
+      "source": "screener",
+      "page_url": "https://www.screener.in/company/LAURUSLABS/consolidated/",
+      "publisher_claim": null,
+      "content_path": "d01_screener_links.html"
+    }
+  ]
+}
