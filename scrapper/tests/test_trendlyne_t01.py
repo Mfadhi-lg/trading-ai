@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from scrapper.tests.database_fixtures import prepare_database
+
 import hashlib
 import json
 import sqlite3
@@ -452,6 +454,7 @@ class TrendlyneT05PersistenceTests(unittest.TestCase):
         requested_source_period: str = "latest",
         url: str = URL,
     ):
+        prepare_database(self.db_path)
         return ingest_trendlyne_response(
             "RBA",
             fixture_response(content, url),

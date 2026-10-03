@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from ..config import EXPORTS
+from ..core.collection_scope import is_scope_exclusion
 
 
 SCHEMA_VERSION = "1.0.0"
@@ -69,6 +70,7 @@ def build_screener_discovery_coverage(conn: sqlite3.Connection) -> dict[str, Any
     failures = [
         item for item in queue
         if item["status"] in {"failed_retryable", "failed_terminal", "manual_review"}
+        and not is_scope_exclusion(json.loads(item["last_error_json"] or "{}").get("error", {}).get("message", ""))
     ]
     candidate_decisions = Counter(
         {"new": 0, "advanced": 0, "unchanged": 0, "ambiguous": 0, "stale": 0}

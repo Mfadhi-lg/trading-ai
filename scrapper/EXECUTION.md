@@ -1268,6 +1268,35 @@ claims zero work, and five total check events remain. Separate fixtures keep
 fake artifact or zero-data observation. Reconciliation/coverage schema `1.0.0`,
 package `1.3.0`; 148 offline tests green. No live fetch occurred.
 
+### Document acquisition recovery + DA-08 storage sizing ✅ Done
+
+Migration `045` moves physical deduplication to its correct boundary:
+`response_blobs` remains unique by SHA-256, while more than one logical artifact
+may attach its own `artifact_contents` row to the same immutable blob. This
+closes the live `Identical content is already attached` worker failures without
+copying bytes or collapsing potentially distinct artifact identities.
+
+`document-recovery-report` reports logical artifacts separately from URL jobs
+and assigns deterministic recovery actions. `requeue-document-downloads`
+requires explicit job IDs and an audited reason and refuses succeeded, pending,
+leased, policy-skipped, or already-covered work. `register-document-replacement`
+preserves the failed source, adds replacement provenance, and creates a fresh
+queue job. `import-manual-document` provides the policy-safe path: it validates
+byte signatures and artifact type, content-addresses the file, records the
+operator assertion, and closes outstanding URL jobs without inventing an HTTP
+attempt.
+
+The next plan chunk, DA-08, is delivered by
+`document-storage-projection`. For one explicit scope it reports count,
+mean/median/p90/p95/max bytes, artifact coverage, validated job rate,
+deduplicated actual bytes, planned-count projections, 20–30% configurable
+headroom, current disk free space, and whether the projection fits.
+
+Proof: `tests/test_document_download_recovery.py` covers upgrade safety,
+cross-artifact identical bytes, logical recovery classification, dry-run and
+audited requeue, replacement URL provenance, signature-validated manual import,
+and observed DA-08 projection math.
+
 ## Exchange universe chunks
 
 ### E01 — Exchange universe and result discovery (complete)

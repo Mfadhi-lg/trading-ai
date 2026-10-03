@@ -1,0 +1,1646 @@
+diff --git a/.github/workflows/migration-lineage.yml b/.github/workflows/migration-lineage.yml
+--- a/.github/workflows/migration-lineage.yml
++++ b/.github/workflows/migration-lineage.yml
+@@ -16,3 +16,5 @@
+         run: python scripts/audit/check_migration_manifest.py
+       - name: Check disposable ledger expectations
+         run: python -m unittest scrapper.tests.test_migration_manifest -v
++      - name: Check explicit migration and read-only connection controls
++        run: python -m unittest scrapper.tests.test_database_migration_controls -v
+diff --git a/scrapper/cli.py b/scrapper/cli.py
+--- a/scrapper/cli.py
++++ b/scrapper/cli.py
+@@ -132,7 +132,7 @@
+     )
+     shell.add_argument("--db", type=Path, default=DB_PATH)
+ 
+-    init = subcommands.add_parser("init-db", help="Apply SQLite migrations")
++    init = subcommands.add_parser("init-db", help="Explicitly apply SQLite migrations")
+     init.add_argument("--db", type=Path, default=DB_PATH)
+ 
+     view = subcommands.add_parser(
+@@ -964,14 +964,14 @@
+     if args.command == "init-db":
+         conn = connect(args.db)
+         try:
+-            init_db(conn)
++            init_db(conn, apply_migrations=True)
+         finally:
+             conn.close()
+         print(json.dumps({"status": "ok", "database": str(args.db.resolve())}))
+         return 0
+ 
+     if args.command == "monitor":
+-        conn = connect(args.db)
++        conn = connect(args.db, read_only=True)
+         try:
+             init_db(conn)
+             run_live_monitor(conn, refresh_interval=args.refresh)
+@@ -980,7 +980,7 @@
+         return 0
+ 
+     if args.command in {"download-monitor", "monitor-downloads"}:
+-        conn = connect(args.db)
++        conn = connect(args.db, read_only=True)
+         try:
+             init_db(conn)
+             run_download_monitor(conn, refresh_interval=args.refresh)
+@@ -990,7 +990,7 @@
+ 
+     if args.command == "view":
+         try:
+-            conn = connect(args.db)
++            conn = connect(args.db, read_only=True)
+             try:
+                 init_db(conn)
+                 if args.view_mode == "company":
+@@ -1045,7 +1045,7 @@
+         return 0
+ 
+     if args.command == "quality-report":
+-        conn = connect(args.db)
++        conn = connect(args.db, read_only=True)
+         try:
+             init_db(conn)
+             output = write_quality_report(conn, args.output)
+@@ -1056,7 +1056,7 @@
+ 
+     if args.command == "document-quality-report":
+         try:
+-            conn = connect(args.db)
++            conn = connect(args.db, read_only=True)
+             try:
+                 init_db(conn)
+                 output = write_document_quality_report(
+@@ -1117,7 +1117,7 @@
+ 
+     if args.command == "artifact-coverage":
+         try:
+-            conn = connect(args.db)
++            conn = connect(args.db, read_only=True)
+             try:
+                 init_db(conn)
+                 output = write_artifact_coverage_report(
+@@ -1204,7 +1204,7 @@
+ 
+     if args.command == "screener-discovery-coverage":
+         try:
+-            conn = connect(args.db)
++            conn = connect(args.db, read_only=True)
+             try:
+                 init_db(conn)
+                 output = write_screener_discovery_coverage(conn, args.output)
+@@ -1275,7 +1275,7 @@
+ 
+     if args.command == "exchange-reconciliation-report":
+         try:
+-            conn = connect(args.db)
++            conn = connect(args.db, read_only=True)
+             try:
+                 init_db(conn)
+                 output = write_exchange_reconciliation_report(
+@@ -1388,7 +1388,7 @@
+ 
+     if args.command == "exchange-universe-coverage":
+         try:
+-            conn = connect(args.db)
++            conn = connect(args.db, read_only=True)
+             try:
+                 init_db(conn)
+                 output = write_exchange_universe_coverage(conn, args.output)
+@@ -1438,7 +1438,7 @@
+             MF_FEATURE_EXPORTS / publisher_path / args.scope
+             / f"through-{args.through_month}.json"
+         )
+-        conn = connect(args.db)
++        conn = connect(args.db, read_only=True)
+         try:
+             init_db(conn)
+             written = write_mf_feature_export(
+@@ -1461,7 +1461,7 @@
+             MF_COVERAGE_EXPORTS / args.publisher
+             / f"through-{args.through_month}.json"
+         )
+-        conn = connect(args.db)
++        conn = connect(args.db, read_only=True)
+         try:
+             init_db(conn)
+             written = write_mf_coverage_report(
+@@ -1572,7 +1572,7 @@
+ 
+     if args.command == "document-alternate-source-recovery-report":
+         try:
+-            conn = connect(args.db)
++            conn = connect(args.db, read_only=True)
+             try:
+                 init_db(conn)
+                 payload, output = write_alternate_source_recovery_report(
+@@ -1701,7 +1701,7 @@
+ 
+     if args.command == "document-recovery-report":
+         try:
+-            conn = connect(args.db)
++            conn = connect(args.db, read_only=True)
+             try:
+                 init_db(conn)
+                 payload, output = write_document_recovery_report(
+@@ -1799,7 +1799,7 @@
+                 if artifact_type not in ALLOWED_MEDIA_BY_ARTIFACT:
+                     raise ValueError(f"Unknown planned artifact type: {artifact_type}")
+                 planned[artifact_type] = int(count)
+-            conn = connect(args.db)
++            conn = connect(args.db, read_only=True)
+             try:
+                 init_db(conn)
+                 payload, output = write_document_storage_projection(
+@@ -2014,7 +2014,7 @@
+         ) else 0
+ 
+     if args.command == "trendlyne-pilot-plan":
+-        conn = connect(args.db)
++        conn = connect(args.db, read_only=not args.persist)
+         try:
+             init_db(conn)
+             plan = build_trendlyne_pilot_plan(
+diff --git a/scrapper/db/database.py b/scrapper/db/database.py
+--- a/scrapper/db/database.py
++++ b/scrapper/db/database.py
+@@ -1,24 +1,28 @@
+-"""SQLite connection and ordered migration application."""
++"""SQLite connections, read-only schema checks, and explicit migration control."""
++
+ import fcntl
+ import sqlite3
+ import threading
+ from contextlib import contextmanager
+ from datetime import datetime, timezone
+ from pathlib import Path
++from urllib.parse import quote
+ 
+ from ..config import DB_PATH, MIGRATIONS_PATH, ensure_dirs
+ 
+ 
+ _IN_PROCESS_MIGRATION_LOCK = threading.Lock()
++# Applied in the preserved A2 review stream and present in the retained schema
++# copy, but intentionally absent from the current canonical migration directory.
++# Identity is the full filename; this does not alias or replace browser 065.
++HISTORICAL_MIGRATION_IDENTITIES = frozenset({"065_exchange_source_access.sql"})
+ 
+ 
+ @contextmanager
+ def _migration_lock(conn: sqlite3.Connection):
+-    """Serialize migration discovery and application across worker processes."""
++    """Serialize explicit migration application across worker processes."""
+ 
+-    database_path = str(
+-        conn.execute("PRAGMA database_list").fetchone()[2] or ""
+-    )
++    database_path = str(conn.execute("PRAGMA database_list").fetchone()[2] or "")
+     if not database_path:
+         with _IN_PROCESS_MIGRATION_LOCK:
+             yield
+@@ -33,26 +37,80 @@
+             fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+ 
+ 
+-def connect(db_path: Path = DB_PATH) -> sqlite3.Connection:
+-    ensure_dirs()
+-    conn = sqlite3.connect(db_path)
+-    conn.execute("PRAGMA journal_mode=WAL;")
++def connect(db_path: Path = DB_PATH, *, read_only: bool = False) -> sqlite3.Connection:
++    """Open SQLite with explicit write intent.
++
++    Read-only connections require an existing file, use SQLite's ``mode=ro``,
++    and never create configured store directories or switch journal mode.
++    """
++
++    db_path = Path(db_path)
++    if read_only:
++        if not db_path.is_file():
++            raise FileNotFoundError(f"read-only database does not exist: {db_path}")
++        uri = f"file:{quote(str(db_path.resolve()), safe='/')}?mode=ro"
++        conn = sqlite3.connect(uri, uri=True)
++        conn.execute("PRAGMA query_only=ON;")
++    else:
++        ensure_dirs()
++        conn = sqlite3.connect(db_path)
++        conn.execute("PRAGMA journal_mode=WAL;")
+     conn.execute("PRAGMA foreign_keys=ON;")
+     conn.execute("PRAGMA busy_timeout=5000;")
+     conn.row_factory = sqlite3.Row
+     return conn
+ 
+ 
+-def init_db(conn: sqlite3.Connection) -> None:
++def _migration_names() -> list[str]:
++    return [path.name for path in sorted(Path(MIGRATIONS_PATH).glob("*.sql"))]
++
++
++def check_schema_compatibility(conn: sqlite3.Connection) -> None:
++    """Read the migration ledger and fail if this code cannot use the schema.
++
++    This function is safe for a read-only connection. It never creates the
++    ledger, applies SQL, takes a filesystem lock, or writes database state.
++    """
++
++    exists = conn.execute(
++        "SELECT 1 FROM sqlite_master WHERE type='table' AND name='schema_migrations'"
++    ).fetchone()
++    if not exists:
++        raise RuntimeError(
++            "Database schema is not initialized; run the explicit init-db command"
++        )
++    applied = {row["version"] for row in conn.execute("SELECT version FROM schema_migrations")}
++    available = set(_migration_names())
++    unknown = sorted(applied - available - HISTORICAL_MIGRATION_IDENTITIES)
++    pending = sorted(available - applied)
++    if unknown or pending:
++        details = []
++        if unknown:
++            details.append("unknown applied identities: " + ", ".join(unknown))
++        if pending:
++            details.append("pending migrations: " + ", ".join(pending))
++        raise RuntimeError(
++            "Database schema is incompatible with this code; "
++            "; ".join(details) + ". Run explicit init-db only after review."
++        )
++
++
++def apply_migrations(conn: sqlite3.Connection) -> None:
++    """Apply visible migrations only when called through an explicit action."""
++
++    if conn.execute("PRAGMA query_only").fetchone()[0]:
++        raise RuntimeError("Cannot apply migrations through a read-only connection")
+     with _migration_lock(conn):
+         conn.execute(
+             "CREATE TABLE IF NOT EXISTS schema_migrations "
+             "(version TEXT PRIMARY KEY, applied_at_utc TEXT NOT NULL)"
+         )
+-        applied = {
+-            row["version"]
+-            for row in conn.execute("SELECT version FROM schema_migrations")
+-        }
++        applied = {row["version"] for row in conn.execute("SELECT version FROM schema_migrations")}
++        unknown = sorted(applied - set(_migration_names()) - HISTORICAL_MIGRATION_IDENTITIES)
++        if unknown:
++            raise RuntimeError(
++                "Cannot migrate with unknown applied identities: " + ", ".join(unknown)
++            )
+         for migration in sorted(Path(MIGRATIONS_PATH).glob("*.sql")):
+             if migration.name in applied:
+                 continue
+@@ -62,3 +120,18 @@
+                     "INSERT INTO schema_migrations(version, applied_at_utc) VALUES (?, ?)",
+                     (migration.name, datetime.now(timezone.utc).isoformat()),
+                 )
++
++
++def init_db(conn: sqlite3.Connection, *, apply_migrations: bool = False) -> None:
++    """Compatibility facade: check by default, migrate only with explicit opt-in."""
++
++    if apply_migrations:
++        apply_migrations_to_db(conn)
++    else:
++        check_schema_compatibility(conn)
++
++
++def apply_migrations_to_db(conn: sqlite3.Connection) -> None:
++    """Named internal target to avoid shadowing the public keyword argument."""
++
++    apply_migrations(conn)
+diff --git a/scrapper/tests/database_fixtures.py b/scrapper/tests/database_fixtures.py
+new file mode 100644
+--- /dev/null
++++ b/scrapper/tests/database_fixtures.py
+@@ -0,0 +1,14 @@
++"""Explicit schema preparation for disposable workflow test databases."""
++
++from pathlib import Path
++from scrapper.db.database import connect, init_db
++
++def prepare_database(path: Path) -> None:
++    """Prepare an absent fixture DB before running a workflow; retain existing DBs."""
++    if Path(path).exists():
++        return
++    conn = connect(path)
++    try:
++        init_db(conn, apply_migrations=True)
++    finally:
++        conn.close()
+diff --git a/scrapper/tests/test_collection_scope.py b/scrapper/tests/test_collection_scope.py
+--- a/scrapper/tests/test_collection_scope.py
++++ b/scrapper/tests/test_collection_scope.py
+@@ -1,3 +1,5 @@
++
++from scrapper.tests.database_fixtures import prepare_database
+ import json
+ import sqlite3
+ import tempfile
+@@ -22,6 +24,7 @@
+         self.tmp=tempfile.TemporaryDirectory(); self.addCleanup(self.tmp.cleanup)
+         self.root=Path(self.tmp.name); self.db=self.root/'test.db'
+         fixture=self.root/'screen.html'; fixture.write_bytes(screen_html().replace(b'/consolidated/',b'/'))
++        prepare_database(self.db)
+         discover_screener_results(query_role='scope_test',query='x',fixture=fixture,
+                                   db_path=self.db,snapshot_root=self.root/'snapshots')
+         self.conn=connect(self.db); self.addCleanup(self.conn.close)
+diff --git a/scrapper/tests/test_credit_rating_acquisition.py b/scrapper/tests/test_credit_rating_acquisition.py
+--- a/scrapper/tests/test_credit_rating_acquisition.py
++++ b/scrapper/tests/test_credit_rating_acquisition.py
+@@ -87,7 +87,7 @@
+         self.root = Path(self.temp.name)
+         self.db_path = self.root / "scraper.db"
+         self.conn = connect(self.db_path)
+-        init_db(self.conn)
++        init_db(self.conn, apply_migrations=True)
+         blob_path = self.root / "company.html"
+         body = b"<html><body>accepted company page</body></html>"
+         blob_path.write_bytes(body)
+@@ -544,7 +544,7 @@
+                     WHERE version='044_crisilratings_and_recording_safety.sql'"""
+             )
+ 
+-        init_db(self.conn)
++        init_db(self.conn, apply_migrations=True)
+ 
+         row = self.conn.execute(
+             """SELECT status, last_result_status FROM artifact_download_queue
+diff --git a/scrapper/tests/test_d01_document_discovery.py b/scrapper/tests/test_d01_document_discovery.py
+--- a/scrapper/tests/test_d01_document_discovery.py
++++ b/scrapper/tests/test_d01_document_discovery.py
+@@ -90,7 +90,7 @@
+     def test_primary_paths_and_screener_crosscheck_persist_idempotently(self) -> None:
+         conn = connect(self.db_path)
+         try:
+-            init_db(conn)
++            init_db(conn, apply_migrations=True)
+             first = persist_discovery_plan(
+                 conn,
+                 self.plan,
+@@ -180,7 +180,7 @@
+     def test_content_rows_are_immutable_and_only_preferred_pointer_moves(self) -> None:
+         conn = connect(self.db_path)
+         try:
+-            init_db(conn)
++            init_db(conn, apply_migrations=True)
+             persisted = persist_discovery_plan(
+                 conn,
+                 self.plan,
+diff --git a/scrapper/tests/test_d02_document_downloader.py b/scrapper/tests/test_d02_document_downloader.py
+--- a/scrapper/tests/test_d02_document_downloader.py
++++ b/scrapper/tests/test_d02_document_downloader.py
+@@ -111,7 +111,7 @@
+         self.snapshots = self.root / "snapshots"
+         self.output = self.root / "download-report.json"
+         self.conn = connect(self.db_path)
+-        init_db(self.conn)
++        init_db(self.conn, apply_migrations=True)
+         plan = build_discovery_plan(
+             DISCOVERY_MANIFEST, requested_symbol="LAURUSLABS"
+         )
+diff --git a/scrapper/tests/test_d03_document_extraction.py b/scrapper/tests/test_d03_document_extraction.py
+--- a/scrapper/tests/test_d03_document_extraction.py
++++ b/scrapper/tests/test_d03_document_extraction.py
+@@ -45,7 +45,7 @@
+         self.db_path = self.root / "scraper.db"
+         conn = connect(self.db_path)
+         try:
+-            init_db(conn)
++            init_db(conn, apply_migrations=True)
+             company_id = int(
+                 conn.execute(
+                     "INSERT INTO companies(current_legal_name, status) VALUES ('Fixture Limited', 'active')"
+diff --git a/scrapper/tests/test_d04_credit_rating_normalization.py b/scrapper/tests/test_d04_credit_rating_normalization.py
+--- a/scrapper/tests/test_d04_credit_rating_normalization.py
++++ b/scrapper/tests/test_d04_credit_rating_normalization.py
+@@ -42,7 +42,7 @@
+         self.db_path = self.root / "scraper.db"
+         conn = connect(self.db_path)
+         try:
+-            init_db(conn)
++            init_db(conn, apply_migrations=True)
+             self.company_id = int(
+                 conn.execute(
+                     "INSERT INTO companies(current_legal_name, status) "
+diff --git a/scrapper/tests/test_d05_official_transcript.py b/scrapper/tests/test_d05_official_transcript.py
+--- a/scrapper/tests/test_d05_official_transcript.py
++++ b/scrapper/tests/test_d05_official_transcript.py
+@@ -40,7 +40,7 @@
+         self.db_path = self.root / "scraper.db"
+         conn = connect(self.db_path)
+         try:
+-            init_db(conn)
++            init_db(conn, apply_migrations=True)
+             self.company_id = int(
+                 conn.execute(
+                     "INSERT INTO companies(current_legal_name, status) "
+diff --git a/scrapper/tests/test_d06_recording_normalization.py b/scrapper/tests/test_d06_recording_normalization.py
+--- a/scrapper/tests/test_d06_recording_normalization.py
++++ b/scrapper/tests/test_d06_recording_normalization.py
+@@ -78,7 +78,7 @@
+         self.db_path = self.root / "scraper.db"
+         conn = connect(self.db_path)
+         try:
+-            init_db(conn)
++            init_db(conn, apply_migrations=True)
+             self.company_id = int(
+                 conn.execute(
+                     "INSERT INTO companies(current_legal_name, status) "
+diff --git a/scrapper/tests/test_d07_machine_transcription.py b/scrapper/tests/test_d07_machine_transcription.py
+--- a/scrapper/tests/test_d07_machine_transcription.py
++++ b/scrapper/tests/test_d07_machine_transcription.py
+@@ -119,7 +119,7 @@
+         self.db_path = self.root / "scraper.db"
+         conn = connect(self.db_path)
+         try:
+-            init_db(conn)
++            init_db(conn, apply_migrations=True)
+             self.company_id = int(
+                 conn.execute(
+                     "INSERT INTO companies(current_legal_name, status) "
+diff --git a/scrapper/tests/test_d08_document_quality.py b/scrapper/tests/test_d08_document_quality.py
+--- a/scrapper/tests/test_d08_document_quality.py
++++ b/scrapper/tests/test_d08_document_quality.py
+@@ -50,7 +50,7 @@
+         self.snapshot_root = self.root / "snapshots"
+         conn = connect(self.db_path)
+         try:
+-            init_db(conn)
++            init_db(conn, apply_migrations=True)
+             persisted = persist_discovery_plan(
+                 conn,
+                 build_discovery_plan(DISCOVERY, requested_symbol="LAURUSLABS"),
+diff --git a/scrapper/tests/test_d09_artifact_reconciliation.py b/scrapper/tests/test_d09_artifact_reconciliation.py
+--- a/scrapper/tests/test_d09_artifact_reconciliation.py
++++ b/scrapper/tests/test_d09_artifact_reconciliation.py
+@@ -193,7 +193,7 @@
+         self.policy = RetryPolicy(offsets_hours=(2, 6, 12), claim_lease_seconds=60)
+         conn = connect(self.db_path)
+         try:
+-            init_db(conn)
++            init_db(conn, apply_migrations=True)
+             self.company_id = int(
+                 conn.execute(
+                     "INSERT INTO companies(current_legal_name, status) "
+@@ -572,7 +572,7 @@
+                     "DELETE FROM schema_migrations WHERE version=?",
+                     ("060_rebase_all_overdue_concall_refresh.sql",),
+                 )
+-            init_db(conn)
++            init_db(conn, apply_migrations=True)
+             row = conn.execute(
+                 """SELECT attempt_count, next_check_at_utc, terminal_reason
+                      FROM artifact_expectations WHERE expectation_id=?""",
+diff --git a/scrapper/tests/test_da06_d09_repair.py b/scrapper/tests/test_da06_d09_repair.py
+--- a/scrapper/tests/test_da06_d09_repair.py
++++ b/scrapper/tests/test_da06_d09_repair.py
+@@ -27,7 +27,7 @@
+         self.temp = tempfile.TemporaryDirectory()
+         self.root = Path(self.temp.name)
+         self.conn = connect(self.root / "d09-repair.db")
+-        init_db(self.conn)
++        init_db(self.conn, apply_migrations=True)
+         self.company_id = int(
+             self.conn.execute(
+                 "INSERT INTO companies(current_legal_name,status) VALUES ('Fixture Limited','active')"
+diff --git a/scrapper/tests/test_da06_recovery_attachment.py b/scrapper/tests/test_da06_recovery_attachment.py
+--- a/scrapper/tests/test_da06_recovery_attachment.py
++++ b/scrapper/tests/test_da06_recovery_attachment.py
+@@ -80,7 +80,7 @@
+         self.temp = tempfile.TemporaryDirectory()
+         self.root = Path(self.temp.name)
+         self.conn = connect(self.root / "attachment.db")
+-        init_db(self.conn)
++        init_db(self.conn, apply_migrations=True)
+         self.artifact_id, self.blocked_source_id = self._seed_blocked_artifact()
+         build_recovery_targets(self.conn, observed_at_utc=NOW)
+         target_row = self.conn.execute(
+diff --git a/scrapper/tests/test_da06_recovery_registry.py b/scrapper/tests/test_da06_recovery_registry.py
+--- a/scrapper/tests/test_da06_recovery_registry.py
++++ b/scrapper/tests/test_da06_recovery_registry.py
+@@ -20,7 +20,7 @@
+         self.temp = tempfile.TemporaryDirectory()
+         self.root = Path(self.temp.name)
+         self.conn = connect(self.root / "recovery.db")
+-        init_db(self.conn)
++        init_db(self.conn, apply_migrations=True)
+ 
+     def tearDown(self) -> None:
+         self.conn.close()
+diff --git a/scrapper/tests/test_database_migration_controls.py b/scrapper/tests/test_database_migration_controls.py
+new file mode 100644
+--- /dev/null
++++ b/scrapper/tests/test_database_migration_controls.py
+@@ -0,0 +1,118 @@
++"""C04.2 contract: compatibility checks are inert; migrations are explicit."""
++
++import sqlite3
++import tempfile
++import unittest
++from pathlib import Path
++from unittest import mock
++
++from scrapper.db import database
++
++
++class DatabaseMigrationControlTests(unittest.TestCase):
++    def setUp(self) -> None:
++        self.temp = tempfile.TemporaryDirectory()
++        self.addCleanup(self.temp.cleanup)
++        self.root = Path(self.temp.name)
++        self.migrations = self.root / "migrations"
++        self.migrations.mkdir()
++        self.db_path = self.root / "service.sqlite"
++        self.patch_migrations = mock.patch.object(database, "MIGRATIONS_PATH", self.migrations)
++        self.patch_dirs = mock.patch.object(database, "ensure_dirs")
++        self.patch_migrations.start()
++        self.patch_dirs.start()
++        self.addCleanup(self.patch_migrations.stop)
++        self.addCleanup(self.patch_dirs.stop)
++
++    def migration(self, filename: str, sql: str) -> None:
++        (self.migrations / filename).write_text(sql, encoding="utf-8")
++
++    def connect(self) -> sqlite3.Connection:
++        return database.connect(self.db_path)
++
++    def test_default_init_checks_without_creating_ledger_or_applying_sql(self) -> None:
++        self.migration("001_initial.sql", "CREATE TABLE initial(id INTEGER);\n")
++        conn = self.connect()
++        self.addCleanup(conn.close)
++
++        with self.assertRaisesRegex(RuntimeError, "not initialized"):
++            database.init_db(conn)
++
++        tables = {row[0] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")}
++        self.assertEqual(tables, set())
++
++    def test_only_explicit_apply_runs_newly_visible_migration(self) -> None:
++        self.migration("001_initial.sql", "CREATE TABLE initial(id INTEGER);\n")
++        conn = self.connect()
++        self.addCleanup(conn.close)
++        database.init_db(conn, apply_migrations=True)
++        self.migration("002_later.sql", "CREATE TABLE later(id INTEGER);\n")
++
++        with self.assertRaisesRegex(RuntimeError, "pending migrations: 002_later.sql"):
++            database.init_db(conn)
++        self.assertIsNone(
++            conn.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='later'").fetchone()
++        )
++        self.assertEqual(conn.execute("SELECT COUNT(*) FROM schema_migrations").fetchone()[0], 1)
++
++        database.init_db(conn, apply_migrations=True)
++        self.assertIsNotNone(
++            conn.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='later'").fetchone()
++        )
++        self.assertEqual(conn.execute("SELECT COUNT(*) FROM schema_migrations").fetchone()[0], 2)
++
++    def test_historical_a2_identity_is_accepted_by_full_filename(self) -> None:
++        self.migration("065_operator_browser_rating_recovery.sql", "CREATE TABLE browser_065(id INTEGER);\n")
++        conn = self.connect()
++        self.addCleanup(conn.close)
++        database.init_db(conn, apply_migrations=True)
++        conn.execute(
++            "INSERT INTO schema_migrations(version, applied_at_utc) VALUES (?, ?)",
++            ("065_exchange_source_access.sql", "2026-09-29T00:00:00+00:00"),
++        )
++
++        database.check_schema_compatibility(conn)
++        applied = {row[0] for row in conn.execute("SELECT version FROM schema_migrations")}
++        self.assertEqual(
++            applied,
++            {"065_operator_browser_rating_recovery.sql", "065_exchange_source_access.sql"},
++        )
++
++    def test_unknown_applied_identity_blocks_compatibility_and_migration(self) -> None:
++        self.migration("001_initial.sql", "CREATE TABLE initial(id INTEGER);\n")
++        conn = self.connect()
++        self.addCleanup(conn.close)
++        conn.execute(
++            "CREATE TABLE schema_migrations(version TEXT PRIMARY KEY, applied_at_utc TEXT NOT NULL)"
++        )
++        conn.execute(
++            "INSERT INTO schema_migrations(version, applied_at_utc) VALUES ('099_unknown.sql', '2000')"
++        )
++
++        with self.assertRaisesRegex(RuntimeError, "unknown applied identities"):
++            database.check_schema_compatibility(conn)
++        with self.assertRaisesRegex(RuntimeError, "unknown applied identities"):
++            database.apply_migrations(conn)
++
++    def test_read_only_connection_cannot_write_or_create_missing_database(self) -> None:
++        with sqlite3.connect(self.db_path) as writer:
++            writer.execute("CREATE TABLE sample(value TEXT)")
++        conn = database.connect(self.db_path, read_only=True)
++        self.addCleanup(conn.close)
++
++        with self.assertRaises(sqlite3.OperationalError):
++            conn.execute("INSERT INTO sample(value) VALUES ('no')")
++        with self.assertRaisesRegex(RuntimeError, "not initialized"):
++            database.init_db(conn)
++        with self.assertRaisesRegex(RuntimeError, "read-only connection"):
++            database.init_db(conn, apply_migrations=True)
++        self.assertEqual(conn.execute("SELECT COUNT(*) FROM sample").fetchone()[0], 0)
++
++        missing = self.root / "missing.sqlite"
++        with self.assertRaises(FileNotFoundError):
++            database.connect(missing, read_only=True)
++        self.assertFalse(missing.exists())
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/scrapper/tests/test_document_download_queue.py b/scrapper/tests/test_document_download_queue.py
+--- a/scrapper/tests/test_document_download_queue.py
++++ b/scrapper/tests/test_document_download_queue.py
+@@ -106,7 +106,7 @@
+         self.root = Path(self.temp.name)
+         self.db_path = self.root / "scraper.db"
+         self.conn = connect(self.db_path)
+-        init_db(self.conn)
++        init_db(self.conn, apply_migrations=True)
+         persist_discovery_plan(
+             self.conn,
+             build_discovery_plan(MANIFEST, requested_symbol="LAURUSLABS"),
+@@ -751,7 +751,7 @@
+                     WHERE version='043_generic_download_host_policy.sql'"""
+             )
+ 
+-        init_db(self.conn)
++        init_db(self.conn, apply_migrations=True)
+ 
+         row = self.conn.execute(
+             """SELECT status, next_attempt_at_utc, lease_owner,
+@@ -790,7 +790,7 @@
+         specialized = queue_credit_rating_downloads(self.conn, created_at_utc=NOW)
+         self.assertEqual(specialized["PENDING"], 1)
+ 
+-        init_db(self.conn)
++        init_db(self.conn, apply_migrations=True)
+ 
+         row = self.conn.execute(
+             """SELECT status, next_attempt_at_utc, lease_owner,
+diff --git a/scrapper/tests/test_document_download_recovery.py b/scrapper/tests/test_document_download_recovery.py
+--- a/scrapper/tests/test_document_download_recovery.py
++++ b/scrapper/tests/test_document_download_recovery.py
+@@ -37,7 +37,7 @@
+         self.temp = tempfile.TemporaryDirectory()
+         self.root = Path(self.temp.name)
+         self.conn = connect(self.root / "scraper.db")
+-        init_db(self.conn)
++        init_db(self.conn, apply_migrations=True)
+         persist_discovery_plan(
+             self.conn,
+             build_discovery_plan(MANIFEST, requested_symbol="LAURUSLABS"),
+diff --git a/scrapper/tests/test_e01_exchange_universe.py b/scrapper/tests/test_e01_exchange_universe.py
+--- a/scrapper/tests/test_e01_exchange_universe.py
++++ b/scrapper/tests/test_e01_exchange_universe.py
+@@ -1,6 +1,8 @@
+ """Offline tests for the exchange universe and result-discovery layer."""
+ 
+ from __future__ import annotations
++
++from scrapper.tests.database_fixtures import prepare_database
+ 
+ import json
+ import sqlite3
+@@ -375,6 +377,8 @@
+         return path
+ 
+     def refresh(self, dataset: str, content: bytes, effective_date: str, **kwargs):
++        if not kwargs.get("dry_run", False):
++            prepare_database(self.db)
+         return refresh_exchange_universe(
+             dataset=dataset,
+             file=self.write(f"{dataset}-{effective_date}.csv", content),
+@@ -386,6 +390,8 @@
+         )
+ 
+     def discover(self, dataset: str, content: bytes, effective_date: str, **kwargs):
++        if not kwargs.get("dry_run", False):
++            prepare_database(self.db)
+         return discover_exchange_results(
+             dataset=dataset,
+             file=self.write(f"{dataset}-{effective_date}.csv", content),
+@@ -399,7 +405,7 @@
+     def rows(self, sql: str, *parameters):
+         conn = connect(self.db)
+         try:
+-            init_db(conn)
++            init_db(conn, apply_migrations=True)
+             return [dict(row) for row in conn.execute(sql, parameters)]
+         finally:
+             conn.close()
+@@ -712,7 +718,7 @@
+         self.build_universe()
+         conn = connect(self.db)
+         try:
+-            init_db(conn)
++            init_db(conn, apply_migrations=True)
+             with conn:
+                 conn.execute(
+                     """INSERT INTO screener_company_collection_state
+@@ -804,7 +810,7 @@
+         self.discover("nse_financial_results", NSE_RESULTS, "2026-08-05")
+         conn = connect(self.db)
+         try:
+-            init_db(conn)
++            init_db(conn, apply_migrations=True)
+             claimed = claim_due_companies(
+                 conn, now_utc="2026-12-01T00:00:00+00:00", limit=5, worker_id="test"
+             )
+@@ -866,7 +872,7 @@
+         self.discover("nse_financial_results", NSE_RESULTS, "2026-08-05")
+         conn = connect(self.db)
+         try:
+-            init_db(conn)
++            init_db(conn, apply_migrations=True)
+             coverage = build_exchange_universe_coverage(conn)
+             screener = build_screener_discovery_coverage(conn)
+         finally:
+@@ -893,7 +899,7 @@
+         self.build_universe()
+         conn = connect(self.db)
+         try:
+-            init_db(conn)
++            init_db(conn, apply_migrations=True)
+             missing = resolve_screener_path(
+                 conn, exchange="NSE", exchange_key="NOPE", reporting_scope="consolidated"
+             )
+@@ -962,7 +968,7 @@
+ 
+             conn = connect(db_path)
+             try:
+-                init_db(conn)
++                init_db(conn, apply_migrations=True)
+                 row = conn.execute(
+                     "SELECT * FROM screener_company_queue WHERE queue_item_id=7"
+                 ).fetchone()
+diff --git a/scrapper/tests/test_e02_snapshot_guard.py b/scrapper/tests/test_e02_snapshot_guard.py
+--- a/scrapper/tests/test_e02_snapshot_guard.py
++++ b/scrapper/tests/test_e02_snapshot_guard.py
+@@ -6,6 +6,8 @@
+ """
+ 
+ from __future__ import annotations
++
++from scrapper.tests.database_fixtures import prepare_database
+ 
+ import tempfile
+ import unittest
+@@ -352,6 +354,8 @@
+         self, dataset: str, content: bytes, effective_date: str, **kwargs
+     ) -> dict:
+         """Ingest as a fetched official file, which is what automation does."""
++        if not kwargs.get("dry_run", False):
++            prepare_database(self.db)
+         return refresh_exchange_universe(
+             dataset=dataset,
+             url=f"https://nsearchives.nseindia.com/content/equities/{dataset}.csv",
+@@ -366,7 +370,7 @@
+     def rows(self, sql: str, *parameters) -> list[dict]:
+         conn = connect(self.db)
+         try:
+-            init_db(conn)
++            init_db(conn, apply_migrations=True)
+             return [dict(row) for row in conn.execute(sql, parameters)]
+         finally:
+             conn.close()
+@@ -464,6 +468,7 @@
+             "ALPHA,Alpha Industries Limited,Capital Goods,Quarterly,30-JUN-2026,"
+             "Un-Audited,Non-cumulative,Consolidated,05-Aug-2026 18:30:00\n"
+         ).encode()
++        prepare_database(self.db)
+         payload = discover_exchange_results(
+             dataset="nse_financial_results",
+             url="https://nsearchives.nseindia.com/content/equities/results.csv",
+@@ -590,6 +595,7 @@
+ 
+     def operator_import(self, content: bytes, effective_date: str) -> dict:
+         """Ingest as a hand-carried file, which is how the registry was seeded."""
++        prepare_database(self.db)
+         return refresh_exchange_universe(
+             dataset="nse_equity_master",
+             file=self.write(f"manual-{effective_date}.csv", content),
+@@ -704,7 +710,7 @@
+ 
+         conn = connect(self.db)
+         try:
+-            init_db(conn)
++            init_db(conn, apply_migrations=True)
+             blocked = resolve_screener_path(
+                 conn, exchange="NSE", exchange_key="ALPHA",
+                 reporting_scope="consolidated",
+@@ -732,7 +738,7 @@
+ 
+         conn = connect(self.db)
+         try:
+-            init_db(conn)
++            init_db(conn, apply_migrations=True)
+             conflict_id = open_identity_conflicts(conn)[0]["conflict_id"]
+             outcome = resolve_identity_conflict(
+                 conn, conflict_id=conflict_id, resolution="kept_existing",
+@@ -765,7 +771,7 @@
+ 
+         conn = connect(self.db)
+         try:
+-            init_db(conn)
++            init_db(conn, apply_migrations=True)
+             conflict_id = open_identity_conflicts(conn)[0]["conflict_id"]
+             outcome = resolve_identity_conflict(
+                 conn, conflict_id=conflict_id, resolution="accepted_official",
+@@ -798,7 +804,7 @@
+         self.refresh("nse_equity_master", restated, "2026-08-02")
+         conn = connect(self.db)
+         try:
+-            init_db(conn)
++            init_db(conn, apply_migrations=True)
+             conflict_id = open_identity_conflicts(conn)[0]["conflict_id"]
+             resolve_identity_conflict(
+                 conn, conflict_id=conflict_id, resolution="dismissed",
+diff --git a/scrapper/tests/test_e05_reconciliation_report.py b/scrapper/tests/test_e05_reconciliation_report.py
+--- a/scrapper/tests/test_e05_reconciliation_report.py
++++ b/scrapper/tests/test_e05_reconciliation_report.py
+@@ -7,6 +7,8 @@
+ """
+ 
+ from __future__ import annotations
++
++from scrapper.tests.database_fixtures import prepare_database
+ 
+ import json
+ import unittest
+@@ -48,6 +50,7 @@
+         path.write_bytes(content)
+         from scrapper.pipeline.exchange_universe import refresh_exchange_universe
+ 
++        prepare_database(self.db)
+         return refresh_exchange_universe(
+             dataset=dataset, file=path, effective_date=effective_date,
+             db_path=self.db, snapshot_root=self.snapshots, now_utc=self.now,
+@@ -57,7 +60,7 @@
+     def report(self, snapshot_id: int | None = None) -> dict:
+         conn = connect(self.db)
+         try:
+-            init_db(conn)
++            init_db(conn, apply_migrations=True)
+             return build_exchange_reconciliation_report(conn, snapshot_id)
+         finally:
+             conn.close()
+@@ -209,7 +212,7 @@
+ 
+         conn = connect(self.db)
+         try:
+-            init_db(conn)
++            init_db(conn, apply_migrations=True)
+             resolve_identity_conflict(
+                 conn, conflict_id=conflict_id, resolution="kept_existing",
+                 now_utc=self.now(),
+@@ -227,7 +230,7 @@
+ 
+         conn = connect(self.db)
+         try:
+-            init_db(conn)
++            init_db(conn, apply_migrations=True)
+             first = write_exchange_reconciliation_report(conn, output).read_text()
+             second = write_exchange_reconciliation_report(conn, output).read_text()
+         finally:
+diff --git a/scrapper/tests/test_e06_scheduler.py b/scrapper/tests/test_e06_scheduler.py
+--- a/scrapper/tests/test_e06_scheduler.py
++++ b/scrapper/tests/test_e06_scheduler.py
+@@ -7,6 +7,8 @@
+ """
+ 
+ from __future__ import annotations
++
++from scrapper.tests.database_fixtures import prepare_database
+ 
+ import tempfile
+ import unittest
+@@ -143,6 +145,7 @@
+         self, number: int, content: bytes | Exception, *, day: str = "2026-08-06", **kwargs
+     ) -> dict:
+         self.today, self.tick = day, 0
++        prepare_database(self.db)
+         return run_attempt(
+             attempt=number,
+             scheduled_for=day,
+@@ -161,7 +164,7 @@
+     def rows(self, sql: str, *parameters) -> list[dict]:
+         conn = connect(self.db)
+         try:
+-            init_db(conn)
++            init_db(conn, apply_migrations=True)
+             return [dict(row) for row in conn.execute(sql, parameters)]
+         finally:
+             conn.close()
+@@ -501,6 +504,7 @@
+             blocking.BlockingScheduler,
+             "start", side_effect=KeyboardInterrupt,
+         ):
++            prepare_database(self.db)
+             payload = scheduler._serve(
+                 db_path=self.db, snapshot_root=self.snapshots, now_utc=self.now,
+                 fetcher=self.fetcher(DAY_ONE),
+@@ -527,6 +531,7 @@
+             blocking.BlockingScheduler,
+             "start", side_effect=KeyboardInterrupt,
+         ):
++            prepare_database(self.db)
+             payload = scheduler._serve(
+                 db_path=self.db, snapshot_root=self.snapshots, now_utc=self.now,
+                 fetcher=self.fetcher(DAY_ONE),
+@@ -561,7 +566,7 @@
+     def migrated(self, rows: list[tuple[str, int, str]]) -> list[dict]:
+         conn = connect(self.db)
+         try:
+-            init_db(conn)
++            init_db(conn, apply_migrations=True)
+             with conn:
+                 conn.execute("DROP TABLE exchange_schedule_runs")
+                 conn.execute(self.OLD_TABLE)
+@@ -629,6 +634,7 @@
+     def test_it_writes_both_reports_and_reports_the_conflict_state(self) -> None:
+         self.attempt(1, DAY_ONE)
+ 
++        prepare_database(self.db)
+         payload = run_weekly_report(
+             db_path=self.db, output_root=self.exports, now_utc=self.now
+         )
+diff --git a/scrapper/tests/test_final_acquisition_gate.py b/scrapper/tests/test_final_acquisition_gate.py
+--- a/scrapper/tests/test_final_acquisition_gate.py
++++ b/scrapper/tests/test_final_acquisition_gate.py
+@@ -103,7 +103,7 @@
+         self.reports = _green_reports()
+         self.conn = connect(self.root / "gate.db")
+         self.addCleanup(self.conn.close)
+-        init_db(self.conn)
++        init_db(self.conn, apply_migrations=True)
+         self._build_corpus()
+ 
+     def _build_corpus(self) -> None:
+diff --git a/scrapper/tests/test_html_pdf_rendering.py b/scrapper/tests/test_html_pdf_rendering.py
+--- a/scrapper/tests/test_html_pdf_rendering.py
++++ b/scrapper/tests/test_html_pdf_rendering.py
+@@ -65,7 +65,7 @@
+             root = Path(temporary)
+             conn = connect(root / "scraper.db")
+             try:
+-                init_db(conn)
++                init_db(conn, apply_migrations=True)
+                 with conn:
+                     company_id = int(
+                         conn.execute(
+diff --git a/scrapper/tests/test_m01_import_mf.py b/scrapper/tests/test_m01_import_mf.py
+--- a/scrapper/tests/test_m01_import_mf.py
++++ b/scrapper/tests/test_m01_import_mf.py
+@@ -1,4 +1,6 @@
+ from __future__ import annotations
++
++from scrapper.tests.database_fixtures import prepare_database
+ 
+ import contextlib
+ import io
+@@ -97,6 +99,7 @@
+             db_path=self.db_path, snapshot_root=self.snapshot_root,
+             import_root=self.import_root,
+         )
++        prepare_database(self.db_path)
+         first = execute_import(
+             proposals, db_path=self.db_path,
+             observed_at_utc="2026-08-05T10:00:00+00:00",
+@@ -109,6 +112,7 @@
+         )
+         self.assertEqual(self.db_path.read_bytes(), database_before_dry_run)
+         self.assertEqual(second_proposals[0].proposed_action, "duplicate_observation")
++        prepare_database(self.db_path)
+         second = execute_import(
+             second_proposals, db_path=self.db_path,
+             observed_at_utc="2026-08-05T10:01:00+00:00",
+@@ -183,6 +187,7 @@
+             db_path=self.db_path, snapshot_root=self.snapshot_root,
+             import_root=self.import_root,
+         )
++        prepare_database(self.db_path)
+         result = execute_import(
+             proposals, db_path=self.db_path,
+             observed_at_utc="2026-08-05T11:00:00+00:00",
+@@ -263,7 +268,7 @@
+     def test_empty_database_has_all_m01_tables_and_pointer(self) -> None:
+         conn = connect(self.db_path)
+         try:
+-            init_db(conn)
++            init_db(conn, apply_migrations=True)
+             tables = {
+                 row[0]
+                 for row in conn.execute(
+diff --git a/scrapper/tests/test_m02_ppfas_workbook.py b/scrapper/tests/test_m02_ppfas_workbook.py
+--- a/scrapper/tests/test_m02_ppfas_workbook.py
++++ b/scrapper/tests/test_m02_ppfas_workbook.py
+@@ -1,4 +1,6 @@
+ from __future__ import annotations
++
++from scrapper.tests.database_fixtures import prepare_database
+ 
+ import contextlib
+ import hashlib
+@@ -154,6 +156,7 @@
+             "publisher_manifest_allows_ooxml_xls_extension",
+             proposals[0].inspection.safety_checks,
+         )
++        prepare_database(db_path)
+         first = execute_import(
+             proposals, db_path=db_path, observed_at_utc="2026-08-05T01:00:00+00:00"
+         )
+@@ -163,6 +166,7 @@
+             import_root=self.root / "imports",
+         )
+         self.assertEqual(duplicate[0].proposed_action, "duplicate_observation")
++        prepare_database(db_path)
+         execute_import(
+             duplicate, db_path=db_path, observed_at_utc="2026-08-05T01:01:00+00:00"
+         )
+@@ -220,6 +224,7 @@
+                 )
+                 self.assertEqual(proposals[0].proposed_action, "quarantine")
+                 self.assertEqual(proposals[0].structure_error.code, error_code)
++                prepare_database(db_path)
+                 result = execute_import(proposals, db_path=db_path)
+                 self.assertEqual(result["files"][0]["import_state"], "quarantine")
+                 conn = connect(db_path)
+@@ -265,6 +270,7 @@
+                     import_root=self.root / error_code / "imports",
+                 )
+                 self.assertEqual(proposals[0].structure_error.code, error_code)
++                prepare_database(db_path)
+                 execute_import(proposals, db_path=db_path)
+                 conn = connect(db_path)
+                 try:
+diff --git a/scrapper/tests/test_m03_holdings_normalization.py b/scrapper/tests/test_m03_holdings_normalization.py
+--- a/scrapper/tests/test_m03_holdings_normalization.py
++++ b/scrapper/tests/test_m03_holdings_normalization.py
+@@ -1,4 +1,6 @@
+ from __future__ import annotations
++
++from scrapper.tests.database_fixtures import prepare_database
+ 
+ import json
+ import tempfile
+@@ -80,6 +82,7 @@
+             db_path=db_path, snapshot_root=self.root / suffix / "snapshots",
+             import_root=self.root / suffix / "imports",
+         )
++        prepare_database(db_path)
+         result = execute_import(
+             proposals, db_path=db_path, observed_at_utc="2026-08-05T01:00:00+00:00"
+         )
+diff --git a/scrapper/tests/test_m04_scheme_acceptance.py b/scrapper/tests/test_m04_scheme_acceptance.py
+--- a/scrapper/tests/test_m04_scheme_acceptance.py
++++ b/scrapper/tests/test_m04_scheme_acceptance.py
+@@ -1,4 +1,6 @@
+ from __future__ import annotations
++
++from scrapper.tests.database_fixtures import prepare_database
+ 
+ import json
+ import shutil
+@@ -79,6 +81,7 @@
+         )
+ 
+     def execute(self, proposals, timestamp: str):
++        prepare_database(self.db_path)
+         return execute_import(
+             proposals, db_path=self.db_path, observed_at_utc=timestamp,
+             export_root=self.export_root,
+diff --git a/scrapper/tests/test_m05_month_changes.py b/scrapper/tests/test_m05_month_changes.py
+--- a/scrapper/tests/test_m05_month_changes.py
++++ b/scrapper/tests/test_m05_month_changes.py
+@@ -20,7 +20,7 @@
+         self.temp = tempfile.TemporaryDirectory()
+         self.db_path = Path(self.temp.name) / "scraper.sqlite"
+         self.conn = connect(self.db_path)
+-        init_db(self.conn)
++        init_db(self.conn, apply_migrations=True)
+         self.fixture = json.loads(FIXTURE.read_text(encoding="utf-8"))
+         self.scheme_id = self._seed_scheme()
+         self.security_cases: dict[str, int] = {}
+@@ -300,7 +300,7 @@
+                     / f"scraper-{middle_state or 'missing'}.sqlite"
+                 )
+                 self.conn = connect(self.db_path)
+-                init_db(self.conn)
++                init_db(self.conn, apply_migrations=True)
+                 self.scheme_id = self._seed_scheme()
+                 self.security_cases = {}
+                 prior = [{
+diff --git a/scrapper/tests/test_m06_stock_features.py b/scrapper/tests/test_m06_stock_features.py
+--- a/scrapper/tests/test_m06_stock_features.py
++++ b/scrapper/tests/test_m06_stock_features.py
+@@ -22,7 +22,7 @@
+     def setUp(self) -> None:
+         self.temp = tempfile.TemporaryDirectory()
+         self.conn = connect(Path(self.temp.name) / "scraper.sqlite")
+-        init_db(self.conn)
++        init_db(self.conn, apply_migrations=True)
+         self.fixture = json.loads(FIXTURE.read_text(encoding="utf-8"))
+         self.scheme_ids: dict[str, int] = {}
+         self.security_ids: dict[str, int] = {}
+diff --git a/scrapper/tests/test_m07_vertical_slice.py b/scrapper/tests/test_m07_vertical_slice.py
+--- a/scrapper/tests/test_m07_vertical_slice.py
++++ b/scrapper/tests/test_m07_vertical_slice.py
+@@ -45,7 +45,7 @@
+         with tempfile.TemporaryDirectory() as temporary:
+             conn = connect(Path(temporary) / "scraper.sqlite")
+             try:
+-                init_db(conn)
++                init_db(conn, apply_migrations=True)
+                 report = build_mf_coverage_report(
+                     conn, publisher="ppfas", through_month="2026-06"
+                 )
+diff --git a/scrapper/tests/test_m08_generalization.py b/scrapper/tests/test_m08_generalization.py
+--- a/scrapper/tests/test_m08_generalization.py
++++ b/scrapper/tests/test_m08_generalization.py
+@@ -1,4 +1,6 @@
+ from __future__ import annotations
++
++from scrapper.tests.database_fixtures import prepare_database
+ 
+ import hashlib
+ import json
+@@ -106,6 +108,7 @@
+                         snapshot_root=temporary_root / "snapshots",
+                         import_root=temporary_root / "imports",
+                     )
++                    prepare_database(db_path)
+                     result = execute_import(
+                         proposals,
+                         db_path=db_path,
+diff --git a/scrapper/tests/test_ml_reporting_contract.py b/scrapper/tests/test_ml_reporting_contract.py
+--- a/scrapper/tests/test_ml_reporting_contract.py
++++ b/scrapper/tests/test_ml_reporting_contract.py
+@@ -25,7 +25,7 @@
+         with tempfile.TemporaryDirectory() as directory:
+             conn = connect(Path(directory) / "fresh.sqlite")
+             try:
+-                init_db(conn)
++                init_db(conn, apply_migrations=True)
+                 with conn:
+                     # Simulate a legacy/corrupt database written before the
+                     # database guard existed; the ML boundary must still fail.
+@@ -51,7 +51,7 @@
+         with tempfile.TemporaryDirectory() as directory:
+             conn = connect(Path(directory) / "fresh.sqlite")
+             try:
+-                init_db(conn)
++                init_db(conn, apply_migrations=True)
+                 with self.assertRaises(sqlite3.IntegrityError):
+                     conn.execute(
+                         "INSERT INTO financial_observations(parse_id,reporting_scope,section_code,line_item_raw,row_position,period_label_raw,period_type,column_position,first_observed_at_utc,available_at_utc,availability_basis,display_value) VALUES (1,'consolidated','pnl','Sales',0,'Jun','quarterly',0,'x','x','first_observed','1')"
+diff --git a/scrapper/tests/test_p02_pilot.py b/scrapper/tests/test_p02_pilot.py
+--- a/scrapper/tests/test_p02_pilot.py
++++ b/scrapper/tests/test_p02_pilot.py
+@@ -1,4 +1,6 @@
+ from __future__ import annotations
++
++from scrapper.tests.database_fixtures import prepare_database
+ 
+ import hashlib
+ import json
+@@ -89,6 +91,7 @@
+                 )
+                 self.assertEqual(len(parsed_peer.observations), company["peers"])
+ 
++                prepare_database(db_path)
+                 result = ingest_screener_response(
+                     symbol,
+                     "consolidated",
+diff --git a/scrapper/tests/test_p03_trendlyne_pilot.py b/scrapper/tests/test_p03_trendlyne_pilot.py
+--- a/scrapper/tests/test_p03_trendlyne_pilot.py
++++ b/scrapper/tests/test_p03_trendlyne_pilot.py
+@@ -29,7 +29,7 @@
+         self.exports = root / "exports"
+         conn = connect(self.db_path)
+         try:
+-            init_db(conn)
++            init_db(conn, apply_migrations=True)
+         finally:
+             conn.close()
+ 
+diff --git a/scrapper/tests/test_quality_report.py b/scrapper/tests/test_quality_report.py
+--- a/scrapper/tests/test_quality_report.py
++++ b/scrapper/tests/test_quality_report.py
+@@ -1,4 +1,6 @@
+ from __future__ import annotations
++
++from scrapper.tests.database_fixtures import prepare_database
+ 
+ import hashlib
+ import json
+@@ -43,6 +45,7 @@
+         self.temp.cleanup()
+ 
+     def _screener(self, content: bytes, fetched_at: str) -> None:
++        prepare_database(self.db_path)
+         ingest_screener_response(
+             "LAURUSLABS",
+             "consolidated",
+@@ -55,6 +58,7 @@
+         )
+ 
+     def _trendlyne(self, content: bytes, fetched_at: str) -> None:
++        prepare_database(self.db_path)
+         ingest_trendlyne_response(
+             "RBA",
+             trendlyne_response(content),
+diff --git a/scrapper/tests/test_screener_discovery.py b/scrapper/tests/test_screener_discovery.py
+--- a/scrapper/tests/test_screener_discovery.py
++++ b/scrapper/tests/test_screener_discovery.py
+@@ -1,4 +1,6 @@
+ from __future__ import annotations
++
++from scrapper.tests.database_fixtures import prepare_database
+ 
+ import sqlite3
+ import re
+@@ -114,6 +116,7 @@
+             fixture = root / "screen.html"
+             fixture.write_bytes(screen_html())
+             db = root / "discovery.db"
++            prepare_database(db)
+             discover_screener_results(
+                 query_role="current_reporting_cycle", query="x", fixture=fixture,
+                 db_path=db, snapshot_root=root / "snapshots",
+@@ -143,6 +146,7 @@
+                 fetch_status="rejected",
+             )
+             with self.assertRaisesRegex(RuntimeError, "rejected before parsing"):
++                prepare_database(db)
+                 discover_screener_results(
+                     query_role="current_reporting_cycle",
+                     query="x",
+@@ -179,6 +183,7 @@
+             self.assertFalse(db.exists())
+             self.assertFalse(snapshots.exists())
+ 
++            prepare_database(db)
+             first = discover_screener_results(
+                 query_role="current_reporting_cycle",
+                 query="Last result date > 202605",
+@@ -186,6 +191,7 @@
+                 db_path=db,
+                 snapshot_root=snapshots,
+             )
++            prepare_database(db)
+             second = discover_screener_results(
+                 query_role="current_reporting_cycle",
+                 query="Last result date > 202605",
+@@ -209,6 +215,7 @@
+             fixture = root / "screen.html"
+             fixture.write_bytes(screen_html(result_count=1308, page_count=53))
+             db = root / "discovery.db"
++            prepare_database(db)
+             payload = discover_screener_results(
+                 query_role="current_reporting_cycle",
+                 query="Last result date > 202605",
+@@ -239,6 +246,7 @@
+             fixture = root / "screen.html"
+             fixture.write_bytes(screen_html())
+             db = root / "discovery.db"
++            prepare_database(db)
+             discover_screener_results(
+                 query_role="current_reporting_cycle", query="x", fixture=fixture,
+                 db_path=db, snapshot_root=root / "snapshots",
+@@ -272,6 +280,7 @@
+         fixture = root / "screen.html"
+         fixture.write_bytes(screen_html())
+         db = root / "discovery.db"
++        prepare_database(db)
+         discover_screener_results(
+             query_role="current_reporting_cycle", query="x", fixture=fixture,
+             db_path=db, snapshot_root=root / "snapshots",
+@@ -311,6 +320,7 @@
+             )
+             self.assertEqual(stuck["summary"]["due_count"], 0)
+ 
++            prepare_database(db)
+             payload = requeue_failed_screener_companies(
+                 db_path=db, now_utc=lambda: "2099-01-01T00:00:00+00:00"
+             )
+@@ -329,6 +339,7 @@
+             root = Path(directory)
+             db = self._seeded_queue(root)
+             self._settle(db, "failed_terminal")
++            prepare_database(db)
+             requeue_failed_screener_companies(
+                 db_path=db, now_utc=lambda: "2099-01-01T00:00:00+00:00"
+             )
+@@ -356,6 +367,7 @@
+             self._settle(db, "failed_retryable")
+ 
+             # The default status set leaves retryable failures alone.
++            prepare_database(db)
+             self.assertEqual(
+                 requeue_failed_screener_companies(
+                     db_path=db, now_utc=lambda: "2099-01-01T00:00:00+00:00"
+@@ -379,6 +391,7 @@
+             finally:
+                 conn.close()
+ 
++            prepare_database(db)
+             limited = requeue_failed_screener_companies(
+                 statuses=("failed_retryable",), limit=2, db_path=db,
+                 now_utc=lambda: "2099-01-01T00:00:00+00:00",
+@@ -390,6 +403,7 @@
+             db = self._seeded_queue(Path(directory))
+             for status in ("pending", "running", "accepted"):
+                 with self.assertRaisesRegex(ValueError, "settled failures"):
++                    prepare_database(db)
+                     requeue_failed_screener_companies(
+                         statuses=(status,), db_path=db,
+                         now_utc=lambda: "2099-01-01T00:00:00+00:00",
+@@ -495,6 +509,7 @@
+             )
+             self.assertEqual(stuck["summary"]["due_count"], 0)
+ 
++            prepare_database(db)
+             payload = requeue_incomplete_metric_screener_companies(
+                 db_path=db, now_utc=lambda: "2099-02-01T00:00:00+00:00"
+             )
+@@ -537,6 +552,7 @@
+             finally:
+                 conn.close()
+ 
++            prepare_database(db)
+             limited = requeue_incomplete_metric_screener_companies(
+                 limit=2, db_path=db, now_utc=lambda: "2099-02-01T00:00:00+00:00"
+             )
+@@ -549,6 +565,7 @@
+                 db, "/company/ALPHA/consolidated/",
+                 metric_count=9, fetched_quick_ratios=False,
+             )
++            prepare_database(db)
+             requeue_incomplete_metric_screener_companies(
+                 db_path=db, now_utc=lambda: "2099-02-01T00:00:00+00:00"
+             )
+diff --git a/scrapper/tests/test_screener_period_coverage.py b/scrapper/tests/test_screener_period_coverage.py
+--- a/scrapper/tests/test_screener_period_coverage.py
++++ b/scrapper/tests/test_screener_period_coverage.py
+@@ -1,4 +1,6 @@
+ from __future__ import annotations
++
++from scrapper.tests.database_fixtures import prepare_database
+ 
+ import tempfile
+ import unittest
+@@ -25,6 +27,7 @@
+         self.temp.cleanup()
+ 
+     def ingest(self, expected=None):
++        prepare_database(self.db)
+         return ingest_screener_response('LAURUSLABS', 'standalone',
+             fixture_standalone_response(), fixture_standalone_peer_response(),
+             fixture_quick_ratios_response(), db_path=self.db,
+@@ -90,6 +93,7 @@
+         result = self.ingest('2026-03')
+         fixture = self.root / 'screen.html'
+         fixture.write_bytes(screen_html().replace(b'ALPHA/consolidated/', b'LAURUSLABS/').replace(b'202606.00',b'202603.00'))
++        prepare_database(self.db)
+         discover_screener_results(query_role='period_test', query='Last result date > 202602',
+             fixture=fixture, db_path=self.db, snapshot_root=self.root/'snapshots', now_utc=lambda: FIRST_FETCH)
+         with closing(connect(self.db)) as conn:
+@@ -107,6 +111,7 @@
+             def fetch_company(self, url):
+                 return fixture_standalone_response()
+         with self.assertRaisesRegex(RuntimeError,'Screen result period is absent'):
++            prepare_database(self.db)
+             scrape_screener_company_path('/company/LAURUSLABS/','standalone',
+                 expected_result_period='2026-09',host_client=Client(),
+                 db_path=self.db,snapshot_root=self.root/'snapshots',export_root=self.root/'exports')
+@@ -116,6 +121,7 @@
+     def test_recent_absent_source_is_reused_without_network_or_cookie(self):
+         from datetime import datetime, timezone
+         from unittest.mock import patch
++        prepare_database(self.db)
+         ingest_screener_response('LAURUSLABS','standalone',fixture_standalone_response(),
+             fixture_standalone_peer_response(),fixture_quick_ratios_response(),
+             db_path=self.db,snapshot_root=self.root/'snapshots',export_root=self.root/'exports',
+@@ -151,6 +157,7 @@
+         class Client:
+             def fetch_company(self,url): return response
+         with self.assertRaisesRegex(ValueError,'Quarterly results headers are missing'):
++            prepare_database(self.db)
+             scrape_screener_company_path('/company/LAURUSLABS/','standalone',host_client=Client(),
+                 db_path=self.db,snapshot_root=self.root/'snapshots',export_root=self.root/'exports')
+         with closing(connect(self.db)) as conn:
+diff --git a/scrapper/tests/test_screener_vertical.py b/scrapper/tests/test_screener_vertical.py
+--- a/scrapper/tests/test_screener_vertical.py
++++ b/scrapper/tests/test_screener_vertical.py
+@@ -1,4 +1,6 @@
+ from __future__ import annotations
++
++from scrapper.tests.database_fixtures import prepare_database
+ 
+ import json
+ import sqlite3
+@@ -190,6 +192,7 @@
+         self.assertEqual(audit_screener_fixture_coverage(content), [])
+         with tempfile.TemporaryDirectory() as directory:
+             root = Path(directory)
++            prepare_database(root / 'scraper.db')
+             result = ingest_screener_response(
+                 "LAURUSLABS", "standalone", fixture_standalone_response(content),
+                 fixture_standalone_peer_response(), fixture_quick_ratios_response(),
+@@ -1190,6 +1193,7 @@
+         self.temp.cleanup()
+ 
+     def ingest(self, fetched_at: str):
++        prepare_database(self.db_path)
+         return ingest_screener_response(
+             "LAURUSLABS",
+             "consolidated",
+@@ -1202,6 +1206,7 @@
+         )
+ 
+     def ingest_standalone(self, fetched_at: str):
++        prepare_database(self.db_path)
+         return ingest_screener_response(
+             "LAURUSLABS",
+             "standalone",
+@@ -1214,6 +1219,7 @@
+         )
+ 
+     def ingest_irregular(self, fetched_at: str):
++        prepare_database(self.db_path)
+         return ingest_screener_response(
+             "NTPCGREEN",
+             "consolidated",
+@@ -1246,6 +1252,7 @@
+             "about_source", {link.link_type for link in parsed.profile_links}
+         )
+ 
++        prepare_database(self.db_path)
+         result = ingest_screener_response(
+             "LAURUSLABS",
+             "consolidated",
+@@ -1283,6 +1290,7 @@
+         )
+ 
+     def test_ratio_panel_extends_the_public_nine_to_the_full_set(self) -> None:
++        prepare_database(self.db_path)
+         result = ingest_screener_response(
+             "LAURUSLABS",
+             "consolidated",
+@@ -1321,6 +1329,7 @@
+         asked" apart from "asked and refused".
+         """
+         with self.assertRaisesRegex(RuntimeError, "Quick-ratios response rejected"):
++            prepare_database(self.db_path)
+             ingest_screener_response(
+                 "LAURUSLABS",
+                 "consolidated",
+@@ -1359,6 +1368,7 @@
+             item.decompose()
+         newly_listed = str(soup).encode()
+ 
++        prepare_database(self.db_path)
+         result = ingest_screener_response(
+             "LAURUSLABS",
+             "consolidated",
+@@ -1396,6 +1406,7 @@
+             del anchor["href"]
+         dropped = str(soup).encode()
+ 
++        prepare_database(self.db_path)
+         result = ingest_screener_response(
+             "LAURUSLABS",
+             "consolidated",
+@@ -1423,6 +1434,7 @@
+         without_warning = str(soup).encode()
+         self.assertFalse(_source_has_shareholding_warning(without_warning))
+ 
++        prepare_database(self.db_path)
+         result = ingest_screener_response(
+             "LAURUSLABS",
+             "consolidated",
+@@ -1675,6 +1687,7 @@
+     def test_reused_parse_cannot_be_accepted_under_wrong_scope(self) -> None:
+         consolidated = self.ingest(FIRST_FETCH)
+         with self.assertRaisesRegex(ValueError, "acceptance rules"):
++            prepare_database(self.db_path)
+             ingest_screener_response(
+                 "LAURUSLABS",
+                 "standalone",
+@@ -2067,6 +2080,7 @@
+ 
+     def test_saved_blobs_reprocess_without_new_fetch_observations(self) -> None:
+         first = self.ingest(FIRST_FETCH)
++        prepare_database(self.db_path)
+         replay = reprocess_screener_blobs(
+             "LAURUSLABS",
+             "consolidated",
+@@ -2092,6 +2106,7 @@
+     def test_new_accepted_parse_supersedes_without_losing_history(self) -> None:
+         first = self.ingest(FIRST_FETCH)
+         changed = FIXTURE.read_bytes().replace(b"3:32 p.m.", b"3:33 p.m.", 1)
++        prepare_database(self.db_path)
+         second = ingest_screener_response(
+             "LAURUSLABS",
+             "consolidated",
+@@ -2126,6 +2141,7 @@
+         # of the two balance-sheet occurrences, so Total Assets stays 10,511 and
+         # that period no longer balances.
+         corrupted = FIXTURE.read_bytes().replace(b"10,511", b"99,999", 1)
++        prepare_database(self.db_path)
+         result = ingest_screener_response(
+             "LAURUSLABS",
+             "consolidated",
+@@ -2156,6 +2172,7 @@
+         # Corrupt FIIs Sep 2023 (24.03% -> 54.03%); that period's categories no
+         # longer total ~100, so the totals rule warns without blocking.
+         corrupted = FIXTURE.read_bytes().replace(b"24.03%", b"54.03%", 1)
++        prepare_database(self.db_path)
+         result = ingest_screener_response(
+             "LAURUSLABS",
+             "consolidated",
+@@ -2193,6 +2210,7 @@
+ 
+     def test_identity_mismatch_is_not_accepted(self) -> None:
+         with self.assertRaises(ValueError):
++            prepare_database(self.db_path)
+             ingest_screener_response(
+                 "RBA",
+                 "consolidated",
+@@ -2225,6 +2243,7 @@
+             1,
+         )
+         with self.assertRaisesRegex(ValueError, "automatic acceptance rules"):
++            prepare_database(self.db_path)
+             ingest_screener_response(
+                 "LAURUSLABS",
+                 "consolidated",
+@@ -2254,6 +2273,7 @@
+             1,
+         )
+         with self.assertRaises(ValueError):
++            prepare_database(self.db_path)
+             ingest_screener_response(
+                 "LAURUSLABS",
+                 "consolidated",
+@@ -2283,6 +2303,7 @@
+         # validation, and blocked from automatic acceptance.
+         changed = FIXTURE.read_bytes().replace(b">REC</a>", b">Slides</a>", 1)
+         with self.assertRaises(ValueError):
++            prepare_database(self.db_path)
+             ingest_screener_response(
+                 "LAURUSLABS",
+                 "consolidated",
+@@ -2314,6 +2335,7 @@
+             1,
+         )
+         with self.assertRaises(ValueError):
++            prepare_database(self.db_path)
+             ingest_screener_response(
+                 "LAURUSLABS",
+                 "consolidated",
+diff --git a/scrapper/tests/test_transcript_recording_fallback.py b/scrapper/tests/test_transcript_recording_fallback.py
+--- a/scrapper/tests/test_transcript_recording_fallback.py
++++ b/scrapper/tests/test_transcript_recording_fallback.py
+@@ -26,7 +26,7 @@
+     def __init__(self) -> None:
+         self._dir = tempfile.TemporaryDirectory()
+         self.conn = connect(Path(self._dir.name) / "coverage.db")
+-        init_db(self.conn)
++        init_db(self.conn, apply_migrations=True)
+         self.conn.execute(
+             """INSERT INTO artifact_download_scopes
+                (scope_id,scope_kind,description,artifact_types_json,policy_json,
+diff --git a/scrapper/tests/test_trendlyne_t01.py b/scrapper/tests/test_trendlyne_t01.py
+--- a/scrapper/tests/test_trendlyne_t01.py
++++ b/scrapper/tests/test_trendlyne_t01.py
+@@ -1,4 +1,6 @@
+ from __future__ import annotations
++
++from scrapper.tests.database_fixtures import prepare_database
+ 
+ import hashlib
+ import json
+@@ -452,6 +454,7 @@
+         requested_source_period: str = "latest",
+         url: str = URL,
+     ):
++        prepare_database(self.db_path)
+         return ingest_trendlyne_response(
+             "RBA",
+             fixture_response(content, url),
+diff --git a/scrapper/tests/test_view.py b/scrapper/tests/test_view.py
+--- a/scrapper/tests/test_view.py
++++ b/scrapper/tests/test_view.py
+@@ -48,7 +48,7 @@
+     def setUp(self) -> None:
+         self.temp = tempfile.TemporaryDirectory()
+         self.conn = connect(Path(self.temp.name) / "scraper.db")
+-        init_db(self.conn)
++        init_db(self.conn, apply_migrations=True)
+         # These are rendering tests; seeding the full fetch/parse/blob chain
+         # adds nothing, so referential integrity is relaxed for the fixture.
+         self.conn.execute("PRAGMA foreign_keys=OFF")

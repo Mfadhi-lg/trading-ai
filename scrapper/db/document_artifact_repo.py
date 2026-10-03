@@ -398,14 +398,11 @@ def register_artifact_content(
     if blob is None:
         raise ValueError(f"Unknown response blob: {blob_id}")
     existing = conn.execute(
-        "SELECT content_id, artifact_id FROM artifact_contents WHERE content_sha256=?",
-        (blob["content_sha256"],),
+        """SELECT content_id FROM artifact_contents
+            WHERE artifact_id=? AND blob_id=?""",
+        (artifact_id, blob_id),
     ).fetchone()
     if existing is not None:
-        if int(existing["artifact_id"]) != artifact_id:
-            raise ValueError(
-                "Identical content is already attached to a different logical artifact"
-            )
         return int(existing["content_id"])
     cursor = conn.execute(
         """INSERT INTO artifact_contents

@@ -1,0 +1,465 @@
+{
+  "cases": [
+    {
+      "blob_files_checked_per_run": 2,
+      "case": "alternate-negative-wrong-issuer",
+      "expected": {
+        "no_attachment": true,
+        "status": "NO_OFFICIAL_SOURCE_FOUND",
+        "variant": "wrong-issuer"
+      },
+      "fingerprint": "5d281e058fee22ef9c82b3eb233166c31fa1186ce43109ed898e5ac80dbf811a",
+      "normalization": "only exact sandbox root prefix; all rows/columns retained",
+      "row_count": 100,
+      "status": "PASS",
+      "table_count": 148
+    },
+    {
+      "blob_files_checked_per_run": 2,
+      "case": "alternate-negative-wrong-period",
+      "expected": {
+        "no_attachment": true,
+        "status": "NO_OFFICIAL_SOURCE_FOUND",
+        "variant": "wrong-period"
+      },
+      "fingerprint": "d2c0f29264e8d75712ec010712ae262f06f15a32beb7b99bd89f89ed4e1d7eff",
+      "normalization": "only exact sandbox root prefix; all rows/columns retained",
+      "row_count": 100,
+      "status": "PASS",
+      "table_count": 148
+    },
+    {
+      "blob_files_checked_per_run": 2,
+      "case": "alternate-negative-wrong-agency",
+      "expected": {
+        "no_attachment": true,
+        "status": "NO_OFFICIAL_SOURCE_FOUND",
+        "variant": "wrong-agency"
+      },
+      "fingerprint": "5fc3627bdef2f8acbff82fa6f7eefe25fd2ce613fb7559b4db9576d7cb74613c",
+      "normalization": "only exact sandbox root prefix; all rows/columns retained",
+      "row_count": 100,
+      "status": "PASS",
+      "table_count": 148
+    },
+    {
+      "blob_files_checked_per_run": 2,
+      "case": "alternate-negative-ambiguous",
+      "expected": {
+        "no_attachment": true,
+        "status": "AMBIGUOUS",
+        "variant": "ambiguous"
+      },
+      "fingerprint": "9e34925b61323bb51188606023c7057c55231448a80a44e3e7b06d41435d5ebb",
+      "normalization": "only exact sandbox root prefix; all rows/columns retained",
+      "row_count": 101,
+      "status": "PASS",
+      "table_count": 148
+    },
+    {
+      "blob_files_checked_per_run": 2,
+      "case": "alternate-negative-blocked",
+      "expected": {
+        "no_attachment": true,
+        "status": "INTERACTION_REQUIRED",
+        "variant": "blocked"
+      },
+      "fingerprint": "f1f5d8088747995de5bd3f4b37937481c7f7e3b67c8c53211ae9bc247e4da717",
+      "normalization": "only exact sandbox root prefix; all rows/columns retained",
+      "row_count": 99,
+      "status": "PASS",
+      "table_count": 148
+    },
+    {
+      "blob_files_checked_per_run": 2,
+      "case": "alternate-negative-technical",
+      "expected": {
+        "no_attachment": true,
+        "status": "RETRYABLE_FAILURE",
+        "variant": "technical"
+      },
+      "fingerprint": "f8d113c089c727d8b3c532c78378884b1a8df1e13ace28293441cded6d474e4f",
+      "normalization": "only exact sandbox root prefix; all rows/columns retained",
+      "row_count": 99,
+      "status": "PASS",
+      "table_count": 148
+    },
+    {
+      "case": "browser-negatives",
+      "known_gap": "browser validator does not enforce exact event or claimed agency; wrong date/agency matching issuer still validates; no attachment performed for gap fixture",
+      "status": "PASS"
+    },
+    {
+      "blob_files_checked_per_run": 1,
+      "case": "availability-not_offered",
+      "expected": {
+        "content_count": 0,
+        "persisted_expectation_state": "not_offered",
+        "source_state": "not_offered"
+      },
+      "fingerprint": "6b1ee05836e40621894fb119a9be1e8d82bf1c36963cc139d96b8334d183e1f4",
+      "normalization": "only exact sandbox root prefix; all rows/columns retained",
+      "row_count": 97,
+      "status": "PASS",
+      "table_count": 148
+    },
+    {
+      "blob_files_checked_per_run": 1,
+      "case": "availability-not_applicable",
+      "expected": {
+        "content_count": 0,
+        "persisted_expectation_state": "not_applicable",
+        "source_state": "not_applicable"
+      },
+      "fingerprint": "570bc2d93b8cd05e479483edb725c39ad22bb74997ea7dcbdfd9a6f007565e4f",
+      "normalization": "only exact sandbox root prefix; all rows/columns retained",
+      "row_count": 97,
+      "status": "PASS",
+      "table_count": 148
+    },
+    {
+      "blob_files_checked_per_run": 1,
+      "case": "availability-source_not_covered",
+      "expected": {
+        "content_count": 0,
+        "persisted_expectation_state": "source_not_covered",
+        "source_state": "source_not_covered"
+      },
+      "fingerprint": "ee25d86631e51f4485769ab4c07e74932ecf0042af76232f16eefc0424defde9",
+      "normalization": "only exact sandbox root prefix; all rows/columns retained",
+      "row_count": 97,
+      "status": "PASS",
+      "table_count": 148
+    },
+    {
+      "blob_files_checked_per_run": 1,
+      "case": "availability-inaccessible",
+      "expected": {
+        "content_count": 0,
+        "persisted_expectation_state": "inaccessible",
+        "source_state": "inaccessible"
+      },
+      "fingerprint": "e9634ab170fa9bab3a96022ebddd3756b88642342bfc3ce19c63eead6209ff85",
+      "normalization": "only exact sandbox root prefix; all rows/columns retained",
+      "row_count": 97,
+      "status": "PASS",
+      "table_count": 148
+    },
+    {
+      "blob_files_checked_per_run": 1,
+      "case": "availability-discovery_failed",
+      "expected": {
+        "content_count": 0,
+        "persisted_expectation_state": "discovery_failed",
+        "source_state": "discovery_failed"
+      },
+      "fingerprint": "72c45088823ee7420ff37d0c649b5011b19ddae50154e8b651db6a1f0dea0e2b",
+      "normalization": "only exact sandbox root prefix; all rows/columns retained",
+      "row_count": 97,
+      "status": "PASS",
+      "table_count": 148
+    },
+    {
+      "blob_files_checked_per_run": 1,
+      "case": "availability-unknown",
+      "expected": {
+        "content_count": 0,
+        "persisted_expectation_state": "unknown",
+        "source_state": "unknown"
+      },
+      "fingerprint": "3d65aae0644912934c5db1a533c29b17646c12edbf6e8d9a0bb4d13454eafacb",
+      "normalization": "only exact sandbox root prefix; all rows/columns retained",
+      "row_count": 97,
+      "status": "PASS",
+      "table_count": 148
+    },
+    {
+      "blob_files_checked_per_run": 1,
+      "case": "availability-expected_not_yet_published",
+      "expected": {
+        "content_count": 0,
+        "persisted_expectation_state": "expected_not_yet_published",
+        "source_state": "expected_not_yet_published"
+      },
+      "fingerprint": "618fe0e134d2ec4c0584d095fe407ff1b6ac7cc783deacd00fc2694793a40768",
+      "normalization": "only exact sandbox root prefix; all rows/columns retained",
+      "row_count": 97,
+      "status": "PASS",
+      "table_count": 148
+    },
+    {
+      "blob_files_checked_per_run": 11,
+      "case": "flow-a",
+      "expected": {
+        "accepted_history_unchanged_after_document_refresh": true,
+        "accepted_times": [
+          "2026-07-24T10:00:00+00:00",
+          "2026-07-24T11:00:00+00:00"
+        ],
+        "final_transcript_readiness": "available",
+        "first_parse": 1,
+        "presentation_id": 7,
+        "refreshes": [
+          [
+            "2026-07-24T12:00:00+00:00",
+            1,
+            "2026-06",
+            [
+              1,
+              2
+            ]
+          ],
+          [
+            "2026-07-24T16:00:00+00:00",
+            1,
+            "2026-06",
+            [
+              2
+            ]
+          ]
+        ],
+        "revised_parse": 3,
+        "sales_revision": [
+          "1757",
+          "1758"
+        ],
+        "transcript_id": 9
+      },
+      "fingerprint": "68af3cab1256e83346433698e5f79ce2b55009a5ef18bf92a1cba0b6f6262ced",
+      "normalization": "only exact sandbox root prefix; all rows/columns retained",
+      "row_count": 5827,
+      "status": "PASS",
+      "table_count": 148
+    },
+    {
+      "blob_files_checked_per_run": 3,
+      "case": "flow-b-replacement",
+      "expected": {
+        "artifact_id_preserved": 1,
+        "contents": 1,
+        "download_attempts": 2,
+        "failed_attempts_retained": 1,
+        "network_calls_for_browser_bytes": null,
+        "sources": 3,
+        "strategy": "replacement",
+        "usable_extraction": true
+      },
+      "fingerprint": "7fd87d763ed56735bdde360ebbf66f8baab9dc36970271ce9a997e13903311be",
+      "normalization": "only exact sandbox root prefix; all rows/columns retained",
+      "row_count": 131,
+      "status": "PASS",
+      "table_count": 148
+    },
+    {
+      "blob_files_checked_per_run": 3,
+      "case": "flow-b-requeue",
+      "expected": {
+        "artifact_id_preserved": 1,
+        "contents": 1,
+        "download_attempts": 2,
+        "failed_attempts_retained": 1,
+        "network_calls_for_browser_bytes": null,
+        "sources": 2,
+        "strategy": "requeue",
+        "usable_extraction": true
+      },
+      "fingerprint": "8eddc6b0364281800f9d4afb5d92055aaabd7c3b21c77022d847f1a92ebb59e7",
+      "normalization": "only exact sandbox root prefix; all rows/columns retained",
+      "row_count": 127,
+      "status": "PASS",
+      "table_count": 148
+    },
+    {
+      "blob_files_checked_per_run": 4,
+      "case": "flow-b-alternate",
+      "expected": {
+        "artifact_id_preserved": 1,
+        "contents": 1,
+        "download_attempts": 2,
+        "failed_attempts_retained": 1,
+        "network_calls_for_browser_bytes": null,
+        "sources": 3,
+        "strategy": "alternate",
+        "usable_extraction": true
+      },
+      "fingerprint": "a9ebcecff0c004279dd14ad868249fa2a2125b51a54cacc4eff608548db32292",
+      "normalization": "only exact sandbox root prefix; all rows/columns retained",
+      "row_count": 138,
+      "status": "PASS",
+      "table_count": 148
+    },
+    {
+      "blob_files_checked_per_run": 3,
+      "case": "flow-b-browser",
+      "expected": {
+        "artifact_id_preserved": 1,
+        "contents": 2,
+        "download_attempts": 2,
+        "failed_attempts_retained": 1,
+        "network_calls_for_browser_bytes": 0,
+        "sources": 2,
+        "strategy": "browser",
+        "usable_extraction": true
+      },
+      "fingerprint": "56790887b8bb9936ba339f5a230b1f2f22fb7239581460feb985150e474db2fa",
+      "normalization": "only exact sandbox root prefix; all rows/columns retained",
+      "row_count": 120,
+      "status": "PASS",
+      "table_count": 148
+    },
+    {
+      "blob_files_checked_per_run": 4,
+      "case": "flow-b-browser_dom",
+      "expected": {
+        "artifact_id_preserved": 1,
+        "contents": 2,
+        "download_attempts": 2,
+        "failed_attempts_retained": 1,
+        "network_calls_for_browser_bytes": 0,
+        "sources": 2,
+        "strategy": "browser_dom",
+        "usable_extraction": true
+      },
+      "fingerprint": "8eb25d12cdce549cf93aa98f4052cef993aeda2310215e96f69f690f18abd2b9",
+      "normalization": "only exact sandbox root prefix; all rows/columns retained",
+      "row_count": 151,
+      "status": "PASS",
+      "table_count": 148
+    },
+    {
+      "blob_files_checked_per_run": 3,
+      "case": "flow-b-manual",
+      "expected": {
+        "artifact_id_preserved": 1,
+        "contents": 1,
+        "download_attempts": 1,
+        "failed_attempts_retained": 1,
+        "network_calls_for_browser_bytes": null,
+        "sources": 2,
+        "strategy": "manual",
+        "usable_extraction": true
+      },
+      "fingerprint": "38e752770867a724f267495e015b2db05146662e5bd4d366008c7bb5ccd9791b",
+      "normalization": "only exact sandbox root prefix; all rows/columns retained",
+      "row_count": 124,
+      "status": "PASS",
+      "table_count": 148
+    },
+    {
+      "blob_files_checked_per_run": 2,
+      "case": "negative-404",
+      "expected": {
+        "http_status": 404,
+        "no_content": true,
+        "result_status": "rejected_http_status"
+      },
+      "fingerprint": "99c7f709738c6d5b38db025dce88ab5013a1d67a41954fe6e7c595b229c3be85",
+      "normalization": "only exact sandbox root prefix; all rows/columns retained",
+      "row_count": 100,
+      "status": "PASS",
+      "table_count": 148
+    },
+    {
+      "blob_files_checked_per_run": 2,
+      "case": "negative-403",
+      "expected": {
+        "http_status": 403,
+        "no_content": true,
+        "result_status": "rejected_http_status"
+      },
+      "fingerprint": "59aee2a09c26847ddf889e0efe1204b32fd20ad4be0e99b0bb195c89b26ef5e6",
+      "normalization": "only exact sandbox root prefix; all rows/columns retained",
+      "row_count": 101,
+      "status": "PASS",
+      "table_count": 148
+    },
+    {
+      "blob_files_checked_per_run": 2,
+      "case": "negative-html-as-pdf",
+      "expected": {
+        "http_status": 200,
+        "no_content": true,
+        "result_status": "rejected_unexpected_html"
+      },
+      "fingerprint": "a5b60dcc6df30d133040c030084eadcdaece89f8420567f95f3834268cc6f4f5",
+      "normalization": "only exact sandbox root prefix; all rows/columns retained",
+      "row_count": 101,
+      "status": "PASS",
+      "table_count": 148
+    },
+    {
+      "blob_files_checked_per_run": 1,
+      "case": "negative-blocked-redirect",
+      "expected": {
+        "http_status": null,
+        "no_content": true,
+        "result_status": "PUBLISHER_TERMS_BLOCK_AUTOMATION"
+      },
+      "fingerprint": "8a60872e848f7ee498ebbacfeaff00d2dd968673f6065f102564a87cd6e0a1c6",
+      "normalization": "only exact sandbox root prefix; all rows/columns retained",
+      "row_count": 96,
+      "status": "PASS",
+      "table_count": 148
+    },
+    {
+      "blob_files_checked_per_run": 1,
+      "case": "negative-technical",
+      "expected": {
+        "http_status": null,
+        "no_content": true,
+        "result_status": "network_error"
+      },
+      "fingerprint": "fab92aa90e772ba38e77f11b8f29321295765bfa152bd1300a8c44ce5ae4415a",
+      "normalization": "only exact sandbox root prefix; all rows/columns retained",
+      "row_count": 100,
+      "status": "PASS",
+      "table_count": 148
+    },
+    {
+      "calls": [
+        "https://www.lauruslabs.com/investors/h05/missing-rating.pdf",
+        "https://www.lauruslabs.com/investors/h05/replacement-rating.pdf"
+      ],
+      "case": "allowed-redirect",
+      "status": "PASS"
+    },
+    {
+      "case": "network/store-refusal",
+      "status": "PASS"
+    },
+    {
+      "blob_files_checked_per_run": 13,
+      "case": "flow-b-saved-page",
+      "expected": {
+        "existing_artifact_identity_preserved": 9,
+        "failed_url_then_saved_page_requeue_download_extraction_readiness": "available",
+        "financial_acceptance_remains_rejected": true,
+        "rejected_parse_id": 5,
+        "repaired_links": 3,
+        "sole_blocking_error": "screener_manifest_coverage"
+      },
+      "fingerprint": "c890e2f14b13582c32091183de8a5daa56a00cc95a1c6f50e563ecbd59c00e62",
+      "normalization": "only exact sandbox root prefix; all rows/columns retained",
+      "row_count": 7619,
+      "status": "PASS",
+      "table_count": 148
+    },
+    {
+      "case": "screener-negative-variants",
+      "cases": 4,
+      "status": "PASS"
+    }
+  ],
+  "clock": {
+    "T0": "2026-07-24T10:00:00+00:00",
+    "T1": "2026-07-24T11:00:00+00:00",
+    "T2": "2026-07-24T12:00:00+00:00",
+    "T3": "2026-07-24T16:00:00+00:00",
+    "T4": "2026-07-25T10:00:00+00:00"
+  },
+  "exclusions": [],
+  "fixture_sha256": "4eb55b6bf0654561fdd98dca37cf2659cf2c32d3ede2eaa5caf67c2a0055237e",
+  "format": "h05-v1",
+  "migration_manifest_sha256": "7ab09abbae7299f591666129d931e3148d8e4103ad2af91120fcc3588a0021c5",
+  "network": "container none + socket/requests/Playwright refusal"
+}

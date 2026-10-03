@@ -6,17 +6,24 @@ import json
 import sqlite3
 import uuid
 from collections import Counter
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable, Protocol
 
-from ..config import DB_PATH, DOCUMENT_RECONCILIATION_EXPORTS
+from ..config import (
+    DB_PATH,
+    DOCUMENT_RECONCILIATION_EXPORTS,
+    SCREENER_MIN_MARKET_CAP_CRORE,
+)
 from ..db.artifact_reconciliation_repo import (
     ClaimedExpectation,
     claim_due_expectations,
     complete_artifact_check,
     preview_due_expectations,
     release_claims,
+    screener_market_cap_above_floor,
 )
+from ..core.collection_scope import is_scope_exclusion
 from ..db.database import connect, init_db
 from ..db.repo import utc_now
 from ..documents.availability import ArtifactCheckResult
@@ -41,16 +48,43 @@ class ArtifactReconciliationAdapter(Protocol):
     ) -> ArtifactCheckResult: ...
 
 
+@dataclass(frozen=True)
+class ScreenerRefreshTarget:
+    """One source fetch shared by all due artifacts for a result event."""
+
+    company_id: int
+    event_id: int
+    company_path: str
+    reporting_scope: str
+    result_period: str
+    expectation_ids: tuple[int, ...]
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "company_id": self.company_id,
+            "event_id": self.event_id,
+            "company_path": self.company_path,
+            "reporting_scope": self.reporting_scope,
+            "result_period": self.result_period,
+            "expectation_ids": list(self.expectation_ids),
+        }
+
+
+class ScreenerSourceRefresher(Protocol):
+    def __call__(self, target: ScreenerRefreshTarget) -> Any: ...
+
+
 def _same_event(expectation: ClaimedExpectation, artifact: sqlite3.Row) -> bool:
-    matches = 0
-    for field in ("event_date", "period_end", "fiscal_year", "fiscal_quarter"):
-        expected = getattr(expectation, field)
-        actual = artifact[field]
-        if expected is not None and actual is not None:
-            if expected != actual:
-                return False
-            matches += 1
-    return matches > 0
+    return bool(
+        (expectation.event_date is not None and artifact["event_date"] == expectation.event_date)
+        or (expectation.period_end is not None and artifact["period_end"] == expectation.period_end)
+        or (
+            expectation.fiscal_year is not None
+            and expectation.fiscal_quarter is not None
+            and artifact["fiscal_year"] == expectation.fiscal_year
+            and artifact["fiscal_quarter"] == expectation.fiscal_quarter
+        )
+    )
 
 
 def _accepted_artifact(
@@ -191,6 +225,84 @@ class PersistedArtifactAdapter:
         )
 
 
+def _source_refresh_targets(
+    conn: sqlite3.Connection,
+    due_rows: tuple[ClaimedExpectation, ...],
+) -> tuple[ScreenerRefreshTarget, ...]:
+    """Group due PPT/transcript checks into one Screener fetch per event."""
+
+    grouped: dict[tuple[int, int], list[ClaimedExpectation]] = {}
+    for expectation in due_rows:
+        if expectation.artifact_type not in {"presentation", "transcript"}:
+            continue
+        if _accepted_artifact(conn, expectation) is not None:
+            continue
+        grouped.setdefault(
+            (expectation.company_id, expectation.event_id), []
+        ).append(expectation)
+
+    targets: list[ScreenerRefreshTarget] = []
+    for (company_id, event_id), expectations in grouped.items():
+        state = conn.execute(
+            """SELECT company_path_normalized, reporting_scope,
+                      latest_accepted_result_period
+                 FROM screener_company_collection_state
+                WHERE company_id=? AND reporting_scope='standalone'
+                ORDER BY updated_at_utc DESC LIMIT 1""",
+            (company_id,),
+        ).fetchone()
+        if state is None or not state["latest_accepted_result_period"]:
+            continue
+        period_end = expectations[0].period_end
+        result_period = (
+            str(period_end)[:7]
+            if period_end
+            else str(state["latest_accepted_result_period"])
+        )
+        if result_period == "1970-01":
+            # Exchange rows without an exact period use this explicit sentinel.
+            # It is not safe evidence for attaching the newest call documents.
+            continue
+        targets.append(
+            ScreenerRefreshTarget(
+                company_id=company_id,
+                event_id=event_id,
+                company_path=str(state["company_path_normalized"]),
+                reporting_scope=str(state["reporting_scope"]),
+                result_period=result_period,
+                expectation_ids=tuple(
+                    sorted(item.expectation_id for item in expectations)
+                ),
+            )
+        )
+    return tuple(targets)
+
+
+def _default_screener_refresher(
+    *,
+    db_path: Path,
+) -> ScreenerSourceRefresher:
+    """Build one throttled client shared across this reconciliation batch."""
+
+    from ..core.http import ScreenerHostClient
+    from .screener_vertical import scrape_screener_company_path
+
+    host_client = ScreenerHostClient()
+
+    def refresh(target: ScreenerRefreshTarget) -> Any:
+        return scrape_screener_company_path(
+            target.company_path,
+            target.reporting_scope,
+            expected_result_period=target.result_period,
+            db_path=db_path,
+            host_client=host_client,
+            document_only=True,
+            expected_company_id=target.company_id,
+        )
+
+    return refresh
+
+
 def _default_output(checked_at_utc: str, run_label: str) -> Path:
     safe = checked_at_utc.replace(":", "").replace("+", "_")
     safe_label = "".join(
@@ -216,11 +328,13 @@ def reconcile_artifacts(
     db_path: Path = DB_PATH,
     output: Path | None = None,
     adapter: ArtifactReconciliationAdapter | None = None,
+    source_refresher: ScreenerSourceRefresher | None = None,
     now_utc: Callable[[], str] = utc_now,
     worker_id: str | None = None,
 ) -> dict[str, Any]:
     if not due:
         raise ValueError("D09 reconciliation currently requires --due")
+    production_adapter = adapter is None
     adapter = adapter or PersistedArtifactAdapter()
     checked_at = now_utc()
     worker_id = worker_id or f"reconciler-{uuid.uuid4().hex}"
@@ -228,10 +342,15 @@ def reconcile_artifacts(
     claimed: tuple[ClaimedExpectation, ...] = ()
     completed_ids: set[int] = set()
     checks: list[dict[str, Any]] = []
+    refreshes: list[dict[str, Any]] = []
+    refresh_failures: dict[int, tuple[str, bool, dict[str, str]]] = {}
     try:
         init_db(conn)
         if dry_run:
-            due_rows = preview_due_expectations(conn, now_utc=checked_at, limit=limit)
+            due_preview = preview_due_expectations(
+                conn, now_utc=checked_at, limit=limit
+            )
+            refresh_targets = _source_refresh_targets(conn, due_preview)
             return _write(
                 {
                     "schema_version": RECONCILIATION_SCHEMA_VERSION,
@@ -240,12 +359,17 @@ def reconcile_artifacts(
                     "worker_id": None,
                     "policy_source": "persisted_per_expectation",
                     "summary": {
-                        "due_count": len(due_rows),
+                        "due_count": len(due_preview),
                         "claimed_count": 0,
                         "completed_count": 0,
+                        "source_refresh_count": len(refresh_targets),
                         "status_counts": {},
                     },
-                    "due": [row.to_dict() for row in due_rows],
+                    "due": [row.to_dict() for row in due_preview],
+                    "source_refreshes": [
+                        {**target.to_dict(), "status": "would_refresh"}
+                        for target in refresh_targets
+                    ],
                     "checks": [],
                 },
                 output or _default_output(checked_at, "dry-run"),
@@ -256,9 +380,97 @@ def reconcile_artifacts(
             limit=limit,
             worker_id=worker_id,
         )
+        refreshable: list[ClaimedExpectation] = []
+        market_cap_eligibility: dict[int, bool] = {}
         for expectation in claimed:
+            is_delayed_result_document = bool(
+                expectation.artifact_type in {"presentation", "transcript"}
+                and expectation.expectation_basis
+                == "accepted_exchange_result_filing_requires_primary_source_discovery"
+            )
+            if is_delayed_result_document:
+                eligible = market_cap_eligibility.get(expectation.company_id)
+                if eligible is None:
+                    eligible = screener_market_cap_above_floor(
+                        conn, expectation.company_id
+                    )
+                    market_cap_eligibility[expectation.company_id] = eligible
+                if not eligible:
+                    refresh_failures[expectation.expectation_id] = (
+                        "source_not_covered",
+                        False,
+                        {
+                            "type": "ScreenerMarketCapOutOfScope",
+                            "message": (
+                                "Latest accepted Screener market cap is not above "
+                                f"{SCREENER_MIN_MARKET_CAP_CRORE:g} INR crore"
+                            ),
+                        },
+                    )
+                    continue
+            refreshable.append(expectation)
+        refresh_targets = _source_refresh_targets(conn, tuple(refreshable))
+        if production_adapter or source_refresher is not None:
+            refresher = source_refresher or _default_screener_refresher(
+                db_path=db_path
+            )
+            for position, target in enumerate(refresh_targets):
+                try:
+                    result = refresher(target)
+                    refreshes.append(
+                        {
+                            **target.to_dict(),
+                            "status": "refreshed",
+                            "parse_id": getattr(result, "parse_id", None),
+                        }
+                    )
+                except Exception as exc:
+                    error = {"type": type(exc).__name__, "message": str(exc)}
+                    below_scope = is_scope_exclusion(str(exc))
+                    status = "source_not_covered" if below_scope else "discovery_failed"
+                    refreshes.append(
+                        {**target.to_dict(), "status": "failed", "error": error}
+                    )
+                    for expectation_id in target.expectation_ids:
+                        refresh_failures[expectation_id] = (
+                            status,
+                            not below_scope,
+                            error,
+                        )
+                    if "status=429" in str(exc):
+                        deferred_error = {
+                            "type": "ScreenerHostRateLimited",
+                            "message": "Batch stopped after Screener returned HTTP 429",
+                        }
+                        for deferred in refresh_targets[position + 1 :]:
+                            refreshes.append(
+                                {
+                                    **deferred.to_dict(),
+                                    "status": "deferred_host_rate_limit",
+                                    "error": deferred_error,
+                                }
+                            )
+                            for expectation_id in deferred.expectation_ids:
+                                refresh_failures[expectation_id] = (
+                                    "discovery_failed",
+                                    True,
+                                    deferred_error,
+                                )
+                        break
+        for expectation in claimed:
+            refresh_failure = refresh_failures.get(expectation.expectation_id)
             try:
-                result = adapter.check(conn, expectation, checked_at)
+                if refresh_failure is not None:
+                    failure_status, retryable, refresh_error = refresh_failure
+                    result = ArtifactCheckResult(
+                        failure_status,
+                        "screener_company_page_refresh",
+                        evidence={"event_key": expectation.event_key},
+                        retryable=retryable,
+                        error=refresh_error,
+                    )
+                else:
+                    result = adapter.check(conn, expectation, checked_at)
             except Exception as exc:
                 result = ArtifactCheckResult(
                     "discovery_failed",
@@ -315,9 +527,14 @@ def reconcile_artifacts(
                 "due_count": len(claimed),
                 "claimed_count": len(claimed),
                 "completed_count": len(checks),
+                "source_refresh_count": len(refreshes),
+                "source_refresh_failure_count": sum(
+                    row["status"] != "refreshed" for row in refreshes
+                ),
                 "status_counts": dict(sorted(counts.items())),
             },
             "due": [row.to_dict() for row in claimed],
+            "source_refreshes": refreshes,
             "checks": checks,
         },
         output or _default_output(checked_at, worker_id),

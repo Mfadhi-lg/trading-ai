@@ -9,6 +9,9 @@ import zipfile
 from pathlib import Path
 from typing import Any
 
+import requests
+
+from scrapper.core.access_policy import BlockedTermsError
 from scrapper.db.database import connect, init_db
 from scrapper.db.document_artifact_repo import persist_discovery_plan
 from scrapper.documents.downloader import (
@@ -16,7 +19,9 @@ from scrapper.documents.downloader import (
     PPT,
     PPTX,
     DownloadPolicy,
+    cleanup_recording_temporary_files,
     detect_media_type,
+    download_recording_to_store,
     download_url,
 )
 from scrapper.pipeline.fetch_documents import fetch_documents
@@ -33,13 +38,6 @@ MP3_BYTES = (FIXTURES / "d02_sample.mp3").read_bytes()
 OBSERVED = "2026-08-05T10:00:00+00:00"
 
 
-class FakeRedirect:
-    def __init__(self, status_code: int, url: str, location: str) -> None:
-        self.status_code = status_code
-        self.url = url
-        self.headers = {"Location": location}
-
-
 class FakeResponse:
     def __init__(
         self,
@@ -49,7 +47,7 @@ class FakeResponse:
         status_code: int = 200,
         content_type: str = "application/pdf",
         content_length: int | None = None,
-        history: tuple[FakeRedirect, ...] = (),
+        location: str | None = None,
         chunks: tuple[bytes, ...] | None = None,
     ) -> None:
         self.body = body
@@ -58,7 +56,9 @@ class FakeResponse:
         self.headers = {"Content-Type": content_type}
         if content_length is not None:
             self.headers["Content-Length"] = str(content_length)
-        self.history = history
+        if location is not None:
+            self.headers["Location"] = location
+        self.history: tuple[Any, ...] = ()
         self.chunks = chunks
         self.iterated = False
         self.closed = False
@@ -79,11 +79,13 @@ class FakeSession:
             for key, value in responses.items()
         }
         self.calls: list[str] = []
+        self.request_kwargs: list[dict[str, Any]] = []
         self.closed = False
         self.max_redirects = 30
 
-    def get(self, url: str, **_: Any) -> FakeResponse:
+    def get(self, url: str, **kwargs: Any) -> FakeResponse:
         self.calls.append(url)
+        self.request_kwargs.append(kwargs)
         queue = self.responses[url]
         if not queue:
             raise AssertionError(f"Unexpected repeated request: {url}")
@@ -109,7 +111,7 @@ class DocumentDownloaderD02Tests(unittest.TestCase):
         self.snapshots = self.root / "snapshots"
         self.output = self.root / "download-report.json"
         self.conn = connect(self.db_path)
-        init_db(self.conn)
+        init_db(self.conn, apply_migrations=True)
         plan = build_discovery_plan(
             DISCOVERY_MANIFEST, requested_symbol="LAURUSLABS"
         )
@@ -234,6 +236,72 @@ class DocumentDownloaderD02Tests(unittest.TestCase):
         )
         self.assertEqual(wrong_artifact.result_status, "rejected_artifact_type")
 
+    def test_crisil_is_refused_at_http_boundary_with_zero_calls(self) -> None:
+        url = "https://www.crisil.com/en/home/ratings/report.pdf"
+        session = FakeSession({})
+
+        with self.assertRaises(BlockedTermsError):
+            download_url(url, artifact_type="credit_rating", session=session)
+
+        self.assertEqual(session.calls, [])
+
+    def test_icra_is_refused_at_http_boundary_with_zero_calls(self) -> None:
+        url = "https://www.icra.in/Rationale/ShowRationaleReport?id=42"
+        session = FakeSession({})
+
+        with self.assertRaises(BlockedTermsError):
+            download_url(url, artifact_type="credit_rating", session=session)
+
+        self.assertEqual(session.calls, [])
+
+    def test_crisilratings_is_refused_at_http_boundary_with_zero_calls(self) -> None:
+        url = "https://www.crisilratings.com/en/home/ratings/report.pdf"
+        session = FakeSession({})
+
+        with self.assertRaises(BlockedTermsError):
+            download_url(url, artifact_type="credit_rating", session=session)
+
+        self.assertEqual(session.calls, [])
+
+    def test_redirect_to_blocked_host_is_refused_before_second_http_call(self) -> None:
+        initial = "https://example.test/report"
+        blocked = "https://media.crisilratings.com/ratings/report.pdf"
+        first = FakeResponse(
+            b"",
+            url=initial,
+            status_code=302,
+            content_type="text/html",
+            location=blocked,
+        )
+        session = FakeSession({initial: first})
+
+        with self.assertRaises(BlockedTermsError):
+            download_url(initial, artifact_type="credit_rating", session=session)
+
+        self.assertEqual(session.calls, [initial])
+        self.assertFalse(session.request_kwargs[0]["allow_redirects"])
+        self.assertTrue(first.closed)
+
+    def test_unsafe_redirect_shape_is_refused_before_second_http_call(self) -> None:
+        initial = "https://example.test/report"
+        first = FakeResponse(
+            b"",
+            url=initial,
+            status_code=302,
+            content_type="text/html",
+            location="https://user:secret@example.test/report.pdf",
+        )
+        session = FakeSession({initial: first})
+
+        result = download_url(
+            initial, artifact_type="credit_rating", session=session
+        )
+
+        self.assertEqual(session.calls, [initial])
+        self.assertTrue(first.closed)
+        self.assertEqual(result.result_status, "network_error")
+        self.assertEqual(result.error_code, "unsafe_redirect")
+
     def test_content_length_stream_size_and_total_time_are_bounded(self) -> None:
         url = "https://example.test/large.pdf"
         declared = FakeResponse(
@@ -273,6 +341,89 @@ class DocumentDownloaderD02Tests(unittest.TestCase):
         self.assertEqual(timed.result_status, "timed_out")
         self.assertEqual(timed.body, PDF_BYTES)
 
+    def test_large_recording_streams_to_atomic_content_addressed_path(self) -> None:
+        url = "https://example.test/large-recording.mp3"
+        body = MP3_BYTES * 4096
+        result = download_recording_to_store(
+            url,
+            snapshot_root=self.snapshots,
+            policy=DownloadPolicy(max_bytes=len(body) + 1, chunk_bytes=1024),
+            session=FakeSession(
+                {
+                    url: FakeResponse(
+                        b"",
+                        url=url,
+                        content_type="audio/mpeg",
+                        chunks=tuple(
+                            body[position : position + 1024]
+                            for position in range(0, len(body), 1024)
+                        ),
+                    )
+                }
+            ),
+        )
+        self.assertTrue(result.is_validated)
+        self.assertIsNone(result.body)
+        self.assertEqual(result.byte_size, len(body))
+        self.assertEqual(result.content_sha256, hashlib.sha256(body).hexdigest())
+        path = Path(result.stored_path or "")
+        self.assertTrue(path.is_file())
+        self.assertEqual(path.read_bytes(), body)
+        self.assertEqual(list(self.snapshots.rglob("*.tmp")), [])
+
+    def test_recording_midstream_failure_and_byte_limit_leave_no_partial(self) -> None:
+        url = "https://example.test/interrupted-recording.mp3"
+
+        class InterruptedResponse(FakeResponse):
+            def iter_content(self, chunk_size: int) -> Any:
+                yield MP3_BYTES
+                raise requests.ConnectionError("connection lost")
+
+        failed = download_recording_to_store(
+            url,
+            snapshot_root=self.snapshots,
+            session=FakeSession(
+                {
+                    url: InterruptedResponse(
+                        b"", url=url, content_type="audio/mpeg"
+                    )
+                }
+            ),
+        )
+        self.assertEqual(failed.result_status, "network_error")
+        self.assertIsNone(failed.stored_path)
+        self.assertEqual(list(self.snapshots.rglob("*.tmp")), [])
+
+        limited = download_recording_to_store(
+            url,
+            snapshot_root=self.snapshots,
+            policy=DownloadPolicy(max_bytes=len(MP3_BYTES) - 1),
+            session=FakeSession(
+                {
+                    url: FakeResponse(
+                        MP3_BYTES, url=url, content_type="audio/mpeg"
+                    )
+                }
+            ),
+        )
+        self.assertEqual(limited.result_status, "too_large")
+        self.assertIsNone(limited.stored_path)
+        self.assertEqual(list(self.snapshots.rglob("*.tmp")), [])
+
+    def test_recording_restart_cleanup_removes_only_stale_named_partials(self) -> None:
+        temporary_root = self.snapshots / ".recording-tmp"
+        temporary_root.mkdir(parents=True)
+        stale = temporary_root / ".recording-stream-stale.tmp"
+        unrelated = temporary_root / "operator-note.tmp"
+        stale.write_bytes(b"partial")
+        unrelated.write_bytes(b"preserve")
+        removed = cleanup_recording_temporary_files(
+            self.snapshots, older_than_seconds=0, now=lambda: stale.stat().st_mtime + 1
+        )
+        self.assertEqual(removed, 1)
+        self.assertFalse(stale.exists())
+        self.assertTrue(unrelated.exists())
+
     def test_multiple_urls_share_bytes_and_keep_all_source_provenance(self) -> None:
         bse_url = "https://www.bseindia.com/xml-data/corpfiling/AttachLive/q1-fy26-presentation.pdf"
         ir_url = "https://www.lauruslabs.com/investors/q1-fy26/earnings-presentation.pdf"
@@ -280,9 +431,15 @@ class DocumentDownloaderD02Tests(unittest.TestCase):
         session = FakeSession(
             {
                 bse_url: FakeResponse(
+                    b"",
+                    url=bse_url,
+                    status_code=302,
+                    content_type="text/html",
+                    location=cdn_url,
+                ),
+                cdn_url: FakeResponse(
                     PDF_BYTES,
                     url=cdn_url,
-                    history=(FakeRedirect(302, bse_url, cdn_url),),
                     content_length=len(PDF_BYTES),
                 ),
                 ir_url: FakeResponse(
@@ -311,7 +468,10 @@ class DocumentDownloaderD02Tests(unittest.TestCase):
             throttle_seconds=0,
             throttle_jitter=0,
         )
-        self.assertEqual(session.calls, [bse_url, ir_url])
+        self.assertEqual(session.calls, [bse_url, cdn_url, ir_url])
+        self.assertTrue(
+            all(not request["allow_redirects"] for request in session.request_kwargs)
+        )
         conn = connect(self.db_path)
         try:
             actual = {

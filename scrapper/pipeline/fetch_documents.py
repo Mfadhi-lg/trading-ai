@@ -14,6 +14,12 @@ from urllib.parse import urlsplit
 
 import requests
 
+from ..core.access_policy import (
+    BlockedTermsError,
+    PUBLISHER_TERMS_ERROR,
+    PUBLISHER_TERMS_RESULT,
+    host_matches_policy,
+)
 from ..config import (
     DB_PATH,
     DOCUMENT_CONTENT_SNAPSHOTS,
@@ -22,6 +28,7 @@ from ..config import (
     THROTTLE_SECONDS,
 )
 from ..db.database import connect, init_db
+from ..db.document_download_queue_repo import blocked_terms_hosts
 from ..db.document_download_repo import persist_download_result
 from ..db.repo import utc_now
 from ..documents.downloader import ALLOWED_MEDIA_BY_ARTIFACT, DownloadPolicy, download_url
@@ -147,11 +154,23 @@ def fetch_documents(
         targets = _load_targets(
             conn, symbol=symbol, artifact_types=artifact_types
         )
+        policy_hosts = blocked_terms_hosts(conn)
         for target in targets:
             parsed = urlsplit(target.requested_url)
             if parsed.scheme not in {"http", "https"} or not parsed.hostname:
                 raise ValueError(f"Unsupported document URL: {target.requested_url!r}")
             host = parsed.hostname.lower()
+            if host_matches_policy(host, policy_hosts):
+                skipped.append(
+                    {
+                        "artifact_id": target.artifact_id,
+                        "artifact_source_ids": list(target.artifact_source_ids),
+                        "requested_url": target.requested_url,
+                        "result_status": "skipped_policy",
+                        "reason": PUBLISHER_TERMS_RESULT,
+                    }
+                )
+                continue
             if host in blocked_hosts:
                 skipped.append(
                     {
@@ -172,13 +191,26 @@ def fetch_documents(
             session = sessions.setdefault(host, session_factory())
             started_at = now_utc()
             first_fetch_time = first_fetch_time or started_at
-            result = download_url(
-                target.requested_url,
-                artifact_type=target.artifact_type,
-                policy=policy,
-                session=session,
-                monotonic=monotonic,
-            )
+            try:
+                result = download_url(
+                    target.requested_url,
+                    artifact_type=target.artifact_type,
+                    policy=policy,
+                    session=session,
+                    monotonic=monotonic,
+                    blocked_terms_hosts=policy_hosts,
+                )
+            except BlockedTermsError:
+                skipped.append(
+                    {
+                        "artifact_id": target.artifact_id,
+                        "artifact_source_ids": list(target.artifact_source_ids),
+                        "requested_url": target.requested_url,
+                        "result_status": "skipped_policy",
+                        "reason": PUBLISHER_TERMS_ERROR,
+                    }
+                )
+                continue
             last_request_at[host] = monotonic()
             fetched_at = now_utc()
             last_fetch_time = fetched_at

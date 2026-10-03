@@ -100,6 +100,7 @@ class RetryPolicy:
         completed_attempt_count: int,
         status: str,
         retryable: bool,
+        checked_at_utc: str | None = None,
     ) -> tuple[str | None, str | None]:
         """Return ``(next_check, terminal_reason)`` after a completed check."""
 
@@ -116,6 +117,15 @@ class RetryPolicy:
         next_check = self.check_at(expected_after_utc, completed_attempt_count)
         if next_check is None:
             return None, "retry_schedule_exhausted"
+        if checked_at_utc is not None and parse_utc(next_check) <= parse_utc(checked_at_utc):
+            # A delayed worker must not burn through its remaining schedule in
+            # a tight loop. Keep the policy's interval between these attempts,
+            # anchored to the actual last check once the original slot is past.
+            previous = self.offsets_hours[completed_attempt_count - 1]
+            upcoming = self.offsets_hours[completed_attempt_count]
+            next_check = format_utc(
+                parse_utc(checked_at_utc) + timedelta(hours=upcoming - previous)
+            )
         return next_check, None
 
 

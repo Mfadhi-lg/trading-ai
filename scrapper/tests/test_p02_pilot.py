@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from scrapper.tests.database_fixtures import prepare_database
+
 import hashlib
 import json
 import sqlite3
@@ -89,6 +91,7 @@ class FiveCompanyPilotTests(unittest.TestCase):
                 )
                 self.assertEqual(len(parsed_peer.observations), company["peers"])
 
+                prepare_database(db_path)
                 result = ingest_screener_response(
                     symbol,
                     "consolidated",

@@ -1,10 +1,25 @@
-.git
-.DS_Store
-OLD
+# Dockerfile copies only scrapper; keep unrelated source/evidence out of context.
+**
+!scrapper/
+!scrapper/**
+
+# Local environments, state, credentials and generated caches are not image inputs.
+**/.git
+**/.DS_Store
+**/.venv
+**/venv
 **/__pycache__
+**/.pytest_cache
 **/*.pyc
-scrapper/.venv
+**/*.pyo
 scrapper/store
-.screener_session
-*.db
-*.sqlite*
+**/.env
+**/.env.*
+**/.screener_session
+**/.screener_csrf
+**/.scraper_shutdown_state
+**/*.db
+**/*.db-*
+**/*.sqlite*
+**/*.log
+**/*.pid

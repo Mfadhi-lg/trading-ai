@@ -21,6 +21,7 @@ from ..config import (
     SCREENER_BASE,
     SNAPSHOTS,
 )
+from ..core.log import get_logger, log_event
 from ..core.http import FetchResponse, ScreenerHostClient, fetch_screener_result_screen
 from ..db.database import connect, init_db
 from ..db.repo import finish_run, record_fetch, start_run, store_blob, utc_now
@@ -34,7 +35,11 @@ from ..db.screener_discovery_repo import (
     persist_screen,
     persist_rejected_screen,
     preview_due_companies,
+    preview_incomplete_metric_candidates,
+    preview_requeue_candidates,
     release_claims,
+    requeue_failed_companies,
+    requeue_incomplete_metric_companies,
     skip_if_already_accepted,
 )
 from ..sources.screener.result_screen import canonical_query, parse_result_screen
@@ -231,14 +236,15 @@ def discover_screener_results(
         conn.close()
 
 
-def _safe_error(exc: Exception) -> dict[str, str]:
+def _safe_error(exc: Exception) -> dict[str, Any]:
     message = str(exc)
     message = re.sub(
         r"(?i)(sessionid|csrftoken|cookie)\s*[=:]\s*[^\s;,]+",
         r"\1=<redacted>",
         message,
     )
-    return {"type": type(exc).__name__, "message": message[:2000]}
+    return {"type": type(exc).__name__, "message": message[:2000],
+            **{name: getattr(exc, name) for name in ("market_cap_crore", "floor_crore", "blob_id") if hasattr(exc, name)}}
 
 
 def _failure_policy(exc: Exception, origin: str = "screener_screen") -> tuple[bool, bool]:
@@ -248,6 +254,13 @@ def _failure_policy(exc: Exception, origin: str = "screener_screen") -> tuple[bo
         for marker in ("status=401", "status=403", "status=429", "captcha", "login", "access-denied")
     )
     terminal_markers = [
+        "status=404",
+        "description is missing",
+        "profile carries no bse or nse identifier",
+        "headers are missing",
+        "table has no observations",
+        "not above screener market-cap scope floor",
+        "below screener market-cap scope floor",
         "screen result period is absent",
         "reporting scope differs",
         "identity",
@@ -260,6 +273,120 @@ def _failure_policy(exc: Exception, origin: str = "screener_screen") -> tuple[bo
         terminal_markers.remove("screen result period is absent")
     terminal = any(marker in message for marker in terminal_markers)
     return not terminal, stop_host
+
+
+def requeue_failed_screener_companies(
+    *,
+    statuses: tuple[str, ...] = ("failed_terminal",),
+    paths: tuple[str, ...] = (),
+    limit: int | None = None,
+    dry_run: bool = False,
+    reason: str = "operator_requeue",
+    db_path: Path = DB_PATH,
+    now_utc: Callable[[], str] = utc_now,
+) -> dict[str, Any]:
+    """Move settled failures back to `pending` after a parser or rule fix.
+
+    `failed_terminal` items are never picked up by the worker again on their
+    own, so a fix that makes them collectable needs an explicit requeue. The
+    report names every item and the error it last failed with.
+    """
+    checked_at = now_utc()
+    if dry_run:
+        items: tuple[dict[str, Any], ...] = ()
+        if db_path.exists():
+            readonly = sqlite3.connect(f"file:{db_path.resolve()}?mode=ro", uri=True)
+            readonly.row_factory = sqlite3.Row
+            try:
+                items = preview_requeue_candidates(
+                    readonly, statuses=statuses, paths=paths, limit=limit
+                )
+            finally:
+                readonly.close()
+    else:
+        conn = connect(db_path)
+        try:
+            init_db(conn)
+            items = requeue_failed_companies(
+                conn,
+                now_utc=checked_at,
+                statuses=statuses,
+                paths=paths,
+                limit=limit,
+                reason=reason,
+            )
+        finally:
+            conn.close()
+    return {
+        "schema_version": DISCOVERY_SCHEMA_VERSION,
+        "mode": "dry_run" if dry_run else "execute",
+        "checked_at_utc": checked_at,
+        "requested_statuses": list(statuses),
+        "summary": {
+            "requeued_count": len(items),
+            "by_status": dict(sorted(Counter(item["status"] for item in items).items())),
+            "by_error_type": dict(
+                sorted(
+                    Counter(
+                        str(item["last_error"].get("type") or "none") for item in items
+                    ).items()
+                )
+            ),
+        },
+        "items": list(items),
+    }
+
+
+def requeue_incomplete_metric_screener_companies(
+    *,
+    paths: tuple[str, ...] = (),
+    limit: int | None = None,
+    dry_run: bool = False,
+    reason: str = "quick_ratios_backfill",
+    db_path: Path = DB_PATH,
+    now_utc: Callable[[], str] = utc_now,
+) -> dict[str, Any]:
+    """Requeue acceptances whose run predates the custom ratio panel fetch.
+
+    Those companies hold only Screener's nine public ratios and the queue will
+    never revisit them on its own, because acceptance is keyed to a result
+    period that has not advanced. The report names every company and the metric
+    count its current acceptance carries.
+    """
+    checked_at = now_utc()
+    if dry_run:
+        items: tuple[dict[str, Any], ...] = ()
+        if db_path.exists():
+            readonly = sqlite3.connect(f"file:{db_path.resolve()}?mode=ro", uri=True)
+            readonly.row_factory = sqlite3.Row
+            try:
+                items = preview_incomplete_metric_candidates(
+                    readonly, paths=paths, limit=limit
+                )
+            finally:
+                readonly.close()
+    else:
+        conn = connect(db_path)
+        try:
+            init_db(conn)
+            items = requeue_incomplete_metric_companies(
+                conn, now_utc=checked_at, paths=paths, limit=limit, reason=reason
+            )
+        finally:
+            conn.close()
+    return {
+        "schema_version": DISCOVERY_SCHEMA_VERSION,
+        "mode": "dry_run" if dry_run else "execute",
+        "checked_at_utc": checked_at,
+        "missing_resource_kind": "quick_ratios",
+        "summary": {
+            "requeued_count": len(items),
+            "by_metric_count": dict(
+                sorted(Counter(int(item["metric_count"]) for item in items).items())
+            ),
+        },
+        "items": list(items),
+    }
 
 
 def run_screener_company_worker(
@@ -281,6 +408,7 @@ def run_screener_company_worker(
         raise ValueError("limit must be positive")
     checked_at = now_utc()
     worker_id = worker_id or f"screener-worker-{uuid.uuid4().hex}"
+    logger = get_logger(__name__)
     if dry_run:
         due_rows: tuple[ClaimedCompany, ...] = ()
         if db_path.exists():
@@ -318,6 +446,8 @@ def run_screener_company_worker(
         claimed = claim_due_companies(
             conn, now_utc=checked_at, limit=limit, worker_id=worker_id
         )
+        log_event(logger, "screener_queue_claimed", worker_id=worker_id,
+                  claimed_count=len(claimed), due_at_utc=checked_at)
         stop_host = False
         for position, item in enumerate(claimed):
             if stop_host:
@@ -330,6 +460,12 @@ def run_screener_company_worker(
                 outcomes.append(
                     {"queue_item_id": item.queue_item_id, "status": "skipped_already_accepted"}
                 )
+                log_event(logger, "screener_queue_skipped", worker_id=worker_id,
+                          source="screener", host="www.screener.in",
+                          queue_item_id=item.queue_item_id,
+                          reporting_scope=item.reporting_scope,
+                          attempt=item.attempt_count + 1,
+                          rejection_code="already_accepted")
                 continue
             mark_running(conn, item, worker_id=worker_id, now_utc=started_at)
             try:
@@ -361,6 +497,11 @@ def run_screener_company_worker(
                         "export_path": str(result.export_path.resolve()),
                     }
                 )
+                log_event(logger, "screener_queue_accepted", worker_id=worker_id,
+                          source="screener", host="www.screener.in",
+                          queue_item_id=item.queue_item_id, company_id=result.company_id,
+                          reporting_scope=item.reporting_scope,
+                          attempt=item.attempt_count + 1)
             except Exception as exc:
                 retryable, stop_host = _failure_policy(exc, item.origin)
                 error = _safe_error(exc)
@@ -382,12 +523,23 @@ def run_screener_company_worker(
                         "error": error,
                     }
                 )
+                log_event(logger, "screener_queue_rejected", worker_id=worker_id,
+                          source="screener", host="www.screener.in",
+                          queue_item_id=item.queue_item_id,
+                          reporting_scope=item.reporting_scope,
+                          attempt=item.attempt_count + 1, retryable=retryable,
+                          retry_reason=error.get("type"),
+                          policy_rejection=("standalone" in error.get("message", "").lower()))
     finally:
         remaining = tuple(item for item in claimed if item.queue_item_id not in completed)
         if remaining:
             release_claims(conn, remaining, worker_id=worker_id, now_utc=now_utc())
         conn.close()
     counts = Counter(item["status"] for item in outcomes)
+    log_event(logger, "screener_queue_throughput", worker_id=worker_id,
+              source="screener", host="www.screener.in",
+              claimed_count=len(claimed), completed_count=len(outcomes),
+              accepted_count=counts.get("accepted", 0), rejected_count=len(outcomes) - counts.get("accepted", 0))
     return {
         "schema_version": DISCOVERY_SCHEMA_VERSION,
         "mode": "execute",

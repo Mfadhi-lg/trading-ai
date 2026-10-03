@@ -92,10 +92,22 @@ def normalize_company_path(href: str) -> tuple[str, str]:
     parts = urlsplit(value)
     if parts.scheme or parts.netloc or parts.query or parts.fragment:
         raise ValueError("Company link must be a relative /company/.../ path")
-    if not re.fullmatch(r"/company/[A-Za-z0-9._-]+/(?:consolidated/)?", parts.path):
+    if not re.fullmatch(r"/company/[A-Za-z0-9._&%-]+/(?:consolidated/)?", parts.path):
         raise ValueError(f"Invalid Screener company path: {value!r}")
     scope = "consolidated" if parts.path.endswith("/consolidated/") else "standalone"
     return parts.path, scope
+
+
+def canonical_company_path(href: str) -> str:
+    """Return the one company-level path used by the results queue.
+
+    The exchange and Screener can expose two page variants for one company.  They
+    are source variants, not separate result candidates: all quarterly history
+    and every current-cycle job belong to one company-period record.
+    """
+    path, _ = normalize_company_path(href)
+    identifier = path.strip("/").split("/")[1]
+    return f"/company/{identifier}/"
 
 
 def normalize_result_period(display: str) -> str:

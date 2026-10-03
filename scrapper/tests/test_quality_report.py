@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from scrapper.tests.database_fixtures import prepare_database
+
 import hashlib
 import json
 import tempfile
@@ -43,6 +45,7 @@ class QualityReportTests(unittest.TestCase):
         self.temp.cleanup()
 
     def _screener(self, content: bytes, fetched_at: str) -> None:
+        prepare_database(self.db_path)
         ingest_screener_response(
             "LAURUSLABS",
             "consolidated",
@@ -55,6 +58,7 @@ class QualityReportTests(unittest.TestCase):
         )
 
     def _trendlyne(self, content: bytes, fetched_at: str) -> None:
+        prepare_database(self.db_path)
         ingest_trendlyne_response(
             "RBA",
             trendlyne_response(content),

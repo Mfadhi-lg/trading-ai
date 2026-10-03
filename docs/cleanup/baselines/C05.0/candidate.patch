@@ -1,0 +1,763 @@
+--- /dev/null
++++ b/docs/cleanup/runtime-identity.md
+@@ -0,0 +1,22 @@
++# Runtime write identity contract
++
++Every writer requires `TRADING_AI_ENV=production|development|test` before it
++creates directories, opens a writable SQLite connection, probes the document
++store, publishes host capacity, or starts the browser worker. Read-only database
++connections, imports and help remain inert.
++
++Production additionally requires `TRADING_AI_RUNTIME_IDENTITY_FILE`, a reviewed
++JSON file with `authorized: true`, `release_id`, `git_commit`, `image_id`, and
++exact resolved `targets` for `db`, `store`, and `documents`. Store and document
++roots each carry `.trading_ai_runtime_identity.json` with the same release ID,
++resolved path, environment and role. Optional `additional_writable_roots` are
++exact roots for host runtime outputs; there is no general bypass switch.
++
++Development and test reject known production paths, Docker production mount
++identities, and production markers. A restored clone that contains a copied
++production marker requires `TRADING_AI_CLONE_IDENTITY_FILE`: its environment,
++unique clone ID, exact resolved clone root, and SHA256 of that marker must match
++the destination. This authorizes only paths inside that clone.
++
++Successful checks log resolved targets and public release, Git, image and clone
++identifiers to stderr. Identity files must contain no credentials.
+--- a/scrapper/cli.py
++++ b/scrapper/cli.py
+@@ -17,6 +17,7 @@
+     MF_WORKBOOK_EXPORTS,
+     SCREENER_WORKER_LIMIT,
+     THROTTLE_SECONDS,
++    assert_configured_writable_targets,
+ )
+ from .db.database import connect, init_db
+ from .db.document_recovery_repo import build_recovery_targets
+@@ -964,6 +965,14 @@
+ 
+ def main(argv: list[str] | None = None) -> int:
+     args = _parser().parse_args(argv)
++    output_targets = tuple(
++        value for name in ("output", "output_dir")
++        if isinstance((value := getattr(args, name, None)), Path)
++    )
++    if output_targets:
++        assert_configured_writable_targets(
++            *output_targets, db_path=getattr(args, "db", DB_PATH)
++        )
+     if args.command is None or args.command == "shell":
+         db_path = getattr(args, "db", DB_PATH)
+         return run_interactive_shell(db_path)
+--- a/scrapper/commands/browser_rating_headed.py
++++ b/scrapper/commands/browser_rating_headed.py
+@@ -12,6 +12,7 @@
+ from urllib.parse import urljoin
+ 
+ from playwright.sync_api import sync_playwright, TimeoutError
++from scrapper.config import assert_configured_writable_targets
+ 
+ 
+ class PublisherRateLimit(ValueError):
+@@ -46,6 +47,7 @@
+     parser.add_argument('--background', action='store_true', help='Reuse a hidden browser window')
+     parser.add_argument('--job-id', action='append', type=int, default=[], help='Download only these ledger jobs')
+     args = parser.parse_args()
++    assert_configured_writable_targets()
+     bridge = subprocess.Popen([
+         'docker', 'exec', '-i', 'trading-ai-document-download-worker-1',
+         'python', '-m', 'scrapper.commands.browser_rating_recovery',
+--- a/scrapper/commands/browser_rating_host.py
++++ b/scrapper/commands/browser_rating_host.py
+@@ -7,6 +7,8 @@
+ import subprocess
+ import time
+ from pathlib import Path
++
++from scrapper.config import assert_configured_writable_targets
+ 
+ ROOT = Path(__file__).resolve().parents[2]
+ FOLDER = ROOT / 'artifacts/icra-download-test'
+@@ -29,6 +31,7 @@
+ 
+ 
+ def start():
++    assert_configured_writable_targets(FOLDER)
+     existing = running_pid()
+     if existing:
+         print(f'ICRA background browser RUNNING (PID {existing}); already started.')
+@@ -84,6 +87,8 @@
+             return 0 if pid else 1
+         print(f'ICRA background browser: {"RUNNING (PID " + str(pid) + ")" if pid else "STOPPED"}')
+         return 0
++    if args.action in ('start', 'stop'):
++        assert_configured_writable_targets(FOLDER)
+     FOLDER.mkdir(parents=True, exist_ok=True)
+     with (FOLDER / 'icra-lifecycle.lock').open('a') as lock:
+         fcntl.flock(lock, fcntl.LOCK_EX)
+--- a/scrapper/commands/diagnose_retryable_failures.py
++++ b/scrapper/commands/diagnose_retryable_failures.py
+@@ -288,6 +288,9 @@
+     parser.add_argument("--output-dir", required=True)
+     args = parser.parse_args()
+ 
++    from ..config import assert_configured_writable_targets
++    assert_configured_writable_targets(Path(args.output_dir), db_path=Path(args.db))
++
+     report = diagnose(args.db, args.scope_id)
+     out = Path(args.output_dir)
+     out.mkdir(parents=True, exist_ok=True)
+--- a/scrapper/commands/publish_document_store_capacity.py
++++ b/scrapper/commands/publish_document_store_capacity.py
+@@ -24,11 +24,14 @@
+ import time
+ from pathlib import Path
+ 
++from scrapper.config import assert_configured_writable_targets
++
+ CAPACITY_FILE = ".trading_ai_document_store_capacity.json"
+ SENTINEL = ".trading_ai_document_store"
+ 
+ 
+ def publish(root: Path, *, require_sentinel: bool = True) -> dict:
++    assert_configured_writable_targets(document_path=root)
+     if not root.is_dir():
+         raise SystemExit(f"document store does not exist: {root}")
+     if require_sentinel and not (root / SENTINEL).is_file():
+--- a/scrapper/commands/quarter_documents.py
++++ b/scrapper/commands/quarter_documents.py
+@@ -264,6 +264,8 @@
+     p.add_argument('--apply',action='store_true'); args=p.parse_args()
+     if (args.prioritize or args.repair_period_tags) and not args.apply:
+         p.error('Mutating options require --apply')
++    from ..config import assert_configured_writable_targets
++    assert_configured_writable_targets(args.output, db_path=args.db)
+     mode='rw' if args.prioritize or args.repair_period_tags else 'ro'
+     conn=sqlite3.connect(f'file:{args.db.resolve()}?mode={mode}',uri=True,timeout=30); conn.row_factory=sqlite3.Row
+     try:
+--- a/scrapper/commands/quarter_extract.py
++++ b/scrapper/commands/quarter_extract.py
+@@ -8,7 +8,7 @@
+ import sqlite3
+ from pathlib import Path
+ 
+-from ..config import DB_PATH
++from ..config import DB_PATH, assert_configured_writable_targets
+ from ..pipeline.extract_document import extract_document
+ from .quarter_documents import build_inventory
+ 
+@@ -50,6 +50,8 @@
+     args = parser.parse_args()
+     if not 1 <= args.limit <= 100:
+         parser.error("Limit must be between 1 and 100")
++    if args.apply:
++        assert_configured_writable_targets(db_path=args.db)
+     conn = sqlite3.connect(f"file:{args.db.resolve()}?mode=ro", uri=True)
+     conn.row_factory = sqlite3.Row
+     try:
+--- a/scrapper/config.py
++++ b/scrapper/config.py
+@@ -175,6 +175,7 @@
+ 
+ 
+ def ensure_dirs() -> None:
++    assert_configured_writable_targets()
+     STORE.mkdir(parents=True, exist_ok=True)
+     FILES.mkdir(parents=True, exist_ok=True)
+     SNAPSHOTS.mkdir(parents=True, exist_ok=True)
+@@ -211,3 +212,16 @@
+         MF_IMPORT_QUARANTINE,
+     ):
+         path.mkdir(parents=True, exist_ok=True)
++
++
++def assert_configured_writable_targets(
++    *extra: Path,
++    db_path: Path = DB_PATH,
++    document_path: Path = DOCUMENT_STORE,
++) -> None:
++    """Authorize configured writes; the delayed import keeps config import inert."""
++    from .runtime_identity import assert_writable_targets
++
++    assert_writable_targets(
++        db=db_path, store=STORE, documents=document_path, extra=tuple(extra)
++    )
+--- a/scrapper/db/database.py
++++ b/scrapper/db/database.py
+@@ -8,7 +8,7 @@
+ from pathlib import Path
+ from urllib.parse import quote
+ 
+-from ..config import DB_PATH, MIGRATIONS_PATH, ensure_dirs
++from ..config import DB_PATH, MIGRATIONS_PATH, assert_configured_writable_targets, ensure_dirs
+ 
+ 
+ _IN_PROCESS_MIGRATION_LOCK = threading.Lock()
+@@ -52,6 +52,7 @@
+         conn = sqlite3.connect(uri, uri=True)
+         conn.execute("PRAGMA query_only=ON;")
+     else:
++        assert_configured_writable_targets(db_path=db_path)
+         ensure_dirs()
+         conn = sqlite3.connect(db_path)
+         conn.execute("PRAGMA journal_mode=WAL;")
+--- a/scrapper/documents/store.py
++++ b/scrapper/documents/store.py
+@@ -19,6 +19,7 @@
+     DOCUMENT_STORE_CAPACITY_MAX_AGE_SECONDS,
+     DOCUMENT_STORE_REQUIRE_CAPACITY_FILE,
+     DOCUMENT_STORE_SENTINEL,
++    assert_configured_writable_targets,
+ )
+ 
+ 
+@@ -94,6 +95,7 @@
+     """Verify the real mount before a worker is permitted to write report bytes."""
+ 
+     root = root.resolve()
++    assert_configured_writable_targets(document_path=root)
+     if not root.is_dir():
+         raise RuntimeError(f"Document store does not exist: {root}")
+     sentinel = root / DOCUMENT_STORE_SENTINEL
+--- a/scrapper/pipeline/audit_acquisition_scope.py
++++ b/scrapper/pipeline/audit_acquisition_scope.py
+@@ -14,7 +14,7 @@
+ from pathlib import Path
+ from typing import Any, Iterable
+ 
+-from ..config import DB_PATH
++from ..config import DB_PATH, assert_configured_writable_targets
+ from ..db.database import connect, init_db
+ 
+ 
+@@ -297,6 +297,7 @@
+     parser.add_argument("--scope-id", required=True)
+     parser.add_argument("--output-dir", type=Path, required=True)
+     args = parser.parse_args()
++    assert_configured_writable_targets(args.output_dir, db_path=args.db)
+     conn = connect(args.db)
+     try:
+         init_db(conn)
+--- a/scrapper/pipeline/build_acquisition_p0.py
++++ b/scrapper/pipeline/build_acquisition_p0.py
+@@ -14,7 +14,7 @@
+ from typing import Any, Iterable
+ from urllib.parse import urlsplit
+ 
+-from ..config import DB_PATH
++from ..config import DB_PATH, assert_configured_writable_targets
+ from ..db.database import connect, init_db
+ from ..documents.download_scope import P0_ARTIFACT_TYPES
+ 
+@@ -503,6 +503,7 @@
+     parser.add_argument("--seed", default=DEFAULT_SEED)
+     parser.add_argument("--scope-id", default="document-acquisition-p0-v1")
+     args = parser.parse_args()
++    assert_configured_writable_targets(args.output_dir, db_path=args.db)
+     conn = connect(args.db)
+     try:
+         init_db(conn)
+--- a/scrapper/pipeline/build_final_acquisition_reports.py
++++ b/scrapper/pipeline/build_final_acquisition_reports.py
+@@ -14,7 +14,7 @@
+ from typing import Any
+ from urllib.parse import urlsplit
+ 
+-from ..config import DB_PATH, DOCUMENT_MIN_FREE_BYTES, DOCUMENT_MIN_FREE_PERCENT, DOCUMENT_STORE
++from ..config import DB_PATH, DOCUMENT_MIN_FREE_BYTES, DOCUMENT_MIN_FREE_PERCENT, DOCUMENT_STORE, assert_configured_writable_targets
+ from ..core.access_policy import BLOCKED_TERMS_HOSTS, host_matches_policy
+ from ..db.database import connect, init_db
+ 
+@@ -401,6 +401,7 @@
+     parser.add_argument("--hash-sample-size", type=int, default=1000)
+     parser.add_argument("--output-dir", type=Path, required=True)
+     args = parser.parse_args()
++    assert_configured_writable_targets(args.output_dir, db_path=args.db)
+     args.output_dir.mkdir(parents=True, exist_ok=True)
+     conn = connect(args.db)
+     try:
+--- a/scrapper/pipeline/build_full_acquisition_scope.py
++++ b/scrapper/pipeline/build_full_acquisition_scope.py
+@@ -10,7 +10,7 @@
+ from typing import Any
+ from urllib.parse import urlsplit
+ 
+-from ..config import DB_PATH
++from ..config import DB_PATH, assert_configured_writable_targets
+ from ..core.access_policy import host_matches_policy
+ from ..db.database import connect, init_db
+ from ..db.document_download_queue_repo import blocked_terms_hosts
+@@ -200,6 +200,7 @@
+     parser.add_argument("--scope-id", default="document-acquisition-full-v1")
+     parser.add_argument("--output-dir", type=Path, required=True)
+     args = parser.parse_args()
++    assert_configured_writable_targets(args.output_dir, db_path=args.db)
+     conn = connect(args.db)
+     try:
+         init_db(conn)
+--- a/scrapper/pipeline/build_gate_evidence.py
++++ b/scrapper/pipeline/build_gate_evidence.py
+@@ -13,7 +13,7 @@
+ from pathlib import Path
+ from typing import Any
+ 
+-from ..config import DOCUMENT_STORE, DOCUMENT_STORE_SENTINEL
++from ..config import DOCUMENT_STORE, DOCUMENT_STORE_SENTINEL, assert_configured_writable_targets
+ from ..documents.store import assert_document_store_ready
+ 
+ 
+@@ -161,6 +161,7 @@
+     parser.add_argument("--restart-before", type=Path, default=None)
+     parser.add_argument("--restart-after", type=Path, default=None)
+     args = parser.parse_args()
++    assert_configured_writable_targets(args.output_dir)
+     args.output_dir.mkdir(parents=True, exist_ok=True)
+ 
+     store_gate = external_store_fail_closed_gate(
+--- a/scrapper/pipeline/build_p0_governance.py
++++ b/scrapper/pipeline/build_p0_governance.py
+@@ -17,6 +17,8 @@
+ from datetime import date
+ from pathlib import Path
+ from typing import Any, Iterable, Mapping
++
++from ..config import assert_configured_writable_targets
+ 
+ from ..governance.focus_p0 import (
+     ArchetypeApprovalState,
+@@ -1503,6 +1505,8 @@
+     parser.add_argument("--decision-approvals", type=Path)
+     parser.add_argument("--archetype-approvals", type=Path)
+     args = parser.parse_args()
++    output = args.q4_ocr_evidence or args.output_dir
++    assert_configured_writable_targets(output, db_path=args.db)
+     if args.capture_q4_ocr:
+         output = args.q4_ocr_evidence or args.output_dir / "Q4_OCR_EVIDENCE_v001.json"
+         capture_q4_ocr_evidence(
+--- a/scrapper/pipeline/build_transcript_coverage.py
++++ b/scrapper/pipeline/build_transcript_coverage.py
+@@ -8,7 +8,7 @@
+ from pathlib import Path
+ from typing import Any
+ 
+-from ..config import DB_PATH
++from ..config import DB_PATH, assert_configured_writable_targets
+ from ..db.database import connect, init_db
+ 
+ 
+@@ -548,6 +548,7 @@
+     parser.add_argument("--full-scope-id", default="document-acquisition-full-v1")
+     parser.add_argument("--output-dir", type=Path, required=True)
+     args = parser.parse_args()
++    assert_configured_writable_targets(args.output_dir, db_path=args.db)
+     conn = connect(args.db)
+     try:
+         init_db(conn)
+--- a/scrapper/pipeline/evaluate_document_acquisition_gate.py
++++ b/scrapper/pipeline/evaluate_document_acquisition_gate.py
+@@ -7,7 +7,7 @@
+ from pathlib import Path
+ from typing import Any
+ 
+-from ..config import DB_PATH
++from ..config import DB_PATH, assert_configured_writable_targets
+ from ..db.database import connect, init_db
+ 
+ 
+@@ -419,6 +419,7 @@
+     parser.add_argument("--scope-id", default="document-acquisition-full-v1")
+     parser.add_argument("--output-dir", type=Path, required=True)
+     args = parser.parse_args()
++    assert_configured_writable_targets(args.output_dir, db_path=args.db)
+     conn = connect(args.db)
+     try:
+         init_db(conn)
+--- a/scrapper/pipeline/finalize_acquisition_states.py
++++ b/scrapper/pipeline/finalize_acquisition_states.py
+@@ -9,7 +9,7 @@
+ from pathlib import Path
+ from typing import Any
+ 
+-from ..config import DB_PATH
++from ..config import DB_PATH, assert_configured_writable_targets
+ from ..core.access_policy import is_blocked_terms_target
+ from ..db.database import connect, init_db
+ from ..db.repo import utc_now
+@@ -279,6 +279,7 @@
+     parser.add_argument("--scope-id", default="document-acquisition-full-v1")
+     parser.add_argument("--output-dir", type=Path, required=True)
+     args = parser.parse_args()
++    assert_configured_writable_targets(args.output_dir, db_path=args.db)
+     conn = connect(args.db)
+     try:
+         init_db(conn)
+--- a/scrapper/pipeline/reconcile_issuer_retrieval_provenance.py
++++ b/scrapper/pipeline/reconcile_issuer_retrieval_provenance.py
+@@ -9,7 +9,7 @@
+ from typing import Any
+ from urllib.parse import urlsplit
+ 
+-from ..config import DB_PATH
++from ..config import DB_PATH, assert_configured_writable_targets
+ from ..db.database import connect, init_db
+ 
+ 
+@@ -148,6 +148,7 @@
+     parser.add_argument("--output", type=Path, required=True)
+     parser.add_argument("--dry-run", action="store_true")
+     args = parser.parse_args()
++    assert_configured_writable_targets(args.output, db_path=args.db)
+     conn = connect(args.db)
+     try:
+         init_db(conn)
+--- a/scrapper/pipeline/render_html_documents.py
++++ b/scrapper/pipeline/render_html_documents.py
+@@ -9,7 +9,7 @@
+ from pathlib import Path
+ from typing import Any
+ 
+-from ..config import DB_PATH, DOCUMENT_CONTENT_SNAPSHOTS
++from ..config import DB_PATH, DOCUMENT_CONTENT_SNAPSHOTS, assert_configured_writable_targets
+ from ..db.database import connect, init_db
+ from ..db.html_document_rendering_repo import render_and_persist_html_pdf
+ 
+@@ -140,6 +140,7 @@
+     parser.add_argument("--scope-id")
+     parser.add_argument("--limit", type=int)
+     args = parser.parse_args()
++    assert_configured_writable_targets(args.snapshot_root, db_path=args.db)
+     report = render_pending_html_documents(
+         db_path=args.db,
+         snapshot_root=args.snapshot_root,
+--- a/scrapper/pipeline/run_scope_extraction.py
++++ b/scrapper/pipeline/run_scope_extraction.py
+@@ -8,7 +8,7 @@
+ from pathlib import Path
+ from typing import Any
+ 
+-from ..config import DB_PATH
++from ..config import DB_PATH, assert_configured_writable_targets
+ from ..db.database import connect, init_db
+ from ..documents.downloader import PDF, PPT, PPTX
+ from ..documents.html import HTML
+@@ -239,6 +239,7 @@
+         default=[],
+     )
+     args = parser.parse_args()
++    assert_configured_writable_targets(args.output_dir, db_path=args.db)
+     report = run_scope_extraction(
+         scope_id=args.scope_id,
+         db_path=args.db,
+--- /dev/null
++++ b/scrapper/runtime_identity.py
+@@ -0,0 +1,146 @@
++"""Fail-closed identity checks for runtime write targets. Importing is inert."""
++from __future__ import annotations
++
++import hashlib
++import json
++import os
++import re
++import sys
++from pathlib import Path
++
++IDENTITY_MARKER = ".trading_ai_runtime_identity.json"
++PRODUCTION_ROOTS = tuple(Path(value) for value in (
++    "/Users/mohamedfadhi/Fadhi/trading-ai",
++    "/Volumes/My Passport/passport/trading-ai",
++    "/data",
++    "/documents",
++))
++_logged: set[str] = set()
++
++
++def _inside(path: Path, root: Path) -> bool:
++    return path == root or root in path.parents
++
++
++def _read_json(path: Path) -> dict:
++    try:
++        value = json.loads(path.read_text(encoding="utf-8"))
++    except (OSError, ValueError) as exc:
++        raise RuntimeError(f"Invalid runtime identity file: {path}") from exc
++    if not isinstance(value, dict):
++        raise RuntimeError(f"Invalid runtime identity file: {path}")
++    return value
++
++
++def _marker_ancestor(path: Path) -> Path | None:
++    for parent in (path, *path.parents):
++        marker = parent / IDENTITY_MARKER
++        if marker.is_file():
++            return marker
++    return None
++
++
++def _mount_identity(path: Path) -> str | None:
++    try:
++        lines = Path("/proc/self/mountinfo").read_text(encoding="utf-8").splitlines()
++    except OSError:
++        return None
++    matches: list[tuple[int, str]] = []
++    for line in lines:
++        try:
++            left, right = line.split(" - ", 1)
++            fields = left.split()
++            mountpoint = Path(fields[4].replace("\\040", " "))
++            if _inside(path, mountpoint):
++                matches.append((len(str(mountpoint)), fields[3] + " " + right))
++        except (IndexError, ValueError):
++            continue
++    return max(matches)[1] if matches else None
++
++
++def _public_id(value: object) -> str:
++    text = str(value or "")
++    return text if re.fullmatch(r"[A-Za-z0-9._:@/-]{1,128}", text) else "unavailable"
++
++
++def assert_writable_targets(*, db: Path, store: Path, documents: Path,
++                            extra: tuple[Path, ...] = ()) -> None:
++    """Authorize resolved targets before directories, DBs, or workers are opened."""
++    environment = os.environ.get("TRADING_AI_ENV", "").strip().lower()
++    if environment not in {"production", "development", "test"}:
++        raise RuntimeError(
++            "TRADING_AI_ENV must be production, development, or test before writing"
++        )
++    core = {"db": Path(db).resolve(), "store": Path(store).resolve(),
++            "documents": Path(documents).resolve()}
++    extras = tuple(Path(path).resolve() for path in extra)
++    identity_file = os.environ.get("TRADING_AI_RUNTIME_IDENTITY_FILE")
++    identity = _read_json(Path(identity_file)) if identity_file else None
++    clone = None
++
++    if environment == "production":
++        expected = {key: str(path) for key, path in core.items()}
++        if (not identity or identity.get("environment") != "production" or
++                identity.get("authorized") is not True or identity.get("targets") != expected):
++            raise RuntimeError("Production writes require an authorized exact runtime identity")
++        if not all(identity.get(key) for key in ("release_id", "git_commit", "image_id")):
++            raise RuntimeError("Production release, Git commit and image identity are required")
++        extra_roots = tuple(Path(value).resolve() for value in
++                            identity.get("additional_writable_roots", ()))
++        for path in extras:
++            if not any(_inside(path, root) for root in
++                       (core["store"], core["documents"], *extra_roots)):
++                raise RuntimeError(f"Production extra writable target is not authorized: {path}")
++        for role in ("store", "documents"):
++            marker = core[role] / IDENTITY_MARKER
++            value = _read_json(marker)
++            roles = value.get("roles", [value.get("role")])
++            if ((value.get("environment"), value.get("path"), value.get("release_id")) !=
++                    ("production", str(core[role]), identity["release_id"]) or role not in roles):
++                raise RuntimeError(f"Production sentinel mismatch: {marker}")
++    else:
++        if identity and identity.get("environment") != environment:
++            raise RuntimeError("Runtime identity environment mismatch")
++        clone_file = os.environ.get("TRADING_AI_CLONE_IDENTITY_FILE")
++        clone = _read_json(Path(clone_file)) if clone_file else None
++        clone_root = None
++        if clone:
++            try:
++                clone_root = Path(clone["root"])
++            except (KeyError, TypeError):
++                raise RuntimeError("Invalid isolated clone identity") from None
++            if (clone.get("environment") != environment or not clone.get("clone_id") or
++                    not clone_root.is_absolute() or clone_root.resolve() != clone_root):
++                raise RuntimeError("Invalid isolated clone identity")
++        for role, path in (*core.items(), *((f"extra_{i}", p) for i, p in enumerate(extras))):
++            if any(_inside(path, root.resolve()) for root in PRODUCTION_ROOTS):
++                raise RuntimeError(f"{environment} writable {role} targets production path: {path}")
++            mount = _mount_identity(path)
++            if mount and any(token in mount for token in (
++                    "trading-ai_scraper-data", "My Passport/passport/trading-ai",
++                    "trading-ai/scrapper")):
++                raise RuntimeError(f"{environment} writable {role} uses production mount: {path}")
++            marker = _marker_ancestor(path)
++            if marker and _read_json(marker).get("environment") == "production":
++                if (not clone_root or not _inside(path, clone_root) or
++                        not _inside(marker, clone_root) or
++                        clone.get("source_marker_sha256") !=
++                        hashlib.sha256(marker.read_bytes()).hexdigest()):
++                    raise RuntimeError(f"{environment} target has unverified production marker: {marker}")
++
++    record = {
++        "event": "runtime_writable_target_check",
++        "environment": environment,
++        "targets": {**{key: str(path) for key, path in core.items()},
++                    "extra": [str(path) for path in extras]},
++        "release_id": _public_id((identity or {}).get("release_id")),
++        "git_commit": _public_id((identity or {}).get("git_commit") or
++                                 os.environ.get("TRADING_AI_GIT_COMMIT")),
++        "image_id": _public_id((identity or {}).get("image_id") or
++                               os.environ.get("TRADING_AI_IMAGE_ID")),
++        "clone_id": _public_id((clone or {}).get("clone_id")),
++    }
++    rendered = json.dumps(record, sort_keys=True)
++    if rendered not in _logged:
++        print(rendered, file=sys.stderr)
++        _logged.add(rendered)
+--- /dev/null
++++ b/scrapper/tests/test_runtime_identity.py
+@@ -0,0 +1,162 @@
++from __future__ import annotations
++
++import hashlib
++import json
++import os
++import subprocess
++import sys
++import tempfile
++import unittest
++from contextlib import redirect_stderr
++from io import StringIO
++from pathlib import Path
++from unittest.mock import patch
++
++from scrapper.runtime_identity import IDENTITY_MARKER, assert_writable_targets
++
++
++class RuntimeIdentityTests(unittest.TestCase):
++    def setUp(self):
++        self.temp = tempfile.TemporaryDirectory()
++        self.root = Path(self.temp.name).resolve()
++        self.db = self.root / "state" / "scraper.db"
++        self.store = self.root / "store"
++        self.documents = self.root / "documents"
++
++    def tearDown(self):
++        self.temp.cleanup()
++
++    def call(self, **env):
++        values = {
++            "TRADING_AI_ENV": "test",
++            "TRADING_AI_RUNTIME_IDENTITY_FILE": "",
++            "TRADING_AI_CLONE_IDENTITY_FILE": "",
++        }
++        values.update(env)
++        with patch.dict(os.environ, values, clear=False):
++            return assert_writable_targets(
++                db=self.db, store=self.store, documents=self.documents
++            )
++
++    def test_environment_is_required_before_any_target_creation(self):
++        with patch.dict(os.environ, {
++                "TRADING_AI_ENV": "",
++                "TRADING_AI_RUNTIME_IDENTITY_FILE": "",
++                "TRADING_AI_CLONE_IDENTITY_FILE": ""}, clear=False):
++            with self.assertRaisesRegex(RuntimeError, "TRADING_AI_ENV"):
++                assert_writable_targets(db=self.db, store=self.store, documents=self.documents)
++        self.assertFalse(self.root.joinpath("state").exists())
++        self.assertFalse(self.store.exists())
++
++    def test_test_environment_allows_isolated_targets_and_logs_public_identity(self):
++        output = StringIO()
++        with redirect_stderr(output):
++            self.call(TRADING_AI_GIT_COMMIT="abc123", TRADING_AI_IMAGE_ID="sha256:123")
++        record = json.loads(output.getvalue())
++        self.assertEqual(record["environment"], "test")
++        self.assertEqual(record["git_commit"], "abc123")
++        self.assertEqual(record["image_id"], "sha256:123")
++        self.assertNotIn("secret", output.getvalue().lower())
++
++    def test_development_rejects_known_production_target(self):
++        with self.assertRaisesRegex(RuntimeError, "targets production path"):
++            with patch.dict(os.environ, {"TRADING_AI_ENV": "development"}, clear=False):
++                assert_writable_targets(
++                    db=Path("/data/scraper.db"), store=self.store,
++                    documents=self.documents,
++                )
++
++    def test_production_requires_exact_manifest_release_and_sentinels(self):
++        self.store.mkdir()
++        self.documents.mkdir()
++        release = "release-20261002"
++        for role, target in (("store", self.store), ("documents", self.documents)):
++            (target / IDENTITY_MARKER).write_text(json.dumps({
++                "environment": "production", "role": role,
++                "path": str(target), "release_id": release,
++            }))
++        identity = self.root / "identity.json"
++        identity.write_text(json.dumps({
++            "environment": "production", "authorized": True,
++            "release_id": release, "git_commit": "abc123", "image_id": "sha256:123",
++            "targets": {"db": str(self.db), "store": str(self.store),
++                        "documents": str(self.documents)},
++        }))
++        with patch.dict(os.environ, {
++                "TRADING_AI_ENV": "production",
++                "TRADING_AI_RUNTIME_IDENTITY_FILE": str(identity)}, clear=False):
++            assert_writable_targets(db=self.db, store=self.store, documents=self.documents)
++            with self.assertRaisesRegex(RuntimeError, "exact runtime identity"):
++                assert_writable_targets(
++                    db=self.root / "other.db", store=self.store, documents=self.documents
++                )
++
++    def test_copied_production_marker_needs_destination_bound_clone_identity(self):
++        self.store.mkdir()
++        marker = self.store / IDENTITY_MARKER
++        marker.write_text(json.dumps({"environment": "production"}))
++        with self.assertRaisesRegex(RuntimeError, "unverified production marker"):
++            self.call()
++        clone = self.root / "clone.json"
++        clone.write_text(json.dumps({
++            "environment": "test", "clone_id": "restored-fixture-1",
++            "root": str(self.root),
++            "source_marker_sha256": hashlib.sha256(marker.read_bytes()).hexdigest(),
++        }))
++        self.call(TRADING_AI_CLONE_IDENTITY_FILE=str(clone))
++
++
++class RuntimeEntryPointTests(unittest.TestCase):
++    def run_module(self, *args, environment=""):
++        with tempfile.TemporaryDirectory() as directory:
++            root = Path(directory)
++            env = os.environ.copy()
++            env.update({
++                "PYTHONDONTWRITEBYTECODE": "1",
++                "TRADING_AI_ENV": environment,
++                "SCRAPER_STORE_PATH": str(root / "store"),
++                "SCRAPER_DB_PATH": str(root / "state" / "scraper.db"),
++                "SCRAPER_DOCUMENT_STORE_PATH": str(root / "documents"),
++            })
++            result = subprocess.run(
++                [sys.executable, *args], cwd=Path(__file__).resolve().parents[2],
++                env=env, text=True, capture_output=True, timeout=30,
++            )
++            return result, root.joinpath("state", "scraper.db").exists(), root.joinpath("store").exists()
++
++    def test_cli_help_is_inert_without_environment_identity(self):
++        result, db_exists, store_exists = self.run_module("-m", "scrapper.cli", "--help")
++        self.assertEqual(result.returncode, 0, result.stderr)
++        self.assertFalse(db_exists)
++        self.assertFalse(store_exists)
++
++    def test_direct_cli_refuses_before_database_or_directory_creation(self):
++        result, db_exists, store_exists = self.run_module(
++            "-m", "scrapper.cli", "init-db"
++        )
++        self.assertNotEqual(result.returncode, 0)
++        self.assertIn("TRADING_AI_ENV", result.stdout + result.stderr)
++        self.assertFalse(db_exists)
++        self.assertFalse(store_exists)
++
++    def test_container_worker_entry_refuses_before_database_creation(self):
++        result, db_exists, store_exists = self.run_module(
++            "-m", "scrapper.cli", "run-document-download-worker", "--all-scopes",
++        )
++        self.assertNotEqual(result.returncode, 0)
++        self.assertIn("TRADING_AI_ENV", result.stdout + result.stderr)
++        self.assertFalse(db_exists)
++        self.assertFalse(store_exists)
++
++    def test_host_browser_start_refuses_before_runtime_directory_creation(self):
++        result, db_exists, store_exists = self.run_module(
++            "-m", "scrapper.commands.browser_rating_host", "start"
++        )
++        self.assertNotEqual(result.returncode, 0)
++        self.assertIn("TRADING_AI_ENV", result.stdout + result.stderr)
++        self.assertFalse(db_exists)
++        self.assertFalse(store_exists)
++
++
++if __name__ == "__main__":
++    unittest.main()

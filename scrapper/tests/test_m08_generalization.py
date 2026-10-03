@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from scrapper.tests.database_fixtures import prepare_database
+
 import hashlib
 import json
 import tempfile
@@ -106,6 +108,7 @@ class MutualFundM08GeneralizationTests(unittest.TestCase):
                         snapshot_root=temporary_root / "snapshots",
                         import_root=temporary_root / "imports",
                     )
+                    prepare_database(db_path)
                     result = execute_import(
                         proposals,
                         db_path=db_path,

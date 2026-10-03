@@ -1,7 +1,8 @@
 {
-  "manifest_version": "1.3.0",
+  "manifest_version": "1.4.1",
   "page_type": "screener_company",
   "fixture_contract": "LAURUSLABS consolidated and standalone, NTPCGREEN consolidated, and the five-company P02 pilot saved 2026-08-04",
+  "presence_evidence": "1.4.0 marks a component optional only where the saved corpus of 337 collected company responses shows the source omitting it: benchmark index tags (48 pages), the entitled quarterly-insights tab, FII and DII shareholder drill-downs (3 and 4 pages), Key Points commentary (3 pages), and the related-party action (1 page). No page in that corpus carried a component the manifest does not list.",
   "status_definitions": {
     "capture": "Persist source-faithful content and normalized observations where applicable.",
     "metadata_only": "Inventory the control or linked component, but do not treat it as page data.",
@@ -56,7 +57,7 @@
   ],
   "profile_blocks": [
     {"heading": "About", "status": "capture", "source": "#top .company-profile .about", "implementation": "company_text and company_profile_links"},
-    {"heading": "Key Points", "status": "deferred", "source": "#top .company-profile .commentary and /wiki/company/{company_id}/commentary/v2/", "deferral_approval": "S14-KEY-POINTS"}
+    {"heading": "Key Points", "status": "deferred", "source": "#top .company-profile .commentary and /wiki/company/{company_id}/commentary/v2/", "presence_condition": "The source renders this block only when it holds curated commentary for the company; absence carries no company data.", "deferral_approval": "S14-KEY-POINTS"}
   ],
   "tables": [
     {"section": "quarters", "table_index": 0, "code": "quarterly_results", "status": "capture", "source": "main_response_html"},
@@ -79,18 +80,19 @@
     {"heading": "Concalls", "code": "concalls", "status": "conditional", "source": "main_response_html", "condition": "The source renders this list only after at least one concall artifact exists; preserve every listed link when present and do not synthesize a row when the whole list is absent."}
   ],
   "controls": [
+    {"key": "swap:#forecaster-table:Forecast", "code": "forecast_toggle", "status": "metadata_only", "source": "page control", "presence_condition": "Some company pages expose a Forecast toggle with an empty forecaster-table container; forecast data requires a separate entitled response."},
     {"key": "input:quick-ratio-search", "code": "custom_ratio_picker", "status": "conditional", "source": "authenticated top ratio panel", "condition": "Authenticated account configuration may add custom ratios; public absence means unavailable_without_auth."},
     {"key": "input:search-peer-comparison", "code": "detailed_peer_search", "status": "metadata_only", "source": "page control"},
     {"key": "options:company-chart-days", "code": "chart_period_filter", "status": "metadata_only", "source": "page control"},
     {"key": "options:company-chart-metrics", "code": "chart_metric_filter", "status": "metadata_only", "source": "page control"},
-    {"key": "tab:yearly-insights", "code": "yearly_insights_tab", "status": "metadata_only", "source": "page control"},
+    {"key": "tab:yearly-insights", "code": "yearly_insights_tab", "status": "conditional", "source": "page control", "condition": "Rendered only for entitled/company-specific responses."},
     {"key": "tab:quarterly-insights", "code": "quarterly_insights_tab", "status": "conditional", "source": "/insights/company/{company_id}/quarter/", "condition": "Enabled only for an entitled response."},
     {"key": "tab:quarterly-shp", "code": "quarterly_shareholding_tab", "status": "metadata_only", "source": "page control"},
     {"key": "tab:yearly-shp", "code": "yearly_shareholding_tab", "status": "metadata_only", "source": "page control"},
     {"key": "swap:#company-announcements-tab:Recent", "code": "recent_announcements_filter", "status": "metadata_only", "source": "page control"},
     {"key": "swap:#company-announcements-tab:Important", "code": "important_announcements_filter", "status": "metadata_only", "source": "page control"},
     {"key": "swap:#company-announcements-tab:Search", "code": "announcement_search_filter", "status": "metadata_only", "source": "page control"},
-    {"key": "group:benchmarks", "code": "peer_benchmark_links", "status": "metadata_only", "source": "main_response_html"}
+    {"key": "group:benchmarks", "code": "peer_benchmark_links", "status": "metadata_only", "source": "main_response_html", "presence_condition": "The source renders the \"Part of\" index tags only for companies that belong to at least one benchmark index."}
   ],
   "chart_series": [
     {"label": "Price", "request_metrics": "Price-DMA50-DMA200-Volume", "status": "deferred", "source": "first_party_chart_request", "deferral_approval": "S14-CHART-SERIES"},
@@ -121,23 +123,23 @@
   ],
   "shareholder_drilldowns": [
     {"frequency": "quarterly", "classification": "promoters", "status": "deferred", "source": "Company.showShareholders", "presence_condition": "The source omits this drill-down when the company has no Promoters category for that frequency.", "deferral_approval": "S14-SHAREHOLDER-DRILLDOWNS"},
-    {"frequency": "quarterly", "classification": "foreign_institutions", "status": "deferred", "source": "Company.showShareholders", "deferral_approval": "S14-SHAREHOLDER-DRILLDOWNS"},
-    {"frequency": "quarterly", "classification": "domestic_institutions", "status": "deferred", "source": "Company.showShareholders", "deferral_approval": "S14-SHAREHOLDER-DRILLDOWNS"},
+    {"frequency": "quarterly", "classification": "foreign_institutions", "status": "deferred", "source": "Company.showShareholders", "presence_condition": "Rendered only when the source has an FIIs category for that frequency.", "deferral_approval": "S14-SHAREHOLDER-DRILLDOWNS"},
+    {"frequency": "quarterly", "classification": "domestic_institutions", "status": "deferred", "source": "Company.showShareholders", "presence_condition": "Rendered only when the source has a DIIs category for that frequency.", "deferral_approval": "S14-SHAREHOLDER-DRILLDOWNS"},
     {"frequency": "quarterly", "classification": "public", "status": "deferred", "source": "Company.showShareholders", "deferral_approval": "S14-SHAREHOLDER-DRILLDOWNS"},
     {"frequency": "quarterly", "classification": "government", "status": "deferred", "source": "Company.showShareholders", "presence_condition": "Rendered only when the source has a Government category for that frequency.", "deferral_approval": "S14-SHAREHOLDER-DRILLDOWNS"},
     {"frequency": "quarterly", "classification": "others", "status": "deferred", "source": "Company.showShareholders", "presence_condition": "Rendered only when the source has an Others category for that frequency.", "deferral_approval": "S14-SHAREHOLDER-DRILLDOWNS"},
     {"frequency": "yearly", "classification": "promoters", "status": "deferred", "source": "Company.showShareholders", "presence_condition": "The source omits this drill-down when the company has no Promoters category for that frequency.", "deferral_approval": "S14-SHAREHOLDER-DRILLDOWNS"},
-    {"frequency": "yearly", "classification": "foreign_institutions", "status": "deferred", "source": "Company.showShareholders", "deferral_approval": "S14-SHAREHOLDER-DRILLDOWNS"},
-    {"frequency": "yearly", "classification": "domestic_institutions", "status": "deferred", "source": "Company.showShareholders", "deferral_approval": "S14-SHAREHOLDER-DRILLDOWNS"},
+    {"frequency": "yearly", "classification": "foreign_institutions", "status": "deferred", "source": "Company.showShareholders", "presence_condition": "Rendered only when the source has an FIIs category for that frequency.", "deferral_approval": "S14-SHAREHOLDER-DRILLDOWNS"},
+    {"frequency": "yearly", "classification": "domestic_institutions", "status": "deferred", "source": "Company.showShareholders", "presence_condition": "Rendered only when the source has a DIIs category for that frequency.", "deferral_approval": "S14-SHAREHOLDER-DRILLDOWNS"},
     {"frequency": "yearly", "classification": "public", "status": "deferred", "source": "Company.showShareholders", "deferral_approval": "S14-SHAREHOLDER-DRILLDOWNS"},
     {"frequency": "yearly", "classification": "government", "status": "deferred", "source": "Company.showShareholders", "presence_condition": "Rendered only when the source has a Government category for that frequency.", "deferral_approval": "S14-SHAREHOLDER-DRILLDOWNS"},
     {"frequency": "yearly", "classification": "others", "status": "deferred", "source": "Company.showShareholders", "presence_condition": "Rendered only when the source has an Others category for that frequency.", "deferral_approval": "S14-SHAREHOLDER-DRILLDOWNS"}
   ],
   "linked_components": [
-    {"code": "related_party_transactions", "selector": "[data-title='Related Party Transactions']", "status": "deferred", "source": "/results/rpt/{company_id}/{scope}/", "deferral_approval": "S14-LINKED-PANELS"},
+    {"code": "related_party_transactions", "selector": "[data-title='Related Party Transactions']", "status": "deferred", "source": "/results/rpt/{company_id}/{scope}/", "presence_condition": "The main page exposes this action only when the source holds a related-party filing for the company; absence of the action carries no embedded transaction data.", "deferral_approval": "S14-LINKED-PANELS"},
     {"code": "corporate_actions", "selector": "[data-title='Corporate actions']", "status": "deferred", "source": "/company/actions/{company_id}/", "deferral_approval": "S14-LINKED-PANELS"},
     {"code": "company_trades", "selector": "[data-title$=' trades']", "status": "deferred", "source": "/trades/company-{company_id}/", "presence_condition": "The main page exposes this action only for some companies; absence of the action carries no embedded trade data.", "deferral_approval": "S14-LINKED-PANELS"},
-    {"code": "all_announcements", "selector": "#documents a[href*='corp-announcements']", "status": "metadata_only", "source": "BSE announcements landing page"},
+    {"code": "all_announcements", "selector": "#documents a[href*='corp-announcements'], #documents a[href*='corporate-filings-announcements']", "status": "metadata_only", "source": "BSE or NSE announcements landing page, following the company's listing"},
     {"code": "export_follow_alerts_and_edit_controls", "selector": "#top form, section#chart [data-title^='Alerts'], section#peers a[href^='/user/columns/']", "status": "metadata_only", "source": "operational page controls"}
   ]
 }

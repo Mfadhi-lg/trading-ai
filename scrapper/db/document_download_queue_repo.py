@@ -1,0 +1,579 @@
+"""SQLite repository for the DA-05 durable artifact download queue."""
+
+from __future__ import annotations
+
+import json
+import sqlite3
+from datetime import datetime, timedelta, timezone
+from typing import Any, Iterable
+from urllib.parse import urlsplit
+
+from ..core.access_policy import (
+    BLOCKED_TERMS,
+    PUBLISHER_TERMS_ERROR,
+    PUBLISHER_TERMS_RESULT,
+    host_matches_policy,
+)
+from .repo import utc_now
+
+
+RECOVERY_DOWNLOAD_SCOPE_ID = "da06-rating-recovery"
+
+
+def _after(now_utc: str, seconds: int) -> str:
+    parsed = datetime.fromisoformat(now_utc.replace("Z", "+00:00"))
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return (parsed + timedelta(seconds=seconds)).isoformat()
+
+
+def _scope(conn: sqlite3.Connection, scope_id: str) -> sqlite3.Row:
+    row = conn.execute(
+        "SELECT * FROM artifact_download_scopes WHERE scope_id=?", (scope_id,)
+    ).fetchone()
+    if row is None:
+        raise ValueError(f"Unknown artifact download scope: {scope_id}")
+    return row
+
+
+def blocked_terms_hosts(conn: sqlite3.Connection) -> frozenset[str]:
+    """Return hosts whose reviewed terms prohibit automated acquisition."""
+
+    return frozenset(
+        str(row["host"]).lower().rstrip(".")
+        for row in conn.execute(
+            "SELECT host FROM credit_rating_host_policy WHERE automation_status=?",
+            (BLOCKED_TERMS,),
+        )
+    )
+
+
+def _skip_blocked_terms_jobs(
+    conn: sqlite3.Connection,
+    *,
+    now_utc: str,
+    scope_id: str | None = None,
+) -> int:
+    """Move every actionable generic job covered by BLOCKED_TERMS to policy skip."""
+
+    scope_filter = " AND queue.scope_id=?" if scope_id is not None else ""
+    parameters: tuple[Any, ...] = (
+        PUBLISHER_TERMS_RESULT,
+        PUBLISHER_TERMS_ERROR,
+        now_utc,
+        BLOCKED_TERMS,
+        *((scope_id,) if scope_id is not None else ()),
+    )
+    cursor = conn.execute(
+        f"""UPDATE artifact_download_queue AS queue
+               SET status='SKIPPED_POLICY', next_attempt_at_utc=NULL,
+                   lease_owner=NULL, lease_expires_at_utc=NULL,
+                   last_result_status=?, last_error=?, updated_at_utc=?
+             WHERE queue.status IN ('PENDING', 'LEASED', 'RETRYABLE_FAILURE')
+               AND EXISTS (
+                 SELECT 1 FROM credit_rating_host_policy AS policy
+                  WHERE policy.automation_status=?
+                    AND (
+                      queue.target_host=policy.host
+                      OR queue.target_host LIKE '%.' || policy.host
+                    )
+               )
+               {scope_filter}""",
+        parameters,
+    )
+    return int(cursor.rowcount)
+
+
+def _target_rows(
+    conn: sqlite3.Connection,
+    scope_id: str,
+    artifact_ids: Iterable[int] | None = None,
+) -> tuple[sqlite3.Row, ...]:
+    scope = _scope(conn, scope_id)
+    artifact_types = tuple(json.loads(scope["artifact_types_json"]))
+    if not artifact_types:
+        return ()
+    placeholders = ",".join("?" for _ in artifact_types)
+    selected_ids = tuple(sorted({int(value) for value in artifact_ids or ()}))
+    if artifact_ids is not None and not selected_ids:
+        return ()
+    artifact_filter = ""
+    parameters: tuple[Any, ...] = (scope_id, *artifact_types)
+    if artifact_ids is not None:
+        id_placeholders = ",".join("?" for _ in selected_ids)
+        artifact_filter = f" AND artifact.artifact_id IN ({id_placeholders})"
+        parameters = (*parameters, *selected_ids)
+    return tuple(
+        conn.execute(
+            f"""SELECT artifact.artifact_id, artifact.artifact_type,
+                       source.document_url,
+                       CASE WHEN EXISTS (
+                         SELECT 1 FROM artifact_contents AS content
+                          WHERE content.artifact_id=artifact.artifact_id
+                       ) AND NOT (
+                         source.recovery_target_id IS NOT NULL
+                         AND EXISTS (
+                           SELECT 1 FROM artifact_recovery_targets AS recovery
+                            WHERE recovery.recovery_target_id=source.recovery_target_id
+                              AND recovery.status NOT IN ('RECOVERED','ALREADY_SATISFIED')
+                         )
+                       ) THEN 1 ELSE 0 END AS has_content
+                  FROM artifact_download_scope_companies AS member
+                  JOIN document_artifacts AS artifact
+                    ON artifact.company_id=member.company_id
+                  JOIN artifact_sources AS source USING (artifact_id)
+                 WHERE member.scope_id=?
+                   AND artifact.artifact_type IN ({placeholders})
+                   {artifact_filter}
+                   AND (
+                     NOT EXISTS (
+                       SELECT 1 FROM artifact_download_scope_artifacts AS any_selected
+                        WHERE any_selected.scope_id=member.scope_id
+                     )
+                     OR EXISTS (
+                       SELECT 1 FROM artifact_download_scope_artifacts AS selected
+                        WHERE selected.scope_id=member.scope_id
+                          AND selected.artifact_id=artifact.artifact_id
+                     )
+                   )
+                   AND source.availability_status NOT IN (
+                     'not_offered', 'not_applicable', 'source_not_covered'
+                   )
+                 GROUP BY artifact.artifact_id, artifact.artifact_type,
+                          source.document_url
+                 ORDER BY artifact.artifact_id, source.document_url""",
+            parameters,
+        )
+    )
+
+
+def preview_download_queue(conn: sqlite3.Connection, *, scope_id: str) -> dict[str, Any]:
+    targets = _target_rows(conn, scope_id)
+    hosts: dict[str, int] = {}
+    types: dict[str, int] = {}
+    already = 0
+    invalid = 0
+    for row in targets:
+        host = (urlsplit(row["document_url"]).hostname or "").lower()
+        if not host:
+            invalid += 1
+        else:
+            hosts[host] = hosts.get(host, 0) + 1
+        artifact_type = str(row["artifact_type"])
+        types[artifact_type] = types.get(artifact_type, 0) + 1
+        already += int(row["has_content"])
+    return {
+        "scope_id": scope_id,
+        "target_count": len(targets),
+        "already_have_content_count": already,
+        "invalid_url_count": invalid,
+        "artifact_type_counts": dict(sorted(types.items())),
+        "host_counts": dict(sorted(hosts.items())),
+    }
+
+
+def materialize_download_queue(
+    conn: sqlite3.Connection,
+    *,
+    scope_id: str,
+    priority: int = 100,
+    created_at_utc: str | None = None,
+    artifact_ids: Iterable[int] | None = None,
+    include_queue_counts: bool = True,
+) -> dict[str, Any]:
+    """Idempotently materialize artifact/URL jobs for one explicit scope."""
+
+    now = created_at_utc or utc_now()
+    targets = _target_rows(conn, scope_id, artifact_ids)
+    created = 0
+    invalid_targets = 0
+    blocked_targets = 0
+    policy_hosts = blocked_terms_hosts(conn)
+    with conn:
+        for row in targets:
+            url = str(row["document_url"])
+            parsed = urlsplit(url)
+            host = (parsed.hostname or "").lower()
+            valid_url = parsed.scheme in {"http", "https"} and bool(host)
+            if not valid_url:
+                status = "SKIPPED_POLICY"
+                result_status = "INVALID_URL"
+                error = "Only absolute HTTP(S) document URLs are eligible"
+                invalid_targets += 1
+            elif host_matches_policy(host, policy_hosts):
+                status = "SKIPPED_POLICY"
+                result_status = PUBLISHER_TERMS_RESULT
+                error = PUBLISHER_TERMS_ERROR
+                blocked_targets += 1
+            elif bool(row["has_content"]):
+                status = "SKIPPED_ALREADY_HAVE_CONTENT"
+                result_status = None
+                error = None
+            else:
+                status = "PENDING"
+                result_status = None
+                error = None
+            cursor = conn.execute(
+                """INSERT OR IGNORE INTO artifact_download_queue
+                   (artifact_id, requested_url, target_host, priority, scope_id,
+                    status, last_result_status, last_error,
+                    created_at_utc, updated_at_utc)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                (
+                    int(row["artifact_id"]),
+                    url,
+                    host,
+                    priority,
+                    scope_id,
+                    status,
+                    result_status,
+                    error,
+                    now,
+                    now,
+                ),
+            )
+            created += cursor.rowcount
+        _skip_blocked_terms_jobs(conn, now_utc=now, scope_id=scope_id)
+        # A rerun after another URL acquired the artifact must not re-download it.
+        conn.execute(
+            """UPDATE artifact_download_queue
+                  SET status='SKIPPED_ALREADY_HAVE_CONTENT',
+                      next_attempt_at_utc=NULL, lease_owner=NULL,
+                      lease_expires_at_utc=NULL,
+                      last_result_status='CONTENT_ALREADY_PRESENT',
+                      last_error=NULL, updated_at_utc=?
+                WHERE scope_id=?
+                  AND status IN ('PENDING', 'RETRYABLE_FAILURE')
+                  AND EXISTS (
+                    SELECT 1 FROM artifact_contents AS content
+                     WHERE content.artifact_id=artifact_download_queue.artifact_id
+                  )
+                  AND NOT EXISTS (
+                    SELECT 1 FROM artifact_sources AS source
+                    JOIN artifact_recovery_targets AS recovery
+                      ON recovery.recovery_target_id=source.recovery_target_id
+                   WHERE source.artifact_id=artifact_download_queue.artifact_id
+                     AND source.document_url=artifact_download_queue.requested_url
+                     AND recovery.status NOT IN ('RECOVERED','ALREADY_SATISFIED')
+                  )""",
+            (now, scope_id),
+        )
+    counts = (
+        queue_counts(conn, scope_id=scope_id)
+        if include_queue_counts
+        else {"scope_id": scope_id, "total_job_count": 0, "status_counts": {}}
+    )
+    return {
+        **counts,
+        "created_job_count": created,
+        "invalid_target_count": invalid_targets,
+        "policy_blocked_target_count": blocked_targets,
+    }
+
+
+def claim_download_job(
+    conn: sqlite3.Connection,
+    *,
+    worker: str,
+    now_utc: str,
+    lease_seconds: int = 600,
+    scope_id: str | None = None,
+    excluded_hosts: Iterable[str] = (),
+    artifact_types: Iterable[str] = (),
+) -> sqlite3.Row | None:
+    """Claim one row under ``BEGIN IMMEDIATE`` and recover stale leases."""
+
+    if lease_seconds < 1:
+        raise ValueError("lease_seconds must be positive")
+    excluded = tuple(sorted({host.lower() for host in excluded_hosts}))
+    selected_types = tuple(sorted({str(value) for value in artifact_types}))
+    conn.execute("BEGIN IMMEDIATE")
+    try:
+        parameters: list[Any] = [now_utc]
+        scope_filter = ""
+        if scope_id is not None:
+            _scope(conn, scope_id)
+            scope_filter = " AND scope_id=?"
+            parameters.append(scope_id)
+        # Re-evaluate policy on every claim so rows queued before a policy
+        # review (including active/stale leases) cannot reach a worker.
+        _skip_blocked_terms_jobs(conn, now_utc=now_utc, scope_id=scope_id)
+        conn.execute(
+            f"""UPDATE artifact_download_queue
+                   SET status='RETRYABLE_FAILURE', lease_owner=NULL,
+                       lease_expires_at_utc=NULL,
+                       last_result_status='LEASE_EXPIRED',
+                       last_error='Worker lease expired before completion',
+                       updated_at_utc=?
+                 WHERE status='LEASED' AND lease_expires_at_utc <= ?
+                       {scope_filter}""",
+            (now_utc, now_utc, *parameters[1:]),
+        )
+        conn.execute(
+            f"""UPDATE artifact_download_queue
+                   SET status='SKIPPED_ALREADY_HAVE_CONTENT',
+                       next_attempt_at_utc=NULL, lease_owner=NULL,
+                       lease_expires_at_utc=NULL,
+                       last_result_status='CONTENT_ALREADY_PRESENT',
+                       last_error=NULL, updated_at_utc=?
+                 WHERE status IN ('PENDING', 'RETRYABLE_FAILURE')
+                       {scope_filter}
+                   AND EXISTS (
+                     SELECT 1 FROM artifact_contents AS content
+                      WHERE content.artifact_id=artifact_download_queue.artifact_id
+                   )
+                   AND NOT EXISTS (
+                     SELECT 1 FROM artifact_sources AS source
+                     JOIN artifact_recovery_targets AS recovery
+                       ON recovery.recovery_target_id=source.recovery_target_id
+                    WHERE source.artifact_id=artifact_download_queue.artifact_id
+                      AND source.document_url=artifact_download_queue.requested_url
+                      AND recovery.status NOT IN ('RECOVERED','ALREADY_SATISFIED')
+                   )""",
+            (now_utc, *parameters[1:]),
+        )
+        where = [
+            """NOT EXISTS (SELECT 1 FROM screener_collection_scope s
+                WHERE s.company_id=artifact.company_id AND s.eligibility='below_floor')""",
+            "status IN ('PENDING', 'RETRYABLE_FAILURE')",
+            "(next_attempt_at_utc IS NULL OR next_attempt_at_utc <= ?)",
+            """NOT EXISTS (
+                 SELECT 1 FROM artifact_download_queue AS active
+                  WHERE active.target_host=queue.target_host
+                    AND active.status='LEASED'
+                    AND active.lease_expires_at_utc > ?
+               )""",
+            """NOT EXISTS (
+                 SELECT 1 FROM artifact_download_host_health AS health
+                  WHERE health.host=queue.target_host
+                    AND health.blocked_until_utc IS NOT NULL
+                    AND health.blocked_until_utc > ?
+               )""",
+            """NOT EXISTS (
+                 SELECT 1 FROM credit_rating_host_policy AS policy
+                  WHERE policy.automation_status='BLOCKED_TERMS'
+                    AND (
+                      queue.target_host=policy.host
+                      OR queue.target_host LIKE '%.' || policy.host
+                    )
+               )""",
+        ]
+        select_parameters: list[Any] = [now_utc, now_utc, now_utc]
+        if scope_id is not None:
+            where.append("scope_id=?")
+            select_parameters.append(scope_id)
+        if excluded:
+            where.append(f"target_host NOT IN ({','.join('?' for _ in excluded)})")
+            select_parameters.extend(excluded)
+        if selected_types:
+            where.append(
+                f"artifact.artifact_type IN ({','.join('?' for _ in selected_types)})"
+            )
+            select_parameters.extend(selected_types)
+        row = conn.execute(
+            f"""SELECT queue.*, artifact.artifact_type
+                  FROM artifact_download_queue AS queue
+                  JOIN document_artifacts AS artifact USING (artifact_id)
+                 WHERE {' AND '.join(where)}
+                 ORDER BY
+                       queue.priority,
+                       CASE
+                         WHEN artifact.period_end IS NOT NULL
+                           OR (
+                             artifact.fiscal_year IS NOT NULL
+                             AND artifact.fiscal_quarter IS NOT NULL
+                           )
+                         THEN 0 ELSE 1
+                       END,
+                       artifact.period_end DESC,
+                       artifact.fiscal_year DESC,
+                       artifact.fiscal_quarter DESC,
+                       COALESCE(
+                         artifact.event_date,
+                         substr(artifact.published_at_utc, 1, 10),
+                         substr(artifact.first_observed_at_utc, 1, 10),
+                         ''
+                       ) DESC,
+                       queue.attempt_count,
+                       queue.download_job_id
+                 LIMIT 1""",
+            select_parameters,
+        ).fetchone()
+        if row is None:
+            conn.commit()
+            return None
+        job_id = int(row["download_job_id"])
+        conn.execute(
+            """UPDATE artifact_download_queue
+                  SET status='LEASED', attempt_count=attempt_count+1,
+                      lease_owner=?, lease_expires_at_utc=?, updated_at_utc=?
+                WHERE download_job_id=?""",
+            (worker, _after(now_utc, lease_seconds), now_utc, job_id),
+        )
+        conn.commit()
+        return conn.execute(
+            """SELECT queue.*, artifact.artifact_type
+                 FROM artifact_download_queue AS queue
+                 JOIN document_artifacts AS artifact USING (artifact_id)
+                WHERE download_job_id=?""",
+            (job_id,),
+        ).fetchone()
+    except Exception:
+        conn.rollback()
+        raise
+
+
+def finish_download_job(
+    conn: sqlite3.Connection,
+    *,
+    job_id: int,
+    worker: str,
+    status: str,
+    result_status: str,
+    error: str | None,
+    now_utc: str,
+    retry_seconds: int | None = None,
+) -> None:
+    if status not in {
+        "SUCCEEDED", "RETRYABLE_FAILURE", "TERMINAL_FAILURE",
+        "SKIPPED_ALREADY_HAVE_CONTENT", "SKIPPED_POLICY",
+    }:
+        raise ValueError(f"Invalid completed queue status: {status}")
+    next_attempt = (
+        _after(now_utc, retry_seconds)
+        if status == "RETRYABLE_FAILURE" and retry_seconds is not None
+        else None
+    )
+    with conn:
+        cursor = conn.execute(
+            """UPDATE artifact_download_queue
+                  SET status=?, next_attempt_at_utc=?, lease_owner=NULL,
+                      lease_expires_at_utc=NULL, last_result_status=?,
+                      last_error=?, updated_at_utc=?
+                WHERE download_job_id=? AND status='LEASED' AND lease_owner=?""",
+            (
+                status,
+                next_attempt,
+                result_status,
+                error,
+                now_utc,
+                job_id,
+                worker,
+            ),
+        )
+        if cursor.rowcount != 1:
+            raise RuntimeError("Download job lease is no longer owned by this worker")
+
+
+def source_ids_for_job(
+    conn: sqlite3.Connection, *, artifact_id: int, requested_url: str
+) -> tuple[int, ...]:
+    return tuple(
+        int(row["artifact_source_id"])
+        for row in conn.execute(
+            """SELECT artifact_source_id FROM artifact_sources
+                WHERE artifact_id=? AND document_url=?
+                ORDER BY artifact_source_id""",
+            (artifact_id, requested_url),
+        )
+    )
+
+
+def attach_download_attempt(
+    conn: sqlite3.Connection, *, job_id: int, download_attempt_id: int
+) -> None:
+    """Link the append-only D02 attempt to the queue claim that produced it."""
+
+    with conn:
+        conn.execute(
+            """INSERT INTO artifact_download_queue_attempts
+               (download_job_id, download_attempt_id) VALUES (?, ?)""",
+            (job_id, download_attempt_id),
+        )
+
+
+def queue_counts(conn: sqlite3.Connection, *, scope_id: str | None = None) -> dict[str, Any]:
+    where = " WHERE scope_id=?" if scope_id is not None else ""
+    parameters = (scope_id,) if scope_id is not None else ()
+    counts = {
+        str(row["status"]): int(row["count"])
+        for row in conn.execute(
+            f"SELECT status, COUNT(*) AS count FROM artifact_download_queue{where} GROUP BY status",
+            parameters,
+        )
+    }
+    return {
+        "scope_id": scope_id,
+        "total_job_count": sum(counts.values()),
+        "status_counts": dict(sorted(counts.items())),
+    }
+
+
+def ensure_recovery_download_scope(
+    conn: sqlite3.Connection,
+    *,
+    artifact_id: int,
+    company_id: int,
+    created_at_utc: str | None = None,
+    priority: int = 50,
+) -> dict[str, Any]:
+    """Add one accepted DA-06 artifact to the existing durable D02 queue."""
+
+    now = created_at_utc or utc_now()
+    artifact = conn.execute(
+        """SELECT artifact_type FROM document_artifacts
+            WHERE artifact_id=? AND company_id=?""",
+        (artifact_id, company_id),
+    ).fetchone()
+    if artifact is None or artifact["artifact_type"] != "credit_rating":
+        raise ValueError("Recovery queue accepts only the target credit_rating artifact")
+    policy = json.dumps(
+        {"pdf_only": False, "recording_fallback_only": True},
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+    artifact_types = json.dumps(["credit_rating"], separators=(",", ":"))
+    with conn:
+        conn.execute(
+            """INSERT OR IGNORE INTO artifact_download_scopes
+               (scope_id,scope_kind,description,artifact_types_json,policy_json,
+                created_at_utc,updated_at_utc)
+               VALUES (?,'custom','DA-06 official alternate-source recovery',?,?,?,?)""",
+            (RECOVERY_DOWNLOAD_SCOPE_ID, artifact_types, policy, now, now),
+        )
+        scope = conn.execute(
+            """SELECT artifact_types_json,policy_json FROM artifact_download_scopes
+                WHERE scope_id=?""",
+            (RECOVERY_DOWNLOAD_SCOPE_ID,),
+        ).fetchone()
+        if (
+            scope is None
+            or scope["artifact_types_json"] != artifact_types
+            or scope["policy_json"] != policy
+        ):
+            raise ValueError("DA-06 recovery scope has an incompatible existing definition")
+        identity = conn.execute(
+            """SELECT identifier_value FROM security_identifiers
+                WHERE company_id=? AND identifier_type='NSE' AND is_current=1
+                ORDER BY security_identifier_id LIMIT 1""",
+            (company_id,),
+        ).fetchone()
+        label = str(identity[0]) if identity is not None else f"RECOVERY:{company_id}"
+        conn.execute(
+            """INSERT OR IGNORE INTO artifact_download_scope_companies
+               (scope_id,company_id,symbol,outcome_label,archetype)
+               VALUES (?,?,?,NULL,NULL)""",
+            (RECOVERY_DOWNLOAD_SCOPE_ID, company_id, label),
+        )
+        conn.execute(
+            """INSERT OR IGNORE INTO artifact_download_scope_artifacts
+               (scope_id,artifact_id) VALUES (?,?)""",
+            (RECOVERY_DOWNLOAD_SCOPE_ID, artifact_id),
+        )
+    return materialize_download_queue(
+        conn,
+        scope_id=RECOVERY_DOWNLOAD_SCOPE_ID,
+        priority=priority,
+        created_at_utc=now,
+        artifact_ids=(artifact_id,),
+    )

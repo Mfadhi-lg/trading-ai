@@ -20,7 +20,7 @@ class MFConsecutiveMonthChangesM05Tests(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory()
         self.db_path = Path(self.temp.name) / "scraper.sqlite"
         self.conn = connect(self.db_path)
-        init_db(self.conn)
+        init_db(self.conn, apply_migrations=True)
         self.fixture = json.loads(FIXTURE.read_text(encoding="utf-8"))
         self.scheme_id = self._seed_scheme()
         self.security_cases: dict[str, int] = {}
@@ -300,7 +300,7 @@ class MFConsecutiveMonthChangesM05Tests(unittest.TestCase):
                     / f"scraper-{middle_state or 'missing'}.sqlite"
                 )
                 self.conn = connect(self.db_path)
-                init_db(self.conn)
+                init_db(self.conn, apply_migrations=True)
                 self.scheme_id = self._seed_scheme()
                 self.security_cases = {}
                 prior = [{

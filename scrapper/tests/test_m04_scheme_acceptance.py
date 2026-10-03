@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from scrapper.tests.database_fixtures import prepare_database
+
 import json
 import shutil
 import tempfile
@@ -79,6 +81,7 @@ class PPFASSchemeAcceptanceM04Tests(unittest.TestCase):
         )
 
     def execute(self, proposals, timestamp: str):
+        prepare_database(self.db_path)
         return execute_import(
             proposals, db_path=self.db_path, observed_at_utc=timestamp,
             export_root=self.export_root,

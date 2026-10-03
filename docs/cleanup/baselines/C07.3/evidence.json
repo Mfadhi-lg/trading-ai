@@ -1,0 +1,80 @@
+{
+  "chunk": "C07.3",
+  "status": "COMPLETE",
+  "parent_status": "COMPLETE",
+  "baseline_head": "db7564a109f1cb34ee4e7d5ea3427716e14cb51e",
+  "baseline_files": 35292,
+  "private_root": "/private/tmp/trading-ai-cleanup-c073-20261003",
+  "private_sha256": {
+    "baseline.json": "3996f0510962f19a60a359682343e3cb75e9a05e2cf8479779febd30f7a3703c",
+    "policy.json": "7c177937dab73be16e69cddd8d52137938e19361cce42bd4950b6dacf06fcdf8",
+    "artifact-files.json": "af216dfb35a0ae614f156e982812e24178cf99d1aff4a45293d6df164450450f",
+    "context.Dockerfile": "526b693c5bdb9cc5a053a95538d70a12aba035282befd3682d23fd7ebd09a9a4",
+    "verify.py": "4d7b247d4241ebb3d407de7efb938483aa1d21fa6be034ebbd84418c070b73eb",
+    "probe-expectations.json": "856eb41dba7974e7cf09017d22b426a66a15d2c7da453d1320deb991810d353e",
+    "verification-result.json": "ffb39529e72d528355dc7f737ead5bb6430a39d8dbe3b1a3940d0e20d38d8276",
+    "scope-final.json": "2c3e38bfc5f9f389092f3fbf6f5651a3ed7a4a0a5c3c34fd106c1e87405603c2"
+  },
+  "public_sha256": {
+    ".dockerignore": "bd630b19a2e56c35cb84f57308f9430d03f79d5d27393748c242b6f4565db517",
+    "docs/cleanup/retention/README.md": "8c898e68ce40b0efc2a3f3098666819bfe2d3bfc9eda62b4d0925703fca32c6d",
+    "docs/cleanup/retention/C07.3-files.json": "83fc5f5cd55aa6c09a7f9eac75073166a607f2e4a2a763e9452f11d1e8fde5a6",
+    "docs/cleanup/retention/C07.3-locations.json": "e2c91293df0b7114f69072edfbfa94c1f9a703c76403726e2c98c24dcc1a85cf"
+  },
+  "verification": {
+    "synthetic_required_inputs": 6,
+    "synthetic_exclusions": 22,
+    "status": "PASS",
+    "context_files": 386,
+    "context_bytes": 12610742,
+    "fixture_files": 48,
+    "migration_files": 67,
+    "artifact_files": 24691,
+    "artifact_groups": 20,
+    "artifact_bytes": 13427775460,
+    "context_hash_mode_parity": true,
+    "all_existing_fixtures_and_migrations_retained": true,
+    "local_links_checked": 58,
+    "routing_and_json_status": "PASS"
+  },
+  "scope": {
+    "changes": {
+      ".dockerignore": [
+        "modify"
+      ],
+      "TRADING_AI_CLEANUP_EXECUTION.md": [
+        "modify"
+      ],
+      "docs/STATUS.md": [
+        "modify"
+      ],
+      "docs/cleanup/baselines/C07.3/evidence.json": [
+        "add"
+      ],
+      "docs/cleanup/chunks/C07.3.md": [
+        "add"
+      ],
+      "docs/cleanup/retention/C07.3-files.json": [
+        "add"
+      ],
+      "docs/cleanup/retention/C07.3-locations.json": [
+        "add"
+      ],
+      "docs/cleanup/retention/README.md": [
+        "add"
+      ]
+    },
+    "status": "PASS",
+    "violations": {}
+  },
+  "production_activation": false,
+  "artifact_relocation_deletion_untracking": false,
+  "release_build_or_application_tests": false,
+  "next_selected_chunk": null,
+  "next_selectable_chunk": "C08.1",
+  "limits": [
+    "Private snapshots are temporary local storage, not durable/offsite backups.",
+    "No consistent live DB or full-corpus integrity verification.",
+    "Build context parity is scoped to the unchanged canonical root Dockerfile."
+  ]
+}
