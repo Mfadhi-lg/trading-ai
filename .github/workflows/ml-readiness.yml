@@ -8,20 +8,33 @@ on:
 jobs:
   offline-contract:
     runs-on: ubuntu-latest
-    # init-db and the offline test suite must use isolated test targets.
+    # Every application write target is redirected into this disposable job root.
     env:
       PYTHONDONTWRITEBYTECODE: "1"
       TRADING_AI_ENV: test
+      TRADING_AI_TEST_ROOT: ${{ runner.temp }}/trading-ai-test
+      SCRAPER_STORE_PATH: ${{ runner.temp }}/trading-ai-test/store
+      SCRAPER_FILES_PATH: ${{ runner.temp }}/trading-ai-test/store/files
+      SCRAPER_SNAPSHOTS_PATH: ${{ runner.temp }}/trading-ai-test/store/snapshots
+      SCRAPER_EXPORTS_PATH: ${{ runner.temp }}/trading-ai-test/store/exports
+      SCRAPER_DB_PATH: ${{ runner.temp }}/trading-ai-test/state/scraper.db
+      SCRAPER_DOCUMENT_STORE_PATH: ${{ runner.temp }}/trading-ai-test/documents
+      SCRAPER_CAMPAIGNS_PATH: ${{ runner.temp }}/trading-ai-test/store/campaigns
+      SCRAPER_LOGS_PATH: ${{ runner.temp }}/trading-ai-test/store/logs
+      SCRAPER_BROWSER_STATE_PATH: ${{ runner.temp }}/trading-ai-test/store/browser-state
+      SCRAPER_BACKUPS_PATH: ${{ runner.temp }}/trading-ai-test/store/backups
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: '3.12.14' }
+      - name: Prepare isolated CI data roots
+        run: mkdir -p "$TRADING_AI_TEST_ROOT"
       - name: Install locked offline dependencies
         run: |
           python -m pip install --require-hashes --requirement scrapper/requirements.test.lock
           python -m pip check
-      - name: Migrate a database from zero
-        run: python -m scrapper.cli init-db --db /tmp/ml-readiness.sqlite
+      - name: Migrate isolated database from zero
+        run: python -m scrapper.cli init-db
       - name: Complete offline suite
         run: python -m unittest discover -s scrapper/tests -t . -v
       - name: Data-integrity and fixture gates
