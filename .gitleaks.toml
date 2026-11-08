@@ -1,0 +1,10 @@
+title = "Trading AI secret detection"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "screener-credential-file"
+description = "Screener session and CSRF files must never enter Git"
+path = '''(^|/)\.screener_(csrf|session)$'''
+regex = '''[A-Za-z0-9_./+=:-]{16,}'''

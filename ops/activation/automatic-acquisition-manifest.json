@@ -525,7 +525,7 @@
     "scrapper/tests/test_document_retry_ownership.py": "7a103fafb3084405ed93b1869b7a3d3ccadc499c0f1e1e66ab9d7a080a18819b",
     "ops/activation/test_stage_recovery.py": "0b9ec8ecd48f64384660f60f299b32bf12fcdeb9324798f71726f97e62e893d3",
     "ops/activation/phase3_bse_reassess.py": "254f1665cbb70ecaf6b7b4a55c455ee0509ca0d6948cc5ffa5a7043db65d0d92",
-    "ops/activation/test_guard_bse_repair.py": "bd096ef390520d014d99ee4af12c5dbda816413037148c0bf384265d89194c47",
+    "ops/activation/test_guard_bse_repair.py": "4aa35ba52583141c9fc531da44720ef4b42019e7b19a55c83a18e8ab706c0f34",
     "ops/activation/acquisition_failures.py": "c6ee3adc54f650986909487f27727bc7e834ccddd30efbb3901cda91839a70c3",
     "ops/activation/phase4_documents.py": "62de0ba60d8915f9c6f14ea32af2e71bcd40ba8dcd3c2a974b3015be30ceda30",
     "ops/host/acquisition_lifecycle.py": "0caa44f91d0aacd5b07ec0ee7152a852c61959f3961be05fecfdf052b4bd8ff9",
@@ -574,8 +574,9 @@
     "experiments/historical_candle_archive_v1/snapshot.py": "441c5f25b9acfdf591df329a180fef255fedd85f2c879f538f4be63c725e9690",
     "experiments/historical_candle_archive_v1/repair_queue.py": "9ba95f0b197a93640f6a9c0e5cc392e3d28574e70c63ceb032f9e955cf3caeee",
     "ops/activation/acquisition_release.py": "215de995b6f97eca82c960a8b3770c8d28c44790c489458f08304632a5a51d1f",
-    "ops/activation/processing_pipeline.py": "4a1b79c3ae74c096f8569946574854fb655bac79f7d308c80a3003101ca28ed6",
-    "scrapper/tests/test_download_history_fallback.py": "7228f416dfc33e35a79411a4f7d5ec92284ac49c08786d04486a333604b34ad7"
+    "ops/activation/processing_pipeline.py": "0998b7ff6fa2bd4afabbfd4d1ba63f4408d22131b9783ace7d4f2b1e1316cec1",
+    "scrapper/tests/test_download_history_fallback.py": "7228f416dfc33e35a79411a4f7d5ec92284ac49c08786d04486a333604b34ad7",
+    "ops/activation/test_processing_pipeline.py": "c24ae7204c75207d9d6f2a00a2b3ad50f3c25ffc8f7e77700f80a812afa85756"
   },
   "application_overlay_scope": [
     "scrapper/db/screener_discovery_repo.py",
