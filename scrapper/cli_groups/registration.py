@@ -12,6 +12,7 @@ from ..config import (
     DOCUMENT_MAX_RESPONSE_BYTES,
     DOCUMENT_TOTAL_TIMEOUT_SECONDS,
     SCREENER_WORKER_LIMIT,
+    EXPORTS,
     THROTTLE_SECONDS,
 )
 
@@ -374,6 +375,26 @@ def build_parser() -> argparse.ArgumentParser:
     master_backfill.add_argument("--limit", type=int, default=25)
     master_backfill.add_argument("--dry-run", action="store_true")
     master_backfill.add_argument("--db", type=Path, default=DB_PATH)
+
+    financial_coverage = subcommands.add_parser(
+        "financial-coverage-audit",
+        help="Export read-only historical financial statement and metric coverage",
+    )
+    financial_coverage.add_argument(
+        "--symbol", action="append", default=[],
+        help="Limit to an NSE symbol; repeat for multiple companies",
+    )
+    financial_coverage.add_argument(
+        "--output", type=Path,
+        default=EXPORTS / "financial-coverage-audit.json",
+        help="JSON output path",
+    )
+    financial_coverage.add_argument(
+        "--csv-output", type=Path,
+        default=EXPORTS / "financial-coverage-audit.csv",
+        help="CSV output path",
+    )
+    financial_coverage.add_argument("--db", type=Path, default=DB_PATH)
 
     period_coverage = subcommands.add_parser("screener-period-coverage", help="Audit quarter rows, repair period labels, and refresh missing quarters")
     period_coverage.add_argument("--period", required=True)
