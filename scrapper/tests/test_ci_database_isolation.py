@@ -27,15 +27,10 @@ class CiDatabaseIsolationTests(unittest.TestCase):
             with self.subTest(workflow=workflow.name):
                 content = workflow.read_text(encoding="utf-8")
                 self.assertIn("TRADING_AI_ENV: test", content)
-                self.assertIn(
-                    "TRADING_AI_TEST_ROOT: ${{ runner.temp }}/trading-ai-test",
-                    content,
-                )
+                self.assertIn('test_root="$RUNNER_TEMP/trading-ai-test"', content)
+                self.assertIn('echo "TRADING_AI_TEST_ROOT=$test_root"', content)
                 for key in ISOLATED_PATH_KEYS:
-                    self.assertIn(
-                        f"{key}: ${{{{ runner.temp }}}}/trading-ai-test/",
-                        content,
-                    )
+                    self.assertIn(f'echo "{key}=$test_root/', content)
 
     def test_ml_readiness_initializes_the_configured_database(self):
         workflow = (ROOT / ".github" / "workflows" / "ml-readiness.yml").read_text(
