@@ -22,9 +22,11 @@ retaining previous attempts and recording the operator authorization.
 
 Download byte reservations and physical free-space checks use the larger limit
 for both standalone batches and financial companions. Daily request and document
-batch counts remain unchanged.
+batch counts remain unchanged. Workers stop claiming new files early enough to
+finish an active download before the hard stage deadline; unused batch capacity
+remains queued without creating an interrupted lease.
 
 Validation: `test_download_history_fallback`, `test_phase4_routine`,
 `test_phase4_document_selection`, `test_d02_document_downloader`, and
-`test_automatic_rating_browser`; 71 tests, one skipped. Both existing throughput
+`test_automatic_rating_browser`, and `test_worker_lifecycle`; 85 tests, one skipped. Both existing throughput
 capacity tests also pass with the enlarged byte reservations.

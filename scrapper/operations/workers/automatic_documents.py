@@ -67,7 +67,17 @@ def select_downloads(conn, *, now, epoch, limit=2, historical_limit=0, recovery_
 
 
 def run_automatic_downloads(*, db_path, epoch, limit=2, historical_limit=0, recovery_job_ids=(), saved_parse_ids=(),
-                            now_utc=utc_now, connection_factory=connect, historical_fallback=False, **worker_options):
+                            now_utc=utc_now, connection_factory=connect, historical_fallback=False,
+                            claim_budget_seconds=None, **worker_options):
+    if claim_budget_seconds is not None:
+        import math
+        import time
+        from .lifecycle import WorkerLifecycle
+        if not math.isfinite(claim_budget_seconds) or claim_budget_seconds <= 0:
+            raise ValueError('Download claim budget must be positive and finite')
+        if worker_options.get('lifecycle') is not None:
+            raise ValueError('Download claim budget cannot replace an existing lifecycle')
+        worker_options['lifecycle'] = WorkerLifecycle(stop_at=time.monotonic()+claim_budget_seconds)
     conn=connection_factory(db_path)
     try:
         check_schema_compatibility(conn)

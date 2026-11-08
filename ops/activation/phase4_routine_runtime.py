@@ -111,6 +111,7 @@ def main():
             result=run_automatic_downloads(db_path=db,epoch=plan['epoch'],limit=plan['download_limit'],historical_limit=0,
                 policy=policy,max_attempts=3,connection_factory=guarded,recovery_job_ids=recovery_ids,
                 historical_fallback=plan.get('historical_download_fallback',False),
+                claim_budget_seconds=plan['runtime_deadline_seconds']-165,
                 saved_parse_ids=tuple(plan.get('saved_link_repair_ids',())))
     elif stage=='DOCUMENT_PROCESSING':
         if plan.get('local_resume_work_id'):

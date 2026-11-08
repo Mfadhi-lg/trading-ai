@@ -207,7 +207,7 @@
     "scrapper/pipeline/exchange_universe.py": "3007524056e7d9858ee197a4540f647f10e2989a125a235a220755839d7c73ed",
     "scrapper/cli_groups/documents.py": "c4c5faabf4c8682fe7a06bd0a06c752775f4c559b27451fc788488880676741a",
     "scrapper/exports/mf_feature_json_export.py": "3cc4d0177817d23c115bf52e974fa4c94af74f3548c8f9f7c0b6dc4eda926918",
-    "ops/activation/phase4_routine_runtime.py": "a899b88c6c4f780455b0a9677ee46907d7f3ee85c54011236f7542437f7f5737",
+    "ops/activation/phase4_routine_runtime.py": "440583db4b3f7dfb61ab2765a1054e037049991d93d500864eedc8adc841d251",
     "scrapper/tests/test_e06_scheduler.py": "f000c629726deeb2cf98eff9b5ed998672e555382552a33df19e3e1e5a650a87",
     "scrapper/workflows/screener/ingest.py": "7f056d3af4d43f9289bc483990f8b7cd7eff19da5fdc317065edf8255d1d16e0",
     "scrapper/tests/test_saved_page_ownership.py": "3a6ef1e0a9984418a920aaa1570fe1b20d24c616a290a59eea310e02e1454697",
@@ -364,7 +364,7 @@
     "ops/activation/verify_phase4_unattended.py": "281947b4b278ef7059e55adf801d6565362bcb3c34226caf1b6753778541f5ef",
     "scrapper/exports/coverage_analytics.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "scrapper/operations/workers/quarter_processing.py": "7bb6d534896ae26f4f994bba42c8f60148f8c8c1a852dda0f3d5884222ddb383",
-    "scrapper/operations/workers/automatic_documents.py": "0caea5495a0da88b8b8b2d874f5e4622c231695421ef8dbc64ec087352bc1407",
+    "scrapper/operations/workers/automatic_documents.py": "d200afe569e0b9c4007520f553d13995de39bffd22ef00d21619b20b6cf288cf",
     "scrapper/tests/test_exchange_snapshots.py": "80d9de5630eeb6424dd3b644d31367c02b843b0e17ba836341ae401e27fb32bf",
     "scrapper/commands/automatic_documents.py": "73028e3014d6032208b70986e7a93fe6afd2ef6ee794e80dac22e54cdac6f2c4",
     "scrapper/workflows/documents/discovery.py": "c5eb61d0a9b37115cc991a5197a4b00474b7f978c57b7e54ecf84690b5114c6c",
@@ -507,7 +507,7 @@
     "scrapper/documents/recovery/__init__.py": "ce2b599728991c591d468177a0e73b842e4db8aecab52dfdd850e9478b861931",
     "scrapper/tests/test_e03_dataset_registry.py": "8c2e2904bea6453373a88eea03d73329c514377865886390295390ccb068f267",
     "scrapper/documents/priority.py": "f7a268f3bb9b3cf5d9741f727419b0d4f65346fb6e60f1adcfbb5e7879b9a148",
-    "scrapper/operations/workers/lifecycle.py": "8500df2b5555768ce3348c2020a8eac47e238a308b1b947acefa0ba662fdfc36",
+    "scrapper/operations/workers/lifecycle.py": "49b517d2828ff9ee78fd0b183c6cec8c1330bde9dddc46ffd725205c61da8800",
     "scrapper/pipeline/promote_document_links.py": "fb301a6caed0537a1dfafa24229414d5dd6a73307062d59efef0e94ddd23720c",
     "scrapper/sources/trendlyne/manifest.py": "33bef7e4af5268cb193579e63be6960f1c71618a69ded591e0ef8bbffe1a4853",
     "scrapper/db/host_request_defer.py": "436aa05ad22dd3baba911c8b2fe1b2a008d85d16cc983cf39fc67ca6f9963d40",
@@ -544,7 +544,7 @@
     "ops/host/acquisition_queries.py": "39c322697609cc852ea06a4fb2ed589815c65270961d290dc7a2202eb5767495",
     "ops/host/acquisition_db_status.py": "b67985523d4590a484bc820051f81432f7ba1f7cf4eb1b4bcb02b7612cfe0730",
     "ops/activation/paired_downloads.py": "7dd30ac6ed6af6d34136fa6577427e69c09ed7343261bfae1fdeec7fb711043e",
-    "ops/activation/paired_download_runtime.py": "7dc84309e4a23d2de514d4e9f7287fda8b9bb603120a57a0405804557a436386",
+    "ops/activation/paired_download_runtime.py": "0de902634d49e4567dda7ad55677d9751f61df887886e89fe1efdbf7432b980e",
     "ops/activation/test_automatic_acquisition.py": "6c02faba0a8e12711e30ae3097906d538eb1787d90ca29a2070f1cc2dc94ca5c",
     "ops/activation/test_exchange_stage_recovery.py": "924cc40579b05fd7e5586857228c88859bc03724c48740c11d32d6a8309261d3",
     "ops/activation/financial_screen_refresh.py": "cf9cd860458ad3114ee26ff4c8e9091d4bb1826186c57ae15498c264d7748c33",
@@ -575,7 +575,7 @@
     "experiments/historical_candle_archive_v1/repair_queue.py": "9ba95f0b197a93640f6a9c0e5cc392e3d28574e70c63ceb032f9e955cf3caeee",
     "ops/activation/acquisition_release.py": "215de995b6f97eca82c960a8b3770c8d28c44790c489458f08304632a5a51d1f",
     "ops/activation/processing_pipeline.py": "4a1b79c3ae74c096f8569946574854fb655bac79f7d308c80a3003101ca28ed6",
-    "scrapper/tests/test_download_history_fallback.py": "7e9eee75c39875a1c85ccda6162c8875d7c36895048f5d6f77ebb4ae5cd9de7c"
+    "scrapper/tests/test_download_history_fallback.py": "3ef541f9e96669c1e0a7bca25eb1e9dde0ca381703b61f2aecf6bf5b6bd1acb8"
   },
   "application_overlay_scope": [
     "scrapper/db/screener_discovery_repo.py",
@@ -692,6 +692,7 @@
   "large_document_history_20261108": {
     "download_max_bytes": 268435456,
     "historical_fallback": true,
+    "claim_deadline": "drain before hard stage timeout",
     "authorization": "8 November user: download 60 oversized files; current quarter first, historical work when available capacity remains"
   }
 }

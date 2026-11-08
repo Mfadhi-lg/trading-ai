@@ -67,3 +67,24 @@ class DownloadFallbackTests(unittest.TestCase):
         self.assertEqual(download_url(url,artifact_type='transcript',policy=DownloadPolicy(max_bytes=10*1024**2),session=session()).result_status,'too_large')
         result=download_url(url,artifact_type='transcript',policy=DownloadPolicy(max_bytes=256*1024**2),session=session())
         self.assertEqual(result.result_status,'validated');self.assertEqual(result.byte_size,len(body))
+
+    def test_batch_drains_before_deadline_without_leaving_a_lease(self):
+        from scrapper.operations.workers.lifecycle import WorkerLifecycle
+        from scrapper.pipeline.run_document_download_worker import run_document_download_worker
+        from scrapper.tests.test_document_download_queue import FakeHealth
+        self.arrival('current','2026-09-30');self.arrival('older','2026-06-30');self.enqueue()
+        clock=[0.0];life=WorkerLifecycle(monotonic=lambda:clock[0],stop_at=10)
+        urls=[r[0] for r in self.c.execute('SELECT requested_url FROM artifact_download_queue')]
+        fake=FakeSession({url:FakeResponse(PDF_BYTES,url=url) for url in urls})
+        get=fake.get
+        def slow_get(*args,**kwargs):
+            clock[0]=20
+            return get(*args,**kwargs)
+        fake.get=slow_get
+        result=run_document_download_worker(self.c,limit=2,lifecycle=life,
+            snapshot_root=self.f.root/'contents',document_store=self.f.root,
+            session_factory=lambda:fake,health_check=FakeHealth,throttle_seconds=0,now=lambda:NOW)
+        self.assertEqual(result['processed_job_count'],1)
+        self.assertEqual(life.active_job,None)
+        states={r[0]:r[1] for r in self.c.execute('SELECT status,count(*) FROM artifact_download_queue GROUP BY status')}
+        self.assertEqual(states,{'PENDING':1,'SUCCEEDED':1})
