@@ -28,6 +28,7 @@ class CiDatabaseIsolationTests(unittest.TestCase):
                 content = workflow.read_text(encoding="utf-8")
                 self.assertIn("TRADING_AI_ENV: test", content)
                 self.assertIn('test_root="$RUNNER_TEMP/trading-ai-test"', content)
+                self.assertIn('mkdir -p "$test_root/state" "$test_root/store"', content)
                 self.assertIn('echo "TRADING_AI_TEST_ROOT=$test_root"', content)
                 for key in ISOLATED_PATH_KEYS:
                     self.assertIn(f'echo "{key}=$test_root/', content)
