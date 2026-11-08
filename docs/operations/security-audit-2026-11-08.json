@@ -1,0 +1,183 @@
+{
+  "issue": 34,
+  "date": "2026-11-08",
+  "base_commit": "2a06cc10017352b143b2f96bf2e2cf838189830d",
+  "tools": {
+    "gitleaks": "8.30.1",
+    "pip-audit": "2.10.1",
+    "uv": "0.11.15",
+    "python_test_environment": "3.12.13"
+  },
+  "inventories": {
+    "runtime": {
+      "path": "scrapper/requirements.lock",
+      "sha256": "15d7dcd908ca2642762e12aec17ce191b14812fe019c658ae3ef69e82aa30196",
+      "dependency_records": 35,
+      "advisory_records": 0,
+      "affected_packages": []
+    },
+    "test": {
+      "path": "scrapper/requirements.test.lock",
+      "sha256": "19303ee2497f71f990438b73a0ba57f71ad1237b028ea3d4e4b92999b6475e0b",
+      "dependency_records": 40,
+      "advisory_records": 0,
+      "affected_packages": []
+    },
+    "browser": {
+      "path": "ops/host/browser-requirements.lock",
+      "sha256": "beb3b2a9ff8d8aeec10cc5c3aaa2be70465104dcae8a82b0951d22eff04bdbad",
+      "dependency_records": 4,
+      "advisory_records": 0,
+      "affected_packages": []
+    },
+    "research": {
+      "path": "scrapper/research/subsector_ss02/requirements.txt",
+      "sha256": "efc129e9ce0ddbe2db048f74289456fc74c772cbd59f53e5df7b9af0006e433f",
+      "dependency_records": 3,
+      "advisory_records": 0,
+      "affected_packages": []
+    },
+    "general-ai-snapshot": {
+      "path": "docs/phase5/general-ai-experiment/requirements.runtime.txt",
+      "sha256": "9ca24c53a4902001108fd6d1bc5d4b22322a9e2ac36c6beb3727c8fc4995a720",
+      "dependency_records": 77,
+      "advisory_records": 72,
+      "affected_packages": [
+        {
+          "name": "certifi",
+          "version": "2026.7.22",
+          "unique_advisories": [
+            "PYSEC-2026-4320"
+          ]
+        },
+        {
+          "name": "filelock",
+          "version": "4.1.2",
+          "unique_advisories": [
+            "CVE-2026-112906",
+            "CVE-2026-112907",
+            "CVE-2026-112908",
+            "CVE-2026-112909",
+            "CVE-2026-112910",
+            "CVE-2026-112911",
+            "CVE-2026-112912",
+            "CVE-2026-112913",
+            "CVE-2026-112914",
+            "CVE-2026-112915",
+            "CVE-2026-112934",
+            "CVE-2026-112935",
+            "CVE-2026-112937",
+            "CVE-2026-112938",
+            "CVE-2026-112939",
+            "CVE-2026-112940",
+            "CVE-2026-112941"
+          ]
+        },
+        {
+          "name": "pillow",
+          "version": "12.3.0",
+          "unique_advisories": [
+            "CVE-2026-112390",
+            "CVE-2026-112391",
+            "CVE-2026-112393",
+            "CVE-2026-112395",
+            "CVE-2026-112399",
+            "CVE-2026-112400",
+            "CVE-2026-112401",
+            "CVE-2026-112404",
+            "CVE-2026-112406",
+            "CVE-2026-112891",
+            "CVE-2026-112892",
+            "CVE-2026-112893",
+            "CVE-2026-112894",
+            "CVE-2026-112895",
+            "CVE-2026-112897",
+            "CVE-2026-112899",
+            "CVE-2026-112900",
+            "CVE-2026-96638",
+            "CVE-2026-96640",
+            "CVE-2026-96778",
+            "GHSA-78g4-xqwv-q3g8",
+            "PYSEC-2026-4326",
+            "PYSEC-2026-4327",
+            "PYSEC-2026-4328",
+            "PYSEC-2026-4329",
+            "PYSEC-2026-4330",
+            "PYSEC-2026-4331",
+            "PYSEC-2026-4332",
+            "PYSEC-2026-4333",
+            "PYSEC-2026-4334",
+            "PYSEC-2026-4335",
+            "PYSEC-2026-4336",
+            "PYSEC-2026-4337",
+            "PYSEC-2026-4338",
+            "PYSEC-2026-4339",
+            "PYSEC-2026-4340",
+            "PYSEC-2026-4341",
+            "PYSEC-2026-4342",
+            "PYSEC-2026-4343"
+          ]
+        },
+        {
+          "name": "pypdf",
+          "version": "6.20.1",
+          "unique_advisories": [
+            "CVE-2026-113786",
+            "CVE-2026-113789",
+            "CVE-2026-113790",
+            "CVE-2026-113791",
+            "CVE-2026-115572",
+            "CVE-2026-115580",
+            "CVE-2026-115585",
+            "CVE-2026-119203",
+            "CVE-2026-119204",
+            "CVE-2026-119205",
+            "CVE-2026-119206",
+            "CVE-2026-119207",
+            "CVE-2026-119208",
+            "CVE-2026-119209"
+          ]
+        }
+      ]
+    }
+  },
+  "limitations": [
+    "Advisory absence is not a security guarantee. Optional loose vendored dependencies have no complete resolved lock.",
+    "General-AI manifest is retained experiment evidence; its 72 advisory records are not remediated.",
+    "Credential rotation/revocation and GitHub security feature enablement were not performed.",
+    "Archive-deep scan interrupted after decoder errors; full archive/binary coverage is not claimed."
+  ],
+  "text_history_scan": {
+    "scope": "all available local and remote-tracking refs; binary/archive coverage not claimed",
+    "reachable_commits": 72,
+    "commits_with_scanned_changes": 63,
+    "bytes_approximate": 15807151457,
+    "detector_candidates": 1095,
+    "confirmed_historical_screener_credentials": 1,
+    "expired_third_party_presigned_urls": 18,
+    "noncredential_generic_candidates": 1076,
+    "rotation_status": "UNKNOWN"
+  },
+  "verification": {
+    "targeted_document_tests": 50,
+    "operational_regression_tests": 39,
+    "migration_audit_tests": 10,
+    "tls_tests_outside_sandbox": 4,
+    "full_suite": {
+      "tests": 1635,
+      "failures": 6,
+      "errors": 73,
+      "skipped": 73,
+      "baseline": "All 79 failure/error records reproduced with unchanged main dependency lock"
+    },
+    "proposed_files_secret_scan": "10 files; zero findings",
+    "operational_regression_tests_after_integration": 42,
+    "expanded_guard_tests": {
+      "passed": 49,
+      "failed": 2,
+      "subtests_passed": 11,
+      "baseline": "Two failures reproduced with unchanged lock; retained fixture files absent"
+    }
+  },
+  "integration_base_commit": "24eb48922d438d63a3cdfbc7aff18541932b3fdf"
+}
