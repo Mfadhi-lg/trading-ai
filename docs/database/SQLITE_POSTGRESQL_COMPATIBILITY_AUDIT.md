@@ -1,8 +1,8 @@
 # SQLite → PostgreSQL Compatibility Audit
 
-**Status:** Audit baseline for issues #52–#57  
-**Audited ref:** `main` at `d2502db890fa5f361c0e32d2c636e795f4496632`  
-**Audit date:** 2026-11-08  
+**Status:** Audit baseline for issues #52–#57
+**Audited ref:** `main` at `d2502db890fa5f361c0e32d2c636e795f4496632`
+**Audit date:** 2026-11-08
 **Scope:** Static repository inspection only. No application database was opened, copied, migrated, modified, or benchmarked.
 
 ## Executive decision
