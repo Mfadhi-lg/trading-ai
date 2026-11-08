@@ -1,0 +1,59 @@
+{
+  "status": "PASS",
+  "baseline_commit": "db7564a109f1cb34ee4e7d5ea3427716e14cb51e",
+  "changed_paths": [
+    "docs/cleanup/runtime-identity.md",
+    "scrapper/cli.py",
+    "scrapper/commands/browser_rating_headed.py",
+    "scrapper/commands/browser_rating_host.py",
+    "scrapper/commands/diagnose_retryable_failures.py",
+    "scrapper/commands/publish_document_store_capacity.py",
+    "scrapper/commands/quarter_documents.py",
+    "scrapper/commands/quarter_extract.py",
+    "scrapper/config.py",
+    "scrapper/db/database.py",
+    "scrapper/documents/store.py",
+    "scrapper/pipeline/audit_acquisition_scope.py",
+    "scrapper/pipeline/build_acquisition_p0.py",
+    "scrapper/pipeline/build_final_acquisition_reports.py",
+    "scrapper/pipeline/build_full_acquisition_scope.py",
+    "scrapper/pipeline/build_gate_evidence.py",
+    "scrapper/pipeline/build_p0_governance.py",
+    "scrapper/pipeline/build_transcript_coverage.py",
+    "scrapper/pipeline/evaluate_document_acquisition_gate.py",
+    "scrapper/pipeline/finalize_acquisition_states.py",
+    "scrapper/pipeline/reconcile_issuer_retrieval_provenance.py",
+    "scrapper/pipeline/render_html_documents.py",
+    "scrapper/pipeline/run_scope_extraction.py",
+    "scrapper/runtime_identity.py",
+    "scrapper/tests/test_runtime_identity.py"
+  ],
+  "unexpected_paths": [],
+  "canonical_publication": {
+    "status": "PASS",
+    "changed_paths": [
+      "TRADING_AI_CLEANUP_EXECUTION.md",
+      "docs/cleanup/baselines/C05.0/candidate.patch",
+      "docs/cleanup/baselines/C05.0/evidence.json",
+      "docs/cleanup/baselines/C05.0/tooling.tar.gz",
+      "docs/cleanup/chunks/C05.0.md"
+    ],
+    "unexpected_paths": [],
+    "head_and_index_unchanged": true
+  },
+  "candidate_patch": {
+    "bytes": 31507,
+    "sha256": "e09f99d68ef699f5ede8b25e16c995da3e59482027ceb1f3e72704463fd0ee1f"
+  },
+  "tooling_archive": {
+    "bytes": 2457127,
+    "sha256": "bbcbe9877baf2cc517ca9d8e70c54ac6ba92d8353ac71aa224851e0fe5e2f085"
+  },
+  "verification": {
+    "host_focused": "82 passed, 27 subtests passed",
+    "pinned_python_3_12": "22 passed",
+    "full_suite": "656 tests; 3 failures, 26 errors, 1 skip; same signatures/counts as C04 candidate plus 9 passing H03 tests",
+    "readonly_hash": "9c826e426022359471bcccc05728325032d031f2abe5d9260352fbc55324003d",
+    "docker_mounts_checked": 54
+  }
+}

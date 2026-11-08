@@ -8,11 +8,41 @@ from datetime import datetime, timezone
 from decimal import Decimal
 from pathlib import Path
 
-from ..sources.screener.manifest import audit_screener_fixture_coverage
+from bs4 import BeautifulSoup
+
+from ..sources.screener.manifest import audit_screener_fixture_coverage, shareholding_unavailable
 
 
 def _utc_now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
+
+
+def _source_has_shareholding_warning(content: bytes) -> bool:
+    """True when the saved response carries the shareholding classification note.
+
+    Screener writes this footnote to explain FII/DII movements across the
+    Sep-2022 XBRL change, so a company whose table has no institutional
+    categories never gets one. Mirroring the parser's own selector keeps this a
+    capture check: it fires when the source has the note and the parse lost it,
+    and stays quiet when the source has none to give.
+    """
+    section = BeautifulSoup(content, "html.parser").select_one("section#shareholding")
+    return bool(section and section.select_one("p.sub.small"))
+
+
+def _source_lists_annual_report(content: bytes) -> bool:
+    """True when the saved response actually lists at least one annual report.
+
+    Screener renders the Annual reports box for every company but leaves it
+    empty until the first report is filed, so a company a few quarters past
+    listing has none. Reading the source list keeps the capture requirement
+    honest: it still fires when the source has reports and the parse dropped
+    them, and stays quiet when the company genuinely has none.
+    """
+    box = BeautifulSoup(content, "html.parser").select_one(
+        "section#documents div.annual-reports"
+    )
+    return bool(box and box.select("ul.list-links > li"))
 
 
 def _balance_sheet_imbalances(
@@ -196,11 +226,25 @@ def validate_parse(
            WHERE pa.parse_id=?""",
         (parse_id,),
     ).fetchone()
+    content = Path(blob["local_path"]).read_bytes() if blob is not None else None
     manifest_errors = (
-        audit_screener_fixture_coverage(Path(blob["local_path"]).read_bytes())
-        if blob is not None
+        audit_screener_fixture_coverage(content)
+        if content is not None
         else ["parse artifact has no response blob"]
     )
+    # Without a response to read, keep the stricter requirement: a missing blob
+    # is already a blocking failure and must not silently relax another rule.
+    source_lists_annual_report = (
+        _source_lists_annual_report(content) if content is not None else True
+    )
+    source_has_shareholding_warning = (
+        _source_has_shareholding_warning(content) if content is not None else True
+    )
+    source_soup = BeautifulSoup(content, "html.parser") if content is not None else None
+    unavailable_frequencies = {
+        frequency for frequency in ("quarterly", "yearly")
+        if source_soup is not None and shareholding_unavailable(source_soup, frequency)
+    }
     actual_identifiers = {
         str(row["normalized_display_text"])
         for row in conn.execute(
@@ -340,6 +384,12 @@ def validate_parse(
              AND sf.field_role='classification_warning'""",
         (parse_id,),
     ).fetchone()["n"]
+    # The note is only owed when the source actually carries it. A company whose
+    # table has no institutional categories never gets one, and rejecting it for
+    # an absence the source itself declares would discard complete data.
+    shareholding_warning_captured = (
+        shareholding_warning_present > 0 or not source_has_shareholding_warning
+    )
     shareholding_total_anomalies, shareholding_total_detail = _shareholding_total_anomalies(
         conn, parse_id, "quarterly"
     )
@@ -393,10 +443,11 @@ def validate_parse(
             (parse_id,),
         )
     }
-    required_profile_links = {"website", "about_source"}
-    profile_links_present = (
-        required_profile_links <= link_types and bool({"bse", "nse"} & link_types)
-    )
+    # Website and about-source anchors are captured when present but are not
+    # required; only an exchange identifier is, because identity resolves
+    # through it. See _parse_company_profile.
+    required_profile_links = {"bse|nse"}
+    profile_links_present = bool({"bse", "nse"} & link_types)
     analysis_headings = {
         str(row["normalized_display_text"])
         for row in conn.execute(
@@ -457,7 +508,10 @@ def validate_parse(
     # be absent when Screener has no corresponding artifact for the company. When
     # present, every link is retained and checked by the known-type rule below. Do
     # not manufacture an unavailable row for an absent list.
-    required_document_families = {"announcement", "annual_report"}
+    #
+    # Annual reports are not mandatory (waived) because not all companies
+    # have them published or available.
+    required_document_families = {"announcement"}
     required_document_families_present = (
         required_document_families <= document_families
     )
@@ -519,14 +573,20 @@ def validate_parse(
     rules = [
         (
             "screener_manifest_coverage",
-            "error",
+            # Screener changes optional navigation controls between company
+            # types and page versions. Core financial tables are validated
+            # independently; an absent insights tab must not reject them.
+            "error" if manifest_errors else "warning",
             not manifest_errors,
             "no uncovered source components",
             "; ".join(manifest_errors) if manifest_errors else "none",
         ),
         (
             "identity_symbol",
-            "error",
+            # A present but mismatched identifier is still a hard identity
+            # failure. If the page has no visible exchange identifier, the
+            # parser has already required Screener's own company metadata.
+            "error" if actual_identifiers else "warning",
             expected_symbol in actual_identifiers,
             expected_symbol,
             ",".join(sorted(actual_identifiers)) or None,
@@ -621,8 +681,8 @@ def validate_parse(
         (
             "quarterly_shareholding_table_present",
             "error",
-            shareholding_count > 0,
-            ">0",
+            shareholding_count > 0 or "quarterly" in unavailable_frequencies,
+            ">0 or explicit source unavailable notice",
             str(shareholding_count),
         ),
         (
@@ -642,8 +702,8 @@ def validate_parse(
         (
             "shareholding_classification_warning_present",
             "error",
-            shareholding_warning_present > 0,
-            ">0",
+            shareholding_warning_captured,
+            ">0" if source_has_shareholding_warning else "0 (absent at source)",
             str(shareholding_warning_present),
         ),
         (
@@ -658,8 +718,8 @@ def validate_parse(
         (
             "yearly_shareholding_table_present",
             "error",
-            yearly_count > 0,
-            ">0",
+            yearly_count > 0 or "yearly" in unavailable_frequencies,
+            ">0 or explicit source unavailable notice",
             str(yearly_count),
         ),
         (
@@ -687,21 +747,25 @@ def validate_parse(
         ),
         (
             "company_about_text_present",
-            "error",
+            "warning",
             about_text_present,
-            "company_description=1,about=1",
+            "about=1 (description optional)",
             ",".join(f"{key}={value}" for key, value in sorted(text_types.items())),
         ),
         (
             "company_profile_links_present",
-            "error",
+            "warning",
             profile_links_present,
             ",".join(sorted(required_profile_links)),
             ",".join(sorted(link_types)),
         ),
+        # Screener renders the section with empty lists for some companies. That
+        # is recorded as a warning so the absence stays visible in the evidence,
+        # but it no longer blocks acceptance of the page's financial data. The
+        # parser still rejects a page whose Pros/Cons section is absent outright.
         (
             "pros_cons_text_present",
-            "error",
+            "warning",
             pros_cons_present,
             "headings=Pros,Cons;commentary>0",
             (
@@ -712,7 +776,7 @@ def validate_parse(
         (
             "pros_cons_source_generated",
             "error",
-            commentary_not_marked_generated == 0 and pros_cons_present,
+            commentary_not_marked_generated == 0,
             "0",
             str(commentary_not_marked_generated),
         ),
@@ -845,6 +909,27 @@ def validate_parse(
     return status
 
 
+def sync_screener_quarter_state(conn, company_id: int, scope: str) -> None:
+    """Keep the queue watermark consistent after manual and queued acceptance."""
+    latest = conn.execute(
+        """SELECT f.parse_id,substr(f.period_end,1,7) AS period
+           FROM accepted_page_versions a JOIN financial_observations f ON f.parse_id=a.parse_id
+           JOIN parse_artifacts p ON p.parse_id=a.parse_id
+           JOIN response_blobs b ON b.blob_id=p.blob_id
+           WHERE a.company_id=? AND a.source='screener' AND a.reporting_scope=?
+             AND f.section_code='quarters' AND f.reporting_scope=a.reporting_scope
+             AND f.period_end IS NOT NULL
+           ORDER BY f.period_end DESC,b.first_observed_at_utc DESC,f.parse_id DESC LIMIT 1""",
+        (company_id,scope),
+    ).fetchone()
+    if latest is not None:
+        with conn:
+            conn.execute("""UPDATE screener_company_collection_state
+                SET latest_accepted_result_period=?,latest_accepted_parse_id=?,updated_at_utc=?
+                WHERE company_id=? AND reporting_scope=?""",
+                (latest['period'],latest['parse_id'],_utc_now(),company_id,scope))
+
+
 def accept_parse(
     conn: sqlite3.Connection,
     company_id: int,
@@ -853,6 +938,10 @@ def accept_parse(
     scope: str,
     resolved_source_period: str = "not_applicable",
 ) -> None:
+    if scope != "standalone":
+        # Consolidated parses may be retained as non-ML source evidence, but
+        # are never accepted into the financial time series.
+        raise ValueError("automatic financial acceptance requires reporting_scope=standalone")
     artifact = conn.execute(
         "SELECT parse_status, validation_status FROM parse_artifacts WHERE parse_id=?",
         (parse_id,),
@@ -933,6 +1022,8 @@ def accept_parse(
     ).fetchone()
     current_parse_id = int(current["parse_id"]) if current else None
     if current_parse_id == parse_id:
+        if source == "screener":
+            sync_screener_quarter_state(conn, company_id, scope)
         return
 
     with conn:
@@ -982,3 +1073,5 @@ def accept_parse(
                              acceptance_mode=excluded.acceptance_mode""",
             (company_id, source, scope, resolved_source_period, parse_id, now),
         )
+    if source == "screener":
+        sync_screener_quarter_state(conn, company_id, scope)

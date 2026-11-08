@@ -10,7 +10,7 @@ from typing import Any
 from ..config import EXPORTS
 
 
-SCHEMA_VERSION = "1.0.0"
+SCHEMA_VERSION = "1.1.0"
 # A usable universe needs at least the two full equity masters; the SME, change
 # and result feeds extend it but cannot substitute for it.
 REQUIRED_DATASETS = ("nse_equity_master", "bse_security_master")
@@ -107,6 +107,31 @@ def build_exchange_universe_coverage(conn: sqlite3.Connection) -> dict[str, Any]
            WHERE decision.decision='manual_review'
            ORDER BY filing.broadcast_at_utc, decision.filing_id"""
     )]
+    collisions = [dict(row) for row in conn.execute(
+        """SELECT collision_id, exchange, filing_key, existing_filing_id,
+                  snapshot_id, raw_sha256, first_seen_at_utc
+           FROM exchange_result_filing_collisions
+           WHERE review_status='pending'
+           ORDER BY first_seen_at_utc, collision_id"""
+    )]
+    skipped_later_filings = [dict(row) for row in conn.execute(
+        """SELECT filing.filing_id, filing.exchange, filing.exchange_key,
+                  filing.result_period, filing.reporting_scope,
+                  filing.broadcast_at_utc, decision.decision,
+                  decision.decision_reason
+           FROM exchange_screener_enqueues decision
+           JOIN exchange_result_filings filing USING (filing_id)
+           WHERE decision.decision IN ('already_accepted','stale')
+             AND EXISTS (SELECT 1 FROM exchange_result_filings prior
+               WHERE prior.exchange=filing.exchange
+                 AND prior.exchange_key=filing.exchange_key
+                 AND prior.reporting_scope=filing.reporting_scope
+                 AND prior.result_period=filing.result_period
+                 AND (prior.broadcast_at_utc<filing.broadcast_at_utc
+                   OR (prior.broadcast_at_utc=filing.broadcast_at_utc
+                     AND prior.filing_id<filing.filing_id)))
+           ORDER BY filing.broadcast_at_utc, filing.filing_id"""
+    )]
     unmatched_changes = [dict(row) for row in conn.execute(
         """SELECT exchange, change_kind, old_value, new_value, effective_date
            FROM exchange_symbol_changes WHERE applied_status='unmatched'
@@ -116,7 +141,7 @@ def build_exchange_universe_coverage(conn: sqlite3.Connection) -> dict[str, Any]
     missing = [dataset for dataset in REQUIRED_DATASETS if dataset not in present_datasets]
     if not snapshots:
         coverage_status = "none"
-    elif missing or failed_snapshots or review:
+    elif missing or failed_snapshots or review or collisions or skipped_later_filings:
         coverage_status = "partial"
     else:
         coverage_status = "complete"
@@ -141,11 +166,15 @@ def build_exchange_universe_coverage(conn: sqlite3.Connection) -> dict[str, Any]
             "enqueue_decision_counts": decisions,
             "queue_counts_by_origin_status": queue_origins,
             "manual_review_count": len(review),
+            "filing_identity_collision_count": len(collisions),
+            "historically_skipped_later_filing_count": len(skipped_later_filings),
             "unmatched_change_count": len(unmatched_changes),
         },
         "snapshots": snapshots,
         "watermarks": watermarks,
         "manual_review": review,
+        "filing_identity_collisions": collisions,
+        "historically_skipped_later_filings": skipped_later_filings,
         "unmatched_changes": unmatched_changes,
     }
 

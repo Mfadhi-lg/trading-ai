@@ -1,0 +1,53 @@
+{
+  "build": {
+    "context": ".",
+    "dockerfile": "Dockerfile",
+    "dockerfile_sha256": "1b8cf841d05db3f361f7ca80271c4c6adc8a2c19d3d825f0ed54173668db27ef",
+    "platform": "linux/arm64",
+    "provenance": "mode=max",
+    "runtime_lock": "scrapper/requirements.lock",
+    "runtime_lock_sha256": "8065cda4d72ad984f03ed7023f2b9cbc170949f44f8ecbe8b1b34c99bc617106",
+    "sbom": true,
+    "source_date_epoch": 1790860204,
+    "source_file_count": 397,
+    "source_manifest_sha256": "dbed4912d5c0af7dd685980d540133a19ae6b9946ba4470e115498c8bea118d8",
+    "timestamp_rewrite": true
+  },
+  "release": {
+    "baseline_commit": "db7564a109f1cb34ee4e7d5ea3427716e14cb51e",
+    "compose_repository_digest": "trading-ai-c053-release@sha256:44da7074157fd2a946c41d064a91ef3f729ebd31ab3bcdf2aa09233c5a794b6b",
+    "config_digest": "sha256:c3f3d1cbbe3155106bb848d4feb4cf4f7db2efec4b1a69b0dfafaa44731c119b",
+    "oci_index_digest": "sha256:44da7074157fd2a946c41d064a91ef3f729ebd31ab3bcdf2aa09233c5a794b6b",
+    "platform_manifest_digest": "sha256:05cf18b61418ace4f5e490ad59e62feb77de43558788fd47ca594c17d60cba77",
+    "release_id": "c05.3-release-20261003",
+    "status": "reproduced_not_activated"
+  },
+  "attestations": {
+    "authoritative_attestation_manifest_digest": "sha256:167971dafaa7bb29d52581f6a200693b38c12dddf1b4ccb6c9305cc27c78577c",
+    "provenance_digest": "sha256:397110bf8065602b948fd2ccb617713caefa6bd35209ff89c2b8ac3d91d45f1c",
+    "sbom_digest": "sha256:974887e90df329db1aa2beca240ae9c7c23a798a105788ef99cf52bbadb48ce2",
+    "subject": "sha256:05cf18b61418ace4f5e490ad59e62feb77de43558788fd47ca594c17d60cba77",
+    "note": "Attestation payloads record build execution times and are retained per export; the independently reproduced platform manifest, config and layers are byte-identical."
+  },
+  "reproduction": {
+    "authoritative_oci_archive_sha256": "5d85b9934ebeb8e0366eb4513fb9a3ca440e05bbc70f4568b3fe0461c88b7e32",
+    "authoritative_oci_archive_size": 693470720,
+    "independent_platform_manifest_digest": "sha256:05cf18b61418ace4f5e490ad59e62feb77de43558788fd47ca594c17d60cba77",
+    "independent_config_digest": "sha256:c3f3d1cbbe3155106bb848d4feb4cf4f7db2efec4b1a69b0dfafaa44731c119b",
+    "independent_oci_archive_sha256": "d01aea1d24d4f72e1e39c0221a96d10f07487415ac6f4fb77e4b1c746e057b9a",
+    "independent_oci_archive_size": 693470720
+  },
+  "operator_requirements": {
+    "buildx_verified": "0.37.1",
+    "compose_minimum": "2.24.4",
+    "compose_verified": "5.5.1",
+    "development_override_feature": "!override"
+  },
+  "operator_manifests": {
+    "compose.browser-recovery.development.yml": "sha256:3d32d207d8e06e62a7abfacdef7f6c91b5876ac8d37eb0876ad6c27d349e749c",
+    "compose.browser-recovery.yml": "sha256:a9a98a98a976ee035bdce6bbb55d25de0dad26f839fad6c59752c7d52ed5abf7",
+    "compose.development.yml": "sha256:5dc5074cf8475ae88a9015d959afd70e446887f045e5d928978de6eb3e7fc35e",
+    "compose.yml": "sha256:272f6e3d5913d3596d141d82119d024d8e65d8c7bc1aad85540c58b3ac58aa40"
+  },
+  "schema_version": 1
+}

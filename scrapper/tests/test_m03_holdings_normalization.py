@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from scrapper.tests.database_fixtures import prepare_database
+
 import json
 import tempfile
 import unittest
@@ -80,6 +82,7 @@ class PPFASHoldingsM03Tests(unittest.TestCase):
             db_path=db_path, snapshot_root=self.root / suffix / "snapshots",
             import_root=self.root / suffix / "imports",
         )
+        prepare_database(db_path)
         result = execute_import(
             proposals, db_path=db_path, observed_at_utc="2026-08-05T01:00:00+00:00"
         )

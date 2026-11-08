@@ -1,0 +1,52 @@
+{
+  "review_date": "2026-10-01",
+  "commit": "db7564a109f1cb34ee4e7d5ea3427716e14cb51e",
+  "python_files": 226,
+  "python_lines": 78420,
+  "application_files": 171,
+  "application_lines": 56451,
+  "migration_files": 67,
+  "report_files": 78,
+  "report_lines": 8048,
+  "tracked_areas": {
+    "[root]": {
+      "files": 17,
+      "working_tree_bytes": 39657185
+    },
+    ".github": {
+      "files": 1,
+      "working_tree_bytes": 762
+    },
+    "a2-review": {
+      "files": 372,
+      "working_tree_bytes": 12528502
+    },
+    "artifacts": {
+      "files": 23413,
+      "working_tree_bytes": 13273180207
+    },
+    "b1-review": {
+      "files": 282,
+      "working_tree_bytes": 3795923
+    },
+    "b2-review": {
+      "files": 6,
+      "working_tree_bytes": 35015
+    },
+    "experiments": {
+      "files": 5,
+      "working_tree_bytes": 4143
+    },
+    "scrapper": {
+      "files": 383,
+      "working_tree_bytes": 12618073
+    }
+  },
+  "scope": "Static indexing plus targeted architecture review; no exhaustive correctness claim or live DB verification",
+  "validation": {
+    "existing_browser_recovery_monitor_lifecycle_tests": 28,
+    "result": "PASS",
+    "runtime": "host Python 3.14.5, existing combined environments; mocks and temporary/in-memory data",
+    "production_runtime_proof": false
+  }
+}

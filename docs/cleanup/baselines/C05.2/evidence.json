@@ -1,0 +1,68 @@
+{
+  "status": "COMPLETE for the selected isolated offline scope",
+  "authorization": "read TRADING_AI_CLEANUP_EXECUTION.md execute c05.2",
+  "baseline_commit": "db7564a109f1cb34ee4e7d5ea3427716e14cb51e",
+  "candidate_root": "/private/tmp/trading-ai-cleanup-c050-20261002/dev",
+  "prerequisite_candidate": {
+    "c05_1_patch_sha256": "3509319d599d1c85ca5a8f46516cba5fa9f9d120ed93621974cf114f5b781695",
+    "image_repository_digest": "trading-ai-c051-candidate@sha256:d41eee4ede1861b9b124809b704a77fd193ea2943dc53c4c6b380442fe3d0c8b",
+    "platform_manifest_digest": "sha256:263bf4b8c31518a24e5f74347a8fc8d33250dfd80ccd89222115fc7121b429f8"
+  },
+  "changed_candidate_paths": [
+    "compose.browser-recovery.development.yml",
+    "compose.browser-recovery.yml",
+    "compose.development.yml",
+    "compose.yml",
+    "ops/docker/release/c05.2/README.md",
+    "ops/docker/release/c05.2/core-documents-sentinel.json",
+    "ops/docker/release/c05.2/external-documents-sentinel.json",
+    "ops/docker/release/c05.2/release-manifest.json",
+    "ops/docker/release/c05.2/runtime-identity-core.json",
+    "ops/docker/release/c05.2/runtime-identity-documents.json",
+    "ops/docker/release/c05.2/store-sentinel.json",
+    "scripts/audit/check_compose_release.py",
+    "scripts/audit/test_compose_release.py"
+  ],
+  "unexpected_candidate_paths": [],
+  "compose_contract": {
+    "production_services": 16,
+    "browser_services": 4,
+    "production_build_entries": 0,
+    "production_source_mounts": 0,
+    "production_image": "trading-ai-c051-candidate@sha256:d41eee4ede1861b9b124809b704a77fd193ea2943dc53c4c6b380442fe3d0c8b",
+    "development_data_targets": ["/development-data", "/development-documents"],
+    "development_production_identity_configs": 0,
+    "compose_minimum": "2.24.4",
+    "compose_verified": "5.5.1"
+  },
+  "verification": {
+    "compose_contract_audit": "PASS for 16 main roles and 4 browser roles in production and development forms",
+    "compose_contract_unittest": "1 passed",
+    "runtime_identity_and_capability_tests": "11 passed",
+    "container_core_identity_probe": "PASS in disposable c052-validation project",
+    "container_document_identity_probe": "PASS with read-only /documents and prepared sentinel in disposable target",
+    "initial_mount_probe": "FAIL as intended evidence: a Compose config cannot be nested beneath the read-only /documents bind; configuration was corrected to preserve the read-only mount and leave external sentinel placement to C06",
+    "git_diff_check": "PASS",
+    "candidate_patch_apply_check": "PASS against canonical baseline",
+    "active_runtime_after_checks": "same 13 listed containers/images remained running and healthy; trading-ai_scraper-data remained the only matching production volume; disposable c052-validation volume/network removed"
+  },
+  "candidate_patch": {
+    "path": "docs/cleanup/baselines/C05.2/candidate.patch",
+    "size_bytes": 37003,
+    "sha256": "18522eba3fe70497608ef81538af520303a5028343abd31633443e943d806e89"
+  },
+  "canonical_publication": {
+    "changed_paths": [
+      "TRADING_AI_CLEANUP_EXECUTION.md",
+      "docs/cleanup/baselines/C05.2/candidate.patch",
+      "docs/cleanup/baselines/C05.2/evidence.json",
+      "docs/cleanup/chunks/C05.2.md"
+    ],
+    "head": "db7564a109f1cb34ee4e7d5ea3427716e14cb51e",
+    "index_unchanged": true,
+    "unexpected_paths": []
+  },
+  "production_impact": "none; no active service, image, production volume, database, document corpus, secret or migration changed",
+  "activation_prerequisite": "C05.3 must reproduce/export the release; C06 must separately authorize activation and place external-documents-sentinel.json in the existing document-store root before document roles start",
+  "next": "C05.3 only"
+}

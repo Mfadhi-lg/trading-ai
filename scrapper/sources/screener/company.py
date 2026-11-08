@@ -23,6 +23,7 @@ from ...core.nums import (
     unit_for_ratio_line,
 )
 from ...config import SCREENER_BASE
+from .manifest import shareholding_unavailable
 
 METRIC_CODES = {
     "market cap": "market_cap",
@@ -34,6 +35,31 @@ METRIC_CODES = {
     "roce": "roce",
     "roe": "roe",
     "face value": "face_value",
+    # Custom quick ratios
+    "profit after tax": "profit_after_tax",
+    "promoter holding": "promoter_holding",
+    "pledged percentage": "pledged_percentage",
+    "qtr p/e": "qtr_pe",
+    "price to quarterly earning": "price_to_quarterly_earning",
+    "qtr profit var": "qtr_profit_var",
+    "yoy quarterly profit growth": "yoy_quarterly_profit_growth",
+    "eps": "eps",
+    "debt to equity": "debt_to_equity",
+    "change in prom hold": "change_in_promoter_holding",
+    "change in promoter holding": "change_in_promoter_holding",
+    "roce3yr avg": "roce_3yr_avg",
+    "roce 5yr": "roce_5yr",
+    "average return on capital employed 5years": "roce_5yr_avg",
+    "peg ratio": "peg_ratio",
+    "debt": "debt",
+    "industry pe": "industry_pe",
+    "roe 5yr": "roe_5yr",
+    "average return on equity 5years": "roe_5yr_avg",
+    "roe 3yr": "roe_3yr",
+    "average return on equity 3years": "roe_3yr_avg",
+    "intrinsic value": "intrinsic_value",
+    "3yrs pe": "pe_3yrs",
+    "historical pe 3years": "pe_3yrs_historical",
 }
 
 LINE_ITEM_CODES = {
@@ -290,9 +316,11 @@ class ParsedCompany:
     shareholding_y_observations: list[ShareholdingObservation] = field(default_factory=list)
     shareholding_heading: str = "Shareholding Pattern"
     shareholding_classification_warning: str | None = None
+    shareholding_unavailable_frequencies: list[str] = field(default_factory=list)
     document_fields: list[SourceField] = field(default_factory=list)
     document_links: list[DocumentLink] = field(default_factory=list)
     documents_heading: str = "Documents"
+    commentary_texts: list[CompanyTextObservation] = field(default_factory=list)
 
 
 def _node_text(node: Tag | None) -> tuple[str, str]:
@@ -452,6 +480,104 @@ def _parse_ratios(soup: BeautifulSoup) -> tuple[list[SourceField], list[Metric]]
     return fields, metrics
 
 
+def parse_quick_ratios_fragment(
+    content: bytes,
+    position_offset: int = 0,
+) -> tuple[list[SourceField], list[Metric]]:
+    """Parse the AJAX quick-ratios HTML fragment into fields and metrics.
+
+    The fragment contains ``<li data-source="quick-ratio">`` elements returned
+    by ``/api/company/{warehouseId}/quick_ratios/``.  Positions are offset by
+    *position_offset* so items can be appended after the default ratios.
+
+    Returns empty lists when the fragment is empty (no custom ratios configured).
+    """
+    soup = BeautifulSoup(content, "html.parser")
+    fields: list[SourceField] = []
+    metrics: list[Metric] = []
+    for index, item in enumerate(soup.find_all("li", recursive=False)):
+        position = position_offset + index
+        label_node = item.select_one(".name")
+        value_node = item.select_one(".value")
+        raw_value, display_value = _node_text(value_node if isinstance(value_node, Tag) else None)
+        label = clean_text(label_node.get_text(" ", strip=True) if label_node else "")
+        if not label:
+            continue
+        values = decimal_values(display_value)
+        unit_code, scale = unit_for_metric(label, display_value)
+        fields.append(
+            SourceField(position, label, raw_value, display_value, "metric", _first_link(item))
+        )
+        metrics.append(
+            Metric(
+                position=position,
+                label_raw=label,
+                metric_code=METRIC_CODES.get(label.lower()),
+                display_value=display_value,
+                value_decimal=decimal_text(values[0]) if len(values) == 1 else None,
+                value_json=json.dumps([decimal_text(value) for value in values]) if len(values) > 1 else None,
+                unit_code=unit_code,
+                scale_multiplier=scale,
+                missing_kind=missing_kind(display_value),
+            )
+        )
+    return fields, metrics
+
+
+def parse_commentary_fragment(
+    content: bytes,
+) -> list[CompanyTextObservation]:
+    """Parse the wiki/commentary modal HTML into text observations.
+
+    The fragment is fetched from ``/wiki/company/{id}/commentary/v2/`` and
+    contains rich HTML with sourced citations. It typically contains two
+    sections: 'About' and 'Key Points'.
+
+    Returns a list of ``CompanyTextObservation`` objects.
+    """
+    soup = BeautifulSoup(content, "html.parser")
+    observations: list[CompanyTextObservation] = []
+    
+    sub_divs = soup.find_all("div", class_="sub")
+    for index, sub_div in enumerate(sub_divs):
+        # Find preceding header
+        header_text = ""
+        prev = sub_div.find_previous(class_=lambda x: x and "strong" in x)
+        if prev:
+            # Make a copy to avoid mutating the original soup
+            header_node = BeautifulSoup(str(prev), "html.parser").find(class_=lambda x: x and "strong" in x)
+            if header_node:
+                for span in header_node.find_all("span"):
+                    span.decompose()
+                header_text = clean_text(header_node.get_text(" ", strip=True))
+        
+        if not header_text:
+            header_text = "Key Points" if index > 0 else "About"
+            
+        raw_text, display_text = _node_text(sub_div)
+        if not display_text.strip():
+            continue
+            
+        # Map text_type based on header
+        text_type = "commentary"
+        if "about" in header_text.lower():
+            text_type = "commentary_about"
+        elif "key points" in header_text.lower():
+            text_type = "key_points"
+            
+        observations.append(
+            CompanyTextObservation(
+                position=index,
+                text_type=text_type,
+                heading_raw=header_text,
+                display_text=display_text,
+                content_origin="source_visible_text",
+                is_source_generated=False,
+            )
+        )
+    return observations
+
+
 def _parse_company_profile(
     soup: BeautifulSoup,
 ) -> tuple[
@@ -488,33 +614,39 @@ def _parse_company_profile(
         if isinstance(description, Tag)
         else ""
     )
-    if not description_text:
-        raise ValueError("Screener page description is missing")
-    fields.append(
-        SourceField(
-            position=len(fields),
-            key_raw="Description",
-            raw_text=description_text,
-            display_text=description_text,
-            role="company_description",
-            visibility_state="metadata",
+    if description_text:
+        fields.append(
+            SourceField(
+                position=len(fields),
+                key_raw="Description",
+                raw_text=description_text,
+                display_text=description_text,
+                role="company_description",
+                visibility_state="metadata",
+            )
         )
-    )
-    texts.append(
-        CompanyTextObservation(
-            position=0,
-            text_type="company_description",
-            heading_raw="Description",
-            display_text=description_text,
-            content_origin="source_metadata",
-            is_source_generated=False,
+        texts.append(
+            CompanyTextObservation(
+                position=0,
+                text_type="company_description",
+                heading_raw="Description",
+                display_text=description_text,
+                content_origin="source_metadata",
+                is_source_generated=False,
+            )
         )
-    )
 
     desktop_links = top.select_one(".company-links.show-from-tablet-landscape")
-    if not isinstance(desktop_links, Tag):
-        raise ValueError("Screener company links are missing")
-    for anchor in desktop_links.find_all("a", href=True, recursive=False):
+    # SME pages can omit this desktop-only group entirely.  The exchange
+    # identifier is still parsed independently from #company-info, and the
+    # absence of an optional profile-link group must not discard an otherwise
+    # complete company page.
+    profile_anchors = (
+        desktop_links.find_all("a", href=True, recursive=False)
+        if isinstance(desktop_links, Tag)
+        else []
+    )
+    for anchor in profile_anchors:
         raw_text, label = _node_text(anchor)
         upper = label.upper()
         if upper.startswith("BSE:"):
@@ -590,10 +722,13 @@ def _parse_company_profile(
             )
         )
 
-    link_types = {link.link_type for link in links}
-    required_links = {"website", "about_source"}
-    if not required_links <= link_types or not ({"bse", "nse"} & link_types):
-        raise ValueError("Screener company profile links are incomplete")
+    # The About prose is the captured artifact; its inline source hyperlink and
+    # the company website link are recorded when the source renders them but are
+    # not required -- many companies carry neither, and discarding a complete
+    # page over a missing anchor loses real financial data. Only an exchange
+    # The profile link is useful evidence but is not required: identity may be
+    # available in #company-info metadata, and some SME/ETF pages omit the
+    # visible exchange link while still carrying usable financial data.
     return heading, fields, links, texts
 
 
@@ -663,11 +798,10 @@ def _parse_pros_cons(
                 )
             )
 
-    # A source list may legitimately be empty for one side. Preserve both
-    # headings and every displayed item, but require at least one commentary
-    # item overall so an empty shell cannot pass as captured analysis.
-    if not any(text.text_type in {"pro", "con"} for text in texts):
-        raise ValueError("Screener Pros and Cons contain no commentary")
+    # Either source list -- or both -- may legitimately be empty: the section
+    # renders with its headings and no items. Preserve both headings and every
+    # displayed item. Emptiness is reported by the non-blocking
+    # pros_cons_text_present rule rather than discarding the whole page.
 
     fields.append(
         SourceField(
@@ -1177,10 +1311,10 @@ def _parse_shareholding(
         clean_text(warning_node.get_text(" ", strip=True)) if warning_node else None
     )
 
-    q_cells, q_obs = _parse_shareholding_rows(
+    q_cells, q_obs = ([], []) if shareholding_unavailable(soup, "quarterly") else _parse_shareholding_rows(
         _shareholding_table(section, "quarterly-shp", "quarterly"), "quarterly"
     )
-    y_cells, y_obs = _parse_shareholding_rows(
+    y_cells, y_obs = ([], []) if shareholding_unavailable(soup, "yearly") else _parse_shareholding_rows(
         _shareholding_table(section, "yearly-shp", "yearly"), "yearly"
     )
     return heading, warning, q_cells, q_obs, y_cells, y_obs
@@ -1436,6 +1570,7 @@ def parse_company_page(content: bytes, fetched_at_utc: str) -> ParsedCompany:
         shareholding_y_observations=shareholding_y_observations,
         shareholding_heading=shareholding_heading,
         shareholding_classification_warning=shareholding_warning,
+        shareholding_unavailable_frequencies=[f for f in ("quarterly", "yearly") if shareholding_unavailable(soup, f)],
         document_fields=document_fields,
         document_links=document_links,
         documents_heading=documents_heading,

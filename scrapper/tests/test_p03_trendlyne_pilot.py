@@ -29,7 +29,7 @@ class TrendlyneP03PilotTests(unittest.TestCase):
         self.exports = root / "exports"
         conn = connect(self.db_path)
         try:
-            init_db(conn)
+            init_db(conn, apply_migrations=True)
         finally:
             conn.close()
 

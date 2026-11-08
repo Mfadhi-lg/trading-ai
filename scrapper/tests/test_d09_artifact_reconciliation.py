@@ -11,8 +11,10 @@ from pathlib import Path
 from typing import Any
 
 from scrapper.db.artifact_reconciliation_repo import (
+    ClaimedExpectation,
     claim_due_expectations,
     ensure_artifact_expectation,
+    ensure_result_artifact_expectations,
     register_artifact_event,
     release_claims,
 )
@@ -28,6 +30,7 @@ from scrapper.pipeline.ingest_official_transcript import ingest_official_transcr
 from scrapper.pipeline.normalize_recording import normalize_recording
 from scrapper.pipeline.reconcile_artifacts import (
     PersistedArtifactAdapter,
+    _same_event,
     reconcile_artifacts,
 )
 from scrapper.pipeline.transcribe_recording import transcribe_recording
@@ -85,6 +88,104 @@ class StatusAdapter:
 
 
 class ArtifactReconciliationD09Tests(unittest.TestCase):
+    def test_event_identity_requires_date_period_or_complete_fy_quarter(self) -> None:
+        expectation = ClaimedExpectation(
+            expectation_id=1,company_id=1,artifact_type="presentation",event_id=1,
+            event_key="fixture",event_type="results",event_date=None,period_end=None,
+            fiscal_year=2026,fiscal_quarter=None,expectation_basis="fixture",
+            expected_after_utc=T0,availability_status="expected_not_yet_published",
+            next_check_at_utc=T2,attempt_count=0,claim_token=None,schedule={},
+        )
+        artifact = {
+            "event_date": None,"period_end": None,"fiscal_year": 2026,
+            "fiscal_quarter": 1,
+        }
+        self.assertFalse(_same_event(expectation, artifact))
+        paired = ClaimedExpectation(
+            **{**expectation.__dict__, "fiscal_quarter": 1}
+        )
+        self.assertTrue(_same_event(paired, artifact))
+        period = ClaimedExpectation(
+            **{
+                **expectation.__dict__,
+                "event_date": "2026-07-21",
+                "period_end": "2026-06-30",
+            }
+        )
+        artifact.update({"event_date": "2026-07-20", "period_end": "2026-06-30"})
+        self.assertTrue(_same_event(period, artifact))
+
+    def test_epoch_sentinel_does_not_create_result_artifact_expectations(self) -> None:
+        conn = connect(self.db_path)
+        try:
+            created = ensure_result_artifact_expectations(
+                conn,
+                company_id=self.company_id,
+                filing_id=999,
+                exchange="NSE",
+                exchange_key="fixture-sentinel",
+                result_period="1970-01",
+                period_end="1970-01-01",
+                broadcast_at_utc=T0,
+                created_at_utc=T0,
+                policy=self.policy,
+            )
+            self.assertEqual(created, ())
+            self.assertEqual(
+                conn.execute(
+                    "SELECT COUNT(*) FROM artifact_events WHERE period_end='1970-01-01'"
+                ).fetchone()[0],
+                0,
+            )
+        finally:
+            conn.close()
+
+    def test_delayed_result_documents_reject_market_cap_below_580_crore(self) -> None:
+        conn = connect(self.db_path)
+        try:
+            self._accept_market_cap(conn, "579.99")
+            at_floor = ensure_result_artifact_expectations(
+                conn,
+                company_id=self.company_id,
+                filing_id=1001,
+                exchange="NSE",
+                exchange_key="fixture-at-floor",
+                result_period="2026-09",
+                period_end="2026-09-30",
+                broadcast_at_utc=T0,
+                created_at_utc=T0,
+                policy=self.policy,
+            )
+            self.assertEqual(len(at_floor), 2)
+            self.assertEqual(
+                {
+                    row[0]
+                    for row in conn.execute(
+                        "SELECT artifact_type FROM artifact_expectations "
+                        "WHERE expectation_id IN (?, ?)",
+                        at_floor,
+                    )
+                },
+                {"recording", "credit_rating"},
+            )
+
+            self._accept_market_cap(conn, "580.01")
+            above_floor = ensure_result_artifact_expectations(
+                conn,
+                company_id=self.company_id,
+                filing_id=1002,
+                exchange="NSE",
+                exchange_key="fixture-above-floor",
+                result_period="2026-12",
+                period_end="2026-12-31",
+                broadcast_at_utc=T0,
+                created_at_utc=T0,
+                policy=self.policy,
+            )
+            self.assertEqual(len(above_floor), 4)
+        finally:
+            conn.close()
+
     def setUp(self) -> None:
         self.temp = tempfile.TemporaryDirectory()
         self.root = Path(self.temp.name)
@@ -92,7 +193,7 @@ class ArtifactReconciliationD09Tests(unittest.TestCase):
         self.policy = RetryPolicy(offsets_hours=(2, 6, 12), claim_lease_seconds=60)
         conn = connect(self.db_path)
         try:
-            init_db(conn)
+            init_db(conn, apply_migrations=True)
             self.company_id = int(
                 conn.execute(
                     "INSERT INTO companies(current_legal_name, status) "
@@ -132,6 +233,35 @@ class ArtifactReconciliationD09Tests(unittest.TestCase):
                 "SELECT blob_id FROM response_blobs WHERE content_sha256=?", (digest,)
             ).fetchone()[0]
         )
+
+    def _accept_market_cap(self, conn: sqlite3.Connection, value: str) -> None:
+        blob_id = self._blob(conn, value.encode("ascii"), "text/html", f"cap-{value}")
+        parse_id = int(
+            conn.execute(
+                """INSERT INTO parse_artifacts
+                   (blob_id, parser_name, parser_version, manifest_version,
+                    parsed_at_utc, parse_status, validation_status)
+                   VALUES (?, 'fixture', '1', '1', ?, 'ok', 'passed')""",
+                (blob_id, T0),
+            ).lastrowid
+        )
+        conn.execute(
+            """INSERT INTO company_metric_observations
+               (parse_id, reporting_scope, metric_code, label_raw, position,
+                display_value, value_decimal, unit_code, scale_multiplier,
+                first_observed_at_utc, available_at_utc, availability_basis)
+               VALUES (?, 'standalone', 'market_cap', 'Market Cap', 0,
+                       ?, ?, 'INR_CRORE', '10000000', ?, ?, 'first_observed')""",
+            (parse_id, value, value, T0, T0),
+        )
+        conn.execute(
+            """INSERT INTO accepted_page_versions
+               (company_id, source, reporting_scope, resolved_source_period,
+                parse_id, accepted_at_utc, accepted_by, acceptance_mode)
+               VALUES (?, 'screener', 'standalone', ?, ?, ?, 'fixture', 'fixture')""",
+            (self.company_id, f"cap-{value}", parse_id, T0),
+        )
+        conn.commit()
 
     def _seed_event_and_artifacts(self, conn: sqlite3.Connection) -> None:
         event_id = register_artifact_event(
@@ -363,6 +493,198 @@ class ArtifactReconciliationD09Tests(unittest.TestCase):
         }
         self.assertEqual(projection, json.loads(GOLDEN.read_text(encoding="utf-8")))
 
+    def test_due_documents_share_one_screener_source_refresh_per_event(self) -> None:
+        conn = connect(self.db_path)
+        try:
+            event_id = int(
+                conn.execute(
+                    "SELECT event_id FROM artifact_events WHERE event_key=?",
+                    ("earnings_call:q1-fy2026",),
+                ).fetchone()[0]
+            )
+            presentation_id = ensure_artifact_expectation(
+                conn,
+                event_id=event_id,
+                artifact_type="presentation",
+                expectation_basis="announced_results",
+                expected_after_utc=T0,
+                created_at_utc=T0,
+                policy=self.policy,
+            )
+            with conn:
+                conn.execute(
+                    """INSERT INTO screener_company_collection_state
+                       (company_path_normalized, reporting_scope, company_id,
+                        latest_discovered_result_period,
+                        latest_accepted_result_period, updated_at_utc)
+                       VALUES ('/company/FIXTURE/', 'standalone', ?,
+                               '2026-06', '2026-06', ?)""",
+                    (self.company_id, T0),
+                )
+        finally:
+            conn.close()
+
+        refreshed: list[Any] = []
+
+        def source_refresher(target: Any) -> None:
+            refreshed.append(target)
+
+        report = reconcile_artifacts(
+            due=True,
+            limit=100,
+            db_path=self.db_path,
+            output=self.root / "source-refresh.json",
+            adapter=PersistedArtifactAdapter(),
+            source_refresher=source_refresher,
+            now_utc=lambda: T2,
+            worker_id="worker-source-refresh",
+        )
+
+        self.assertEqual(len(refreshed), 1)
+        self.assertEqual(refreshed[0].result_period, "2026-06")
+        self.assertEqual(
+            refreshed[0].expectation_ids,
+            tuple(sorted((self.transcript_expectation_id, presentation_id))),
+        )
+        self.assertEqual(report["summary"]["source_refresh_count"], 1)
+
+    def test_migration_rebases_never_checked_overdue_result_documents(self) -> None:
+        conn = connect(self.db_path)
+        try:
+            with conn:
+                conn.execute(
+                    """UPDATE artifact_expectations
+                          SET expectation_basis=?,
+                              availability_status='expected_not_yet_published',
+                              expected_after_utc=?,
+                              first_checked_at_utc=NULL,
+                              next_check_at_utc=?, attempt_count=0,
+                              terminal_reason=NULL
+                        WHERE expectation_id=?""",
+                    (
+                        "accepted_exchange_result_filing_requires_primary_source_discovery",
+                        T0,
+                        T0,
+                        self.transcript_expectation_id,
+                    ),
+                )
+                conn.execute(
+                    "DELETE FROM schema_migrations WHERE version=?",
+                    ("060_rebase_all_overdue_concall_refresh.sql",),
+                )
+            init_db(conn, apply_migrations=True)
+            row = conn.execute(
+                """SELECT attempt_count, next_check_at_utc, terminal_reason
+                     FROM artifact_expectations WHERE expectation_id=?""",
+                (self.transcript_expectation_id,),
+            ).fetchone()
+            self.assertEqual(row["attempt_count"], 0)
+            self.assertIsNotNone(row["next_check_at_utc"])
+            self.assertIsNone(row["terminal_reason"])
+            # The normal startup backfill still presents the immutable filing
+            # timestamp and must accept the explicitly rearmed retry anchor.
+            event_id = int(
+                conn.execute(
+                    "SELECT event_id FROM artifact_expectations WHERE expectation_id=?",
+                    (self.transcript_expectation_id,),
+                ).fetchone()[0]
+            )
+            ensure_artifact_expectation(
+                conn,
+                event_id=event_id,
+                artifact_type="transcript",
+                expectation_basis=(
+                    "accepted_exchange_result_filing_requires_primary_source_discovery"
+                ),
+                expected_after_utc=T0,
+                created_at_utc=T0,
+                policy=self.policy,
+            )
+            with conn:
+                conn.execute(
+                    """UPDATE artifact_expectations
+                          SET availability_status='available', attempt_count=1,
+                              terminal_reason='accepted_artifact_present'
+                        WHERE expectation_id=?""",
+                    (self.transcript_expectation_id,),
+                )
+            ensure_artifact_expectation(
+                conn,
+                event_id=event_id,
+                artifact_type="transcript",
+                expectation_basis=(
+                    "accepted_exchange_result_filing_requires_primary_source_discovery"
+                ),
+                expected_after_utc=T0,
+                created_at_utc=T0,
+                policy=self.policy,
+            )
+        finally:
+            conn.close()
+
+    def test_rate_limit_stops_remaining_company_refreshes_in_batch(self) -> None:
+        conn = connect(self.db_path)
+        try:
+            second_event = register_artifact_event(
+                conn,
+                company_id=self.company_id,
+                event_key="results:q2-fy2026",
+                event_type="results",
+                period_end="2026-09-30",
+                evidenced_at_utc=T0,
+                evidence_source="fixture",
+                evidence={},
+            )
+            for artifact_type in ("presentation", "transcript"):
+                ensure_artifact_expectation(
+                    conn,
+                    event_id=second_event,
+                    artifact_type=artifact_type,
+                    expectation_basis="fixture",
+                    expected_after_utc=T0,
+                    created_at_utc=T0,
+                    policy=self.policy,
+                )
+            with conn:
+                conn.execute(
+                    """INSERT INTO screener_company_collection_state
+                       (company_path_normalized, reporting_scope, company_id,
+                        latest_discovered_result_period,
+                        latest_accepted_result_period, updated_at_utc)
+                       VALUES ('/company/FIXTURE/', 'standalone', ?,
+                               '2026-09', '2026-09', ?)""",
+                    (self.company_id, T0),
+                )
+        finally:
+            conn.close()
+
+        calls: list[Any] = []
+
+        def rate_limited(target: Any) -> None:
+            calls.append(target)
+            raise RuntimeError(
+                "Response rejected before parsing: status=429 classification=rejected"
+            )
+
+        report = reconcile_artifacts(
+            due=True,
+            limit=100,
+            db_path=self.db_path,
+            output=self.root / "rate-limit.json",
+            adapter=PersistedArtifactAdapter(),
+            source_refresher=rate_limited,
+            now_utc=lambda: T2,
+            worker_id="worker-rate-limit",
+        )
+
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(report["summary"]["source_refresh_count"], 2)
+        self.assertEqual(report["summary"]["source_refresh_failure_count"], 2)
+        self.assertEqual(
+            [row["status"] for row in report["source_refreshes"]],
+            ["failed", "deferred_host_rate_limit"],
+        )
+
     def test_overlapping_workers_cannot_claim_same_due_expectation(self) -> None:
         first = connect(self.db_path)
         second = connect(self.db_path)
@@ -455,6 +777,18 @@ class ArtifactReconciliationD09Tests(unittest.TestCase):
         self.assertEqual(policy.check_at(T0, 9), "2026-08-12T00:00:00+00:00")
         self.assertEqual(policy.check_at(T0, 14), "2026-09-16T00:00:00+00:00")
         self.assertIsNone(policy.check_at(T0, 15))
+
+    def test_overdue_retry_is_spaced_from_actual_check(self) -> None:
+        policy = RetryPolicy(offsets_hours=(2, 6, 12))
+        next_check, reason = policy.next_after_result(
+            expected_after_utc=T0,
+            completed_attempt_count=1,
+            status="expected_not_yet_published",
+            retryable=True,
+            checked_at_utc="2026-09-29T04:00:00+00:00",
+        )
+        self.assertEqual(next_check, "2026-09-29T08:00:00+00:00")
+        self.assertIsNone(reason)
 
     def test_unknown_enters_review_and_failures_stop_when_schedule_exhausts(self) -> None:
         conn = connect(self.db_path)

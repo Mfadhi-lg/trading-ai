@@ -1,0 +1,720 @@
+{
+  "chunk": "C07.2",
+  "status": "COMPLETE",
+  "parent_status": "IN_PROGRESS",
+  "authorization": "read TRADING_AI_CLEANUP_EXECUTION.md execute c07.2",
+  "baseline_head": "db7564a109f1cb34ee4e7d5ea3427716e14cb51e",
+  "baseline_file_count": 35287,
+  "scope_policy": {
+    "paths": {
+      "scrapper/research/amfi_amc_feasibility.md": [
+        "modify"
+      ],
+      "scrapper/research/amfi_amc_mapping_architecture.md": [
+        "modify"
+      ],
+      "scrapper/README.md": [
+        "modify"
+      ],
+      "docs/STATUS.md": [
+        "modify"
+      ],
+      "TRADING_AI_CLEANUP_EXECUTION.md": [
+        "modify"
+      ],
+      "docs/research/amfi_amc_feasibility.md": [
+        "add"
+      ],
+      "docs/research/amfi_amc_mapping_architecture.md": [
+        "add"
+      ],
+      "docs/research/README.md": [
+        "add"
+      ],
+      "docs/cleanup/chunks/C07.2.md": [
+        "add"
+      ],
+      "docs/cleanup/baselines/C07.2/evidence.json": [
+        "add"
+      ]
+    }
+  },
+  "scope_result": {
+    "changes": {
+      "TRADING_AI_CLEANUP_EXECUTION.md": [
+        "modify"
+      ],
+      "docs/STATUS.md": [
+        "modify"
+      ],
+      "docs/cleanup/baselines/C07.2/evidence.json": [
+        "add"
+      ],
+      "docs/cleanup/chunks/C07.2.md": [
+        "add"
+      ],
+      "docs/research/README.md": [
+        "add"
+      ],
+      "docs/research/amfi_amc_feasibility.md": [
+        "add"
+      ],
+      "docs/research/amfi_amc_mapping_architecture.md": [
+        "add"
+      ],
+      "scrapper/README.md": [
+        "modify"
+      ],
+      "scrapper/research/amfi_amc_feasibility.md": [
+        "modify"
+      ],
+      "scrapper/research/amfi_amc_mapping_architecture.md": [
+        "modify"
+      ]
+    },
+    "status": "PASS",
+    "violations": {}
+  },
+  "verification": {
+    "status": "PASS",
+    "local_links_checked": 117,
+    "links": [
+      {
+        "source": "README.md",
+        "target": "docs/STATUS.md",
+        "exists": true
+      },
+      {
+        "source": "README.md",
+        "target": "TRADING_AI_CLEANUP_EXECUTION.md",
+        "exists": true
+      },
+      {
+        "source": "README.md",
+        "target": "TRADING_AI_MASTER_ROADMAP_V4_2026-09-29.md",
+        "exists": true
+      },
+      {
+        "source": "README.md",
+        "target": "docs/cleanup/chunks/C06.md",
+        "exists": true
+      },
+      {
+        "source": "README.md",
+        "target": "compose.yml",
+        "exists": true
+      },
+      {
+        "source": "README.md",
+        "target": "Dockerfile",
+        "exists": true
+      },
+      {
+        "source": "README.md",
+        "target": "docs/cleanup/chunks/C05.3.md",
+        "exists": true
+      },
+      {
+        "source": "README.md",
+        "target": "scraper",
+        "exists": true
+      },
+      {
+        "source": "README.md",
+        "target": "scrapper/README.md",
+        "exists": true
+      },
+      {
+        "source": "README.md",
+        "target": "scrapper/",
+        "exists": true
+      },
+      {
+        "source": "README.md",
+        "target": "docs/cleanup/chunks/",
+        "exists": true
+      },
+      {
+        "source": "README.md",
+        "target": "docs/cleanup/baselines/",
+        "exists": true
+      },
+      {
+        "source": "README.md",
+        "target": "docs/architecture/2026-10-01/REPOSITORY_REVIEW.md",
+        "exists": true
+      },
+      {
+        "source": "README.md",
+        "target": "docs/architecture/cleanup-references/",
+        "exists": true
+      },
+      {
+        "source": "README.md",
+        "target": "artifacts/",
+        "exists": true
+      },
+      {
+        "source": "README.md",
+        "target": "experiments/",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "target": "../TRADING_AI_CLEANUP_EXECUTION.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "target": "../TRADING_AI_MASTER_ROADMAP_V4_2026-09-29.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "target": "architecture/cleanup-references/TRADING_AI_DEEP_ARCHITECTURE_CLEANUP_BLUEPRINT_V1.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "target": "architecture/cleanup-references/TRADING_AI_MODULE_INVENTORY_AND_CLEANUP_MAP.csv",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "target": "architecture/2026-10-01/REPOSITORY_REVIEW.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "target": "architecture/2026-10-01/source-map.csv",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "target": "architecture/2026-10-01/report-index.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "target": "../scrapper/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "target": "../scrapper/EXECUTION.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "target": "../scrapper/PLAN.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "target": "cleanup/chunks/C01.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "target": "cleanup/chunks/C01.2.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "target": "cleanup/chunks/C01.3.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "target": "cleanup/chunks/C02.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "target": "cleanup/chunks/C02.2.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "target": "cleanup/chunks/C02.3.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "target": "cleanup/chunks/C03.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "target": "cleanup/baselines/C03.1/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "target": "cleanup/chunks/C04.1.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "target": "cleanup/chunks/C04.2.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "target": "cleanup/chunks/C04.3.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "target": "cleanup/chunks/C05.0.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "target": "cleanup/chunks/C05.1.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "target": "cleanup/chunks/C05.2.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "target": "cleanup/chunks/C05.3.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "target": "cleanup/chunks/C06.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "target": "cleanup/baselines/C06.1/evidence.json",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "target": "cleanup/chunks/C07.1.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "target": "cleanup/chunks/C07.2.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "target": "research/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "target": "../artifacts/a2-2026-09-29/A2_REVIEW_HANDOFF.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "target": "../artifacts/a2-2026-09-29/MIGRATION_065_INCIDENT_REVIEW.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "target": "../artifacts/b0-2026-09-29/B0_EXISTING_DATA_ML_CARD.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "target": "../artifacts/b0-2026-09-29/B0_PIT_LIMITATIONS.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "target": "../artifacts/b1-2026-10-01/B1_RECONCILIATION_AND_TESTS.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "target": "cleanup/chunks/C03.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "target": "../artifacts/b2-2026-10-01/B2_SUPERSESSION_RECORD.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "target": "../artifacts/b2-discovery-2026-10-01/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "target": "../artifacts/b2-discovery-2026-10-01/review-v2/B2_BASELINE_FINDINGS_V2.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "target": "../artifacts/focus_ml/governance/P0_GOVERNANCE_REPORT_v001.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "target": "../artifacts/focus_ml/governance/P0_NEGATIVE_APPROVAL_REQUIRED.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "target": "../artifacts/rating-link-refresh-20261001/report.json",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "target": "../artifacts/rating-exception-recovery-20261001/report.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "target": "research/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "target": "../experiments/upstox_fundamentals_pilot/BLOCKED_STATUS.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "target": "../scrapper/SCRAPPER_2.0.md",
+        "exists": true
+      },
+      {
+        "source": "TRADING_AI_CLEANUP_EXECUTION.md",
+        "target": "docs/cleanup/chunks/C01.md",
+        "exists": true
+      },
+      {
+        "source": "TRADING_AI_CLEANUP_EXECUTION.md",
+        "target": "docs/cleanup/chunks/C01.2.md",
+        "exists": true
+      },
+      {
+        "source": "TRADING_AI_CLEANUP_EXECUTION.md",
+        "target": "docs/cleanup/chunks/C01.3.md",
+        "exists": true
+      },
+      {
+        "source": "TRADING_AI_CLEANUP_EXECUTION.md",
+        "target": "docs/cleanup/chunks/C02.2.md",
+        "exists": true
+      },
+      {
+        "source": "TRADING_AI_CLEANUP_EXECUTION.md",
+        "target": "docs/cleanup/chunks/C02.3.md",
+        "exists": true
+      },
+      {
+        "source": "TRADING_AI_CLEANUP_EXECUTION.md",
+        "target": "docs/cleanup/chunks/C03.md",
+        "exists": true
+      },
+      {
+        "source": "TRADING_AI_CLEANUP_EXECUTION.md",
+        "target": "docs/cleanup/chunks/C04.1.md",
+        "exists": true
+      },
+      {
+        "source": "TRADING_AI_CLEANUP_EXECUTION.md",
+        "target": "docs/cleanup/chunks/C04.2.md",
+        "exists": true
+      },
+      {
+        "source": "TRADING_AI_CLEANUP_EXECUTION.md",
+        "target": "docs/cleanup/chunks/C04.3.md",
+        "exists": true
+      },
+      {
+        "source": "TRADING_AI_CLEANUP_EXECUTION.md",
+        "target": "docs/cleanup/chunks/C05.0.md",
+        "exists": true
+      },
+      {
+        "source": "TRADING_AI_CLEANUP_EXECUTION.md",
+        "target": "docs/cleanup/chunks/C05.1.md",
+        "exists": true
+      },
+      {
+        "source": "TRADING_AI_CLEANUP_EXECUTION.md",
+        "target": "docs/cleanup/chunks/C05.2.md",
+        "exists": true
+      },
+      {
+        "source": "TRADING_AI_CLEANUP_EXECUTION.md",
+        "target": "docs/cleanup/chunks/C05.3.md",
+        "exists": true
+      },
+      {
+        "source": "TRADING_AI_CLEANUP_EXECUTION.md",
+        "target": "docs/cleanup/chunks/C06.md",
+        "exists": true
+      },
+      {
+        "source": "TRADING_AI_CLEANUP_EXECUTION.md",
+        "target": "docs/cleanup/chunks/C07.1.md",
+        "exists": true
+      },
+      {
+        "source": "TRADING_AI_CLEANUP_EXECUTION.md",
+        "target": "docs/cleanup/chunks/C07.2.md",
+        "exists": true
+      },
+      {
+        "source": "TRADING_AI_CLEANUP_EXECUTION.md",
+        "target": "docs/architecture/cleanup-references/TRADING_AI_DEEP_ARCHITECTURE_CLEANUP_BLUEPRINT_V1.md",
+        "exists": true
+      },
+      {
+        "source": "TRADING_AI_CLEANUP_EXECUTION.md",
+        "target": "docs/architecture/cleanup-references/TRADING_AI_MODULE_INVENTORY_AND_CLEANUP_MAP.csv",
+        "exists": true
+      },
+      {
+        "source": "TRADING_AI_CLEANUP_EXECUTION.md",
+        "target": "docs/architecture/2026-10-01/REPOSITORY_REVIEW.md",
+        "exists": true
+      },
+      {
+        "source": "TRADING_AI_CLEANUP_EXECUTION.md",
+        "target": "docs/architecture/2026-10-01/source-map.csv",
+        "exists": true
+      },
+      {
+        "source": "TRADING_AI_CLEANUP_EXECUTION.md",
+        "target": "docs/architecture/2026-10-01/report-index.md",
+        "exists": true
+      },
+      {
+        "source": "TRADING_AI_CLEANUP_EXECUTION.md",
+        "target": "TRADING_AI_MASTER_ROADMAP_V4_2026-09-29.md",
+        "exists": true
+      },
+      {
+        "source": "TRADING_AI_CLEANUP_EXECUTION.md",
+        "target": "artifacts/b2-2026-10-01/B2_SUPERSESSION_RECORD.md",
+        "exists": true
+      },
+      {
+        "source": "TRADING_AI_CLEANUP_EXECUTION.md",
+        "target": "docs/cleanup/chunks/C01.md",
+        "exists": true
+      },
+      {
+        "source": "TRADING_AI_CLEANUP_EXECUTION.md",
+        "target": "docs/cleanup/chunks/C01.2.md",
+        "exists": true
+      },
+      {
+        "source": "TRADING_AI_CLEANUP_EXECUTION.md",
+        "target": "docs/cleanup/chunks/C01.3.md",
+        "exists": true
+      },
+      {
+        "source": "TRADING_AI_CLEANUP_EXECUTION.md",
+        "target": "docs/cleanup/chunks/C02.md",
+        "exists": true
+      },
+      {
+        "source": "TRADING_AI_CLEANUP_EXECUTION.md",
+        "target": "docs/cleanup/chunks/C02.2.md",
+        "exists": true
+      },
+      {
+        "source": "TRADING_AI_CLEANUP_EXECUTION.md",
+        "target": "docs/cleanup/chunks/C02.3.md",
+        "exists": true
+      },
+      {
+        "source": "TRADING_AI_CLEANUP_EXECUTION.md",
+        "target": "docs/cleanup/chunks/C03.md",
+        "exists": true
+      },
+      {
+        "source": "TRADING_AI_CLEANUP_EXECUTION.md",
+        "target": "docs/cleanup/chunks/C04.1.md",
+        "exists": true
+      },
+      {
+        "source": "TRADING_AI_CLEANUP_EXECUTION.md",
+        "target": "docs/cleanup/chunks/C04.2.md",
+        "exists": true
+      },
+      {
+        "source": "TRADING_AI_CLEANUP_EXECUTION.md",
+        "target": "docs/cleanup/chunks/C04.3.md",
+        "exists": true
+      },
+      {
+        "source": "TRADING_AI_CLEANUP_EXECUTION.md",
+        "target": "docs/cleanup/chunks/C05.0.md",
+        "exists": true
+      },
+      {
+        "source": "TRADING_AI_CLEANUP_EXECUTION.md",
+        "target": "docs/cleanup/chunks/C05.1.md",
+        "exists": true
+      },
+      {
+        "source": "TRADING_AI_CLEANUP_EXECUTION.md",
+        "target": "docs/cleanup/chunks/C05.2.md",
+        "exists": true
+      },
+      {
+        "source": "TRADING_AI_CLEANUP_EXECUTION.md",
+        "target": "docs/cleanup/chunks/C05.3.md",
+        "exists": true
+      },
+      {
+        "source": "TRADING_AI_CLEANUP_EXECUTION.md",
+        "target": "docs/cleanup/chunks/C06.md",
+        "exists": true
+      },
+      {
+        "source": "TRADING_AI_CLEANUP_EXECUTION.md",
+        "target": "docs/cleanup/chunks/C07.1.md",
+        "exists": true
+      },
+      {
+        "source": "TRADING_AI_CLEANUP_EXECUTION.md",
+        "target": "docs/cleanup/chunks/C07.2.md",
+        "exists": true
+      },
+      {
+        "source": "TRADING_AI_CLEANUP_EXECUTION.md",
+        "target": "docs/cleanup/chunks/C07.2.md",
+        "exists": true
+      },
+      {
+        "source": "docs/research/README.md",
+        "target": "../STATUS.md",
+        "exists": true
+      },
+      {
+        "source": "docs/research/README.md",
+        "target": "../../TRADING_AI_CLEANUP_EXECUTION.md",
+        "exists": true
+      },
+      {
+        "source": "docs/research/README.md",
+        "target": "amfi_amc_feasibility.md",
+        "exists": true
+      },
+      {
+        "source": "docs/research/README.md",
+        "target": "amfi_amc_mapping_architecture.md",
+        "exists": true
+      },
+      {
+        "source": "docs/research/README.md",
+        "target": "../../scrapper/research/amfi_amc_source_inventory.json",
+        "exists": true
+      },
+      {
+        "source": "docs/research/README.md",
+        "target": "../cleanup/chunks/C07.2.md",
+        "exists": true
+      },
+      {
+        "source": "docs/cleanup/chunks/C07.2.md",
+        "target": "../../research/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/cleanup/chunks/C07.2.md",
+        "target": "../baselines/C07.2/evidence.json",
+        "exists": true
+      },
+      {
+        "source": "scrapper/research/amfi_amc_feasibility.md",
+        "target": "../../docs/research/amfi_amc_feasibility.md",
+        "exists": true
+      },
+      {
+        "source": "scrapper/research/amfi_amc_feasibility.md",
+        "target": "../../docs/STATUS.md",
+        "exists": true
+      },
+      {
+        "source": "scrapper/research/amfi_amc_mapping_architecture.md",
+        "target": "../../docs/research/amfi_amc_mapping_architecture.md",
+        "exists": true
+      },
+      {
+        "source": "scrapper/research/amfi_amc_mapping_architecture.md",
+        "target": "../../docs/STATUS.md",
+        "exists": true
+      },
+      {
+        "source": "scrapper/README.md",
+        "target": "../docs/research/amfi_amc_feasibility.md",
+        "exists": true
+      },
+      {
+        "source": "scrapper/README.md",
+        "target": "../docs/research/amfi_amc_mapping_architecture.md",
+        "exists": true
+      }
+    ],
+    "moves": [
+      {
+        "original_path": "scrapper/research/amfi_amc_feasibility.md",
+        "relocated_path": "docs/research/amfi_amc_feasibility.md",
+        "original_sha256": "0ec5ed567463e2e8056fec7d85fa331ff00f1c3e8c701799261729b7712f19f0",
+        "relocated_sha256": "0ec5ed567463e2e8056fec7d85fa331ff00f1c3e8c701799261729b7712f19f0"
+      },
+      {
+        "original_path": "scrapper/research/amfi_amc_mapping_architecture.md",
+        "relocated_path": "docs/research/amfi_amc_mapping_architecture.md",
+        "original_sha256": "f6397aa028d3d9328a6b51f6a3f4e974df905f47c5e60a540f58bf45b2bbe965",
+        "relocated_sha256": "f6397aa028d3d9328a6b51f6a3f4e974df905f47c5e60a540f58bf45b2bbe965"
+      }
+    ],
+    "preservation": "bytes, SHA256 and modes equal baseline",
+    "package_readme": "exactly two target substitutions",
+    "ledger_status": "PASS"
+  },
+  "private_evidence": {
+    "/private/tmp/trading-ai-cleanup-c072-20261003/baseline.json": "5ec449fc602f4527106a3b4483d1af8e48d24e42d5c908d4d0dd21c14aec21f8",
+    "/private/tmp/trading-ai-cleanup-c072-20261003/policy.json": "b55faee742c9db6ce4ff5400c5d171c3ee2ef1742fc95f8c692ed5956853de96",
+    "/private/tmp/trading-ai-cleanup-c072-20261003/capture-result.json": "d8a5f26f3c32450ef7ad3acf48afe2e05f970245bfcfec8b38e46a8d8e27cb92",
+    "/private/tmp/trading-ai-cleanup-c072-20261003/moves.json": "f37bbaaeb73adbf6852492a7b22a922f131e844428a729825158961c4a9cc7f3",
+    "/private/tmp/trading-ai-cleanup-c072-20261003/verify.py": "7230fa653d1b289d4b0e445cc67cf038aa543478b0f1a9ec4cc2f47dc0eeb199",
+    "/private/tmp/trading-ai-cleanup-c072-20261003/verification-result.json": "af5243406099349c4dd459855401cc3a6fcfcab35ab3e2641d6b0fde728cca25",
+    "/private/tmp/trading-ai-cleanup-c072-20261003/scope-result.json": "8387af43568ccd842a586550905b3456a47c0c8974971f5008b407c204872abe"
+  },
+  "checker": {
+    "path": "/private/tmp/trading-ai-cleanup-c012-20261002/dev/scripts/audit/cleanup_scope.py",
+    "sha256": "9fc5bf6512f907fbd5028d58a83aa6df26242021308fa55b2c221a1e8761cdda"
+  },
+  "output_sha256": {
+    "scrapper/research/amfi_amc_feasibility.md": "f51bfc3be060f6778c6503b6f63d2b389c7fdd72d6933778e8d0f103435bae1d",
+    "scrapper/research/amfi_amc_mapping_architecture.md": "0481253488d1abf4dabb39628c594567dcec14900dedc35accfdeaae1dd04ce1",
+    "scrapper/README.md": "08a291ba54148cb70a25a1fa6b08a0030389bce8aaad9130167499962f647ea2",
+    "docs/STATUS.md": "504a02dc61699a0f1281f14aa0aa2598a246ee6f5a0e8de3b8177f3dda27708e",
+    "TRADING_AI_CLEANUP_EXECUTION.md": "f6f059ccd60cfbb367967f89809da9594682957e75958ea1b757caef4163c16f",
+    "docs/research/amfi_amc_feasibility.md": "0ec5ed567463e2e8056fec7d85fa331ff00f1c3e8c701799261729b7712f19f0",
+    "docs/research/amfi_amc_mapping_architecture.md": "f6397aa028d3d9328a6b51f6a3f4e974df905f47c5e60a540f58bf45b2bbe965",
+    "docs/research/README.md": "4c1a81b6dc1b236f33282f6b99132abddd676f9abb531e837dbff0a7e6dfd857",
+    "docs/cleanup/chunks/C07.2.md": "e310b532f16f577fb638ffb5636c2333a39e216cf9c3a494299dc74a221b8e10"
+  },
+  "production_activation": "none",
+  "data_schema_content_impact": "none",
+  "application_tests": "not applicable: Markdown-only relocation",
+  "build_context": "unchanged; C07.3 unselected",
+  "next_smallest_chunk": "C07.3",
+  "limitations": [
+    "Private baseline/control evidence remains local temporary storage requiring retention.",
+    "No live health, runtime parity, external-source revalidation or full-corpus integrity claim.",
+    "Forwarding pages preserve link resolution; original text lives at the new documentation paths."
+  ]
+}

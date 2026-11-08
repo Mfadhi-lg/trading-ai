@@ -1,0 +1,291 @@
+#!/bin/bash
+# Shortcut wrapper to execute scraper CLI commands inside the Docker environment.
+
+# Ensure we run from the script's directory (workspace root)
+cd "$(dirname "$0")"
+
+COMPOSE_PROJECT="trading-ai"
+STATE_FILE=".scraper_shutdown_state"
+BRIDGE_CONTAINER="trading-ai-document-download-worker-1"
+HOST_CONTROL="scrapper/commands/browser_rating_host.py"
+HOST_MARKER="@browser-rating-icra"
+
+# Resolve settings before any lifecycle side effect. No eval or shell sourcing.
+case "${1:-}" in
+    shutdown|wake|status)
+        SETTINGS=$(python3 -B ops/host/lifecycle_config.py "$1") || exit $?
+        STATE_FILE=${SETTINGS%%$'\n'*}
+        BRIDGE_CONTAINER=${SETTINGS#*$'\n'}
+        ;;
+esac
+
+# ── Pipeline lifecycle commands ───────────────────────────────────────────────
+_project_containers() {
+    # Usage: _project_containers <status> — every container in the compose
+    # project, regardless of whether its name matches compose's generated one.
+    # The long-running workers were started under custom names, so filtering by
+    # name misses them; the project label does not.
+    docker ps -a --filter "label=com.docker.compose.project=$COMPOSE_PROJECT" \
+                 --filter "status=$1" --format '{{.Names}}'
+}
+
+_is_oneoff() {
+    [ "$(docker inspect "$1" --format \
+        '{{index .Config.Labels "com.docker.compose.oneoff"}}' 2>/dev/null)" = "True" ]
+}
+
+_find_containers() {
+    # Usage: _find_containers <status>  — returns container IDs for scheduler+daemon
+    local filter_status="$1"
+    docker ps -q --filter "name=scheduler" --filter "status=$filter_status"
+    docker ps -q --filter "name=daemon"    --filter "status=$filter_status"
+}
+
+case "${1:-}" in
+    pause)
+        echo "⏸️  Pausing pipeline..."
+        CONTAINERS=$(_find_containers running)
+        if [ -z "$CONTAINERS" ]; then
+            echo "⚠️  No running scheduler/daemon containers found."
+            exit 1
+        fi
+        docker pause $CONTAINERS
+        echo "✅ Pipeline paused. Use './scraper resume' to restart."
+        exit 0
+        ;;
+    resume|unpause)
+        echo "▶️  Resuming pipeline..."
+        CONTAINERS=$(_find_containers paused)
+        if [ -z "$CONTAINERS" ]; then
+            echo "⚠️  No paused scheduler/daemon containers found."
+            exit 1
+        fi
+        docker unpause $CONTAINERS
+        echo "✅ Pipeline resumed."
+        exit 0
+        ;;
+    stop)
+        echo "⏹️  Stopping pipeline..."
+        docker compose stop scheduler daemon
+        echo "✅ Pipeline stopped. Use './scraper start' to bring it back up."
+        exit 0
+        ;;
+    start)
+        echo "🚀 Starting pipeline..."
+        docker compose up -d scheduler daemon
+        echo "✅ Pipeline started."
+        exit 0
+        ;;
+    shutdown)
+        # Graceful stop of every running container in the project, ahead of a
+        # laptop shutdown. Never pause: a paused container cannot handle SIGTERM,
+        # so Docker Desktop tears it down with SIGKILL (the Exited(137) you see
+        # on containers that were paused rather than stopped).
+        echo "🛑 Shutting down the pipeline..."
+
+        PAUSED=$(_project_containers paused)
+        if [ -n "$PAUSED" ]; then
+            echo "   Unpausing first so SIGTERM can be handled:"
+            echo "$PAUSED" | sed 's/^/     · /'
+            docker unpause $PAUSED >/dev/null
+        fi
+
+        RUNNING=$(_project_containers running)
+        HOST_RUNNING=0
+        python3 "$HOST_CONTROL" is-running && HOST_RUNNING=1
+        if [ -z "$RUNNING" ] && [ "$HOST_RUNNING" -eq 0 ]; then
+            echo "⚠️  Nothing running in project '$COMPOSE_PROJECT'. Safe to shut down."
+            exit 0
+        fi
+
+        # Record only the long-lived services. One-off `compose run` containers
+        # (the shell/monitor TUI) are attached to this terminal and are
+        # pointless to resurrect detached.
+        mkdir -p "$(dirname "$STATE_FILE")" || exit 1
+        : > "$STATE_FILE" || exit 1
+        if [ "$HOST_RUNNING" -eq 1 ]; then
+            echo "$HOST_MARKER" >> "$STATE_FILE"
+            # Keep the DB bridge alive until the host browser has closed and
+            # its in-flight report is committed or returned to the queue.
+        fi
+        echo "$RUNNING" | while read -r NAME; do
+            [ -z "$NAME" ] && continue
+            if _is_oneoff "$NAME"; then
+                echo "   · $NAME (one-off TUI — stopping, not recorded)"
+            else
+                echo "   · $NAME"
+                echo "$NAME" >> "$STATE_FILE"
+            fi
+        done
+
+        if [ "$HOST_RUNNING" -eq 1 ]; then
+            python3 "$HOST_CONTROL" stop || exit 1
+        fi
+
+        # Rating workers finish the current bounded request and commit before
+        # exiting; allow enough time for browser navigation and PDF transfer.
+        if [ -n "$RUNNING" ]; then
+            RATING_CONTAINERS=""
+            OTHER_CONTAINERS=""
+            for NAME in $RUNNING; do
+                SERVICE=$(docker inspect "$NAME" --format '{{index .Config.Labels "com.docker.compose.service"}}')
+                case "$SERVICE" in
+                    browser-rating-*) RATING_CONTAINERS="$RATING_CONTAINERS $NAME" ;;
+                    *) OTHER_CONTAINERS="$OTHER_CONTAINERS $NAME" ;;
+                esac
+            done
+            if [ -n "$RATING_CONTAINERS" ]; then
+                docker stop --timeout 180 $RATING_CONTAINERS >/dev/null || exit 1
+            fi
+            if [ -n "$OTHER_CONTAINERS" ]; then
+                docker stop --timeout 30 $OTHER_CONTAINERS >/dev/null || exit 1
+            fi
+        fi
+
+        REMAINING=$(_project_containers running)
+        if [ -n "$REMAINING" ] || python3 "$HOST_CONTROL" is-running; then
+            echo "❌ A worker is still running; shutdown is incomplete. Retry './scraper shutdown'."
+            echo "$REMAINING"
+            exit 1
+        fi
+        COUNT=$(grep -c . "$STATE_FILE" 2>/dev/null || echo 0)
+        echo "✅ Stopped cleanly. $COUNT service(s) recorded in $STATE_FILE."
+        echo "   Any download interrupted mid-flight holds a LEASED row; the"
+        echo "   lease expires after 600s and the job is retried automatically."
+        echo "   Bring it all back with './scraper wake'."
+        exit 0
+        ;;
+    wake)
+        echo "🌅 Waking the pipeline..."
+
+        # The document store is a bind mount onto an external disk. If it is not
+        # mounted, Docker would create an empty directory at that path on the
+        # internal disk — and macOS would then mount the real drive alongside it
+        # as "<name> 1", leaving the bind mount permanently pointing at nothing.
+        # Refuse to start until the drive is actually present.
+        DOC_PATH=$(grep -m1 '^[[:space:]]*TRADING_AI_DOCUMENT_HOST_PATH=' .env 2>/dev/null | cut -d= -f2-)
+        # Compose .env permits quoted values; strip one matching outer quote pair
+        # without trying to shell-evaluate the value (paths may contain spaces).
+        case "$DOC_PATH" in
+            \"*\") DOC_PATH=${DOC_PATH#\"}; DOC_PATH=${DOC_PATH%\"} ;;
+            \'*\') DOC_PATH=${DOC_PATH#\'}; DOC_PATH=${DOC_PATH%\'} ;;
+        esac
+        if [ -z "$DOC_PATH" ]; then
+            echo "❌ TRADING_AI_DOCUMENT_HOST_PATH is missing from .env."
+            echo "   Refusing to wake document-capable containers without a verified store."
+            exit 1
+        fi
+
+        # On macOS, distinguish a real /Volumes mount from a stale ordinary
+        # directory that may have been created while the disk was absent.
+        case "$DOC_PATH" in
+            /Volumes/*)
+                VOLUME_NAME=${DOC_PATH#/Volumes/}
+                VOLUME_NAME=${VOLUME_NAME%%/*}
+                VOLUME_ROOT="/Volumes/$VOLUME_NAME"
+                if ! mount | grep -F " on $VOLUME_ROOT (" >/dev/null 2>&1; then
+                    echo "❌ External volume is not mounted at: $VOLUME_ROOT"
+                    echo "   A directory may be squatting that path. Do not start Docker yet."
+                    echo "   Connect/eject as needed until the drive mounts at its original name,"
+                    echo "   then run './scraper wake' again."
+                    exit 1
+                fi
+                ;;
+        esac
+
+        if [ ! -f "$DOC_PATH/.trading_ai_document_store" ]; then
+            echo "❌ Document store is not mounted/authorized."
+            echo "   Expected sentinel: $DOC_PATH/.trading_ai_document_store"
+            echo ""
+            echo "   Connect the external disk and confirm it mounted under its"
+            echo "   original name (a trailing ' 1' means a stale folder is"
+            echo "   squatting the path). Then run './scraper wake' again."
+            exit 1
+        fi
+        echo "   ✔ Document store mounted: $DOC_PATH"
+
+        if [ ! -s "$STATE_FILE" ]; then
+            echo "⚠️  No $STATE_FILE — nothing was recorded by './scraper shutdown'."
+            echo "   Use './scraper status' to inspect, or start services by name."
+            exit 1
+        fi
+
+        MISSING=""
+        STARTED=0
+        FAILED=0
+        WAKE_HOST=0
+        while read -r NAME; do
+            [ -z "$NAME" ] && continue
+            if [ "$NAME" = "$HOST_MARKER" ]; then
+                WAKE_HOST=1
+                continue
+            fi
+            if ! docker inspect "$NAME" >/dev/null 2>&1; then
+                MISSING="$MISSING $NAME"
+                FAILED=$((FAILED + 1))
+                continue
+            fi
+            if docker start "$NAME" >/dev/null 2>&1; then
+                echo "   ▶ $NAME"
+                STARTED=$((STARTED + 1))
+            else
+                echo "   ✖ $NAME (failed to start)"
+                FAILED=$((FAILED + 1))
+            fi
+        done < "$STATE_FILE"
+
+        if [ "$WAKE_HOST" -eq 1 ]; then
+            if python3 "$HOST_CONTROL" start; then
+                STARTED=$((STARTED + 1))
+            else
+                FAILED=$((FAILED + 1))
+            fi
+        fi
+
+        if [ -n "$MISSING" ]; then
+            echo ""
+            echo "⚠️  No longer exist (removed since shutdown):$MISSING"
+            echo "   Recreate them from compose.yml if you still need them."
+        fi
+        echo ""
+        if [ "$FAILED" -gt 0 ]; then
+            echo "❌ Started $STARTED service(s), but $FAILED failed. Retry './scraper wake'."
+        else
+            echo "✅ Started $STARTED service(s). Ratings: './scraper ratings' or /ratings inside './scraper'."
+        fi
+        [ "$FAILED" -eq 0 ]
+        exit $?
+        ;;
+    status)
+        echo "📊 Service status (project: $COMPOSE_PROJECT):"
+        echo ""
+        docker ps -a --filter "label=com.docker.compose.project=$COMPOSE_PROJECT" \
+                     --format '{{.Names}}\t{{.State}}\t{{.Status}}' \
+        | while IFS="$(printf '\t')" read -r NAME STATE STATUS; do
+            case "$STATE" in
+                running) ICON="🟢" ;;
+                paused)  ICON="⏸️ " ;;
+                *)       ICON="⚫" ;;
+            esac
+            printf "  %s %-38s %s\n" "$ICON" "$NAME" "$STATUS"
+        done
+        echo ""
+        python3 "$HOST_CONTROL" status
+        if docker inspect "$BRIDGE_CONTAINER" --format '{{.State.Running}}' 2>/dev/null | grep -qx true; then
+            docker exec "$BRIDGE_CONTAINER" python -m scrapper.view.browser_rating_monitor --once
+        fi
+        exit 0
+        ;;
+    ratings)
+        shift
+        exec docker compose --profile manual run --rm --entrypoint python discovery \
+            -m scrapper.view.browser_rating_monitor "$@" --live
+        ;;
+esac
+
+# ── Default: run CLI commands inside the discovery container ──────────────────
+if [ $# -eq 0 ]; then
+    exec docker compose --profile manual run --rm discovery shell
+else
+    exec docker compose --profile manual run --rm discovery "$@"
+fi

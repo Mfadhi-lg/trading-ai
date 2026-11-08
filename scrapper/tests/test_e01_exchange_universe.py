@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
+from scrapper.tests.database_fixtures import prepare_database
+
 import json
 import sqlite3
 import tempfile
 import unittest
+from dataclasses import replace
 from pathlib import Path
 
 from scrapper.core.http import validate_exchange_dataset_url
@@ -17,12 +20,24 @@ from scrapper.exports.screener_discovery_coverage import build_screener_discover
 from scrapper.pipeline.exchange_universe import (
     discover_exchange_results,
     refresh_exchange_universe,
+    thresholds_for_dataset,
 )
 from scrapper.pipeline.screener_discovery import _failure_policy
 from scrapper.sources.exchange.corporate_changes import parse_corporate_changes
 from scrapper.sources.exchange.result_filings import parse_result_filings
 from scrapper.sources.exchange.security_master import parse_security_master
+from scrapper.sources.exchange.snapshot_guard import GuardThresholds
 from scrapper.sources.exchange.tabular import SourceRowError, normalize_isin
+
+
+def registry_thresholds(dataset: str) -> GuardThresholds:
+    """Production guard rules with only the two size limits relaxed.
+
+    These fixtures are a handful of rows and one of them is deliberately broken,
+    so the published floor and rejected-row rate would reject every file on size
+    alone. E01 exercises registry behaviour; the guard itself is E02.
+    """
+    return replace(thresholds_for_dataset(dataset), row_floor=1, rejected_row_rate=0.5)
 
 
 ALPHA_ISIN = "INE002A01018"
@@ -342,9 +357,11 @@ class ExchangeCase(unittest.TestCase):
         self.snapshots = root / "snapshots"
         self.files = root / "files"
         self.files.mkdir()
+        # The injected clock is the ingest wall clock. It leads every fixture's
+        # effective date, because the guard rejects a file dated in the future.
         self.clock = iter(
-            f"2026-08-{day:02d}T00:00:0{index}+00:00"
-            for day in range(1, 30)
+            f"2026-11-{day:02d}T00:00:0{index}+00:00"
+            for day in range(6, 31)
             for index in range(9)
         )
 
@@ -360,6 +377,8 @@ class ExchangeCase(unittest.TestCase):
         return path
 
     def refresh(self, dataset: str, content: bytes, effective_date: str, **kwargs):
+        if not kwargs.get("dry_run", False):
+            prepare_database(self.db)
         return refresh_exchange_universe(
             dataset=dataset,
             file=self.write(f"{dataset}-{effective_date}.csv", content),
@@ -367,10 +386,12 @@ class ExchangeCase(unittest.TestCase):
             db_path=self.db,
             snapshot_root=self.snapshots,
             now_utc=self.now,
-            **kwargs,
+            **{"thresholds": registry_thresholds(dataset), **kwargs},
         )
 
     def discover(self, dataset: str, content: bytes, effective_date: str, **kwargs):
+        if not kwargs.get("dry_run", False):
+            prepare_database(self.db)
         return discover_exchange_results(
             dataset=dataset,
             file=self.write(f"{dataset}-{effective_date}.csv", content),
@@ -378,13 +399,13 @@ class ExchangeCase(unittest.TestCase):
             db_path=self.db,
             snapshot_root=self.snapshots,
             now_utc=self.now,
-            **kwargs,
+            **{"thresholds": registry_thresholds(dataset), **kwargs},
         )
 
     def rows(self, sql: str, *parameters):
         conn = connect(self.db)
         try:
-            init_db(conn)
+            init_db(conn, apply_migrations=True)
             return [dict(row) for row in conn.execute(sql, parameters)]
         finally:
             conn.close()
@@ -454,19 +475,27 @@ class RegistryTests(ExchangeCase):
         payload = self.refresh("nse_equity_master", NSE_DAY_TWO, "2026-08-02")
         self.assertEqual(payload["registry"]["added"], 2)  # BETANEW and DELTA
         self.assertEqual(payload["registry"]["unchanged"], 1)  # ALPHA
-        self.assertEqual(payload["registry"]["removed"], 1)  # BETA left the master
+        # One absence is an observation, not a delisting: BETA stays present
+        # until the streak is confirmed.
+        self.assertEqual(payload["registry"]["absence_observed"], 1)
+        self.assertEqual(payload["registry"]["removed"], 0)
         beta = self.rows(
             "SELECT * FROM exchange_securities WHERE exchange_key='BETA'"
         )[0]
-        self.assertEqual(beta["is_present"], 0)
-        self.assertEqual(beta["current_status"], "absent_from_master")
+        self.assertEqual(beta["is_present"], 1)
+        self.assertEqual(beta["absence_streak"], 1)
+        self.assertEqual(beta["first_absent_date"], "2026-08-02")
+        self.assertEqual(beta["official_presence"], "not_confirmed")
         events = self.rows(
             """SELECT security.exchange_key, event.event_type, event.event_date
                FROM exchange_security_events AS event
                JOIN exchange_securities AS security USING (exchange_security_id)
                ORDER BY event.security_event_id"""
         )
-        self.assertIn(("BETA", "removed", "2026-08-02"), [tuple(item.values()) for item in events])
+        self.assertIn(
+            ("BETA", "absence_observed", "2026-08-02"),
+            [tuple(item.values()) for item in events],
+        )
         self.assertIn(("DELTA", "added", "2026-08-02"), [tuple(item.values()) for item in events])
         # The same ISIN now points at the new symbol without losing the old one.
         beta_links = self.rows(
@@ -506,7 +535,19 @@ class RegistryTests(ExchangeCase):
 
     def test_older_snapshot_never_moves_state_backward(self) -> None:
         self.refresh("nse_equity_master", NSE_DAY_ONE, "2026-08-05")
-        payload = self.refresh("nse_equity_master", NSE_DAY_TWO, "2026-08-02")
+        rejected = self.refresh("nse_equity_master", NSE_DAY_TWO, "2026-08-02")
+        # The guard stops a backdated file before the registry sees it at all.
+        self.assertEqual(rejected["validation"]["status"], "failed")
+        self.assertIn(
+            "stale_effective_date",
+            [item["code"] for item in rejected["validation"]["findings"]],
+        )
+        self.assertIsNone(rejected["registry"])
+        # Forced through, the per-row guard still refuses to rewind a security.
+        payload = self.refresh(
+            "nse_equity_master", NSE_DAY_TWO, "2026-08-02", override_validation=True
+        )
+        self.assertEqual(payload["validation"]["status"], "overridden")
         self.assertEqual(payload["registry"]["stale_rows"], 1)  # ALPHA is older
         self.assertEqual(payload["registry"]["removed"], 0)
         alpha = self.rows("SELECT * FROM exchange_securities WHERE exchange_key='ALPHA'")[0]
@@ -555,6 +596,55 @@ class RegistryTests(ExchangeCase):
 
 
 class ResultDiscoveryTests(ExchangeCase):
+    def test_same_period_new_filing_is_reviewed_and_equal_timestamp_collision_kept(self) -> None:
+        self.build_universe()
+        first_row = (
+            "BETANEW,Beta Global Limited,Services,Quarterly,30-JUN-2026,"
+            "Un-Audited,Non-cumulative,Non-Consolidated,04-Aug-2026 11:15:00"
+        )
+        first = self.discover("nse_financial_results", nse_results((first_row,)), "2026-08-05")
+        self.assertEqual(first["enqueue"]["queued"], 1)
+        conn = connect(self.db)
+        try:
+            with conn:
+                conn.execute(
+                    """UPDATE screener_company_collection_state
+                       SET latest_accepted_result_period='2026-06'
+                       WHERE company_path_normalized='/company/BETANEW/'
+                         AND reporting_scope='standalone'"""
+                )
+        finally:
+            conn.close()
+        revised_row = first_row.replace("04-Aug-2026 11:15:00", "06-Aug-2026 11:15:00")
+        second = self.discover("nse_financial_results", nse_results((revised_row,)), "2026-08-06")
+        self.assertEqual(second["enqueue"]["manual_review"], 1)
+        decision = self.rows(
+            """SELECT decision_reason FROM exchange_screener_enqueues
+               ORDER BY enqueue_id DESC LIMIT 1"""
+        )[0]
+        self.assertIn("possible_same_period_revision", decision["decision_reason"])
+        self.assertEqual(len(self.rows("SELECT * FROM screener_company_queue")), 1)
+
+        same_timestamp_changed_row = revised_row.replace("Un-Audited", "Audited")
+        collision = self.discover(
+            "nse_financial_results", nse_results((same_timestamp_changed_row,)),
+            "2026-08-07",
+        )
+        self.assertEqual(collision["filings"]["identity_collisions"], 1)
+        self.assertEqual(len(self.rows("SELECT * FROM exchange_result_filings")), 2)
+        self.assertEqual(len(self.rows("SELECT * FROM exchange_result_filing_collisions")), 1)
+        conn = connect(self.db)
+        try:
+            coverage = build_exchange_universe_coverage(conn)
+        finally:
+            conn.close()
+        self.assertEqual(coverage["summary"]["filing_identity_collision_count"], 1)
+        repeated = self.discover(
+            "nse_financial_results", nse_results((same_timestamp_changed_row,)),
+            "2026-08-07",
+        )
+        self.assertEqual(repeated["filings"]["identity_collisions"], 0)
+
     def test_filings_queue_only_new_or_advanced_periods(self) -> None:
         self.build_universe()
         payload = self.discover("nse_financial_results", NSE_RESULTS, "2026-08-05")
@@ -570,7 +660,7 @@ class ResultDiscoveryTests(ExchangeCase):
         )
         self.assertEqual(
             [(item["company_path_normalized"], item["reporting_scope"]) for item in queue],
-            [("/company/BETANEW/", "standalone"), ("/company/ALPHA/consolidated/", "consolidated")],
+            [("/company/BETANEW/", "standalone"), ("/company/ALPHA/", "standalone")],
         )
         self.assertTrue(all(item["origin"] == "exchange_filing" for item in queue))
         self.assertTrue(all(item["candidate_id"] is None for item in queue))
@@ -606,8 +696,8 @@ class ResultDiscoveryTests(ExchangeCase):
             [(item["exchange_key"], item["company_path_normalized"], item["path_basis"])
              for item in decisions],
             [
-                ("500001", "/company/ALPHA/consolidated/", "nse_symbol"),
-                ("500002", "/company/500002/consolidated/", "bse_scrip_code"),
+                ("500001", "/company/ALPHA/", "nse_symbol"),
+                ("500002", "/company/500002/", "bse_scrip_code"),
             ],
         )
 
@@ -620,28 +710,28 @@ class ResultDiscoveryTests(ExchangeCase):
         self.assertEqual(payload["enqueue"]["queued"], 1)
         alpha = self.rows(
             """SELECT * FROM screener_company_queue
-               WHERE company_path_normalized='/company/ALPHA/consolidated/'"""
+               WHERE company_path_normalized='/company/ALPHA/'"""
         )
         self.assertEqual(len(alpha), 1)
 
-    def test_accepted_state_decides_stale_unchanged_and_advanced(self) -> None:
+    def test_watermark_without_rows_does_not_skip_missing_quarters(self) -> None:
         self.build_universe()
         conn = connect(self.db)
         try:
-            init_db(conn)
+            init_db(conn, apply_migrations=True)
             with conn:
                 conn.execute(
                     """INSERT INTO screener_company_collection_state
                        (company_path_normalized, reporting_scope,
                         latest_discovered_result_period, latest_accepted_result_period,
                         updated_at_utc)
-                       VALUES ('/company/ALPHA/consolidated/', 'consolidated',
+                       VALUES ('/company/ALPHA/', 'standalone',
                                '2026-06', '2026-06', '2026-08-01T00:00:00+00:00')""",
                 )
         finally:
             conn.close()
         same = self.discover("nse_financial_results", NSE_RESULTS, "2026-08-05")
-        self.assertEqual(same["enqueue"]["already_accepted"], 1)
+        self.assertEqual(same["enqueue"]["queued"], 2)
         older = self.discover(
             "nse_financial_results",
             nse_results(
@@ -652,7 +742,7 @@ class ResultDiscoveryTests(ExchangeCase):
             ),
             "2026-08-06",
         )
-        self.assertEqual(older["enqueue"]["stale"], 1)
+        self.assertEqual(older["enqueue"]["queued"], 1)
         advanced = self.discover(
             "nse_financial_results",
             nse_results(
@@ -666,11 +756,11 @@ class ResultDiscoveryTests(ExchangeCase):
         self.assertEqual(advanced["enqueue"]["queued"], 1)
         queued = self.rows(
             """SELECT result_period, queue_reason FROM screener_company_queue
-               WHERE company_path_normalized='/company/ALPHA/consolidated/'"""
+               WHERE company_path_normalized='/company/ALPHA/'"""
         )
         self.assertEqual(
-            [(item["result_period"], item["queue_reason"]) for item in queued],
-            [("2026-09", "result_period_advanced")],
+            sorted((item["result_period"], item["queue_reason"]) for item in queued),
+            [("2026-03", "result_period_advanced"), ("2026-06", "result_period_advanced"), ("2026-09", "result_period_advanced")],
         )
 
     def test_new_listing_becomes_collectable_after_the_next_master_refresh(self) -> None:
@@ -720,9 +810,9 @@ class ResultDiscoveryTests(ExchangeCase):
         self.discover("nse_financial_results", NSE_RESULTS, "2026-08-05")
         conn = connect(self.db)
         try:
-            init_db(conn)
+            init_db(conn, apply_migrations=True)
             claimed = claim_due_companies(
-                conn, now_utc="2026-08-05T00:00:00+00:00", limit=5, worker_id="test"
+                conn, now_utc="2026-12-01T00:00:00+00:00", limit=5, worker_id="test"
             )
         finally:
             conn.close()
@@ -752,7 +842,7 @@ class ResultDiscoveryTests(ExchangeCase):
         conn = connect(self.db)
         try:
             claimed = claim_due_companies(
-                conn, now_utc="2026-08-05T00:00:00+00:00", limit=1, worker_id="latest"
+                conn, now_utc="2026-12-01T00:00:00+00:00", limit=1, worker_id="latest"
             )
         finally:
             conn.close()
@@ -782,7 +872,7 @@ class ResultDiscoveryTests(ExchangeCase):
         self.discover("nse_financial_results", NSE_RESULTS, "2026-08-05")
         conn = connect(self.db)
         try:
-            init_db(conn)
+            init_db(conn, apply_migrations=True)
             coverage = build_exchange_universe_coverage(conn)
             screener = build_screener_discovery_coverage(conn)
         finally:
@@ -809,7 +899,7 @@ class ResultDiscoveryTests(ExchangeCase):
         self.build_universe()
         conn = connect(self.db)
         try:
-            init_db(conn)
+            init_db(conn, apply_migrations=True)
             missing = resolve_screener_path(
                 conn, exchange="NSE", exchange_key="NOPE", reporting_scope="consolidated"
             )
@@ -878,7 +968,7 @@ class MigrationTests(unittest.TestCase):
 
             conn = connect(db_path)
             try:
-                init_db(conn)
+                init_db(conn, apply_migrations=True)
                 row = conn.execute(
                     "SELECT * FROM screener_company_queue WHERE queue_item_id=7"
                 ).fetchone()

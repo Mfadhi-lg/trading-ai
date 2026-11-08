@@ -1,0 +1,96 @@
+{
+  "status": "COMPLETE for the selected isolated offline scope",
+  "authorization": "read TRADING_AI_CLEANUP_EXECUTION.md execute c05.3",
+  "baseline_commit": "db7564a109f1cb34ee4e7d5ea3427716e14cb51e",
+  "candidate_root": "/private/tmp/trading-ai-cleanup-c050-20261002/dev",
+  "prerequisite": {
+    "c05_2_patch_sha256": "18522eba3fe70497608ef81538af520303a5028343abd31633443e943d806e89",
+    "c05_2_release_manifest_sha256": "f2743b88a6bafbcf8b6dc865937d0f6cc960db73dddec7730b293942d5f30e35"
+  },
+  "changed_candidate_paths": [
+    "Dockerfile",
+    "compose.browser-recovery.yml",
+    "compose.yml",
+    "ops/docker/release/c05.3/README.md",
+    "ops/docker/release/c05.3/core-documents-sentinel.json",
+    "ops/docker/release/c05.3/external-documents-sentinel.json",
+    "ops/docker/release/c05.3/release-manifest.json",
+    "ops/docker/release/c05.3/runtime-identity-core.json",
+    "ops/docker/release/c05.3/runtime-identity-documents.json",
+    "ops/docker/release/c05.3/store-sentinel.json",
+    "scripts/audit/check_compose_release.py",
+    "scripts/audit/check_oci_release.py",
+    "scripts/audit/run_release_clone_tests.py"
+  ],
+  "unexpected_candidate_paths": [],
+  "release": {
+    "release_id": "c05.3-release-20261003",
+    "compose_repository_digest": "trading-ai-c053-release@sha256:44da7074157fd2a946c41d064a91ef3f729ebd31ab3bcdf2aa09233c5a794b6b",
+    "oci_index_digest": "sha256:44da7074157fd2a946c41d064a91ef3f729ebd31ab3bcdf2aa09233c5a794b6b",
+    "platform_manifest_digest": "sha256:05cf18b61418ace4f5e490ad59e62feb77de43558788fd47ca594c17d60cba77",
+    "config_digest": "sha256:c3f3d1cbbe3155106bb848d4feb4cf4f7db2efec4b1a69b0dfafaa44731c119b",
+    "authoritative_oci_archive_bytes": 693470720,
+    "authoritative_oci_archive_path": "/private/tmp/trading-ai-cleanup-c050-20261002/release/c05.3/trading-ai-c05.3-linux-arm64.oci.tar",
+    "authoritative_oci_archive_sha256": "5d85b9934ebeb8e0366eb4513fb9a3ca440e05bbc70f4568b3fe0461c88b7e32",
+    "independent_oci_archive_path": "/private/tmp/trading-ai-cleanup-c050-20261002/release/c05.3/trading-ai-c05.3-linux-arm64-reproduction.oci.tar",
+    "independent_oci_archive_sha256": "d01aea1d24d4f72e1e39c0221a96d10f07487415ac6f4fb77e4b1c746e057b9a",
+    "payload_reproduced": true,
+    "layer_count": 13,
+    "all_layer_digests_equal": true,
+    "sbom": "SPDX attestation present",
+    "provenance": "SLSA v1 maximum-mode attestation present",
+    "attestation_note": "independently generated attestations differ because execution times are recorded; subjects and runtime payload are identical",
+    "release_manifest_sha256": "7865b25ada03a954ac294038328451fb87073b40b91d6a8a8397b61a50a4fca8"
+  },
+  "reproducibility_correction": {
+    "initial_gate": "FAIL: independent no-cache platform manifests/configs differed",
+    "cause": "pip install-time bytecode plus apt/font/loader volatile caches and logs",
+    "change": "pip --no-compile and removal of only volatile package-manager cache/log files; fixed source epoch plus OCI rewrite-timestamp",
+    "final_gate": "PASS: platform manifest, config and all 13 layers byte-identical"
+  },
+  "clone_tests": {
+    "restored_db_bytes": 13052583936,
+    "restored_db_sha256_before": "6a35f8bb9f2853a8a49c7b6ccfed8fcb32352ba985485595925cbd6ec1c22be6",
+    "restored_db_sha256_after": "6a35f8bb9f2853a8a49c7b6ccfed8fcb32352ba985485595925cbd6ec1c22be6",
+    "restored_clone_output_lines": 178,
+    "copied_production_marker_without_clone_identity": "REFUSED",
+    "destination_bound_clone_identity": "ACCEPTED",
+    "small_clone_sha256_before": "9c826e426022359471bcccc05728325032d031f2abe5d9260352fbc55324003d",
+    "small_clone_sha256_after": "9c826e426022359471bcccc05728325032d031f2abe5d9260352fbc55324003d"
+  },
+  "verification": {
+    "oci_integrity_and_reproduction": "PASS",
+    "compose_contract": "PASS for 16 main and 4 browser roles, production and development",
+    "focused_contract_tests": "12 passed",
+    "runtime_capabilities": "PASS: Python 3.12.14, 35/35 packages, Chromium, OCR, TUI, FFmpeg/FFprobe",
+    "source_manifest": "397 files; sha256 dbed4912d5c0af7dd685980d540133a19ae6b9946ba4470e115498c8bea118d8",
+    "git_diff_check": "PASS",
+    "incremental_patch_replay": "PASS with exact bytes for all 13 paths",
+    "active_runtime": "same 13 containers healthy; zero mounts overlap candidate; no validation container"
+  },
+  "candidate_patch": {
+    "path": "docs/cleanup/baselines/C05.3/candidate.patch",
+    "size_bytes": 22905,
+    "sha256": "a0de0c809b385c950659b7ed35a6353a3b046142a08e13003d8222f92a118b34"
+  },
+  "canonical_publication": {
+    "changed_paths": [
+      "TRADING_AI_CLEANUP_EXECUTION.md",
+      "docs/cleanup/baselines/C05.3/candidate.patch",
+      "docs/cleanup/baselines/C05.3/evidence.json",
+      "docs/cleanup/chunks/C05.3.md"
+    ],
+    "head": "db7564a109f1cb34ee4e7d5ea3427716e14cb51e",
+    "index_unchanged": true,
+    "application_code_published_to_active_checkout": false,
+    "unexpected_paths": []
+  },
+  "production_impact": "none; local release image added, but no active service, production volume, database, document corpus, secret or migration changed",
+  "known_limitations": [
+    "authoritative OCI archive is outside Git and must be retained/published through the approved artifact path before activation",
+    "known C05.1 full-suite fixture/platform failures remain; C05.3 bounded gates pass",
+    "C06.1 requires explicit production authorization and fresh compatibility/backup evidence",
+    "external document sentinel placement remains a C06 activation step"
+  ],
+  "next": "C06.1 only — authorized release-isolation activation"
+}

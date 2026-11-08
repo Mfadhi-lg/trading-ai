@@ -1,0 +1,148 @@
+{
+  "archives": {
+    "A2": {
+      "bytes": 22276000,
+      "full_member_bytes_hashes_modes_verified": true,
+      "members": 1127,
+      "sha256": "535a8471fc27a34a0e1b2c4284fff1221d0b8c73c99efdb6693cdd5afcfb88a6",
+      "status": "PASS"
+    },
+    "B1": {
+      "bytes": 2221475,
+      "full_member_bytes_hashes_modes_verified": true,
+      "members": 857,
+      "sha256": "a6c7db5e2758d156ea5c4685cd142c791dc1d93fffc74dddbf9ea5608d7ed586",
+      "status": "PASS"
+    },
+    "B2-discovery": {
+      "bytes": 38228448,
+      "full_member_bytes_hashes_modes_verified": true,
+      "members": 44,
+      "sha256": "4fe602b1de8d2b9b1d6a83f07010f3402df29ff969f7e72a241a0be6ef0aae16",
+      "status": "PASS"
+    },
+    "B2-draft": {
+      "bytes": 115819,
+      "full_member_bytes_hashes_modes_verified": true,
+      "members": 30,
+      "sha256": "fd9c02030c3c14e119c62fbf0d5141267207f79f361da33f82b9bbd7c93fc74e",
+      "status": "PASS"
+    }
+  },
+  "copied_tree_retention": {
+    "files": 660,
+    "snapshot": "/private/tmp/trading-ai-cleanup-c022-20261002/evidence/original-source-baseline.json",
+    "status": "PASS"
+  },
+  "groups": {
+    "A2": {
+      "canonical_to_review": {
+        "applied_only_to_private_verification_copy": true,
+        "files_verified": 372,
+        "sha256": "4117c9d037d2a23651d0c6b6541f2ba9c6030f444b195c7d8ae36970667837a5",
+        "status": "PASS"
+      },
+      "historical_patch": {
+        "base_check_exit": 0,
+        "base_check_stderr": "",
+        "current_canonical_check_exit": 0,
+        "current_canonical_check_stderr": "",
+        "historical_patch_sha256": "815a984462ec3935b0480c3b46bd301638a948216ca578a6f5ac3d0f36e733d7",
+        "unique_review_file_mismatches": []
+      },
+      "original_to_review": {
+        "applied_only_to_private_verification_copy": true,
+        "files_verified": 372,
+        "sha256": "2b95f843cb9e630d5ee7ca5397c72177d414b96a34a85bf539009d1a54425814",
+        "status": "PASS"
+      }
+    },
+    "B1": {
+      "canonical_to_review": {
+        "applied_only_to_private_verification_copy": true,
+        "files_verified": 282,
+        "sha256": "f3cdb866623b29ffe6aacc59f81a0015aefb30b97cd60cf8a1311cbf4742540c",
+        "status": "PASS"
+      },
+      "historical_patch": {
+        "base_check_exit": 0,
+        "base_check_stderr": "",
+        "current_canonical_check_exit": 0,
+        "current_canonical_check_stderr": "",
+        "historical_patch_sha256": "b7a3bec0ee10fe71c039e511071fac23f65f1a940fc783aedf7029c38c48fcb9",
+        "unique_review_file_mismatches": []
+      },
+      "original_to_review": {
+        "applied_only_to_private_verification_copy": true,
+        "files_verified": 282,
+        "sha256": "98c91546e7633b93c6c5c53916df1fc14300fe5ac02c3676b31cd1899ef099b6",
+        "status": "PASS"
+      }
+    },
+    "B2-draft": {
+      "canonical_to_review": {
+        "applied_only_to_private_verification_copy": true,
+        "files_verified": 6,
+        "sha256": "c7d781d7c2b48370bf199aba74f3cc9158c72609a17ca885b8b2cfc65ecf4277",
+        "status": "PASS"
+      },
+      "original_to_review": {
+        "applied_only_to_private_verification_copy": true,
+        "files_verified": 6,
+        "sha256": "c7d781d7c2b48370bf199aba74f3cc9158c72609a17ca885b8b2cfc65ecf4277",
+        "status": "PASS"
+      }
+    }
+  },
+  "historical_schema_disposition": {
+    "065_exchange_source_access.sql": "historically applied per incident and verified C02 ledger; source bytes retained in A2 archive; no migration run here",
+    "A2_source_protections": "review-only, not applied to canonical",
+    "B1": "review-only; source byte/original-db closure remains partial",
+    "B2": "no deployable rules; draft superseded and discovery PIT_NOT_VERIFIED"
+  },
+  "original_source_scope": {
+    "baseline_files": 24529,
+    "changes": {
+      "TRADING_AI_CLEANUP_EXECUTION.md": [
+        "modify"
+      ],
+      "docs/cleanup/baselines/C03.1/A2.tar.gz": [
+        "add"
+      ],
+      "docs/cleanup/baselines/C03.1/B1.tar.gz": [
+        "add"
+      ],
+      "docs/cleanup/baselines/C03.1/B2-discovery.tar.gz": [
+        "add"
+      ],
+      "docs/cleanup/baselines/C03.1/B2-draft.tar.gz": [
+        "add"
+      ],
+      "docs/cleanup/baselines/C03.1/README.md": [
+        "add"
+      ],
+      "docs/cleanup/baselines/C03.1/checksums.json": [
+        "add"
+      ],
+      "docs/cleanup/baselines/C03.1/manifest.json": [
+        "add"
+      ],
+      "docs/cleanup/baselines/C03.1/preserve.py": [
+        "add"
+      ],
+      "docs/cleanup/baselines/C03.1/verification.json": [
+        "add"
+      ],
+      "docs/cleanup/chunks/C03.md": [
+        "add"
+      ]
+    },
+    "coverage": "tracked/nonignored untracked files and modes; ignored moving runtime outputs excluded",
+    "head_unchanged": true,
+    "index_unchanged": true,
+    "production_source_unchanged": true,
+    "status": "PASS"
+  },
+  "production_impact": "none",
+  "source_files_not_mutated": true
+}

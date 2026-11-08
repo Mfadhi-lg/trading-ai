@@ -1,6 +1,23 @@
+x-runtime-image: &runtime-image trading-ai-c053-release@sha256:44da7074157fd2a946c41d064a91ef3f729ebd31ab3bcdf2aa09233c5a794b6b
+x-production-environment: &production-environment
+  TRADING_AI_ENV: production
+  TRADING_AI_RUNTIME_IDENTITY_FILE: /run/trading-ai/runtime-identity.json
+x-core-runtime-configs: &core-runtime-configs
+  - source: runtime_identity_core
+    target: /run/trading-ai/runtime-identity.json
+  - source: runtime_store_sentinel
+    target: /data/.trading_ai_runtime_identity.json
+  - source: runtime_core_documents_sentinel
+    target: /data/snapshots/.trading_ai_runtime_identity.json
+x-document-runtime-configs: &document-runtime-configs
+  - source: runtime_identity_documents
+    target: /run/trading-ai/runtime-identity.json
+  - source: runtime_store_sentinel
+    target: /data/.trading_ai_runtime_identity.json
+
 services:
   discovery:
-    build: .
+    image: *runtime-image
     command:
       - screener-discover-results
       - --query-role
@@ -8,54 +25,113 @@ services:
       - --query
       - Last result date > 202605
     environment:
+      <<: *production-environment
       SCRAPER_STORE_PATH: /data
       SCRAPER_DB_PATH: /data/scraper.db
       SCREENER_SESSION_FILE: /run/secrets/screener_session
     volumes:
       - scraper-data:/data
+    configs: *core-runtime-configs
     secrets:
       - screener_session
     profiles: ["manual"]
 
-  # Universe refresh runs daily and carries no Screener session: exchange
-  # masters and result feeds are public. Mount operator-downloaded files at
-  # /inbox and use --file when a dataset URL is not confirmed for automation.
+  # Every exchange dataset on the IST retry ladder: 19:30, 21:00, and 06:00 the
+  # next morning, then the weekly reconciliation report on Sunday. No Screener
+  # session is mounted — exchange masters and result feeds are public — and no
+  # /inbox is needed, since each dataset's URL comes from the registry.
+  #
+  # Turn this on only once `exchange-reconciliation-report` exits 0: an open
+  # identity conflict means the automated files and the imported rows disagree
+  # about which company is which, and that has to be settled by a person first.
+  scheduler:
+    image: *runtime-image
+    command: ["exchange-scheduler"]
+    restart: unless-stopped
+    environment:
+      <<: *production-environment
+      SCRAPER_STORE_PATH: /data
+      SCRAPER_DB_PATH: /data/scraper.db
+    volumes:
+      - scraper-data:/data
+    configs: *core-runtime-configs
+
+  market-cap-monitor:
+    image: *runtime-image
+    restart: unless-stopped
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        while true; do
+          python -m scrapper.commands.collection_scope --monitor --apply --limit 40
+          sleep 3600
+        done
+    environment:
+      <<: *production-environment
+      SCRAPER_STORE_PATH: /data
+      SCRAPER_DB_PATH: /data/scraper.db
+      SCREENER_SESSION_FILE: /run/secrets/screener_session
+      SCREENER_THROTTLE_SECONDS: "4"
+      SCREENER_THROTTLE_JITTER: "1.5"
+    volumes:
+      - scraper-data:/data
+    configs: *core-runtime-configs
+    secrets:
+      - screener_session
+
+  # The manual services stay for one-off operator runs: a dataset whose endpoint
+  # has broken, or a file downloaded by hand. --file still overrides everything.
   exchange-universe:
-    build: .
+    image: *runtime-image
     command:
       - exchange-refresh-universe
       - --dataset
       - nse_equity_master
-      - --url
-      - https://nsearchives.nseindia.com/content/equities/EQUITY_L.csv
     environment:
+      <<: *production-environment
       SCRAPER_STORE_PATH: /data
       SCRAPER_DB_PATH: /data/scraper.db
     volumes:
       - scraper-data:/data
       - ./exchange-inbox:/inbox:ro
+    configs: *core-runtime-configs
     profiles: ["manual"]
 
   exchange-results:
-    build: .
+    image: *runtime-image
     command:
       - exchange-discover-results
       - --dataset
       - nse_financial_results
-      - --file
-      - /inbox/nse-financial-results.csv
+      - --result-period
+      - "2026-06"
     environment:
+      <<: *production-environment
       SCRAPER_STORE_PATH: /data
       SCRAPER_DB_PATH: /data/scraper.db
     volumes:
       - scraper-data:/data
       - ./exchange-inbox:/inbox:ro
+    configs: *core-runtime-configs
+    profiles: ["manual"]
+
+  exchange-reconciliation:
+    image: *runtime-image
+    command: ["exchange-reconciliation-report"]
+    environment:
+      <<: *production-environment
+      SCRAPER_STORE_PATH: /data
+      SCRAPER_DB_PATH: /data/scraper.db
+    volumes:
+      - scraper-data:/data
+    configs: *core-runtime-configs
     profiles: ["manual"]
 
   worker:
-    build: .
+    image: *runtime-image
     command: ["screener-company-worker", "--due", "--limit", "5"]
     environment:
+      <<: *production-environment
       SCRAPER_STORE_PATH: /data
       SCRAPER_DB_PATH: /data/scraper.db
       SCREENER_SESSION_FILE: /run/secrets/screener_session
@@ -64,12 +140,14 @@ services:
       SCREENER_WORKER_LIMIT: "5"
     volumes:
       - scraper-data:/data
+    configs: *core-runtime-configs
     secrets:
       - screener_session
     profiles: ["manual"]
 
   daemon:
-    build: .
+    image: *runtime-image
+    restart: unless-stopped
     entrypoint: ["/bin/sh", "-c"]
     command:
       - |
@@ -79,6 +157,7 @@ services:
           sleep 10
         done
     environment:
+      <<: *production-environment
       SCRAPER_STORE_PATH: /data
       SCRAPER_DB_PATH: /data/scraper.db
       SCREENER_SESSION_FILE: /run/secrets/screener_session
@@ -86,8 +165,274 @@ services:
       SCREENER_THROTTLE_JITTER: "1.5"
     volumes:
       - scraper-data:/data
+    configs: *core-runtime-configs
     secrets:
       - screener_session
+
+  # Result acceptance creates event-backed requirements for presentation,
+  # transcript/concall, recording and credit-rating surfaces.  This reconciler
+  # revisits each due company page once per result event so delayed PPT and
+  # transcript links can enter D01, then reconciles the persisted artifacts.
+  artifact-reconciler:
+    image: *runtime-image
+    restart: unless-stopped
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        # Allow the scheduler to finish its bounded missed-day catch-up first.
+        sleep 30
+        python -m scrapper.cli backfill-result-artifacts
+        while true; do
+          # 50 prioritized PPT/transcript expectations are normally 25
+          # company/result groups. This keeps
+          # the source-refresh batch comfortably inside the 15-minute leases.
+          python -m scrapper.cli reconcile-artifacts --due --limit 50
+          sleep 300
+        done
+    environment:
+      <<: *production-environment
+      SCRAPER_STORE_PATH: /data
+      SCRAPER_DB_PATH: /data/scraper.db
+      SCREENER_SESSION_FILE: /run/secrets/screener_session
+      SCREENER_THROTTLE_SECONDS: "4"
+      SCREENER_THROTTLE_JITTER: "1.5"
+    volumes:
+      - scraper-data:/data
+    configs: *core-runtime-configs
+    secrets:
+      - screener_session
+
+  # Backfill and continuously acquire the primary concall surfaces discovered
+  # on accepted Screener pages: PPT/PPTX presentations and official transcript
+  # PDFs. Recording links are promoted as metadata but never automatically
+  # downloaded. Screener-generated Notes/AI Summary links remain excluded.
+  document-download-worker:
+    image: *runtime-image
+    restart: unless-stopped
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        python -m scrapper.cli queue-accepted-document-downloads
+        while true; do
+          python -m scrapper.cli run-document-download-worker \
+            --scope-id accepted-screener-concall --limit 25 \
+            --throttle-seconds 1
+          sleep 2
+        done
+    environment:
+      <<: *production-environment
+      SCRAPER_STORE_PATH: /data
+      SCRAPER_DB_PATH: /data/scraper.db
+      SCRAPER_DOCUMENT_STORE_PATH: /documents
+      DOCUMENT_REQUIRE_SENTINEL: "1"
+      DOCUMENT_MIN_FREE_BYTES: "107374182400"
+      DOCUMENT_MIN_FREE_PERCENT: "15"
+      # Docker Desktop answers statvfs on a /Volumes bind mount with the macOS
+      # root volume, which here reports ~320 GiB more free than the external
+      # disk actually has, so the reserve above would never trip. The host
+      # publishes its own reading into the store root; require it and refuse to
+      # write when it is missing or stale.
+      DOCUMENT_STORE_REQUIRE_CAPACITY_FILE: "1"
+    volumes:
+      - scraper-data:/data
+      - "${TRADING_AI_DOCUMENT_HOST_PATH}:/documents"
+    configs: *document-runtime-configs
+
+  june-extraction-worker:
+    image: *runtime-image
+    restart: unless-stopped
+    cpus: 0.5
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        while true; do
+          python -m scrapper.commands.quarter_extract \
+            --period 2026-06-30 --apply --limit 10
+          sleep 60
+        done
+    environment:
+      <<: *production-environment
+      SCRAPER_STORE_PATH: /data
+      SCRAPER_DB_PATH: /data/scraper.db
+      SCRAPER_DOCUMENT_STORE_PATH: /documents
+    volumes:
+      - scraper-data:/data
+      - "${TRADING_AI_DOCUMENT_HOST_PATH}:/documents:ro"
+    configs: *document-runtime-configs
+
+  # CRISIL and ICRA forbid automated access, so an accepted parse builds a DA-06
+  # recovery target instead of a download job. This worker searches the official
+  # NSE, BSE and issuer-IR surfaces for the same rating; attaching a candidate
+  # materializes its download job into the da06-rating-recovery scope.
+  rating-recovery-discovery:
+    image: *runtime-image
+    restart: unless-stopped
+    # Capped so a long backfill cannot thermally dominate a laptop.
+    cpus: 0.5
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        python -m scrapper.cli build-document-recovery-targets
+        while true; do
+          out=$$(python -m scrapper.cli run-document-recovery-worker \
+            --source bse --source nse --source issuer-ir \
+            --limit 50 --throttle-seconds 2)
+          echo "$$out"
+          case "$$out" in
+            *'"processed_target_source_count": 0'*) sleep 120 ;;
+            *) sleep 3 ;;
+          esac
+        done
+    environment:
+      <<: *production-environment
+      SCRAPER_STORE_PATH: /data
+      SCRAPER_DB_PATH: /data/scraper.db
+      SCRAPER_DOCUMENT_STORE_PATH: /documents
+      DOCUMENT_REQUIRE_SENTINEL: "1"
+      DOCUMENT_MIN_FREE_BYTES: "107374182400"
+      DOCUMENT_MIN_FREE_PERCENT: "15"
+      # Docker Desktop answers statvfs on a /Volumes bind mount with the macOS
+      # root volume, which here reports ~320 GiB more free than the external
+      # disk actually has, so the reserve above would never trip. The host
+      # publishes its own reading into the store root; require it and refuse to
+      # write when it is missing or stale.
+      DOCUMENT_STORE_REQUIRE_CAPACITY_FILE: "1"
+    volumes:
+      - scraper-data:/data
+      - "${TRADING_AI_DOCUMENT_HOST_PATH}:/documents"
+    configs: *document-runtime-configs
+
+  rating-recovery-download:
+    image: *runtime-image
+    restart: unless-stopped
+    cpus: 0.6
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        while true; do
+          python -m scrapper.cli run-document-download-worker \
+            --scope-id da06-rating-recovery --artifact-type credit_rating \
+            --limit 25 --throttle-seconds 1
+          sleep 2
+        done
+    environment:
+      <<: *production-environment
+      SCRAPER_STORE_PATH: /data
+      SCRAPER_DB_PATH: /data/scraper.db
+      SCRAPER_DOCUMENT_STORE_PATH: /documents
+      DOCUMENT_REQUIRE_SENTINEL: "1"
+      DOCUMENT_MIN_FREE_BYTES: "107374182400"
+      DOCUMENT_MIN_FREE_PERCENT: "15"
+      # Docker Desktop answers statvfs on a /Volumes bind mount with the macOS
+      # root volume, which here reports ~320 GiB more free than the external
+      # disk actually has, so the reserve above would never trip. The host
+      # publishes its own reading into the store root; require it and refuse to
+      # write when it is missing or stale.
+      DOCUMENT_STORE_REQUIRE_CAPACITY_FILE: "1"
+    volumes:
+      - scraper-data:/data
+      - "${TRADING_AI_DOCUMENT_HOST_PATH}:/documents"
+    configs: *document-runtime-configs
+
+  # Accepted company parses enqueue their own reports. Separate host-partitioned
+  # workers keep document latency out of the company scrape and ensure only one
+  # request stream reaches any publisher. CRISIL and ICRA are excluded by the
+  # reviewed policy table because their terms prohibit automated access.
+  credit-rating-worker-care:
+    image: *runtime-image
+    restart: unless-stopped
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        while true; do
+          python -m scrapper.cli run-credit-rating-download-worker --limit 25 \
+            --host www.careratings.com --throttle-seconds 4
+          sleep 10
+        done
+    environment:
+      <<: *production-environment
+      SCRAPER_STORE_PATH: /data
+      SCRAPER_DB_PATH: /data/scraper.db
+      SCRAPER_DOCUMENT_STORE_PATH: /documents
+      DOCUMENT_REQUIRE_SENTINEL: "1"
+      DOCUMENT_MIN_FREE_BYTES: "107374182400"
+      DOCUMENT_MIN_FREE_PERCENT: "15"
+      # Docker Desktop answers statvfs on a /Volumes bind mount with the macOS
+      # root volume, which here reports ~320 GiB more free than the external
+      # disk actually has, so the reserve above would never trip. The host
+      # publishes its own reading into the store root; require it and refuse to
+      # write when it is missing or stale.
+      DOCUMENT_STORE_REQUIRE_CAPACITY_FILE: "1"
+    volumes:
+      - scraper-data:/data
+      - "${TRADING_AI_DOCUMENT_HOST_PATH}:/documents"
+    configs: *document-runtime-configs
+
+  credit-rating-worker-india-ratings:
+    image: *runtime-image
+    restart: unless-stopped
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        while true; do
+          python -m scrapper.cli run-credit-rating-download-worker --limit 25 \
+            --host www.indiaratings.co.in --throttle-seconds 4
+          sleep 10
+        done
+    environment:
+      <<: *production-environment
+      SCRAPER_STORE_PATH: /data
+      SCRAPER_DB_PATH: /data/scraper.db
+      SCRAPER_DOCUMENT_STORE_PATH: /documents
+      DOCUMENT_REQUIRE_SENTINEL: "1"
+      DOCUMENT_MIN_FREE_BYTES: "107374182400"
+      DOCUMENT_MIN_FREE_PERCENT: "15"
+      # Docker Desktop answers statvfs on a /Volumes bind mount with the macOS
+      # root volume, which here reports ~320 GiB more free than the external
+      # disk actually has, so the reserve above would never trip. The host
+      # publishes its own reading into the store root; require it and refuse to
+      # write when it is missing or stale.
+      DOCUMENT_STORE_REQUIRE_CAPACITY_FILE: "1"
+    volumes:
+      - scraper-data:/data
+      - "${TRADING_AI_DOCUMENT_HOST_PATH}:/documents"
+    configs: *document-runtime-configs
+
+  credit-rating-worker-other:
+    image: *runtime-image
+    restart: unless-stopped
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        while true; do
+          python -m scrapper.cli run-credit-rating-download-worker --limit 25 \
+            --host www.infomerics.com \
+            --host www.acuite.in \
+            --host connect.acuite.in \
+            --host bcrisp.in \
+            --host www.bcrisp.in \
+            --host www.brickworkratings.com \
+            --throttle-seconds 4
+          sleep 10
+        done
+    environment:
+      <<: *production-environment
+      SCRAPER_STORE_PATH: /data
+      SCRAPER_DB_PATH: /data/scraper.db
+      SCRAPER_DOCUMENT_STORE_PATH: /documents
+      DOCUMENT_REQUIRE_SENTINEL: "1"
+      DOCUMENT_MIN_FREE_BYTES: "107374182400"
+      DOCUMENT_MIN_FREE_PERCENT: "15"
+      # Docker Desktop answers statvfs on a /Volumes bind mount with the macOS
+      # root volume, which here reports ~320 GiB more free than the external
+      # disk actually has, so the reserve above would never trip. The host
+      # publishes its own reading into the store root; require it and refuse to
+      # write when it is missing or stale.
+      DOCUMENT_STORE_REQUIRE_CAPACITY_FILE: "1"
+    volumes:
+      - scraper-data:/data
+      - "${TRADING_AI_DOCUMENT_HOST_PATH}:/documents"
+    configs: *document-runtime-configs
 
 volumes:
   scraper-data:
@@ -95,3 +440,13 @@ volumes:
 secrets:
   screener_session:
     file: ${SCREENER_SESSION_FILE:-.screener_session}
+
+configs:
+  runtime_identity_core:
+    file: ./ops/docker/release/c05.3/runtime-identity-core.json
+  runtime_identity_documents:
+    file: ./ops/docker/release/c05.3/runtime-identity-documents.json
+  runtime_store_sentinel:
+    file: ./ops/docker/release/c05.3/store-sentinel.json
+  runtime_core_documents_sentinel:
+    file: ./ops/docker/release/c05.3/core-documents-sentinel.json

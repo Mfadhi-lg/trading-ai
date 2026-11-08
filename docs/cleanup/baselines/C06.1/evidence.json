@@ -1,0 +1,82 @@
+{
+  "status": "COMPLETE",
+  "authorization": "read TRADING_AI_CLEANUP_EXECUTION.md execute c06.1",
+  "baseline_commit": "db7564a109f1cb34ee4e7d5ea3427716e14cb51e",
+  "activation_observed_through": "2026-10-03T12:39:31+05:30",
+  "scope": {
+    "activated_roles": 11,
+    "manual_discovery_runs_resumed": false,
+    "browser_recovery_resumed": false,
+    "bse_work_resumed": false,
+    "structural_module_moves": false
+  },
+  "release": {
+    "release_id": "c05.3-release-20261003",
+    "compose_repository_digest": "trading-ai-c053-release@sha256:44da7074157fd2a946c41d064a91ef3f729ebd31ab3bcdf2aa09233c5a794b6b",
+    "platform_manifest_digest": "sha256:05cf18b61418ace4f5e490ad59e62feb77de43558788fd47ca594c17d60cba77",
+    "authoritative_oci_archive_sha256": "5d85b9934eb8e0366eb4513fb9a3ca440e05bbc70f4568b3fe0461c88b7e32"
+  },
+  "backup": {
+    "path": "/private/tmp/trading-ai-cleanup-c061-20261003/backup/scraper-pre-c061.db",
+    "bytes": 14055661568,
+    "sha256": "b3a1f15c012b81f796ae78048c73a312f543e094af1446ecb6bbcbcd809bf046",
+    "sqlite_backup_seconds": 674.524,
+    "readback": "PASS: migration manifest and protected table counts read from the independent backup",
+    "migration_state": "68 applied ledger identities, one reviewed pending migration (068), zero unknown identities",
+    "full_integrity_scan": "STOPPED after approximately 16 minutes to bound production downtime; no result claimed"
+  },
+  "migration": {
+    "applied": ["068_exchange_source_access_compatibility.sql"],
+    "post_applied_ledger_count": 69,
+    "post_max_filename": "068_exchange_source_access_compatibility.sql",
+    "seeded_access_holds": ["bse_security_master", "bse_financial_results"]
+  },
+  "runtime": {
+    "healthy_roles": 11,
+    "all_image_ids": "sha256:05cf18b61418ace4f5e490ad59e62feb77de43558788fd47ca594c17d60cba77",
+    "source_code_mounts": 0,
+    "external_document_sentinel_sha256": "e27cf871b745af9f38edb77dbc7e36e8b8bd6a22fbc6ae086b7ee6c11acc7f72",
+    "identity_checks": "PASS",
+    "shutdown_wake_rehearsal": "PASS: 11 roles stopped cleanly, restarted, and returned healthy",
+    "filtered_log_errors": 0
+  },
+  "preservation": {
+    "pre_backup_counts": {
+      "accepted_page_versions": 6327,
+      "artifact_content_relationships": 6065,
+      "artifact_contents": 78198,
+      "artifact_download_queue": 147417,
+      "artifact_sources": 131903,
+      "companies": 4428,
+      "credit_rating_download_queue": 14822,
+      "document_artifacts": 83232,
+      "financial_observations": 8888459,
+      "screener_company_queue": 12749
+    },
+    "post_activation_counts": {
+      "accepted_page_versions": 6327,
+      "artifact_content_relationships": 6065,
+      "artifact_contents": 78198,
+      "artifact_download_queue": 147417,
+      "artifact_sources": 131903,
+      "companies": 4428,
+      "credit_rating_download_queue": 14822,
+      "document_artifacts": 83232,
+      "financial_observations": 8896213,
+      "screener_company_queue": 12749
+    }
+  },
+  "compatibility": {
+    "old_image_read_only_view": "PASS",
+    "new_image_read_only_view": "PASS",
+    "routine_startup_applied_migrations": false,
+    "bse_access_holds_preserved": true
+  },
+  "known_limitations": [
+    "Active Compose references the retained isolated release worktree under /private/tmp; canonical compose.yml remains unchanged.",
+    "The fresh backup and OCI archives are local temporary-storage artifacts, not offsite backups or a registry publication.",
+    "Two pre-existing manual discovery runs and all browser-recovery jobs remain stopped.",
+    "The fresh full integrity/foreign-key scan was interrupted; the backup was hash-recorded and read successfully, and C02 remains the full restore proof."
+  ],
+  "next": "C07.1 only — root README and current-status/supersession index"
+}

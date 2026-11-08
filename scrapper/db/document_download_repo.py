@@ -10,6 +10,7 @@ import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Sequence
+from urllib.parse import urlsplit
 
 from ..config import DOCUMENT_CONTENT_SNAPSHOTS
 from ..documents.downloader import DownloadPolicy, DownloadResult
@@ -145,6 +146,58 @@ def _store_response_blob(
     return int(cursor.lastrowid), digest
 
 
+def _store_streamed_response_blob(
+    conn: sqlite3.Connection,
+    *,
+    path: Path,
+    content_sha256: str,
+    byte_size: int,
+    media_type: str,
+    observed_at_utc: str,
+    snapshot_root: Path,
+) -> tuple[int, str]:
+    """Register bytes already atomically finalized on the external store."""
+
+    resolved = path.resolve()
+    root = snapshot_root.resolve()
+    if not resolved.is_relative_to(root):
+        raise RuntimeError("Streamed recording path is outside the document store")
+    if not resolved.is_file() or resolved.stat().st_size != byte_size:
+        raise RuntimeError("Durable streamed recording byte size mismatch")
+    digest = hashlib.sha256()
+    with resolved.open("rb") as handle:
+        while chunk := handle.read(1024 * 1024):
+            digest.update(chunk)
+    if digest.hexdigest() != content_sha256:
+        raise RuntimeError("Durable streamed recording hash mismatch")
+    existing = conn.execute(
+        "SELECT blob_id,byte_size,local_path FROM response_blobs WHERE content_sha256=?",
+        (content_sha256,),
+    ).fetchone()
+    if existing is not None:
+        if int(existing["byte_size"]) != byte_size:
+            raise RuntimeError("Existing response blob has a conflicting byte size")
+        existing_path = Path(str(existing["local_path"]))
+        if existing_path.resolve() != resolved:
+            raise RuntimeError("Content hash resolves to a different immutable path")
+        return int(existing["blob_id"]), content_sha256
+    cursor = conn.execute(
+        """INSERT INTO response_blobs
+           (content_sha256,content_type,encoding,byte_size,local_path,
+            first_observed_at_utc,created_at_utc)
+           VALUES (?,?,NULL,?,?,?,?)""",
+        (
+            content_sha256,
+            media_type,
+            byte_size,
+            str(resolved),
+            observed_at_utc,
+            observed_at_utc,
+        ),
+    )
+    return int(cursor.lastrowid), content_sha256
+
+
 def store_response_blob(
     conn: sqlite3.Connection,
     *,
@@ -177,7 +230,8 @@ def _validated_sources(
     placeholders = ",".join("?" for _ in source_ids)
     rows = conn.execute(
         f"""SELECT artifact_source_id, artifact_id, discovered_from_source,
-                   discovery_page_url, document_url, is_primary_source
+                   discovery_page_url, document_url, is_primary_source,
+                   document_originator, retrieval_source_type
             FROM artifact_sources
             WHERE artifact_source_id IN ({placeholders})
             ORDER BY artifact_source_id""",
@@ -193,6 +247,17 @@ def _validated_sources(
     return tuple(rows)
 
 
+def _is_official_retrieval(source: sqlite3.Row) -> bool:
+    if bool(source["is_primary_source"]):
+        return True
+    if source["document_originator"] and source["retrieval_source_type"]:
+        return True
+    host = (urlsplit(str(source["document_url"])).hostname or "").lower().rstrip(".")
+    return host in {"bseindia.com", "nseindia.com"} or host.endswith(
+        (".bseindia.com", ".nseindia.com")
+    )
+
+
 def persist_download_result(
     conn: sqlite3.Connection,
     *,
@@ -203,6 +268,8 @@ def persist_download_result(
     started_at_utc: str,
     fetched_at_utc: str,
     snapshot_root: Path = DOCUMENT_CONTENT_SNAPSHOTS,
+    content_origin: str = "publisher_original",
+    official_override: bool | None = None,
 ) -> PersistedDownload:
     """Persist one actual request and link every discovery path it represents."""
 
@@ -225,6 +292,24 @@ def persist_download_result(
                 observed_at_utc=fetched_at_utc,
                 snapshot_root=snapshot_root,
             )
+        elif result.stored_path is not None or result.content_sha256 is not None:
+            if (
+                not result.is_validated
+                or result.stored_path is None
+                or result.content_sha256 is None
+                or result.byte_size is None
+                or result.detected_media_type is None
+            ):
+                raise ValueError("Only validated durable streams may be registered")
+            blob_id, digest = _store_streamed_response_blob(
+                conn,
+                path=Path(result.stored_path),
+                content_sha256=result.content_sha256,
+                byte_size=result.byte_size,
+                media_type=result.detected_media_type,
+                observed_at_utc=fetched_at_utc,
+                snapshot_root=snapshot_root,
+            )
         if result.is_validated:
             if blob_id is None or digest is None or result.detected_media_type is None:
                 raise ValueError("Validated downloads must contain typed immutable bytes")
@@ -233,7 +318,9 @@ def persist_download_result(
                 artifact_id=artifact_id,
                 blob_id=blob_id,
                 media_type=result.detected_media_type,
-                is_official=any(bool(row["is_primary_source"]) for row in sources),
+                is_official=(official_override if official_override is not None
+                             else any(_is_official_retrieval(row) for row in sources)),
+                content_origin=content_origin,
                 created_at_utc=fetched_at_utc,
             )
         error_json = json.dumps(

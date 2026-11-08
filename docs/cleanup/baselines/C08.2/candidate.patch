@@ -1,0 +1,504 @@
+--- a/scrapper/commands/browser_rating_host.py
++++ b/scrapper/commands/browser_rating_host.py
+@@ -5,15 +5,21 @@
+ import os
+ import signal
+ import subprocess
++import sys
+ import time
+ from pathlib import Path
+ 
+-from scrapper.config import assert_configured_writable_targets
++if __package__ in (None, ''):
++    # ./scraper invokes this file directly through the host's stdlib Python.
++    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+ 
+-ROOT = Path(__file__).resolve().parents[2]
+-FOLDER = ROOT / 'artifacts/icra-download-test'
++from scrapper.commands.browser_rating_host_config import (
++    ROOT, LEGACY_FOLDER, PID_FILE, LOCK_FILE, LOG_FILE, PYTHON,
++    assert_host_targets, bridge_command, environment_check_command,
++)
++
++FOLDER = LEGACY_FOLDER  # compatibility import; settings own new destinations
+ WORKER = ROOT / 'scrapper/commands/browser_rating_headed.py'
+-PID_FILE = FOLDER / 'icra-recovery.pid'
+ 
+ 
+ def running_pid():
+@@ -31,26 +37,34 @@
+ 
+ 
+ def start():
+-    assert_configured_writable_targets(FOLDER)
++    assert_host_targets()
+     existing = running_pid()
+     if existing:
+         print(f'ICRA background browser RUNNING (PID {existing}); already started.')
+         return
+-    python = FOLDER / '.venv/bin/python'
++    python = PYTHON
+     if not python.exists():
+         raise RuntimeError(f'ICRA browser environment missing: {python}')
+-    with (FOLDER / 'icra-recovery.log').open('a') as log:
++    # Keep the legacy environment usable; configured environments follow the lock.
++    if 'SCRAPER_BROWSER_PYTHON' in os.environ:
++        subprocess.run(environment_check_command(), check=True, capture_output=True, text=True, timeout=30)
++    for parent in {PID_FILE.parent, LOG_FILE.parent}:
++        parent.mkdir(parents=True, exist_ok=True)
++    env = os.environ.copy()
++    env['PYTHONPATH'] = str(ROOT) + os.pathsep + env.get('PYTHONPATH', '')
++    with LOG_FILE.open('a') as log:
+         process = subprocess.Popen([str(python), str(WORKER), '--background'],
+             cwd=ROOT, stdin=subprocess.DEVNULL, stdout=log, stderr=log,
+-            start_new_session=True)
++            start_new_session=True, env=env)
+     PID_FILE.write_text(f'{process.pid}\n')
+     time.sleep(2)
+     if process.poll() is not None:
+-        raise RuntimeError('ICRA worker exited during startup; check icra-recovery.log')
++        raise RuntimeError(f'ICRA worker exited during startup; check {LOG_FILE}')
+     print(f'ICRA background browser started (PID {process.pid}).')
+ 
+ 
+ def stop():
++    assert_host_targets()
+     pid = running_pid()
+     if pid:
+         print(f'ICRA: finishing current report and closing browser (PID {pid})...', flush=True)
+@@ -62,9 +76,7 @@
+             time.sleep(0.5)
+     # The browser is gone before any claim is released. The live DB bridge owns
+     # only this host worker's jobs; container workers are never rearmed here.
+-    result = subprocess.run(['docker', 'exec', '-i', 'trading-ai-document-download-worker-1',
+-        'python', '-m', 'scrapper.commands.browser_rating_recovery', '--run-id',
+-        'browser-ratings-20261001', '--bridge', '--operator-authorized'],
++    result = subprocess.run(bridge_command(),
+         input=json.dumps({'action': 'release'}) + '\n', text=True,
+         capture_output=True, timeout=30)
+     if result.returncode:
+@@ -79,8 +91,11 @@
+ 
+ def main():
+     parser = argparse.ArgumentParser(description=__doc__)
+-    parser.add_argument('action', choices=['start', 'stop', 'status', 'is-running'])
++    parser.add_argument('action', choices=['start', 'stop', 'status', 'is-running', 'check-environment'])
+     args = parser.parse_args()
++    if args.action == 'check-environment':
++        result = subprocess.run(environment_check_command(), timeout=30)
++        return result.returncode
+     if args.action in ('status', 'is-running'):
+         pid = running_pid()
+         if args.action == 'is-running':
+@@ -88,9 +103,9 @@
+         print(f'ICRA background browser: {"RUNNING (PID " + str(pid) + ")" if pid else "STOPPED"}')
+         return 0
+     if args.action in ('start', 'stop'):
+-        assert_configured_writable_targets(FOLDER)
+-    FOLDER.mkdir(parents=True, exist_ok=True)
+-    with (FOLDER / 'icra-lifecycle.lock').open('a') as lock:
++        assert_host_targets()
++    LOCK_FILE.parent.mkdir(parents=True, exist_ok=True)
++    with LOCK_FILE.open('a') as lock:
+         fcntl.flock(lock, fcntl.LOCK_EX)
+         try:
+             (start if args.action == 'start' else stop)()
+--- a/scrapper/commands/browser_rating_headed.py
++++ b/scrapper/commands/browser_rating_headed.py
+@@ -10,9 +10,14 @@
+ import time
+ from datetime import datetime, timezone
+ from urllib.parse import urljoin
++from pathlib import Path
++
++if __package__ in (None, ''):
++    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+ 
+ from playwright.sync_api import sync_playwright, TimeoutError
+ from scrapper.config import assert_configured_writable_targets
++from scrapper.commands.browser_rating_host_config import assert_host_targets, bridge_command
+ 
+ 
+ class PublisherRateLimit(ValueError):
+@@ -48,11 +53,8 @@
+     parser.add_argument('--job-id', action='append', type=int, default=[], help='Download only these ledger jobs')
+     args = parser.parse_args()
+     assert_configured_writable_targets()
+-    bridge = subprocess.Popen([
+-        'docker', 'exec', '-i', 'trading-ai-document-download-worker-1',
+-        'python', '-m', 'scrapper.commands.browser_rating_recovery',
+-        '--run-id', 'browser-ratings-20261001', '--bridge', '--operator-authorized',
+-    ], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True, bufsize=1)
++    assert_host_targets()
++    bridge = subprocess.Popen(bridge_command(), stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True, bufsize=1)
+     def exchange(request):
+         bridge.stdin.write(json.dumps(request) + '\n')
+         bridge.stdin.flush()
+--- /dev/null
++++ b/scrapper/commands/browser_rating_host_config.py
+@@ -0,0 +1,50 @@
++"""Inert, standard-library host settings shared by lifecycle and browser bridge."""
++import os
++from pathlib import Path
++
++from scrapper.config import BROWSER_STATE, LOGS, assert_configured_writable_targets
++
++ROOT = Path(__file__).resolve().parents[2]
++LEGACY_FOLDER = ROOT / 'artifacts/icra-download-test'
++STATE = BROWSER_STATE if 'SCRAPER_BROWSER_STATE_PATH' in os.environ else LEGACY_FOLDER
++LOG_ROOT = LOGS if 'SCRAPER_LOGS_PATH' in os.environ else LEGACY_FOLDER
++PID_FILE = Path(os.environ.get('SCRAPER_BROWSER_PID_PATH', str(STATE / 'icra-recovery.pid')))
++LOCK_FILE = Path(os.environ.get('SCRAPER_BROWSER_LOCK_PATH', str(STATE / 'icra-lifecycle.lock')))
++LOG_FILE = Path(os.environ.get('SCRAPER_BROWSER_LOG_PATH', str(LOG_ROOT / 'icra-recovery.log')))
++PYTHON = Path(os.environ.get('SCRAPER_BROWSER_PYTHON', str(LEGACY_FOLDER / '.venv/bin/python')))
++RUN_ID = os.environ.get('SCRAPER_BROWSER_RUN_ID', 'browser-ratings-20261001')
++CONTAINER = os.environ.get('SCRAPER_BROWSER_BRIDGE_CONTAINER', 'trading-ai-document-download-worker-1')
++
++
++def assert_host_targets():
++    # Validate all destinations before mkdir/open/unlink/signal/bridge startup.
++    targets = [PID_FILE, LOCK_FILE, LOG_FILE]
++    if os.environ.get('PLAYWRIGHT_BROWSERS_PATH'):
++        if os.environ['PLAYWRIGHT_BROWSERS_PATH'] == '0':
++            raise RuntimeError('Use an absolute PLAYWRIGHT_BROWSERS_PATH for host browser storage')
++        targets.append(Path(os.environ['PLAYWRIGHT_BROWSERS_PATH']))
++    assert_configured_writable_targets(*targets)
++    if not RUN_ID.strip() or not CONTAINER.strip():
++        raise RuntimeError('Browser run ID and bridge container must be nonempty')
++
++
++def bridge_command():
++    return ['docker', 'exec', '-i', CONTAINER, 'python', '-m',
++            'scrapper.commands.browser_rating_recovery', '--run-id', RUN_ID,
++            '--bridge', '--operator-authorized']
++
++
++def environment_check_command():
++    # Read-only check in the chosen interpreter, no browser/DB/network startup.
++    return [str(PYTHON), '-B', '-c', '''import importlib.metadata as m, json, sys
++from pathlib import Path
++assert sys.version_info[:2] == (3, 14), "Host browser requires Python 3.14"
++expected = {"playwright":"1.60.0", "greenlet":"3.5.6", "pyee":"13.0.1", "typing_extensions":"4.16.0"}
++for name, version in expected.items():
++    assert m.version(name) == version, f"{name} must equal {version}"
++from playwright.sync_api import sync_playwright
++with sync_playwright() as p:
++    executable = Path(p.chromium.executable_path)
++    assert executable.is_file(), f"Chromium missing: {executable}"
++print(json.dumps({"python":sys.version.split()[0], "packages":expected, "chromium":str(executable)}))
++''']
+--- /dev/null
++++ b/scrapper/tests/test_browser_rating_host_config.py
+@@ -0,0 +1,127 @@
++import importlib
++import os
++import subprocess
++import sys
++import tempfile
++import unittest
++from pathlib import Path
++from unittest.mock import MagicMock, patch
++
++from scrapper.commands import browser_rating_host as host
++from scrapper.commands import browser_rating_host_config as settings
++
++
++class HostConfigurationTests(unittest.TestCase):
++    def reload_settings(self, env):
++        with patch.dict(os.environ, env, clear=True):
++            import scrapper.config as config
++            importlib.reload(config)
++            return importlib.reload(settings)
++
++    def tearDown(self):
++        import scrapper.config as config
++        importlib.reload(config)
++        importlib.reload(settings)
++
++    def test_existing_defaults_and_bridge_are_exactly_preserved(self):
++        s = self.reload_settings({})
++        self.assertEqual(s.PID_FILE, s.LEGACY_FOLDER / 'icra-recovery.pid')
++        self.assertEqual(s.LOCK_FILE, s.LEGACY_FOLDER / 'icra-lifecycle.lock')
++        self.assertEqual(s.LOG_FILE, s.LEGACY_FOLDER / 'icra-recovery.log')
++        self.assertEqual(s.PYTHON, s.LEGACY_FOLDER / '.venv/bin/python')
++        self.assertEqual(s.bridge_command()[3], 'trading-ai-document-download-worker-1')
++        self.assertEqual(s.bridge_command()[8], 'browser-ratings-20261001')
++
++    def test_split_roots_and_exact_overrides_share_the_same_bridge(self):
++        s = self.reload_settings({'SCRAPER_BROWSER_STATE_PATH':'/tmp/state',
++            'SCRAPER_LOGS_PATH':'/tmp/logs', 'SCRAPER_BROWSER_PYTHON':'/tmp/env/bin/python',
++            'SCRAPER_BROWSER_RUN_ID':'selected-run', 'SCRAPER_BROWSER_BRIDGE_CONTAINER':'selected-container'})
++        self.assertEqual(s.PID_FILE, Path('/tmp/state/icra-recovery.pid'))
++        self.assertEqual(s.LOCK_FILE, Path('/tmp/state/icra-lifecycle.lock'))
++        self.assertEqual(s.LOG_FILE, Path('/tmp/logs/icra-recovery.log'))
++        self.assertEqual(s.bridge_command()[3], 'selected-container')
++        self.assertEqual(s.bridge_command()[8], 'selected-run')
++        s = self.reload_settings({'SCRAPER_BROWSER_PID_PATH':'/tmp/pid',
++            'SCRAPER_BROWSER_LOCK_PATH':'/tmp/lock', 'SCRAPER_BROWSER_LOG_PATH':'/tmp/log'})
++        self.assertEqual((s.PID_FILE,s.LOCK_FILE,s.LOG_FILE), tuple(map(Path, ['/tmp/pid','/tmp/lock','/tmp/log'])))
++
++    def test_every_host_write_override_refuses_production_before_creation(self):
++        with tempfile.TemporaryDirectory() as directory:
++            root = Path(directory)
++            for key in ('SCRAPER_BROWSER_PID_PATH','SCRAPER_BROWSER_LOCK_PATH',
++                        'SCRAPER_BROWSER_LOG_PATH','PLAYWRIGHT_BROWSERS_PATH'):
++                env = {'TRADING_AI_ENV':'test','SCRAPER_STORE_PATH':str(root/'store'),
++                       'SCRAPER_DB_PATH':str(root/'db'), 'SCRAPER_DOCUMENT_STORE_PATH':str(root/'docs'),
++                       key:'/data/forbidden'}
++                s = self.reload_settings(env)
++                with patch.dict(os.environ,env,clear=True), self.assertRaises(RuntimeError):
++                    s.assert_host_targets()
++                self.assertEqual(list(root.iterdir()), [])
++
++    def test_start_uses_selected_environment_log_and_pid(self):
++        with tempfile.TemporaryDirectory() as directory:
++            root = Path(directory)
++            python = root/'env/bin/python'; python.parent.mkdir(parents=True); python.touch()
++            pid, log = root/'state/pid', root/'logs/log'
++            process = MagicMock(pid=456); process.poll.return_value=None
++            with patch.object(host,'assert_host_targets'), patch.object(host,'running_pid',return_value=None), \
++                 patch.object(host,'PYTHON',python), patch.object(host,'PID_FILE',pid), patch.object(host,'LOG_FILE',log), \
++                 patch.object(host.subprocess,'Popen',return_value=process) as launch, patch.object(host.time,'sleep'):
++                host.start()
++            self.assertEqual(pid.read_text(),'456\n')
++            self.assertTrue(log.is_file())
++            self.assertEqual(launch.call_args.args[0], [str(python),str(host.WORKER),'--background'])
++            self.assertTrue(launch.call_args.kwargs['start_new_session'])
++
++    def test_stop_waits_for_browser_then_releases_same_configured_bridge(self):
++        events=[]
++        with tempfile.TemporaryDirectory() as directory:
++            pid = Path(directory)/'pid'; pid.write_text('456\n')
++            def run(*args,**kwargs):
++                events.append('release'); self.assertEqual(args[0],['selected-bridge'])
++                self.assertEqual(kwargs['input'],'{"action": "release"}\n')
++                return MagicMock(returncode=0,stdout='{}')
++            with patch.object(host,'assert_host_targets'), patch.object(host,'PID_FILE',pid), \
++                 patch.object(host,'running_pid',side_effect=[456,456,None]), \
++                 patch.object(host.os,'kill',side_effect=lambda *a:events.append('signal')), \
++                 patch.object(host.time,'sleep',side_effect=lambda *a:events.append('wait')), \
++                 patch.object(host,'bridge_command',return_value=['selected-bridge']), patch.object(host.subprocess,'run',side_effect=run):
++                host.stop()
++            self.assertEqual(events,['signal','wait','release'])
++            self.assertFalse(pid.exists())
++
++    def test_failed_claim_release_retains_pid_and_prevents_success(self):
++        with tempfile.TemporaryDirectory() as directory:
++            pid=Path(directory)/'pid'; pid.write_text('456\n')
++            with patch.object(host,'assert_host_targets'), patch.object(host,'PID_FILE',pid), \
++                 patch.object(host,'running_pid',side_effect=[456,None]), patch.object(host.os,'kill'), \
++                 patch.object(host.subprocess,'run',return_value=MagicMock(returncode=1,stderr='offline')), \
++                 self.assertRaisesRegex(RuntimeError,'Could not release'):
++                host.stop()
++            self.assertTrue(pid.exists())
++
++    def test_help_status_and_import_create_no_host_state(self):
++        with tempfile.TemporaryDirectory() as directory:
++            root=Path(directory)
++            env={**os.environ,'PYTHONDONTWRITEBYTECODE':'1','TRADING_AI_ENV':'',
++                 'SCRAPER_BROWSER_STATE_PATH':str(root/'state'),'SCRAPER_LOGS_PATH':str(root/'logs')}
++            env.pop('PYTHONPATH',None)
++            for args in (['-m','scrapper.commands.browser_rating_host','--help'],
++                         [str(host.WORKER.with_name('browser_rating_host.py')),'--help'],
++                         ['-m','scrapper.commands.browser_rating_host','status'],
++                         ['-c','import scrapper.commands.browser_rating_host']):
++                result=subprocess.run([sys.executable,*args],env=env,capture_output=True,text=True,timeout=30)
++                self.assertEqual(result.returncode,0,result.stderr)
++            self.assertEqual(list(root.iterdir()),[])
++
++    def test_configured_environment_check_is_before_worker_launch(self):
++        with patch.object(host,'assert_host_targets'), patch.object(host,'running_pid',return_value=None), \
++             patch.object(host,'PYTHON',Path(sys.executable)), patch.dict(os.environ,{'SCRAPER_BROWSER_PYTHON':sys.executable}), \
++             patch.object(host.subprocess,'run',side_effect=subprocess.CalledProcessError(1,['check'])), \
++             patch.object(host.subprocess,'Popen') as launch, self.assertRaises(subprocess.CalledProcessError):
++            host.start()
++        launch.assert_not_called()
++
++
++if __name__ == '__main__':
++    unittest.main()
+--- /dev/null
++++ b/ops/host/browser-requirements.lock
+@@ -0,0 +1,97 @@
++# Python 3.14; existing host versions. Chromium revision 1223 (148.0.7778.96).
++# Hashes derived offline from locally cached package metadata.
++greenlet==3.5.6 \
++    --hash=sha256:0616b8f878098c5681fd8f0dc92d887551717402342a70f0abcbfea5f5ad8a44 \
++    --hash=sha256:06c0e933290fba8ffe53ead4ae1b8044b0e9754b75cebf381aa2bc3e50d82fac \
++    --hash=sha256:128813fc29f2336a21b4d06eedd5e16bcc7ea46f59e9ff1cb30ea70e48195d88 \
++    --hash=sha256:188bf333769b7145e2b0b4a7f09615ec550ed44d3a2a8395fb7b36f0e9901e13 \
++    --hash=sha256:1c20ea32a73d17b9b60e3371240e17b0068120c98a5ec01a224a7dd8c89733ba \
++    --hash=sha256:2ab5f42ac6c238eb71770715e6e909ad9a1a92b6c681ccb64cd5a0f07edb953f \
++    --hash=sha256:301102a49120b095e72a7838792b41233975fc1c155daec6d98f81c00c9280e0 \
++    --hash=sha256:311018b46472fb26ee85870847fb89eb64cc8aaddb617400789d87076f7cfeec \
++    --hash=sha256:3ac3494c381dab876cad7d0b22f3a722f3e0c8deb3a65b9e7f35ad7f58b8fcb3 \
++    --hash=sha256:3c6dede9133e1da41d561bc3fb14e92b47e2ce39ae60edefaad145658ea7c5e2 \
++    --hash=sha256:3dbb4596a6a4e5d47121a33ff20533a81e60f302d9e67b69909a8bc21a43f0a7 \
++    --hash=sha256:3deccbb57a481e3a408fe61cdfd5c13e0678fc0a30fdd09597917ca87b4be877 \
++    --hash=sha256:45663c01a4de48b9a64a2ee1509d92d1dfd3afb02b2ccfc9333029d11aef996a \
++    --hash=sha256:45bfd2b51e38aaa5f9849f114d9c7c1d75f69187c849b3549cd64c465283abfa \
++    --hash=sha256:460e70b033aba8ed47e2ac9b5d0d2157b05a34fbfa30a241400aef4118902cdc \
++    --hash=sha256:4fb8e59f68845d56c23c031dcd79c329f345e4a9d2ffac91c3d1ab366bdc457b \
++    --hash=sha256:520648db8fb92eef7b3e6013f5a6f901cdf0d6685f639c2f7a245879f865bef7 \
++    --hash=sha256:5599b380c1f28efeb724e81569eac80cd92f99a85bd9775456caaf3225d40b11 \
++    --hash=sha256:59deccd347735a7774223b05a93773fddbb298aba3cea21be4337fb4752dbe32 \
++    --hash=sha256:5a0b2791239c99992a86c1b635b787fe2a877d9eaaa26f8891ce943832b585ae \
++    --hash=sha256:5adcbbfe78bdc242c71740a02e0991cc1b2f34d33c8bb15ca45eee8fd1140942 \
++    --hash=sha256:5b602b4201b965a8354d74e232364a66ff243dd142e350d035f46169bb36e13d \
++    --hash=sha256:5bbda3c70dd35d60671bc33b01916802707a052130d9e50cdb871d34594d35cb \
++    --hash=sha256:602024dae6d77e161f4b89491b62ca1d4f19949d79d47b2db057e476d21179d6 \
++    --hash=sha256:61a61b4a95a4f97922c3a6f5606d3e360851584bd47e500a5161373c53810e3d \
++    --hash=sha256:63aff70fe5aac59c72215f42ec39fcb59ff46774fa966e717f8ecb6ee2273577 \
++    --hash=sha256:71890d5247020c25c21a6b65202782bfc281d4e6e244842419d30e3492bb6dcc \
++    --hash=sha256:73a29b5ba642e35433166a03a3e02935e7238c4b3467fbd77523b99edea23e5b \
++    --hash=sha256:7969bffa322c097bd46ae595ada6a931cefda613f18ba64587e9cff4cb320756 \
++    --hash=sha256:7ac4abb3877c43af320392c664774eef6fa2cc063c79a55fc02d844a3cbe7395 \
++    --hash=sha256:7f731ebac68ea06d628658295cb2d217b10186329fcf9a3b6a149045059bf92e \
++    --hash=sha256:7f924a5a9d5890649566f2f6682e0d8ad8ca23028bacffbbac36dbd7fd680176 \
++    --hash=sha256:874cea8bb1ec1ddccbacbd027856f6bf496f6bc18aba97a918c20e067edab236 \
++    --hash=sha256:876077e7ebb8c84ed068e2b23d4c62ebb010d60df84b9591af1be2f39010ffb2 \
++    --hash=sha256:886bcf1870af74c32bc310fd00a6b803445e17e51b7d5a107c7b35c0f362cc16 \
++    --hash=sha256:8b27df301f56e3b3d2298095c8f7d6b68f2521f6b1693e901fa039bdbae34424 \
++    --hash=sha256:8b7c73d1cef3d9ae963e9ff03f6222df43efbb9054ffd2f1969c935b7fc84c02 \
++    --hash=sha256:8cda13494d86a4f12429641117cb6ac4bbbc9c30a33f711f7d3a2e5fbe4b0b7e \
++    --hash=sha256:8cddea1b8339451c2fb3388e138347b6126744f33b611bdb55b7357361cfef46 \
++    --hash=sha256:8dba0129b93e7091dfefaf4cf7000172741bff7f47bf6326fcf17f32fbb54d6b \
++    --hash=sha256:8e67c43bdfc88d5fee6db0d3e40175b362fc95fb85f0412d233b9b203c53a575 \
++    --hash=sha256:9133d68624b1f2e89ec2f554d56aea8a5b0d7168cd9320200ba58d4d794845a4 \
++    --hash=sha256:916f92f2a8db10508f739d0b5e00b83defe5d1115a997c54532a6d7cf8c95404 \
++    --hash=sha256:9297fb9c39b9a2c039dbcd306c410bd6906b95244dec3bba4318d36c718c164c \
++    --hash=sha256:95e7c44d072db623a1aab04ce488cf9533294a77ed9d072cd503a3596f4106ac \
++    --hash=sha256:975736b002ed080d124cf81a79cb7e05cb26d6b3f5c7a7b651c0fcce70353aa1 \
++    --hash=sha256:97c5a53e8c1754df58e73f047a99e287d4da1bdfe64b0072fb25c87000897951 \
++    --hash=sha256:9a09d59bef1db94f384b5bcc2d523694d338f3df6b757aeeaf7baca5d0c0be88 \
++    --hash=sha256:a364c1ea75dc51b83a17f52fe0c79cf8bc4ddf740403bebd4581c7666eea017d \
++    --hash=sha256:a3b4a01c6da07ef9f80d4fe8933b994bc99747bcea3eab0330a9c34d3c12655b \
++    --hash=sha256:a5876d0a60355af98d535c47f6cd6eb0f8a432396dab26845d380b92f8412422 \
++    --hash=sha256:a6a4b98a9132e0f45c9fc245a63894cfd8c45fb7a0d6bffc5eab3ec327cf7324 \
++    --hash=sha256:a6b4ff33f7e011bbaa148238d131c4fd4f8afbab3c104ddfbdb2b12b74ff7016 \
++    --hash=sha256:a93ee7c6e8fd0f8a83525a51bd777be57ee17787e91d805bd8d6faf9dcada18e \
++    --hash=sha256:b374e79ffa7511afc11773aef40a4ccea6191fba1c856ea2f9c56738dca69d7a \
++    --hash=sha256:b7d501d5eb5d4f67207df364752ad697465b834268744be7581c18d81d35d41d \
++    --hash=sha256:c59acfa8eb73a1e0d484392dc002bdf001fd4ce73394e0132df3d1ab6093d7cb \
++    --hash=sha256:c75116c9de79949de23006e2d9b35ee82874c594fcf5c0311b439acaa14b8441 \
++    --hash=sha256:ca80a49b53ed1d22f7282da7255f7bb2fd1935fd0f623d8613fda38745f18961 \
++    --hash=sha256:cad5782f93f7f738b62c6527b6f32a60694d924029f299a8b524758cfa53d815 \
++    --hash=sha256:ccadce0130fd813ec86ebfe969a6c58b42acc1d0fe55a47525375b740e07b605 \
++    --hash=sha256:d701eab36200c36224833d07dbdb709adb7fd4253429548ddb5e547b8ed40586 \
++    --hash=sha256:dad3d233d441a022c1f7155f0fb9d5aff7b97c1ea8c7dfa02cce586b16ab2d0b \
++    --hash=sha256:dd0b83bed3405b586a3133629f1d1a5bc7bfd64822a3b7ab342bdc68e6dbc61b \
++    --hash=sha256:de3de000d459402cda015068fd135aa50c0bf6f2477a80d4da1e646f123b4e78 \
++    --hash=sha256:de9923832f2d8c1a5ecd8d7260465a6ca5a86888a0d129e3bd5cf0406d2fc5bf \
++    --hash=sha256:df19e2d0b1620039af5102563fbd96e8938c7f5c3f5828528d641d9fc585525e \
++    --hash=sha256:e85880b538e59a59f55117b81f208a6660ad5ac328aad9305f812d9b8bc67a0f \
++    --hash=sha256:ee7d9da3bf493909cf811a3f038840cb34fab5ae2956b8a263919f6e289ab188 \
++    --hash=sha256:eed88b64a5e5da72d6a71cdc5aaeefaa5ced9b748f8d19f89800b339961dad39 \
++    --hash=sha256:f0ba7c2a329d650628f4c8572fd1db29f0a59dd70a3e3e0710dcf18a35cce9d8 \
++    --hash=sha256:f8e63209c3e1e828ee6a457529b4a6d8b05d050fe0ae03a7ae49e967c5d312e0 \
++    --hash=sha256:f8f0bd690e1a41294ac87905e8121c81a3761ec2583c768f13467428606c8c7a \
++    --hash=sha256:f96f0e30b5a95c7631b12bfe214cbc90ec8fe8cfa36920596c10514a65743519 \
++    --hash=sha256:f98e8215e172f567ce80eeaed9107fb4d32b6c44f26983d9b8334658136a205a \
++    --hash=sha256:f9fe868463ec7e1363733af77e38a5fda3e9b63940337048c945d69e0c80ff24 \
++    --hash=sha256:fdacf26402389bdd89857ad3c045a26fe8f3314f9a8b28226f82f88463a65b77 \
++    --hash=sha256:fe3170a69fe039b18ad18171e66faa9a75f6fe9d78f968fd9b54e09fbd714d81 \
++    --hash=sha256:fea4427d1ffdb3b523d7daa6712038428a4c16c450b9777bdd1221cfee0eab49
++playwright==1.60.0 \
++    --hash=sha256:1c2bfae7884fb3fb05b853290eab8f343d524e5016f2f1def702acbbdf14c93e \
++    --hash=sha256:2581d0e6a3392c71f91b27460c7fd093356818dc430f48153896c8aeeaef7705 \
++    --hash=sha256:39b5420ba6145045b69ced4c5c47d4d9fe5bddfc8ff816c518913afcb25ec7a5 \
++    --hash=sha256:43e66564125ee31b07a58cefb21e256d62d67d8d1713e6858df7a3019d8ed353 \
++    --hash=sha256:6a8cd0fec171fb3089e95e898c8bc8a6f35dea0b78b399e12fcc19427e91b1d7 \
++    --hash=sha256:6e4f6700a4c2250efff8e690a81d66e3855754fb587b6b87cf5c784014f91537 \
++    --hash=sha256:9566821ce6030a1f9e7146a24e19355ab0d98805fd0f9be50bb3d8fef1750c02 \
++    --hash=sha256:ec94e416ea320711e0ad4bf185dcbf41833672961e90773e1885255d7db7b7e7
++pyee==13.0.1 \
++    --hash=sha256:0b931f7c14535667ed4c7e0d531716368715e860b988770fc7eb8578d1f67fc8 \
++    --hash=sha256:af2f8fede4171ef667dfded53f96e2ed0d6e6bd7ee3bb46437f77e3b57689228
++typing-extensions==4.16.0 \
++    --hash=sha256:481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8 \
++    --hash=sha256:dc983d19a509c94dba722ee6abd33940f7c05a89e243c47e907eb4db6f1a43e5
+--- /dev/null
++++ b/docs/cleanup/host-browser.md
+@@ -0,0 +1,82 @@
++# Host browser configuration — C08.2
++
++Implemented only in the isolated C08.2 candidate. The incremental patch applies
++to the retained C08.1 source; neither candidate is activated. Existing recovery
++policy, host marker `@browser-rating-icra`, CLI actions and shutdown state stay
++compatible. C08.3 owns lifecycle state portability and remaining wrapper references.
++
++| Setting | Default / owner |
++|---|---|
++| `SCRAPER_BROWSER_STATE_PATH` | When explicitly set, C08.1 browser-state root owns PID/lock; otherwise existing `artifacts/icra-download-test` |
++| `SCRAPER_LOGS_PATH` | When explicitly set, C08.1 log root owns host log; otherwise existing campaign folder |
++| `SCRAPER_BROWSER_PID_PATH` | State root / `icra-recovery.pid`; exact file override |
++| `SCRAPER_BROWSER_LOCK_PATH` | State root / `icra-lifecycle.lock`; exact file override |
++| `SCRAPER_BROWSER_LOG_PATH` | Log root / `icra-recovery.log`; append-only exact file override |
++| `SCRAPER_BROWSER_PYTHON` | Existing campaign `.venv/bin/python`; explicit interpreter override uses locked preflight |
++| `SCRAPER_BROWSER_RUN_ID` | Existing `browser-ratings-20261001`; same selection for claim/import/release |
++| `SCRAPER_BROWSER_BRIDGE_CONTAINER` | Existing `trading-ai-document-download-worker-1`; same bridge for worker/stop |
++| `PLAYWRIGHT_BROWSERS_PATH` | Existing Playwright cache when unset; explicit absolute cache root is H03 checked |
++
++Use absolute paths and one stable PID/lock pair for a host worker. Changing
++settings does not discover or relocate old state. Stop through the old settings
++while the bridge is alive before selecting new settings; retain old PID/log/lock
++files for rollback. Never switch paths or run/container selection under a running
++worker: a different PID/lock pair could create a second owner. This chunk does
++not change queue fencing or add multi-host ownership guarantees.
++
++Imports/help/status/is-running create no runtime files. Start/stop validate all
++configured PID/log/lock and explicit browser-cache destinations through H03
++before creating directories, opening a lock/log, signaling or invoking the bridge.
++Production external destinations need exact identity authorization. Do not copy
++the container identity manifest to the host: resolved host DB/store/document
++identities and authorized extra write roots must match. Missing identity fails
++closed. Existing document capacity/sentinel/staleness checks remain intact.
++
++The shared standard-library settings module owns the bridge command. The worker
++still closes its browser and bridge before host stop releases the interrupted
++claim. `./scraper shutdown` still closes the host before stopping containers;
++wake still starts the bridge before the host. The old shutdown-state reader and
++host marker remain unchanged. Wrapper monitor container references remain for
++C08.3; the environment applies only to the host recovery bridge here.
++
++## Rebuild the environment outside campaign output
++
++The host lock preserves the observed host versions: Python 3.14, Playwright
++1.60.0, greenlet 3.5.6, pyee 13.0.1 and typing-extensions 4.16.0. It is distinct
++from the C06 Linux container lock. Playwright selects Chromium revision 1223,
++Chrome for Testing 148.0.7778.96. The lock includes package distribution hashes.
++Reproduction was verified on macOS arm64, Python 3.14.5. The initial rebuild used
++the local uv cache; the subsequent hash-required reinstall downloaded the pinned
++Playwright wheel and verified the distribution lock.
++
++Example for an isolated candidate, after choosing authorized locations:
++
++```sh
++python3.14 -m venv /absolute/private/browser-env
++/absolute/private/browser-env/bin/python -m pip install --require-hashes -r ops/host/browser-requirements.lock
++PLAYWRIGHT_BROWSERS_PATH=/absolute/private/browser-cache /absolute/private/browser-env/bin/python -m playwright install chromium
++SCRAPER_BROWSER_PYTHON=/absolute/private/browser-env/bin/python PLAYWRIGHT_BROWSERS_PATH=/absolute/private/browser-cache python3 -B -m scrapper.commands.browser_rating_host check-environment
++```
++
++Provisioning is an explicit operator step; start never installs dependencies or
++downloads a browser. `check-environment` verifies Python, exact package versions
++and the Playwright-selected Chromium executable without opening a browser or
++DB bridge. It starts the Playwright driver for this explicit check. An explicit
++interpreter override must pass that preflight before worker launch; the legacy
++unset interpreter remains usable without a new version requirement. Preflight
++failure blocks startup. Operator environment settings are inherited by the
++worker; no secret file is created or sourced. Worker imports use the selected
++candidate source root through `PYTHONPATH`, so an external venv works.
++Direct file invocation, used by the existing wrapper, also locates the package
++from its own source root without requiring an operator `PYTHONPATH` setting.
++
++Offline reproduction used a newly built external venv and the existing browser
++cache for the executable check. Browser binary download, visible browser launch,
++publisher traffic and production claim/release were not exercised. Chromium
++version selection is pinned by Playwright; its binary is not separately archived
++or independently checksum-certified by this chunk.
++
++Rollback restores the two original candidate commands and removes the added
++settings/test/lock/contract. Select prior environment settings after the worker
++has stopped; preserve runtime files. No data restore, content relocation or
++stored-path rewrite is involved. Next selected step: C08.3 only.

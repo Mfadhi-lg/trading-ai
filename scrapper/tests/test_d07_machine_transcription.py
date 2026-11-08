@@ -119,7 +119,7 @@ class MachineTranscriptionD07Tests(unittest.TestCase):
         self.db_path = self.root / "scraper.db"
         conn = connect(self.db_path)
         try:
-            init_db(conn)
+            init_db(conn, apply_migrations=True)
             self.company_id = int(
                 conn.execute(
                     "INSERT INTO companies(current_legal_name, status) "

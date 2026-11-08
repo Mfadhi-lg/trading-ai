@@ -1,0 +1,120 @@
+"""H04 rejects source and archived migration drift using disposable files only."""
+
+import hashlib
+import io
+import json
+import tarfile
+import tempfile
+import unittest
+from pathlib import Path
+from unittest.mock import patch
+
+from scripts.audit import check_migration_manifest as checker
+
+
+class MigrationSourceAuditTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        self.migrations = self.root / 'migrations'
+        self.migrations.mkdir()
+        sources = {
+            '001_initial.sql': b'CREATE TABLE initial(id INTEGER);\n',
+            '065_operator_browser_rating_recovery.sql': b'CREATE TABLE browser(id INTEGER);\n',
+        }
+        for name, body in sources.items():
+            (self.migrations / name).write_bytes(body)
+        historical = b'CREATE TABLE source_access(id INTEGER);\n'
+        self.member = 'review/065_exchange_source_access.sql'
+        with tarfile.open(self.root / 'historical.tar.gz', 'w:gz') as archive:
+            entry = tarfile.TarInfo(self.member)
+            entry.size = len(historical)
+            archive.addfile(entry, io.BytesIO(historical))
+        self.manifest = {
+            'migrations': [self.entry(name) for name in sorted(sources)],
+            'historical_identities': [{
+                'filename': '065_exchange_source_access.sql',
+                'sha256': hashlib.sha256(historical).hexdigest(),
+                'archive': 'historical.tar.gz', 'member': self.member,
+            }],
+            'allowlisted_prefix_collisions': {'065': [
+                '065_exchange_source_access.sql',
+                '065_operator_browser_rating_recovery.sql',
+            ]},
+        }
+        self.path = self.root / 'manifest.json'
+        self.addCleanup(patch.stopall)
+        patch.object(checker, 'ROOT', self.root).start()
+        patch.object(checker, 'MIGRATIONS_DIR', self.migrations).start()
+
+    def entry(self, name):
+        return {'filename': name,
+                'sha256': hashlib.sha256((self.migrations / name).read_bytes()).hexdigest()}
+
+    def audit(self):
+        self.path.write_text(json.dumps(self.manifest))
+        return checker.audit(self.path)
+
+    def test_only_reviewed_065_pair_is_accepted(self):
+        result = self.audit()
+        self.assertEqual(result['canonical_migration_count'], 2)
+        self.assertEqual(result['historical_filenames'], ['065_exchange_source_access.sql'])
+        self.assertEqual(result['allowlisted_prefix_collisions'],
+                         self.manifest['allowlisted_prefix_collisions'])
+
+    def test_changed_released_sql_bytes_fail(self):
+        (self.migrations / '001_initial.sql').write_bytes(b'ALTER TABLE initial ADD unsafe TEXT;')
+        with self.assertRaisesRegex(checker.AuditError, 'released migration checksum changed'):
+            self.audit()
+
+    def test_removed_released_identity_fails(self):
+        (self.migrations / '001_initial.sql').unlink()
+        with self.assertRaisesRegex(checker.AuditError, 'inventory drift; missing='):
+            self.audit()
+
+    def test_unreviewed_new_identity_fails(self):
+        (self.migrations / '066_unreviewed.sql').write_text('SELECT 1;')
+        with self.assertRaisesRegex(checker.AuditError, 'inventory drift'):
+            self.audit()
+
+    def test_new_collision_fails_even_when_its_checksum_is_recorded(self):
+        name = '001_other_history.sql'
+        (self.migrations / name).write_text('SELECT 1;')
+        self.manifest['migrations'].append(self.entry(name))
+        self.manifest['migrations'].sort(key=lambda item: item['filename'])
+        with self.assertRaisesRegex(checker.AuditError, 'prefix collisions differ'):
+            self.audit()
+
+    def test_duplicate_full_filename_fails(self):
+        self.manifest['migrations'].insert(0, self.manifest['migrations'][0].copy())
+        with self.assertRaisesRegex(checker.AuditError, 'duplicate full-filename'):
+            self.audit()
+
+    def test_filename_order_is_audited(self):
+        self.manifest['migrations'].reverse()
+        with self.assertRaisesRegex(checker.AuditError, 'lexical filename order'):
+            self.audit()
+
+    def test_changed_archived_history_fails(self):
+        body = b'changed historical SQL'
+        with tarfile.open(self.root / 'historical.tar.gz', 'w:gz') as archive:
+            entry = tarfile.TarInfo(self.member)
+            entry.size = len(body)
+            archive.addfile(entry, io.BytesIO(body))
+        with self.assertRaisesRegex(checker.AuditError, 'archived historical migration checksum changed'):
+            self.audit()
+
+    def test_missing_archived_member_fails(self):
+        self.manifest['historical_identities'][0]['member'] = 'absent.sql'
+        with self.assertRaisesRegex(checker.AuditError, 'expected one regular archive member'):
+            self.audit()
+
+    def test_065_collision_needs_exact_allowlist(self):
+        self.manifest['allowlisted_prefix_collisions'] = {}
+        with self.assertRaisesRegex(checker.AuditError, 'prefix collisions differ'):
+            self.audit()
+
+
+if __name__ == '__main__':
+    unittest.main()

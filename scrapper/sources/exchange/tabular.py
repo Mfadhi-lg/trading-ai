@@ -9,9 +9,11 @@ row can be reviewed against the immutable snapshot it came from.
 from __future__ import annotations
 
 import csv
+import gzip
 import io
 import json
 import re
+import zipfile
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta, timezone
 from typing import Iterable, Mapping, Sequence
@@ -22,6 +24,19 @@ from ...core.nums import clean_text
 # Exchange broadcast and effective timestamps are published in IST. The offset
 # is fixed and has no daylight rule, so it is applied without a tz database.
 IST = timezone(timedelta(hours=5, minutes=30))
+
+# Compression is detected from the leading bytes, never from a filename or a
+# declared media type, because both are routinely wrong on exchange endpoints.
+GZIP_MAGIC = b"\x1f\x8b"
+ZIP_MAGIC = b"PK\x03\x04"
+# An archive holding no members starts with its end-of-central-directory record
+# instead. It is still a zip, and saying so beats letting the CSV reader report
+# it as undecodable bytes.
+ZIP_EMPTY_MAGIC = b"PK\x05\x06"
+COMPRESSION_CODECS = ("none", "gzip", "zip")
+# A published security master is a few tens of megabytes. The bound exists so a
+# malformed or hostile archive cannot expand without limit before it is parsed.
+MAX_UNCOMPRESSED_BYTES = 256 * 1024 * 1024
 
 _ENCODINGS = ("utf-8-sig", "utf-8", "cp1252")
 _ISIN_RE = re.compile(r"^[A-Z]{2}[A-Z0-9]{9}[0-9]$")
@@ -63,6 +78,21 @@ class SourceRow:
 class RejectedRow:
     row_position: int
     reason_code: str
+    reason_detail: str
+    cells: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class ExcludedRow:
+    """A valid source row for an instrument class this pipeline does not collect.
+
+    An excluded row is not a rejected one. Nothing is wrong with it — an ETF is a
+    perfectly good ETF — it simply is not an equity security, so it is counted
+    and kept out of the registry rather than reported as a parsing failure.
+    """
+
+    row_position: int
+    instrument_class: str
     reason_detail: str
     cells: tuple[str, ...]
 
@@ -121,6 +151,53 @@ def _bind_fields(
                 f"Required source column for {field!r} is missing; headers={list(headers)}"
             )
     return binding
+
+
+def _read_bounded(stream: io.BufferedIOBase, *, max_bytes: int, codec: str) -> bytes:
+    """Read one decompressed member, refusing to expand past the bound."""
+    payload = stream.read(max_bytes + 1)
+    if len(payload) > max_bytes:
+        raise ValueError(
+            f"Decompressed {codec} exchange source exceeds {max_bytes} bytes"
+        )
+    return payload
+
+
+def decompress_source(
+    content: bytes, *, max_bytes: int = MAX_UNCOMPRESSED_BYTES
+) -> tuple[bytes, str]:
+    """Return the inner bytes of a compressed export and the codec label.
+
+    The MII security file is published gzipped and some BSE exports are zipped,
+    but the compressed original stays the stored evidence: only the parser sees
+    the expansion. A zip holding anything other than exactly one member is
+    refused rather than guessed at, since picking a member is not a fact the
+    archive states.
+    """
+    if content.startswith(GZIP_MAGIC):
+        try:
+            with gzip.GzipFile(fileobj=io.BytesIO(content)) as stream:
+                return _read_bounded(stream, max_bytes=max_bytes, codec="gzip"), "gzip"
+        except (OSError, EOFError) as exc:
+            raise ValueError(f"Exchange source is not readable gzip: {exc}") from exc
+    if content.startswith((ZIP_MAGIC, ZIP_EMPTY_MAGIC)):
+        try:
+            archive = zipfile.ZipFile(io.BytesIO(content))
+        except zipfile.BadZipFile as exc:
+            raise ValueError(f"Exchange source is not a readable zip: {exc}") from exc
+        with archive:
+            members = [item for item in archive.infolist() if not item.is_dir()]
+            if len(members) != 1:
+                raise ValueError(
+                    "Exchange zip source must hold exactly one member; found "
+                    f"{[item.filename for item in members]}"
+                )
+            try:
+                with archive.open(members[0]) as stream:
+                    return _read_bounded(stream, max_bytes=max_bytes, codec="zip"), "zip"
+            except zipfile.BadZipFile as exc:
+                raise ValueError(f"Exchange zip member is unreadable: {exc}") from exc
+    return content, "none"
 
 
 def is_json_payload(content: bytes) -> bool:

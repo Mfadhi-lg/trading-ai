@@ -1,4 +1,4 @@
-"""D03 offline extraction orchestration for validated PDF/PPT/PPTX contents."""
+"""D03 offline extraction orchestration for validated document contents."""
 
 from __future__ import annotations
 
@@ -10,6 +10,10 @@ from typing import Any, Callable
 from ..config import DB_PATH, DOCUMENT_EXTRACTION_EXPORTS
 from ..db.database import connect, init_db
 from ..db.document_extraction_repo import extraction_payload, persist_extraction
+from ..db.document_recovery_repo import (
+    classify_direct_rating_evidence,
+    reconcile_recovery_for_source,
+)
 from ..db.repo import utc_now
 from ..documents.downloader import PDF, PPT, PPTX
 from ..documents.extraction import (
@@ -17,6 +21,7 @@ from ..documents.extraction import (
     DOCUMENT_PARSER_VERSION,
     canonical_json,
 )
+from ..documents.html import HTML, extract_rating_html
 from ..documents.ocr import OcrEngine, TesseractOcr
 from ..documents.pdf import extract_pdf
 from ..documents.powerpoint import extract_powerpoint
@@ -31,7 +36,7 @@ def _load_content(
 ) -> Any:
     if content_id is None:
         row = conn.execute(
-            """SELECT content.*, blob.local_path
+            """SELECT content.*, blob.local_path, artifact.artifact_type
                FROM document_artifacts AS artifact
                JOIN artifact_contents AS content
                  ON content.artifact_id=artifact.artifact_id
@@ -44,15 +49,19 @@ def _load_content(
         ).fetchone()
     else:
         row = conn.execute(
-            """SELECT content.*, blob.local_path
+            """SELECT content.*, blob.local_path, artifact.artifact_type
                FROM artifact_contents AS content
+               JOIN document_artifacts AS artifact USING (artifact_id)
                JOIN response_blobs AS blob USING (blob_id)
                WHERE content.artifact_id=? AND content.content_id=?""",
             (artifact_id, content_id),
         ).fetchone()
     if row is None:
         raise ValueError(f"Artifact {artifact_id} has no matching downloaded content")
-    if row["media_type"] not in SUPPORTED_MEDIA_TYPES:
+    supported = row["media_type"] in SUPPORTED_MEDIA_TYPES or (
+        row["media_type"] == HTML and row["artifact_type"] == "credit_rating"
+    )
+    if not supported:
         raise ValueError(
             f"Content {row['content_id']} media type is not extractable in D03: "
             f"{row['media_type']}"
@@ -129,6 +138,8 @@ def extract_document(
             try:
                 if content["media_type"] == PDF:
                     extracted = extract_pdf(body, ocr_engine=engine)
+                elif content["media_type"] == HTML:
+                    extracted = extract_rating_html(body)
                 else:
                     extracted = extract_powerpoint(
                         body, media_type=content["media_type"], ocr_engine=engine
@@ -149,6 +160,24 @@ def extract_document(
             )
             extraction_id = persisted.extraction_id
         document = extraction_payload(conn, extraction_id)
+        classify_direct_rating_evidence(
+            conn,
+            artifact_id=artifact_id,
+            content_id=int(content["content_id"]),
+            classified_at_utc=str(document["completed_at_utc"]),
+        )
+        for source in conn.execute(
+            """SELECT artifact_source_id FROM artifact_sources
+                WHERE artifact_id=? AND recovery_candidate_id IS NOT NULL
+                ORDER BY artifact_source_id""",
+            (artifact_id,),
+        ):
+            reconcile_recovery_for_source(
+                conn,
+                artifact_source_id=int(source["artifact_source_id"]),
+                content_id=int(content["content_id"]),
+                reconciled_at_utc=str(document["completed_at_utc"]),
+            )
         artifact = conn.execute(
             """SELECT artifact.artifact_id, artifact.artifact_type,
                       artifact.title_raw, artifact.publisher, artifact.event_date,

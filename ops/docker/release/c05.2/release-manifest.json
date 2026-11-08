@@ -1,0 +1,37 @@
+{
+  "build": {
+    "context": ".",
+    "dockerfile": "Dockerfile",
+    "dockerfile_sha256": "73ba6bc3e7c81bcaee441aa3d6b5314e648a106ab4a176d70b11bb2f04ff4b61",
+    "platform": "linux/arm64",
+    "provenance": true,
+    "runtime_lock": "scrapper/requirements.lock",
+    "runtime_lock_sha256": "8065cda4d72ad984f03ed7023f2b9cbc170949f44f8ecbe8b1b34c99bc617106",
+    "sbom": true
+  },
+  "candidate": {
+    "baseline_commit": "db7564a109f1cb34ee4e7d5ea3427716e14cb51e",
+    "c05_1_platform_manifest": "sha256:263bf4b8c31518a24e5f74347a8fc8d33250dfd80ccd89222115fc7121b429f8",
+    "compose_repository_digest": "trading-ai-c051-candidate@sha256:d41eee4ede1861b9b124809b704a77fd193ea2943dc53c4c6b380442fe3d0c8b",
+    "config_digest": "sha256:54870c18bb28ffa2f722e902d5fd2dc9d1d96317bf798986af41d74965a4575c",
+    "release_id": "c05.2-candidate-20261003",
+    "status": "prepared_not_activated"
+  },
+  "export_contract": {
+    "format": "oci",
+    "immutable_compose_reference": "repository@sha256:digest",
+    "required_outputs": ["oci_index_digest", "platform_manifest_digest", "config_digest", "sbom", "provenance"]
+  },
+  "operator_requirements": {
+    "compose_minimum": "2.24.4",
+    "compose_verified": "5.5.1",
+    "development_override_feature": "!override"
+  },
+  "operator_manifests": {
+    "compose.browser-recovery.development.yml": "sha256:3d32d207d8e06e62a7abfacdef7f6c91b5876ac8d37eb0876ad6c27d349e749c",
+    "compose.browser-recovery.yml": "sha256:d04d183a05962bf7ae70de714a5065d569b332a5c43b2968b8c2e7cddf2b0fff",
+    "compose.development.yml": "sha256:5dc5074cf8475ae88a9015d959afd70e446887f045e5d928978de6eb3e7fc35e",
+    "compose.yml": "sha256:7e9c874c0820eb1ec20fcf86072ad3818efaac64f1fbd38e2deefafde2e114db"
+  },
+  "schema_version": 1
+}

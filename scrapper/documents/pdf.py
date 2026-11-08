@@ -7,6 +7,7 @@ from collections import defaultdict
 from typing import Any
 
 import pdfplumber
+from pypdf import PdfReader
 
 from .downloader import PDF
 from .extraction import (
@@ -135,7 +136,7 @@ def _ordered_elements(page: Any) -> tuple[DocumentElement, ...]:
     )
 
 
-def extract_pdf(content: bytes, *, ocr_engine: OcrEngine) -> ExtractedDocument:
+def _extract_pdf_plumber(content: bytes, *, ocr_engine: OcrEngine) -> ExtractedDocument:
     pages: list[DocumentPage] = []
     with pdfplumber.open(io.BytesIO(content)) as document:
         for page_number, page in enumerate(document.pages, 1):
@@ -197,3 +198,49 @@ def extract_pdf(content: bytes, *, ocr_engine: OcrEngine) -> ExtractedDocument:
             },
         }
     return ExtractedDocument(media_type=PDF, pages=tuple(pages), metadata=metadata)
+
+
+def _extract_pdf_pypdf(content: bytes, *, ocr_engine: OcrEngine,
+                       original_error: Exception) -> ExtractedDocument:
+    """Keep readable pages when pdfminer rejects a publisher's PDF structure."""
+    document = PdfReader(io.BytesIO(content), strict=False)
+    pages = []
+    for page_number, page in enumerate(document.pages, 1):
+        native_text = normalize_extracted_text(page.extract_text() or "")
+        native_usable, unusable_reason = text_usability(native_text)
+        ocr_text = ""
+        confidence = None
+        selected_origin = "native" if native_usable else "none"
+        selected_text = native_text if native_usable else ""
+        elements = (DocumentElement(position=0, kind="text_block",
+                                    text_origin="native", text_raw=native_text),) if native_text else ()
+        pages.append(DocumentPage(
+            number=page_number, kind="page",
+            title_raw=next((line for line in native_text.splitlines() if line.strip()), None),
+            native_text=native_text, ocr_text=ocr_text, selected_text=selected_text,
+            selected_text_origin=selected_origin, native_text_usable=native_usable,
+            native_unusable_reason=unusable_reason, extraction_confidence=confidence,
+            layout={"width_points": round(float(page.mediabox.width), 3),
+                    "height_points": round(float(page.mediabox.height), 3),
+                    "rotation_degrees": int(page.get("/Rotate", 0) or 0),
+                    "rendered_for_ocr": False, "render_dpi": None},
+            elements=elements,
+        ))
+    if not pages:
+        raise original_error
+    metadata = {"format": "pdf", "parser_fallback": "pypdf",
+                "primary_parser_error": f"{type(original_error).__name__}: {original_error}",
+                "metadata": {str(key): str(value) if value is not None else None
+                             for key, value in (document.metadata or {}).items()}}
+    return ExtractedDocument(media_type=PDF, pages=tuple(pages), metadata=metadata)
+
+
+def extract_pdf(content: bytes, *, ocr_engine: OcrEngine) -> ExtractedDocument:
+    try:
+        return _extract_pdf_plumber(content, ocr_engine=ocr_engine)
+    except Exception as primary_error:
+        try:
+            return _extract_pdf_pypdf(content, ocr_engine=ocr_engine,
+                                      original_error=primary_error)
+        except Exception:
+            raise primary_error

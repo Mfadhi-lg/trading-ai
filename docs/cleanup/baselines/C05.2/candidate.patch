@@ -1,0 +1,1025 @@
+diff --git a/compose.browser-recovery.yml b/compose.browser-recovery.yml
+index 73fdc8d8..be746515 100644
+--- a/compose.browser-recovery.yml
++++ b/compose.browser-recovery.yml
+@@ -6,7 +6,6 @@ services:
+       file: compose.yml
+       service: document-download-worker
+     profiles: [browser-recovery]
+-    image: trading-ai-document-download-worker:latest
+     entrypoint: [python, -m, scrapper.commands.browser_rating_recovery]
+     command: [--run-id, browser-ratings-20261001, --apply, --operator-authorized, --host, www.crisil.com, --host, www.crisilratings.com, --throttle-seconds, "20"]
+     restart: "on-failure:3"
+@@ -19,7 +18,6 @@ services:
+       file: compose.yml
+       service: document-download-worker
+     profiles: [browser-recovery]
+-    image: trading-ai-document-download-worker:latest
+     entrypoint: [python, -m, scrapper.commands.browser_rating_recovery]
+     command: [--run-id, browser-ratings-20261001, --apply, --operator-authorized, --host, www.icra.in]
+     restart: "on-failure:3"
+@@ -32,7 +30,6 @@ services:
+       file: compose.yml
+       service: document-download-worker
+     profiles: [browser-recovery]
+-    image: trading-ai-document-download-worker:latest
+     entrypoint: [python, -m, scrapper.commands.browser_rating_recovery]
+     command: [--run-id, browser-ratings-20261001, --apply, --operator-authorized, --host, bcrisp.in, --host, www.bcrisp.in, --host, www.acuite.in, --host, connect.acuite.in, --host, www.infomerics.com, --host, www.indiaratings.co.in, --host, www.brickworkratings.com, --host, www.careratings.com]
+     restart: "on-failure:3"
+@@ -45,10 +42,18 @@ services:
+       file: compose.yml
+       service: document-download-worker
+     profiles: [browser-recovery]
+-    image: trading-ai-document-download-worker:latest
+     entrypoint: [python, -m, scrapper.commands.browser_rating_recovery]
+     command: [--run-id, browser-ratings-20261001, --process, --follow, --operator-authorized]
+     restart: "on-failure:3"
+     cpus: 0.6
+     mem_limit: 1536m
+     stop_grace_period: 180s
++
++volumes:
++  scraper-data:
++
++configs:
++  runtime_identity_documents:
++    file: ./ops/docker/release/c05.2/runtime-identity-documents.json
++  runtime_store_sentinel:
++    file: ./ops/docker/release/c05.2/store-sentinel.json
+diff --git a/compose.yml b/compose.yml
+index bc74254c..1f63921f 100644
+--- a/compose.yml
++++ b/compose.yml
+@@ -1,6 +1,23 @@
++x-runtime-image: &runtime-image trading-ai-c051-candidate@sha256:d41eee4ede1861b9b124809b704a77fd193ea2943dc53c4c6b380442fe3d0c8b
++x-production-environment: &production-environment
++  TRADING_AI_ENV: production
++  TRADING_AI_RUNTIME_IDENTITY_FILE: /run/trading-ai/runtime-identity.json
++x-core-runtime-configs: &core-runtime-configs
++  - source: runtime_identity_core
++    target: /run/trading-ai/runtime-identity.json
++  - source: runtime_store_sentinel
++    target: /data/.trading_ai_runtime_identity.json
++  - source: runtime_core_documents_sentinel
++    target: /data/snapshots/.trading_ai_runtime_identity.json
++x-document-runtime-configs: &document-runtime-configs
++  - source: runtime_identity_documents
++    target: /run/trading-ai/runtime-identity.json
++  - source: runtime_store_sentinel
++    target: /data/.trading_ai_runtime_identity.json
++
+ services:
+   discovery:
+-    build: .
++    image: *runtime-image
+     command:
+       - screener-discover-results
+       - --query-role
+@@ -8,12 +25,13 @@ services:
+       - --query
+       - Last result date > 202605
+     environment:
++      <<: *production-environment
+       SCRAPER_STORE_PATH: /data
+       SCRAPER_DB_PATH: /data/scraper.db
+       SCREENER_SESSION_FILE: /run/secrets/screener_session
+     volumes:
+       - scraper-data:/data
+-      - ./scrapper:/app/scrapper
++    configs: *core-runtime-configs
+     secrets:
+       - screener_session
+     profiles: ["manual"]
+@@ -27,18 +45,19 @@ services:
+   # identity conflict means the automated files and the imported rows disagree
+   # about which company is which, and that has to be settled by a person first.
+   scheduler:
+-    build: .
++    image: *runtime-image
+     command: ["exchange-scheduler"]
+     restart: unless-stopped
+     environment:
++      <<: *production-environment
+       SCRAPER_STORE_PATH: /data
+       SCRAPER_DB_PATH: /data/scraper.db
+     volumes:
+       - scraper-data:/data
+-      - ./scrapper:/app/scrapper:ro
++    configs: *core-runtime-configs
+ 
+   market-cap-monitor:
+-    image: trading-ai-daemon:latest
++    image: *runtime-image
+     restart: unless-stopped
+     entrypoint: ["/bin/sh", "-c"]
+     command:
+@@ -48,6 +67,7 @@ services:
+           sleep 3600
+         done
+     environment:
++      <<: *production-environment
+       SCRAPER_STORE_PATH: /data
+       SCRAPER_DB_PATH: /data/scraper.db
+       SCREENER_SESSION_FILE: /run/secrets/screener_session
+@@ -55,28 +75,30 @@ services:
+       SCREENER_THROTTLE_JITTER: "1.5"
+     volumes:
+       - scraper-data:/data
+-      - ./scrapper:/app/scrapper:ro
++    configs: *core-runtime-configs
+     secrets:
+       - screener_session
+ 
+   # The manual services stay for one-off operator runs: a dataset whose endpoint
+   # has broken, or a file downloaded by hand. --file still overrides everything.
+   exchange-universe:
+-    build: .
++    image: *runtime-image
+     command:
+       - exchange-refresh-universe
+       - --dataset
+       - nse_equity_master
+     environment:
++      <<: *production-environment
+       SCRAPER_STORE_PATH: /data
+       SCRAPER_DB_PATH: /data/scraper.db
+     volumes:
+       - scraper-data:/data
+       - ./exchange-inbox:/inbox:ro
++    configs: *core-runtime-configs
+     profiles: ["manual"]
+ 
+   exchange-results:
+-    build: .
++    image: *runtime-image
+     command:
+       - exchange-discover-results
+       - --dataset
+@@ -84,27 +106,32 @@ services:
+       - --result-period
+       - "2026-06"
+     environment:
++      <<: *production-environment
+       SCRAPER_STORE_PATH: /data
+       SCRAPER_DB_PATH: /data/scraper.db
+     volumes:
+       - scraper-data:/data
+       - ./exchange-inbox:/inbox:ro
++    configs: *core-runtime-configs
+     profiles: ["manual"]
+ 
+   exchange-reconciliation:
+-    build: .
++    image: *runtime-image
+     command: ["exchange-reconciliation-report"]
+     environment:
++      <<: *production-environment
+       SCRAPER_STORE_PATH: /data
+       SCRAPER_DB_PATH: /data/scraper.db
+     volumes:
+       - scraper-data:/data
++    configs: *core-runtime-configs
+     profiles: ["manual"]
+ 
+   worker:
+-    build: .
++    image: *runtime-image
+     command: ["screener-company-worker", "--due", "--limit", "5"]
+     environment:
++      <<: *production-environment
+       SCRAPER_STORE_PATH: /data
+       SCRAPER_DB_PATH: /data/scraper.db
+       SCREENER_SESSION_FILE: /run/secrets/screener_session
+@@ -113,13 +140,13 @@ services:
+       SCREENER_WORKER_LIMIT: "5"
+     volumes:
+       - scraper-data:/data
+-      - ./scrapper:/app/scrapper:ro
++    configs: *core-runtime-configs
+     secrets:
+       - screener_session
+     profiles: ["manual"]
+ 
+   daemon:
+-    build: .
++    image: *runtime-image
+     restart: unless-stopped
+     entrypoint: ["/bin/sh", "-c"]
+     command:
+@@ -130,6 +157,7 @@ services:
+           sleep 10
+         done
+     environment:
++      <<: *production-environment
+       SCRAPER_STORE_PATH: /data
+       SCRAPER_DB_PATH: /data/scraper.db
+       SCREENER_SESSION_FILE: /run/secrets/screener_session
+@@ -137,7 +165,7 @@ services:
+       SCREENER_THROTTLE_JITTER: "1.5"
+     volumes:
+       - scraper-data:/data
+-      - ./scrapper:/app/scrapper:ro
++    configs: *core-runtime-configs
+     secrets:
+       - screener_session
+ 
+@@ -146,7 +174,7 @@ services:
+   # revisits each due company page once per result event so delayed PPT and
+   # transcript links can enter D01, then reconciles the persisted artifacts.
+   artifact-reconciler:
+-    build: .
++    image: *runtime-image
+     restart: unless-stopped
+     entrypoint: ["/bin/sh", "-c"]
+     command:
+@@ -162,6 +190,7 @@ services:
+           sleep 300
+         done
+     environment:
++      <<: *production-environment
+       SCRAPER_STORE_PATH: /data
+       SCRAPER_DB_PATH: /data/scraper.db
+       SCREENER_SESSION_FILE: /run/secrets/screener_session
+@@ -169,7 +198,7 @@ services:
+       SCREENER_THROTTLE_JITTER: "1.5"
+     volumes:
+       - scraper-data:/data
+-      - ./scrapper:/app/scrapper:ro
++    configs: *core-runtime-configs
+     secrets:
+       - screener_session
+ 
+@@ -178,7 +207,7 @@ services:
+   # PDFs. Recording links are promoted as metadata but never automatically
+   # downloaded. Screener-generated Notes/AI Summary links remain excluded.
+   document-download-worker:
+-    build: .
++    image: *runtime-image
+     restart: unless-stopped
+     entrypoint: ["/bin/sh", "-c"]
+     command:
+@@ -191,6 +220,7 @@ services:
+           sleep 2
+         done
+     environment:
++      <<: *production-environment
+       SCRAPER_STORE_PATH: /data
+       SCRAPER_DB_PATH: /data/scraper.db
+       SCRAPER_DOCUMENT_STORE_PATH: /documents
+@@ -206,10 +236,10 @@ services:
+     volumes:
+       - scraper-data:/data
+       - "${TRADING_AI_DOCUMENT_HOST_PATH}:/documents"
+-      - ./scrapper:/app/scrapper:ro
++    configs: *document-runtime-configs
+ 
+   june-extraction-worker:
+-    image: trading-ai-document-download-worker:latest
++    image: *runtime-image
+     restart: unless-stopped
+     cpus: 0.5
+     entrypoint: ["/bin/sh", "-c"]
+@@ -221,21 +251,21 @@ services:
+           sleep 60
+         done
+     environment:
++      <<: *production-environment
+       SCRAPER_STORE_PATH: /data
+       SCRAPER_DB_PATH: /data/scraper.db
+       SCRAPER_DOCUMENT_STORE_PATH: /documents
+     volumes:
+       - scraper-data:/data
+       - "${TRADING_AI_DOCUMENT_HOST_PATH}:/documents:ro"
+-      - ./scrapper:/app/scrapper:ro
++    configs: *document-runtime-configs
+ 
+   # CRISIL and ICRA forbid automated access, so an accepted parse builds a DA-06
+   # recovery target instead of a download job. This worker searches the official
+   # NSE, BSE and issuer-IR surfaces for the same rating; attaching a candidate
+   # materializes its download job into the da06-rating-recovery scope.
+   rating-recovery-discovery:
+-    build: .
+-    image: trading-ai-daemon:latest
++    image: *runtime-image
+     restart: unless-stopped
+     # Capped so a long backfill cannot thermally dominate a laptop.
+     cpus: 0.5
+@@ -254,6 +284,7 @@ services:
+           esac
+         done
+     environment:
++      <<: *production-environment
+       SCRAPER_STORE_PATH: /data
+       SCRAPER_DB_PATH: /data/scraper.db
+       SCRAPER_DOCUMENT_STORE_PATH: /documents
+@@ -269,10 +300,10 @@ services:
+     volumes:
+       - scraper-data:/data
+       - "${TRADING_AI_DOCUMENT_HOST_PATH}:/documents"
+-      - ./scrapper:/app/scrapper:ro
++    configs: *document-runtime-configs
+ 
+   rating-recovery-download:
+-    build: .
++    image: *runtime-image
+     restart: unless-stopped
+     cpus: 0.6
+     entrypoint: ["/bin/sh", "-c"]
+@@ -285,6 +316,7 @@ services:
+           sleep 2
+         done
+     environment:
++      <<: *production-environment
+       SCRAPER_STORE_PATH: /data
+       SCRAPER_DB_PATH: /data/scraper.db
+       SCRAPER_DOCUMENT_STORE_PATH: /documents
+@@ -300,15 +332,14 @@ services:
+     volumes:
+       - scraper-data:/data
+       - "${TRADING_AI_DOCUMENT_HOST_PATH}:/documents"
+-      - ./scrapper:/app/scrapper:ro
++    configs: *document-runtime-configs
+ 
+   # Accepted company parses enqueue their own reports. Separate host-partitioned
+   # workers keep document latency out of the company scrape and ensure only one
+   # request stream reaches any publisher. CRISIL and ICRA are excluded by the
+   # reviewed policy table because their terms prohibit automated access.
+   credit-rating-worker-care:
+-    build: .
+-    image: trading-ai-daemon:latest
++    image: *runtime-image
+     restart: unless-stopped
+     entrypoint: ["/bin/sh", "-c"]
+     command:
+@@ -319,6 +350,7 @@ services:
+           sleep 10
+         done
+     environment:
++      <<: *production-environment
+       SCRAPER_STORE_PATH: /data
+       SCRAPER_DB_PATH: /data/scraper.db
+       SCRAPER_DOCUMENT_STORE_PATH: /documents
+@@ -334,11 +366,10 @@ services:
+     volumes:
+       - scraper-data:/data
+       - "${TRADING_AI_DOCUMENT_HOST_PATH}:/documents"
+-      - ./scrapper:/app/scrapper:ro
++    configs: *document-runtime-configs
+ 
+   credit-rating-worker-india-ratings:
+-    build: .
+-    image: trading-ai-daemon:latest
++    image: *runtime-image
+     restart: unless-stopped
+     entrypoint: ["/bin/sh", "-c"]
+     command:
+@@ -349,6 +380,7 @@ services:
+           sleep 10
+         done
+     environment:
++      <<: *production-environment
+       SCRAPER_STORE_PATH: /data
+       SCRAPER_DB_PATH: /data/scraper.db
+       SCRAPER_DOCUMENT_STORE_PATH: /documents
+@@ -364,11 +396,10 @@ services:
+     volumes:
+       - scraper-data:/data
+       - "${TRADING_AI_DOCUMENT_HOST_PATH}:/documents"
+-      - ./scrapper:/app/scrapper:ro
++    configs: *document-runtime-configs
+ 
+   credit-rating-worker-other:
+-    build: .
+-    image: trading-ai-daemon:latest
++    image: *runtime-image
+     restart: unless-stopped
+     entrypoint: ["/bin/sh", "-c"]
+     command:
+@@ -385,6 +416,7 @@ services:
+           sleep 10
+         done
+     environment:
++      <<: *production-environment
+       SCRAPER_STORE_PATH: /data
+       SCRAPER_DB_PATH: /data/scraper.db
+       SCRAPER_DOCUMENT_STORE_PATH: /documents
+@@ -400,7 +432,7 @@ services:
+     volumes:
+       - scraper-data:/data
+       - "${TRADING_AI_DOCUMENT_HOST_PATH}:/documents"
+-      - ./scrapper:/app/scrapper:ro
++    configs: *document-runtime-configs
+ 
+ volumes:
+   scraper-data:
+@@ -408,3 +440,13 @@ volumes:
+ secrets:
+   screener_session:
+     file: ${SCREENER_SESSION_FILE:-.screener_session}
++
++configs:
++  runtime_identity_core:
++    file: ./ops/docker/release/c05.2/runtime-identity-core.json
++  runtime_identity_documents:
++    file: ./ops/docker/release/c05.2/runtime-identity-documents.json
++  runtime_store_sentinel:
++    file: ./ops/docker/release/c05.2/store-sentinel.json
++  runtime_core_documents_sentinel:
++    file: ./ops/docker/release/c05.2/core-documents-sentinel.json
+diff --git a/compose.browser-recovery.development.yml b/compose.browser-recovery.development.yml
+new file mode 100644
+index 00000000..cd4d59bf
+--- /dev/null
++++ b/compose.browser-recovery.development.yml
+@@ -0,0 +1,36 @@
++x-browser-development-environment: &browser-development-environment
++  TRADING_AI_ENV: development
++  TRADING_AI_RUNTIME_IDENTITY_FILE: ""
++  SCRAPER_STORE_PATH: /development-data
++  SCRAPER_DB_PATH: /development-data/scraper.db
++  SCRAPER_DOCUMENT_STORE_PATH: /development-documents
++  DOCUMENT_REQUIRE_SENTINEL: "0"
++  DOCUMENT_STORE_REQUIRE_CAPACITY_FILE: "0"
++  DOCUMENT_MIN_FREE_BYTES: "0"
++  DOCUMENT_MIN_FREE_PERCENT: "0"
++
++x-browser-development-service: &browser-development-service
++  image: trading-ai-c052-development:local
++  build:
++    context: .
++  environment:
++    <<: *browser-development-environment
++  configs: !reset []
++  volumes: !override
++    - development-data:/development-data
++    - development-documents:/development-documents
++    - ./scrapper:/app/scrapper
++
++services:
++  browser-rating-crisil:
++    <<: *browser-development-service
++  browser-rating-icra:
++    <<: *browser-development-service
++  browser-rating-other:
++    <<: *browser-development-service
++  browser-rating-extract:
++    <<: *browser-development-service
++
++volumes:
++  development-data:
++  development-documents:
+diff --git a/compose.development.yml b/compose.development.yml
+new file mode 100644
+index 00000000..7c2cd7d1
+--- /dev/null
++++ b/compose.development.yml
+@@ -0,0 +1,137 @@
++x-development-environment: &development-environment
++  TRADING_AI_ENV: development
++  TRADING_AI_RUNTIME_IDENTITY_FILE: ""
++  SCRAPER_STORE_PATH: /development-data
++  SCRAPER_DB_PATH: /development-data/scraper.db
++  SCRAPER_DOCUMENT_STORE_PATH: /development-documents
++  DOCUMENT_REQUIRE_SENTINEL: "0"
++  DOCUMENT_STORE_REQUIRE_CAPACITY_FILE: "0"
++  DOCUMENT_MIN_FREE_BYTES: "0"
++  DOCUMENT_MIN_FREE_PERCENT: "0"
++
++x-development-service: &development-service
++  image: trading-ai-c052-development:local
++  build:
++    context: .
++  environment:
++    <<: *development-environment
++  configs: !reset []
++
++services:
++  discovery:
++    <<: *development-service
++    volumes: !override
++      - development-data:/development-data
++      - development-documents:/development-documents
++      - ./scrapper:/app/scrapper
++
++  scheduler:
++    <<: *development-service
++    volumes: !override
++      - development-data:/development-data
++      - development-documents:/development-documents
++      - ./scrapper:/app/scrapper
++
++  market-cap-monitor:
++    <<: *development-service
++    volumes: !override
++      - development-data:/development-data
++      - development-documents:/development-documents
++      - ./scrapper:/app/scrapper
++
++  exchange-universe:
++    <<: *development-service
++    volumes: !override
++      - development-data:/development-data
++      - development-documents:/development-documents
++      - ./scrapper:/app/scrapper
++      - ./exchange-inbox:/inbox:ro
++
++  exchange-results:
++    <<: *development-service
++    volumes: !override
++      - development-data:/development-data
++      - development-documents:/development-documents
++      - ./scrapper:/app/scrapper
++      - ./exchange-inbox:/inbox:ro
++
++  exchange-reconciliation:
++    <<: *development-service
++    volumes: !override
++      - development-data:/development-data
++      - development-documents:/development-documents
++      - ./scrapper:/app/scrapper
++
++  worker:
++    <<: *development-service
++    volumes: !override
++      - development-data:/development-data
++      - development-documents:/development-documents
++      - ./scrapper:/app/scrapper
++
++  daemon:
++    <<: *development-service
++    volumes: !override
++      - development-data:/development-data
++      - development-documents:/development-documents
++      - ./scrapper:/app/scrapper
++
++  artifact-reconciler:
++    <<: *development-service
++    volumes: !override
++      - development-data:/development-data
++      - development-documents:/development-documents
++      - ./scrapper:/app/scrapper
++
++  document-download-worker:
++    <<: *development-service
++    volumes: !override
++      - development-data:/development-data
++      - development-documents:/development-documents
++      - ./scrapper:/app/scrapper
++
++  june-extraction-worker:
++    <<: *development-service
++    volumes: !override
++      - development-data:/development-data
++      - development-documents:/development-documents
++      - ./scrapper:/app/scrapper
++
++  rating-recovery-discovery:
++    <<: *development-service
++    volumes: !override
++      - development-data:/development-data
++      - development-documents:/development-documents
++      - ./scrapper:/app/scrapper
++
++  rating-recovery-download:
++    <<: *development-service
++    volumes: !override
++      - development-data:/development-data
++      - development-documents:/development-documents
++      - ./scrapper:/app/scrapper
++
++  credit-rating-worker-care:
++    <<: *development-service
++    volumes: !override
++      - development-data:/development-data
++      - development-documents:/development-documents
++      - ./scrapper:/app/scrapper
++
++  credit-rating-worker-india-ratings:
++    <<: *development-service
++    volumes: !override
++      - development-data:/development-data
++      - development-documents:/development-documents
++      - ./scrapper:/app/scrapper
++
++  credit-rating-worker-other:
++    <<: *development-service
++    volumes: !override
++      - development-data:/development-data
++      - development-documents:/development-documents
++      - ./scrapper:/app/scrapper
++
++volumes:
++  development-data:
++  development-documents:
+diff --git a/ops/docker/release/c05.2/README.md b/ops/docker/release/c05.2/README.md
+new file mode 100644
+index 00000000..bcafe3e6
+--- /dev/null
++++ b/ops/docker/release/c05.2/README.md
+@@ -0,0 +1,48 @@
++# C05.2 release-isolation candidate
++
++This directory describes the prepared release identity used by `compose.yml`.
++It does **not** authorize or perform production activation. C06 remains the
++separate activation boundary.
++
++Production Compose uses the digest-qualified C05.1 candidate image for every
++role, contains no application-source bind mount and mounts the exact C05.0
++runtime identity and data-volume sentinels as read-only Compose configs. The
++ordinary roles use the core identity (`/data/snapshots` is their document
++target); document-capable roles use the external-document identity
++(`/documents`). The prepared `external-documents-sentinel.json` must be placed
++at `/documents/.trading_ai_runtime_identity.json` during the separately
++authorized C06 activation. It is intentionally not overmounted by Compose,
++because the extraction role preserves its read-only document mount. Existing
++data, document, secret, resource and profile semantics remain in place.
++
++The release manifest records both the local repository digest used by Compose
++and the C05.1 platform/config digests. C05.3 must reproduce and export the image
++before C06 can consider activation.
++
++For isolated development, explicitly add the development override:
++
++```sh
++docker compose -f compose.yml -f compose.development.yml --profile manual config
++```
++
++The override uses Compose's `!override` tag and therefore requires Docker
++Compose 2.24.4 or newer (verified here with 5.5.1).
++
++It replaces production data mounts with the `development-data` and
++`development-documents` volumes at `/development-data` and
++`/development-documents`, removes production identity configs and adds the
++source bind mount. The non-production paths are deliberate: C05.0 rejects
++`/data` and `/documents` for development writers even when Docker would attach
++a different named volume.
++
++Browser campaign development uses its matching pair:
++
++```sh
++docker compose \
++  -f compose.browser-recovery.yml \
++  -f compose.browser-recovery.development.yml \
++  --profile browser-recovery config
++```
++
++Run `python3 scripts/audit/check_compose_release.py` to validate all 16 main
++roles and all four browser roles in both production and development forms.
+diff --git a/ops/docker/release/c05.2/core-documents-sentinel.json b/ops/docker/release/c05.2/core-documents-sentinel.json
+new file mode 100644
+index 00000000..8ce64271
+--- /dev/null
++++ b/ops/docker/release/c05.2/core-documents-sentinel.json
+@@ -0,0 +1,6 @@
++{
++  "environment": "production",
++  "path": "/data/snapshots",
++  "release_id": "c05.2-candidate-20261003",
++  "roles": ["documents"]
++}
+diff --git a/ops/docker/release/c05.2/external-documents-sentinel.json b/ops/docker/release/c05.2/external-documents-sentinel.json
+new file mode 100644
+index 00000000..e4e76001
+--- /dev/null
++++ b/ops/docker/release/c05.2/external-documents-sentinel.json
+@@ -0,0 +1,6 @@
++{
++  "environment": "production",
++  "path": "/documents",
++  "release_id": "c05.2-candidate-20261003",
++  "roles": ["documents"]
++}
+diff --git a/ops/docker/release/c05.2/release-manifest.json b/ops/docker/release/c05.2/release-manifest.json
+new file mode 100644
+index 00000000..d9790df4
+--- /dev/null
++++ b/ops/docker/release/c05.2/release-manifest.json
+@@ -0,0 +1,37 @@
++{
++  "build": {
++    "context": ".",
++    "dockerfile": "Dockerfile",
++    "dockerfile_sha256": "73ba6bc3e7c81bcaee441aa3d6b5314e648a106ab4a176d70b11bb2f04ff4b61",
++    "platform": "linux/arm64",
++    "provenance": true,
++    "runtime_lock": "scrapper/requirements.lock",
++    "runtime_lock_sha256": "8065cda4d72ad984f03ed7023f2b9cbc170949f44f8ecbe8b1b34c99bc617106",
++    "sbom": true
++  },
++  "candidate": {
++    "baseline_commit": "db7564a109f1cb34ee4e7d5ea3427716e14cb51e",
++    "c05_1_platform_manifest": "sha256:263bf4b8c31518a24e5f74347a8fc8d33250dfd80ccd89222115fc7121b429f8",
++    "compose_repository_digest": "trading-ai-c051-candidate@sha256:d41eee4ede1861b9b124809b704a77fd193ea2943dc53c4c6b380442fe3d0c8b",
++    "config_digest": "sha256:54870c18bb28ffa2f722e902d5fd2dc9d1d96317bf798986af41d74965a4575c",
++    "release_id": "c05.2-candidate-20261003",
++    "status": "prepared_not_activated"
++  },
++  "export_contract": {
++    "format": "oci",
++    "immutable_compose_reference": "repository@sha256:digest",
++    "required_outputs": ["oci_index_digest", "platform_manifest_digest", "config_digest", "sbom", "provenance"]
++  },
++  "operator_requirements": {
++    "compose_minimum": "2.24.4",
++    "compose_verified": "5.5.1",
++    "development_override_feature": "!override"
++  },
++  "operator_manifests": {
++    "compose.browser-recovery.development.yml": "sha256:3d32d207d8e06e62a7abfacdef7f6c91b5876ac8d37eb0876ad6c27d349e749c",
++    "compose.browser-recovery.yml": "sha256:d04d183a05962bf7ae70de714a5065d569b332a5c43b2968b8c2e7cddf2b0fff",
++    "compose.development.yml": "sha256:5dc5074cf8475ae88a9015d959afd70e446887f045e5d928978de6eb3e7fc35e",
++    "compose.yml": "sha256:7e9c874c0820eb1ec20fcf86072ad3818efaac64f1fbd38e2deefafde2e114db"
++  },
++  "schema_version": 1
++}
+diff --git a/ops/docker/release/c05.2/runtime-identity-core.json b/ops/docker/release/c05.2/runtime-identity-core.json
+new file mode 100644
+index 00000000..897c7700
+--- /dev/null
++++ b/ops/docker/release/c05.2/runtime-identity-core.json
+@@ -0,0 +1,12 @@
++{
++  "authorized": true,
++  "environment": "production",
++  "git_commit": "db7564a109f1cb34ee4e7d5ea3427716e14cb51e",
++  "image_id": "sha256:263bf4b8c31518a24e5f74347a8fc8d33250dfd80ccd89222115fc7121b429f8",
++  "release_id": "c05.2-candidate-20261003",
++  "targets": {
++    "db": "/data/scraper.db",
++    "documents": "/data/snapshots",
++    "store": "/data"
++  }
++}
+diff --git a/ops/docker/release/c05.2/runtime-identity-documents.json b/ops/docker/release/c05.2/runtime-identity-documents.json
+new file mode 100644
+index 00000000..9180b8cf
+--- /dev/null
++++ b/ops/docker/release/c05.2/runtime-identity-documents.json
+@@ -0,0 +1,12 @@
++{
++  "authorized": true,
++  "environment": "production",
++  "git_commit": "db7564a109f1cb34ee4e7d5ea3427716e14cb51e",
++  "image_id": "sha256:263bf4b8c31518a24e5f74347a8fc8d33250dfd80ccd89222115fc7121b429f8",
++  "release_id": "c05.2-candidate-20261003",
++  "targets": {
++    "db": "/data/scraper.db",
++    "documents": "/documents",
++    "store": "/data"
++  }
++}
+diff --git a/ops/docker/release/c05.2/store-sentinel.json b/ops/docker/release/c05.2/store-sentinel.json
+new file mode 100644
+index 00000000..97af466a
+--- /dev/null
++++ b/ops/docker/release/c05.2/store-sentinel.json
+@@ -0,0 +1,6 @@
++{
++  "environment": "production",
++  "path": "/data",
++  "release_id": "c05.2-candidate-20261003",
++  "roles": ["store"]
++}
+diff --git a/scripts/audit/check_compose_release.py b/scripts/audit/check_compose_release.py
+new file mode 100644
+index 00000000..6f934352
+--- /dev/null
++++ b/scripts/audit/check_compose_release.py
+@@ -0,0 +1,188 @@
++#!/usr/bin/env python3
++"""Validate the C05.2 production and development Compose boundaries."""
++from __future__ import annotations
++
++import json
++import hashlib
++import os
++import re
++import subprocess
++import sys
++from pathlib import Path
++
++ROOT = Path(__file__).resolve().parents[2]
++RELEASE = ROOT / "ops/docker/release/c05.2"
++EXPECTED_PRODUCTION_SERVICES = 16
++EXPECTED_BROWSER_SERVICES = 4
++IDENTITY_TARGET = "/run/trading-ai/runtime-identity.json"
++PRODUCTION_DATA_TARGETS = {"/data", "/documents"}
++
++
++class ContractError(RuntimeError):
++    pass
++
++
++def load_json(path: Path) -> dict:
++    value = json.loads(path.read_text(encoding="utf-8"))
++    if not isinstance(value, dict):
++        raise ContractError(f"expected object in {path.relative_to(ROOT)}")
++    return value
++
++
++def compose_config(*files: str) -> dict:
++    env = os.environ.copy()
++    env.update({
++        "TRADING_AI_DOCUMENT_HOST_PATH": "/tmp/c052-production-documents",
++        "SCREENER_SESSION_FILE": "/tmp/c052-screener-session",
++    })
++    command = ["docker", "compose", "--profile", "*"]
++    for filename in files:
++        command.extend(("-f", filename))
++    command.extend(("config", "--format", "json"))
++    result = subprocess.run(
++        command, cwd=ROOT, env=env, check=False, capture_output=True, text=True
++    )
++    if result.returncode:
++        raise ContractError(result.stderr.strip() or "docker compose config failed")
++    return json.loads(result.stdout)
++
++
++def mounts(service: dict) -> list[dict]:
++    return service.get("volumes", [])
++
++
++def config_targets(service: dict) -> set[str]:
++    return {item["target"] for item in service.get("configs", [])}
++
++
++def validate_identities() -> str:
++    manifest = load_json(RELEASE / "release-manifest.json")
++    candidate = manifest["candidate"]
++    release_id = candidate["release_id"]
++    image_id = candidate["c05_1_platform_manifest"]
++    image_reference = candidate["compose_repository_digest"]
++    if not re.fullmatch(r"[^@\s]+@sha256:[0-9a-f]{64}", image_reference):
++        raise ContractError("production image reference is not digest-qualified")
++    for relative, expected in manifest.get("operator_manifests", {}).items():
++        actual = "sha256:" + hashlib.sha256((ROOT / relative).read_bytes()).hexdigest()
++        if actual != expected:
++            raise ContractError(f"operator manifest hash drifted: {relative}")
++    build = manifest["build"]
++    for key, relative in (("dockerfile_sha256", build["dockerfile"]),
++                          ("runtime_lock_sha256", build["runtime_lock"])):
++        actual = hashlib.sha256((ROOT / relative).read_bytes()).hexdigest()
++        if actual != build[key]:
++            raise ContractError(f"release build input hash drifted: {relative}")
++
++    identities = {
++        "core": load_json(RELEASE / "runtime-identity-core.json"),
++        "documents": load_json(RELEASE / "runtime-identity-documents.json"),
++    }
++    expected_targets = {
++        "core": {"db": "/data/scraper.db", "store": "/data", "documents": "/data/snapshots"},
++        "documents": {"db": "/data/scraper.db", "store": "/data", "documents": "/documents"},
++    }
++    for name, identity in identities.items():
++        if identity.get("environment") != "production" or identity.get("authorized") is not True:
++            raise ContractError(f"{name} identity is not authorized production")
++        if identity.get("release_id") != release_id or identity.get("image_id") != image_id:
++            raise ContractError(f"{name} identity does not match release manifest")
++        if identity.get("targets") != expected_targets[name]:
++            raise ContractError(f"{name} identity targets drifted")
++
++    sentinels = {
++        "store-sentinel.json": ("/data", "store"),
++        "core-documents-sentinel.json": ("/data/snapshots", "documents"),
++        "external-documents-sentinel.json": ("/documents", "documents"),
++    }
++    for filename, (path, role) in sentinels.items():
++        sentinel = load_json(RELEASE / filename)
++        if sentinel != {
++            "environment": "production", "path": path,
++            "release_id": release_id, "roles": [role],
++        }:
++            raise ContractError(f"release sentinel drifted: {filename}")
++    return image_reference
++
++
++def validate_production(config: dict, expected_count: int, image_reference: str) -> None:
++    services = config.get("services", {})
++    if len(services) != expected_count:
++        raise ContractError(f"expected {expected_count} production services, found {len(services)}")
++    for name, service in services.items():
++        if service.get("image") != image_reference or "build" in service:
++            raise ContractError(f"{name} does not use only the immutable release image")
++        environment = service.get("environment", {})
++        if environment.get("TRADING_AI_ENV") != "production":
++            raise ContractError(f"{name} is not production-identified")
++        if environment.get("TRADING_AI_RUNTIME_IDENTITY_FILE") != IDENTITY_TARGET:
++            raise ContractError(f"{name} lacks the production runtime identity")
++        if IDENTITY_TARGET not in config_targets(service):
++            raise ContractError(f"{name} does not mount its runtime identity")
++        for mount in mounts(service):
++            source = str(mount.get("source", ""))
++            target = mount.get("target")
++            if target == "/app/scrapper" or source.endswith("/scrapper"):
++                raise ContractError(f"{name} has a production source mount")
++
++
++def validate_development(config: dict, expected_count: int) -> None:
++    services = config.get("services", {})
++    if len(services) != expected_count:
++        raise ContractError(f"expected {expected_count} development services, found {len(services)}")
++    if set(config.get("volumes", {})) != {"development-data", "development-documents"}:
++        raise ContractError("development volume set is not isolated")
++    if config.get("configs"):
++        raise ContractError("development still mounts production runtime configs")
++    for name, service in services.items():
++        environment = service.get("environment", {})
++        if environment.get("TRADING_AI_ENV") != "development":
++            raise ContractError(f"{name} is not development-identified")
++        if environment.get("SCRAPER_STORE_PATH") != "/development-data":
++            raise ContractError(f"{name} does not use the isolated development store")
++        if environment.get("SCRAPER_DOCUMENT_STORE_PATH") != "/development-documents":
++            raise ContractError(f"{name} does not use the isolated development documents")
++        if service.get("configs"):
++            raise ContractError(f"{name} still mounts production runtime configs")
++        targets = {item.get("target") for item in mounts(service)}
++        if targets & PRODUCTION_DATA_TARGETS:
++            raise ContractError(f"{name} still mounts a production data target")
++        if not {"/development-data", "/development-documents", "/app/scrapper"} <= targets:
++            raise ContractError(f"{name} lacks an isolated data or source mount")
++
++
++def main() -> int:
++    try:
++        image_reference = validate_identities()
++        validate_production(compose_config("compose.yml"), EXPECTED_PRODUCTION_SERVICES, image_reference)
++        validate_development(
++            compose_config("compose.yml", "compose.development.yml"),
++            EXPECTED_PRODUCTION_SERVICES,
++        )
++        validate_production(
++            compose_config("compose.browser-recovery.yml"),
++            EXPECTED_BROWSER_SERVICES,
++            image_reference,
++        )
++        validate_development(
++            compose_config(
++                "compose.browser-recovery.yml",
++                "compose.browser-recovery.development.yml",
++            ),
++            EXPECTED_BROWSER_SERVICES,
++        )
++    except (ContractError, OSError, ValueError, KeyError) as exc:
++        print(json.dumps({"status": "FAIL", "error": str(exc)}, sort_keys=True))
++        return 1
++    print(json.dumps({
++        "status": "PASS",
++        "production_services": EXPECTED_PRODUCTION_SERVICES,
++        "browser_services": EXPECTED_BROWSER_SERVICES,
++        "immutable_image": image_reference,
++        "development_data_targets": ["/development-data", "/development-documents"],
++    }, sort_keys=True))
++    return 0
++
++
++if __name__ == "__main__":
++    sys.exit(main())
+diff --git a/scripts/audit/test_compose_release.py b/scripts/audit/test_compose_release.py
+new file mode 100644
+index 00000000..9b2151eb
+--- /dev/null
++++ b/scripts/audit/test_compose_release.py
+@@ -0,0 +1,42 @@
++import importlib.util
++import sys
++import unittest
++from pathlib import Path
++
++
++SCRIPT = Path(__file__).with_name("check_compose_release.py")
++SPEC = importlib.util.spec_from_file_location("check_compose_release", SCRIPT)
++assert SPEC and SPEC.loader
++checker = importlib.util.module_from_spec(SPEC)
++sys.modules[SPEC.name] = checker
++SPEC.loader.exec_module(checker)
++
++
++class ComposeReleaseContractTests(unittest.TestCase):
++    def test_prepared_production_and_development_contracts(self):
++        image_reference = checker.validate_identities()
++        checker.validate_production(
++            checker.compose_config("compose.yml"),
++            checker.EXPECTED_PRODUCTION_SERVICES,
++            image_reference,
++        )
++        checker.validate_development(
++            checker.compose_config("compose.yml", "compose.development.yml"),
++            checker.EXPECTED_PRODUCTION_SERVICES,
++        )
++        checker.validate_production(
++            checker.compose_config("compose.browser-recovery.yml"),
++            checker.EXPECTED_BROWSER_SERVICES,
++            image_reference,
++        )
++        checker.validate_development(
++            checker.compose_config(
++                "compose.browser-recovery.yml",
++                "compose.browser-recovery.development.yml",
++            ),
++            checker.EXPECTED_BROWSER_SERVICES,
++        )
++
++
++if __name__ == "__main__":
++    unittest.main()
+

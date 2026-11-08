@@ -50,7 +50,7 @@ class DocumentQualityD08Tests(unittest.TestCase):
         self.snapshot_root = self.root / "snapshots"
         conn = connect(self.db_path)
         try:
-            init_db(conn)
+            init_db(conn, apply_migrations=True)
             persisted = persist_discovery_plan(
                 conn,
                 build_discovery_plan(DISCOVERY, requested_symbol="LAURUSLABS"),

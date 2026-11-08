@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from scrapper.tests.database_fixtures import prepare_database
+
 import contextlib
 import hashlib
 import io
@@ -154,6 +156,7 @@ class PPFASWorkbookM02Tests(unittest.TestCase):
             "publisher_manifest_allows_ooxml_xls_extension",
             proposals[0].inspection.safety_checks,
         )
+        prepare_database(db_path)
         first = execute_import(
             proposals, db_path=db_path, observed_at_utc="2026-08-05T01:00:00+00:00"
         )
@@ -163,6 +166,7 @@ class PPFASWorkbookM02Tests(unittest.TestCase):
             import_root=self.root / "imports",
         )
         self.assertEqual(duplicate[0].proposed_action, "duplicate_observation")
+        prepare_database(db_path)
         execute_import(
             duplicate, db_path=db_path, observed_at_utc="2026-08-05T01:01:00+00:00"
         )
@@ -220,6 +224,7 @@ class PPFASWorkbookM02Tests(unittest.TestCase):
                 )
                 self.assertEqual(proposals[0].proposed_action, "quarantine")
                 self.assertEqual(proposals[0].structure_error.code, error_code)
+                prepare_database(db_path)
                 result = execute_import(proposals, db_path=db_path)
                 self.assertEqual(result["files"][0]["import_state"], "quarantine")
                 conn = connect(db_path)
@@ -265,6 +270,7 @@ class PPFASWorkbookM02Tests(unittest.TestCase):
                     import_root=self.root / error_code / "imports",
                 )
                 self.assertEqual(proposals[0].structure_error.code, error_code)
+                prepare_database(db_path)
                 execute_import(proposals, db_path=db_path)
                 conn = connect(db_path)
                 try:

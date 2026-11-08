@@ -6,8 +6,8 @@ from dataclasses import dataclass
 from pathlib import Path
 import random
 import time
-from typing import Callable
-from urllib.parse import parse_qsl, urlsplit
+from typing import Any, Callable
+from urllib.parse import parse_qsl, urljoin, urlsplit
 
 import certifi
 import requests
@@ -19,6 +19,7 @@ from ..config import (
     SCREENER_THROTTLE_SECONDS,
     USER_AGENT,
 )
+from .access_policy import refuse_blocked_terms_target
 
 
 @dataclass(frozen=True)
@@ -96,6 +97,37 @@ def _classify_peer_response(response: requests.Response) -> str:
     return "ok"
 
 
+def _classify_quick_ratios_response(response: requests.Response) -> str:
+    """Classify the AJAX quick-ratios HTML fragment."""
+    if response.status_code >= 400:
+        return "rejected" if response.status_code in {401, 403, 429} else "error"
+    final = urlsplit(response.url)
+    if final.hostname != "www.screener.in" or final.path.startswith(("/login", "/register")):
+        return "rejected"
+    sample = response.content[:100_000].decode(
+        response.encoding or "utf-8", errors="ignore"
+    ).lower()
+    if "captcha" in sample or "log in to screener" in sample or "access denied" in sample:
+        return "rejected"
+    # An empty body (no custom ratios configured) is a valid "ok" with zero items.
+    return "ok"
+
+
+def _classify_commentary_response(response: requests.Response) -> str:
+    """Classify the wiki/commentary modal HTML fragment."""
+    if response.status_code >= 400:
+        return "rejected" if response.status_code in {401, 403, 429} else "error"
+    final = urlsplit(response.url)
+    if final.hostname != "www.screener.in" or final.path.startswith(("/login", "/register")):
+        return "rejected"
+    sample = response.content[:200_000].decode(
+        response.encoding or "utf-8", errors="ignore"
+    ).lower()
+    if "captcha" in sample or "log in to screener" in sample or "access denied" in sample:
+        return "rejected"
+    return "ok"
+
+
 def validate_screener_result_screen_url(url: str) -> str:
     """Fail closed around the sole currently permitted discovery URL shape."""
     parts = urlsplit(url)
@@ -138,7 +170,9 @@ EXCHANGE_HOSTS = {
         "nsearchives.nseindia.com": ("/content/", "/corporate/", "/emerge/"),
     },
     "BSE": {
-        "www.bseindia.com": ("/downloads/", "/corporates/", "/markets/", "/BSEDATA/"),
+        "www.bseindia.com": (
+            "/downloads/", "/corporates/", "/markets/", "/BSEDATA/", "/xml-data/"
+        ),
         "api.bseindia.com": ("/BseIndiaAPI/", "/RealTimeBseIndiaAPI/"),
     },
 }
@@ -146,9 +180,17 @@ _EXCHANGE_REFERERS = {
     "NSE": "https://www.nseindia.com/",
     "BSE": "https://www.bseindia.com/",
 }
+# Leading bytes of a gzip member and of a zip local file header. Duplicated from
+# `sources.exchange.tabular` rather than imported so the core HTTP layer keeps
+# depending on nothing above it; both places are asserted against each other in
+# the exchange tests.
+GZIP_MAGIC = b"\x1f\x8b"
+ZIP_MAGIC = b"PK\x03\x04"
+ZIP_EMPTY_MAGIC = b"PK\x05\x06"
 _EXCHANGE_MEDIA_TYPES = (
     "text/csv", "text/plain", "application/csv", "application/json",
     "application/octet-stream", "application/vnd.ms-excel", "application/zip",
+    "application/gzip", "application/x-gzip", "application/x-zip-compressed",
 )
 
 
@@ -176,12 +218,22 @@ def validate_exchange_dataset_url(url: str, exchange: str) -> str:
 
 def _classify_exchange_response(response: requests.Response) -> str:
     if response.status_code >= 400:
+        # A dated artifact that is not there is the exchange saying it has not
+        # published one, which is a different fact from being turned away or
+        # from the endpoint breaking. The scheduler needs to tell them apart.
+        if response.status_code in {404, 410}:
+            return "not_found"
         return "rejected" if response.status_code in {401, 403, 429} else "error"
     if not response.content:
         return "rejected"
     declared = (response.headers.get("Content-Type") or "").split(";")[0].strip().lower()
     if declared and not any(declared == media for media in _EXCHANGE_MEDIA_TYPES):
         return "rejected"
+    # A compressed archive is binary: decoding it as text produces arbitrary
+    # bytes that must not be sniffed for HTML. The magic bytes settle it first,
+    # and a real interstitial is never a valid gzip or zip container.
+    if response.content.startswith((GZIP_MAGIC, ZIP_MAGIC, ZIP_EMPTY_MAGIC)):
+        return "ok"
     sample = response.content[:4096].decode("utf-8", errors="ignore").lstrip().lower()
     # An interstitial, captcha or error page is HTML whatever it claims to be.
     if sample.startswith(("<!doctype html", "<html", "<?xml")):
@@ -219,8 +271,10 @@ def fetch_exchange_dataset(
     ):
         # This public API returns an empty object for its generic home-page
         # referer; the results application itself uses this exact first-party
-        # route. No cookie or other session material is attached.
-        default_referer = "https://www.bseindia.com/corporates/Comp_ResultsNew"
+        # route. No cookie or other session material is attached.  The public
+        # results page is case-insensitively served at this `.aspx` route;
+        # omitting the extension makes the API return an empty object.
+        default_referer = "https://www.bseindia.com/corporates/comp_results.aspx"
     session.headers["Referer"] = referer or default_referer
     referer_parts = urlsplit(session.headers["Referer"])
     session.headers["Origin"] = f"{referer_parts.scheme}://{referer_parts.netloc}"
@@ -239,6 +293,80 @@ def fetch_exchange_dataset(
         auth_mode="public",
         fetch_status=_classify_exchange_response(response),
     )
+
+
+def fetch_exchange_recovery_surface(
+    url: str,
+    exchange: str,
+    *,
+    referer: str | None = None,
+    timeout: int = REQUEST_TIMEOUT,
+    max_redirects: int = 3,
+    session: requests.Session | Any | None = None,
+) -> FetchResponse:
+    """Fetch DA-06 exchange search metadata with per-hop redirect policy.
+
+    Unlike the legacy static-dataset client, this path never lets ``requests``
+    follow a redirect implicitly.  Every next hop must remain an allowlisted
+    official exchange URL and is checked against BLOCKED_TERMS before a second
+    request can occur.
+    """
+
+    if max_redirects < 0:
+        raise ValueError("max_redirects cannot be negative")
+    exchange = exchange.upper()
+    validate_exchange_dataset_url(url, exchange)
+    owned = session is None
+    session = session or requests.Session()
+    session.headers.update(
+        {
+            "User-Agent": USER_AGENT,
+            "Accept-Language": "en-IN,en;q=0.9",
+            "Accept": "application/json,text/plain,*/*",
+        }
+    )
+    default_referer = referer or _EXCHANGE_REFERERS[exchange]
+    session.headers["Referer"] = default_referer
+    referer_parts = urlsplit(default_referer)
+    session.headers["Origin"] = f"{referer_parts.scheme}://{referer_parts.netloc}"
+    current = url
+    response = None
+    try:
+        for position in range(max_redirects + 1):
+            response = session.get(
+                current,
+                timeout=timeout,
+                allow_redirects=False,
+                verify=certifi.where(),
+            )
+            if response.status_code not in {301, 302, 303, 307, 308}:
+                break
+            location = response.headers.get("Location")
+            if not location:
+                break
+            if position >= max_redirects:
+                raise ValueError("Exchange recovery redirect limit exceeded")
+            next_url = urljoin(current, location)
+            refuse_blocked_terms_target(next_url)
+            validate_exchange_dataset_url(next_url, exchange)
+            current = next_url
+        if response is None:
+            raise RuntimeError("Exchange recovery request produced no response")
+        return FetchResponse(
+            requested_url=url,
+            final_url=response.url,
+            status_code=response.status_code,
+            content=response.content,
+            content_type=response.headers.get("Content-Type"),
+            encoding=response.encoding,
+            etag=response.headers.get("ETag"),
+            last_modified=response.headers.get("Last-Modified"),
+            auth_mode="public",
+            fetch_status=_classify_exchange_response(response),
+        )
+    finally:
+        if owned:
+            session.close()
 
 
 def _classify_trendlyne_response(response: requests.Response) -> str:
@@ -313,6 +441,72 @@ def fetch_screener_peers(
         last_modified=response.headers.get("Last-Modified"),
         auth_mode="authenticated" if cookies else "public",
         fetch_status=_classify_peer_response(response),
+    )
+
+
+def fetch_screener_quick_ratios(
+    url: str,
+    referer: str,
+    cookie_path: Path = SCREENER_COOKIE_FILE,
+) -> FetchResponse:
+    """Fetch the AJAX quick-ratios HTML fragment (custom user ratios)."""
+    cookies = load_screener_cookies(cookie_path)
+    session = build_session(cookies)
+    response = session.get(
+        url,
+        headers={
+            "X-Requested-With": "XMLHttpRequest",
+            "Referer": referer,
+            "Accept": "text/html",
+        },
+        timeout=REQUEST_TIMEOUT,
+        allow_redirects=True,
+        verify=certifi.where(),
+    )
+    return FetchResponse(
+        requested_url=url,
+        final_url=response.url,
+        status_code=response.status_code,
+        content=response.content,
+        content_type=response.headers.get("Content-Type"),
+        encoding=response.encoding,
+        etag=response.headers.get("ETag"),
+        last_modified=response.headers.get("Last-Modified"),
+        auth_mode="authenticated" if cookies else "public",
+        fetch_status=_classify_quick_ratios_response(response),
+    )
+
+
+def fetch_screener_commentary(
+    url: str,
+    referer: str,
+    cookie_path: Path = SCREENER_COOKIE_FILE,
+) -> FetchResponse:
+    """Fetch the wiki/commentary modal fragment (Key Insights)."""
+    cookies = load_screener_cookies(cookie_path)
+    session = build_session(cookies)
+    response = session.get(
+        url,
+        headers={
+            "X-Requested-With": "XMLHttpRequest",
+            "Referer": referer,
+            "Accept": "text/html",
+        },
+        timeout=REQUEST_TIMEOUT,
+        allow_redirects=True,
+        verify=certifi.where(),
+    )
+    return FetchResponse(
+        requested_url=url,
+        final_url=response.url,
+        status_code=response.status_code,
+        content=response.content,
+        content_type=response.headers.get("Content-Type"),
+        encoding=response.encoding,
+        etag=response.headers.get("ETag"),
+        last_modified=response.headers.get("Last-Modified"),
+        auth_mode="authenticated" if cookies else "public",
+        fetch_status=_classify_commentary_response(response),
     )
 
 
@@ -422,6 +616,30 @@ class ScreenerHostClient:
             },
         )
         return self._response(url, response, _classify_peer_response(response))
+
+    def fetch_quick_ratios(self, url: str, referer: str) -> FetchResponse:
+        """Fetch the AJAX quick-ratios fragment (custom user ratios)."""
+        response = self._get(
+            url,
+            headers={
+                "X-Requested-With": "XMLHttpRequest",
+                "Referer": referer,
+                "Accept": "text/html",
+            },
+        )
+        return self._response(url, response, _classify_quick_ratios_response(response))
+
+    def fetch_commentary(self, url: str, referer: str) -> FetchResponse:
+        """Fetch the wiki/commentary modal fragment (Key Insights)."""
+        response = self._get(
+            url,
+            headers={
+                "X-Requested-With": "XMLHttpRequest",
+                "Referer": referer,
+                "Accept": "text/html",
+            },
+        )
+        return self._response(url, response, _classify_commentary_response(response))
 
 
 def fetch_trendlyne(url: str) -> FetchResponse:

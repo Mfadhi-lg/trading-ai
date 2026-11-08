@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from scrapper.tests.database_fixtures import prepare_database
+
 import contextlib
 import io
 import json
@@ -97,6 +99,7 @@ class MutualFundM01ImportTests(unittest.TestCase):
             db_path=self.db_path, snapshot_root=self.snapshot_root,
             import_root=self.import_root,
         )
+        prepare_database(self.db_path)
         first = execute_import(
             proposals, db_path=self.db_path,
             observed_at_utc="2026-08-05T10:00:00+00:00",
@@ -109,6 +112,7 @@ class MutualFundM01ImportTests(unittest.TestCase):
         )
         self.assertEqual(self.db_path.read_bytes(), database_before_dry_run)
         self.assertEqual(second_proposals[0].proposed_action, "duplicate_observation")
+        prepare_database(self.db_path)
         second = execute_import(
             second_proposals, db_path=self.db_path,
             observed_at_utc="2026-08-05T10:01:00+00:00",
@@ -183,6 +187,7 @@ class MutualFundM01ImportTests(unittest.TestCase):
             db_path=self.db_path, snapshot_root=self.snapshot_root,
             import_root=self.import_root,
         )
+        prepare_database(self.db_path)
         result = execute_import(
             proposals, db_path=self.db_path,
             observed_at_utc="2026-08-05T11:00:00+00:00",
@@ -263,7 +268,7 @@ class MutualFundM01ImportTests(unittest.TestCase):
     def test_empty_database_has_all_m01_tables_and_pointer(self) -> None:
         conn = connect(self.db_path)
         try:
-            init_db(conn)
+            init_db(conn, apply_migrations=True)
             tables = {
                 row[0]
                 for row in conn.execute(

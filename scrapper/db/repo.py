@@ -437,6 +437,17 @@ def store_parsed_company(
                     ],
                 )
 
+            for frequency in parsed.shareholding_unavailable_frequencies:
+                section_id = shareholding_section if frequency == "quarterly" else shareholding_yearly_section
+                notice = "Shareholding pattern is currently not available for this company."
+                conn.execute(
+                    """INSERT INTO source_fields
+                       (section_id, field_position, field_key_raw, raw_text,
+                        normalized_display_text, link_url, field_role, visibility_state)
+                       VALUES (?, 1, 'Availability', ?, ?, NULL, 'source_unavailable', 'visible')""",
+                    (section_id, notice, notice),
+                )
+
             # The source classification warning is stored with the shareholding
             # data (not merely logged) as a source-faithful field.
             if parsed.shareholding_classification_warning is not None:
@@ -712,7 +723,7 @@ def store_parsed_company(
                         first_observed_at_utc,
                         first_observed_at_utc,
                     )
-                    for text in (*parsed.profile_texts, *parsed.analysis_texts)
+                    for text in (*parsed.profile_texts, *parsed.analysis_texts, *parsed.commentary_texts)
                 ],
             )
             conn.executemany(

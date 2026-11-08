@@ -1,0 +1,6 @@
+{
+  "environment": "production",
+  "path": "/data",
+  "release_id": "c05.3-release-20261003",
+  "roles": ["store"]
+}
