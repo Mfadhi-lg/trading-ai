@@ -28,18 +28,17 @@ Start with `AGENTS.md`, `README.md`, and `PROJECT_MAP.md`. Then route by task:
 
 This table is a starting point, not a substitute for tracing actual imports and entry points. Confirm exact paths in the current checkout before editing. Historical experiments and artifacts may still be consumed by tests or scripts.
 
-## CI database environment contract
+## CI database and storage isolation contract
 
-Any GitHub Actions job that creates, initializes, migrates, or otherwise writes to an application database must explicitly set:
+Every GitHub Actions job that creates, initializes, migrates, or otherwise writes to an application database or application-owned storage must:
 
-```yaml
-env:
-  TRADING_AI_ENV: test
-```
+1. Set `TRADING_AI_ENV: test` at job scope.
+2. Redirect every configurable application write root (`SCRAPER_STORE_PATH`, `SCRAPER_DB_PATH`, `SCRAPER_DOCUMENT_STORE_PATH`, and the related files, snapshots, exports, campaigns, logs, browser-state and backup paths) into a job-specific directory under `${{ runner.temp }}/trading-ai-test`.
+3. Create the disposable root before running database initialization or tests.
+4. Keep source fixtures read-only; never copy a developer/production runtime identity or mount into CI.
+5. Avoid fixed shared database paths such as a common `/tmp/*.sqlite3` file when tests can run concurrently.
 
-Set it at the job level so every database-writing step and test subprocess inherits the same explicit identity. The current database-writing CI jobs are `.github/workflows/migration-lineage.yml` and `.github/workflows/ml-readiness.yml`.
-
-The runtime write guard in `scrapper/runtime_identity.py` rejects an unset or unsupported environment. In `test` mode it also rejects known production roots, production mounts, and unverified production identity markers. CI database paths and fixtures must remain disposable and isolated; setting this variable does not authorize access to production data. A future workflow that writes to a database must follow this contract rather than relying on runner defaults.
+The current database-writing CI jobs are `.github/workflows/migration-lineage.yml` and `.github/workflows/ml-readiness.yml`. Both must use the same isolation contract. The runtime write guard in `scrapper/runtime_identity.py` rejects an unset or unsupported environment and, in test mode, rejects known production roots, production mounts, and unverified production identity markers. `TRADING_AI_ENV=test` is necessary but is not itself proof that paths are isolated. CI database and storage targets must remain disposable; the environment flag does not authorize access to production data. Any new CI job that writes application data must follow this contract.
 
 ## Task execution
 
