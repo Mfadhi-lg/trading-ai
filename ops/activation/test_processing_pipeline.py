@@ -9,7 +9,46 @@ import threading
 
 import pytest
 
-from processing_pipeline import consume_queue, ProcessingCompanion
+from processing_pipeline import consume_queue, ProcessingCompanion, processing_deadline
+
+
+@pytest.mark.parametrize('expires', [False, True])
+def test_processing_deadline_is_disarmed_before_exit(monkeypatch, expires):
+    import signal
+    from acquisition_failures import ExecutionDeadline, classify_exception
+    alarms, handlers = [], []
+    previous = object()
+    def install(sig, handler):
+        assert sig == signal.SIGALRM
+        handlers.append(handler)
+        return previous
+    monkeypatch.setattr(signal, 'signal', install)
+    monkeypatch.setattr(signal, 'alarm', alarms.append)
+    try:
+        with processing_deadline():
+            assert alarms == [430]
+            if expires:
+                handlers[0](signal.SIGALRM, None)
+    except ExecutionDeadline as exc:
+        assert expires
+        assert classify_exception(exc) == ('DEFERRED_ENVIRONMENT', 75)
+    else:
+        assert not expires
+    assert alarms == [430, 0]
+    assert handlers[-1] is previous
+
+
+def test_completed_processing_survives_original_alarm_deadline():
+    import subprocess
+    result = subprocess.run([sys.executable, '-c',
+        'from processing_pipeline import processing_deadline\n'
+        'import time\n'
+        'with processing_deadline(1):\n'
+        '    pass\n'
+        'time.sleep(1.2)\n'
+        'print("completed")\n'], capture_output=True, text=True, timeout=5)
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == 'completed'
 
 
 def test_idle_pipeline_retains_period_recovery_counts():
