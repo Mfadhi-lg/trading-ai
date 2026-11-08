@@ -35,7 +35,7 @@ The 70 modules are not 70 independent databases. They are repository/service mod
 - Document artifacts, downloads, extraction, OCR evidence, recovery, credit ratings, transcripts and recordings.
 - Worker coordination, leases, fencing, periodic tasks and host permits.
 
-The dated `docs/architecture/2026-10-01/migration-inventory.json` is a historical inventory covering migrations 001–067 at that point in time. It records 349 SQL declaration entries (including rebuild/temporary tables and repeated index/view declarations). It is useful historical evidence, but it is not a current 001–076 schema inventory and must not be treated as one.
+The dated `docs/architecture/2026-10-01/migration-inventory.json` is a historical inventory covering migrations 001–067. A current static declaration inventory for all 76 migrations is now included at `docs/database/migration-inventory-2026-11-08.json`. It records 372 declaration entries: 168 CREATE TABLE, 30 CREATE VIEW, 93 CREATE INDEX, 22 CREATE TRIGGER, 46 ALTER TABLE and 13 DROP statements. These are declaration occurrences, not counts of unique live schema objects: migrations intentionally rebuild/rename objects and may re-declare indexes/views. The inventory includes source file SHA-256 values from the migration manifest and line numbers for declarations.
 
 ## 2. Current connection and runtime contract
 
@@ -159,7 +159,7 @@ Avoid introducing a full ORM as a shortcut before measuring the scope. The curre
 
 - No production or developer SQLite database was opened; live row counts, table sizes, integrity checks and actual data quality are unknown.
 - No query-plan or throughput benchmark was run; no index or partitioning recommendation is claimed as measured.
-- The complete 76-migration file list and 70-module tree were enumerated, but a fresh machine-generated current schema catalog for all 76 files remains a follow-up deliverable. The dated 001–067 inventory is historical evidence only.
+- The current 76-file migration declaration inventory is static and manifest-backed; it is not a live schema dump from a database. A full SQL-operation scan across all 70 DB modules remains a follow-up deliverable, so the compatibility list is evidence-backed but not a claim that every query has been exhaustively classified.
 - This audit does not yet prove every SQL statement across all repository modules has been catalogued. The next implementation step should add a deterministic scanner and current inventory, then validate its findings with tests.
 - No PostgreSQL server, driver, data migration, backup or restore was run in this audit.
 - PR #67 and PR #68 are open at the time of audit. PR #68 ML readiness is currently blocked at Python 3.12.14 setup by repeated GitHub download HTTP 504 responses; this is infrastructure failure, not a test-suite result.
@@ -188,6 +188,8 @@ Avoid introducing a full ORM as a shortcut before measuring the scope. The curre
 - `scrapper/requirements.lock`
 - `scrapper/requirements.test.txt`
 - `docs/architecture/2026-10-01/migration-inventory.json`
+- `docs/database/migration-inventory-2026-11-08.json`
+- `docs/cleanup/baselines/C22.3/migration-manifest.json`
 
 ---
 
