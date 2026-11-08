@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from scrapper.tests.retained_audits import retained_source_audit
+
 import hashlib
 import json
 import tempfile
@@ -23,6 +25,7 @@ OFFICIAL_INVENTORY = (
 
 
 class PPFASVerticalSliceM07Tests(unittest.TestCase):
+    @retained_source_audit
     def test_official_local_inventory_has_all_pinned_workbook_hashes(self) -> None:
         inventory = json.loads(OFFICIAL_INVENTORY.read_text(encoding="utf-8"))
         self.assertEqual(inventory["publisher"], "ppfas")

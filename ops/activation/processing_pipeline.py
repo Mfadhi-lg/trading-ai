@@ -120,10 +120,11 @@ class ProcessingCompanion:
                       'companion': True, 'finished_at_utc': datetime.now(timezone.utc).isoformat(),
                       'result': {'status': 'DEFERRED_ENVIRONMENT' if code == 75 else 'STOP',
                                  'error': ('Processing companion deadline exceeded' if timed_out else
-                                           errors[-1]['error'] if errors else 'Processing companion failed; inspect '+str(self.log_path)),
+                                           errors[-1]['error'] if errors else f'Processing companion exited with code {code}; inspect '+str(self.log_path)),
                                  'outcomes': outcomes, 'selected': selected}}
         # The host records processing failures against the processing lane.
         # Completed downloads keep their own outcome and durable queue entries.
+        record['process_exit_code'] = code
         self.record = record
         print(json.dumps(record), flush=True)
         return False

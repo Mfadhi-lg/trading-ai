@@ -7,8 +7,28 @@ on:
 jobs:
   migration-lineage:
     runs-on: ubuntu-latest
+    # Migration-control tests must never inherit a developer/production identity.
+    env:
+      TRADING_AI_ENV: test
     steps:
       - uses: actions/checkout@v4
+      - name: Configure isolated CI data roots
+        shell: bash
+        run: |
+          test_root="$RUNNER_TEMP/trading-ai-test"
+          mkdir -p "$test_root/state" "$test_root/store"
+          {
+            echo "TRADING_AI_TEST_ROOT=$test_root"
+            echo "SCRAPER_STORE_PATH=$test_root/store"
+            echo "SCRAPER_FILES_PATH=$test_root/store/files"
+            echo "SCRAPER_SNAPSHOTS_PATH=$test_root/store/snapshots"
+            echo "SCRAPER_EXPORTS_PATH=$test_root/store/exports"
+            echo "SCRAPER_DB_PATH=$test_root/state/scraper.db"
+            echo "SCRAPER_CAMPAIGNS_PATH=$test_root/store/campaigns"
+            echo "SCRAPER_LOGS_PATH=$test_root/store/logs"
+            echo "SCRAPER_BROWSER_STATE_PATH=$test_root/store/browser-state"
+            echo "SCRAPER_BACKUPS_PATH=$test_root/store/backups"
+          } >> "$GITHUB_ENV"
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"

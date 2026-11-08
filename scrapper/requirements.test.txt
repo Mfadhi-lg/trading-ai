@@ -4,3 +4,6 @@
 # Test-only dependency. Production installs requirements.lock, which is compiled
 # solely from requirements.txt; CI installs requirements.test.lock.
 pytest>=9,<10
+
+# Synthetic workbook fixture builders used by subsector research tests.
+openpyxl>=3.1,<4

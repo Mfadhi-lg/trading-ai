@@ -1,4 +1,6 @@
 """Atomic admission and EKC liquidity regression, using only retained local sources."""
+from scrapper.tests.retained_audits import retained_source_audit
+
 import copy
 import json
 import socket
@@ -13,6 +15,7 @@ from scrapper.research.document_intelligence.schema import DocumentContext
 ROOT = Path(__file__).resolve().parents[2]
 DEV = ROOT / 'docs/credit-rating-intelligence-v1'
 
+@retained_source_audit
 class AtomicTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

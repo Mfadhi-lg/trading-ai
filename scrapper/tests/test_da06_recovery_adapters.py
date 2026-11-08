@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 from scrapper.core.access_policy import BlockedTermsError
@@ -215,11 +216,12 @@ class _RedirectSession:
     def get(self, url: str, **_: object) -> _RedirectResponse:
         self.calls.append(url)
         return _RedirectResponse(
-            url, "https://www.crisilratings.com/forbidden.pdf"
+            url, "https://blocked.example/forbidden.pdf"
         )
 
 
 class RecoveryHTTPPolicyTests(unittest.TestCase):
+    @patch("scrapper.core.access_policy.BLOCKED_TERMS_HOSTS", frozenset({"blocked.example"}))
     def test_exchange_redirect_to_blocked_publisher_stops_before_second_request(self) -> None:
         session = _RedirectSession()
         url = "https://www.nseindia.com/api/corporate-announcements?symbol=FIXTURE"

@@ -28,6 +28,26 @@ Start with `AGENTS.md`, `README.md`, and `PROJECT_MAP.md`. Then route by task:
 
 This table is a starting point, not a substitute for tracing actual imports and entry points. Confirm exact paths in the current checkout before editing. Historical experiments and artifacts may still be consumed by tests or scripts.
 
+## CI database and storage isolation contract
+
+Every GitHub Actions job that creates, initializes, migrates, or otherwise writes to an application database or application-owned storage must:
+
+1. Set `TRADING_AI_ENV: test` at job scope.
+2. Redirect every configurable application write root (`SCRAPER_STORE_PATH`, `SCRAPER_DB_PATH`, and the related files, snapshots, exports, campaigns, logs, browser-state and backup paths) into a job-specific directory under `$RUNNER_TEMP/trading-ai-test`. Leave `SCRAPER_DOCUMENT_STORE_PATH` unset unless a test explicitly creates its required store sentinel; by default the document store follows the isolated snapshots path.
+3. Create the disposable root in a setup step using the runner-provided `RUNNER_TEMP` environment variable, export the paths through `$GITHUB_ENV`, and do this before database initialization or tests.
+4. Keep source fixtures read-only; never copy a developer/production runtime identity or mount into CI.
+5. Avoid fixed shared database paths such as a common `/tmp/*.sqlite3` file when tests can run concurrently.
+
+The current database-writing CI jobs are `.github/workflows/migration-lineage.yml` and `.github/workflows/ml-readiness.yml`. Both use the same isolation contract, and `scrapper/tests/test_ci_database_isolation.py` guards the workflow path contract against regressions. The runtime write guard in `scrapper/runtime_identity.py` rejects an unset or unsupported environment and, in test mode, rejects known production roots, production mounts, and unverified production identity markers. `TRADING_AI_ENV=test` is necessary but is not itself proof that paths are isolated. CI database and storage targets must remain disposable; the environment flag does not authorize access to production data. Any new CI job that writes application data must follow this contract.
+
+## Portable software tests and retained-source audits
+
+The default offline suite uses committed fixtures or explicitly synthetic inputs in temporary directories. It never opens production data or needs a developer's external drive. CI installs the locked test dependencies (including workbook builders) and Chromium; browser regressions intercept all outbound requests.
+
+Historical audits that certify specific original PDFs, frozen research databases, or operator-supplied workbooks require the original retained bundle. Run them explicitly with `TRADING_AI_RUN_RETAINED_AUDITS=1 python -B -m unittest discover -s scrapper/tests -t . -v` in an isolated checkout with the required bundle. Missing/corrupt evidence then fails normally. Default CI reports these as skipped, not passed; synthetic software checks do not certify historical source bytes or research outcomes. Retained research jobs that write outputs must use isolated copies and temporary output paths.
+
+The November integration correction also permits download recovery audit INSERT operations through the existing routine SQL guard. Explicit audit UPDATE/DELETE operations and unrelated protected writes remain denied. This authorizer is an application write boundary, not protection against arbitrary SQL such as INSERT OR REPLACE. Source changes do not activate a release or clear retained production stops; deployment and recovery remain separately authorized operations.
+
 ## Task execution
 
 ### 1. Convert the request into a contract

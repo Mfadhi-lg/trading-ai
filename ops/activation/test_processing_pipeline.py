@@ -182,3 +182,20 @@ def test_consumer_leaves_work_beyond_its_budget_queued():
     result = consume_queue(run_one, lambda: True, limit=10)
     assert len(result['selected']) == 10
     assert queue == [10]
+
+
+def test_nonzero_exit_after_result_keeps_failure_and_reports_exit_code(tmp_path):
+    result_path = tmp_path/'result'
+    program = ("import json,sys; from pathlib import Path; "
+               "Path(sys.argv[1]).write_text(json.dumps({'result':{'status':'recorded'}})); "
+               "print(json.dumps({'stage':'processing_queue_item','selected':[{'content_id':7}],'outcomes':[{'state':'recorded'}]})); "
+               "sys.exit(7)")
+    child = ProcessingCompanion([sys.executable, '-c', program, str(result_path)],
+        log_path=tmp_path/'log', result_path=result_path, done_path=tmp_path/'done')
+    with child:
+        pass
+    assert child.record['process_exit_code'] == 7
+    assert child.record['result']['status'] == 'STOP'
+    assert 'exited with code 7' in child.record['result']['error']
+    assert child.record['result']['selected'] == [{'content_id':7}]
+    assert child.record['result']['outcomes'] == [{'state':'recorded'}]

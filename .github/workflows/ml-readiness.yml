@@ -8,19 +8,49 @@ on:
 jobs:
   offline-contract:
     runs-on: ubuntu-latest
+    # init-db and the offline suite must never inherit a developer/production identity.
     env:
       PYTHONDONTWRITEBYTECODE: "1"
+      TRADING_AI_ENV: test
     steps:
       - uses: actions/checkout@v4
+      - name: Configure isolated CI data roots
+        shell: bash
+        run: |
+          test_root="$RUNNER_TEMP/trading-ai-test"
+          mkdir -p "$test_root/state" "$test_root/store"
+          {
+            echo "TRADING_AI_TEST_ROOT=$test_root"
+            echo "SCRAPER_STORE_PATH=$test_root/store"
+            echo "SCRAPER_FILES_PATH=$test_root/store/files"
+            echo "SCRAPER_SNAPSHOTS_PATH=$test_root/store/snapshots"
+            echo "SCRAPER_EXPORTS_PATH=$test_root/store/exports"
+            echo "SCRAPER_DB_PATH=$test_root/state/scraper.db"
+            echo "SCRAPER_CAMPAIGNS_PATH=$test_root/store/campaigns"
+            echo "SCRAPER_LOGS_PATH=$test_root/store/logs"
+            echo "SCRAPER_BROWSER_STATE_PATH=$test_root/store/browser-state"
+            echo "SCRAPER_BACKUPS_PATH=$test_root/store/backups"
+          } >> "$GITHUB_ENV"
       - uses: actions/setup-python@v5
-        with: { python-version: '3.12.14' }
+        with: { python-version: '3.12.16' }
       - name: Install locked offline dependencies
         run: |
           python -m pip install --require-hashes --requirement scrapper/requirements.test.lock
           python -m pip check
-      - name: Migrate a database from zero
-        run: python -m scrapper.cli init-db --db /tmp/ml-readiness.sqlite
+      - name: Install browser for network-isolated browser tests
+        run: python -m playwright install --with-deps chromium
+      - name: Migrate isolated database from zero
+        run: python -m scrapper.cli init-db
       - name: Complete offline suite
         run: python -m unittest discover -s scrapper/tests -t . -v
+      - name: Bounded processing and terminal regressions
+        env:
+          PYTHONPATH: ops/activation:ops/host
+        run: >-
+          python -B -m pytest -q -p no:cacheprovider
+          ops/activation/test_processing_pipeline.py
+          ops/activation/test_paired_downloads.py
+          ops/host/test_acquisition_terminal.py
+          ops/host/test_monitor_usability.py
       - name: Data-integrity and fixture gates
         run: python -m unittest scrapper.tests.test_ml_reporting_contract -v

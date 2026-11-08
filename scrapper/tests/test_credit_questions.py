@@ -1,4 +1,6 @@
 """Offline retrieval and admission regressions; no expected answers enter prompts."""
+from scrapper.tests.retained_audits import retained_source_audit
+
 from copy import deepcopy
 import json
 from pathlib import Path
@@ -66,6 +68,7 @@ class RetrievalTests(unittest.TestCase):
         self.assertFalse(r['selection_log'][0]['selected'])
 
 
+@retained_source_audit
 class SourceAndReplayTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

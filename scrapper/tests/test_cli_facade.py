@@ -78,7 +78,9 @@ sys.exit(result.returncode)
             docker.chmod(0o700)
             env = dict(os.environ, PATH=directory + os.pathsep + os.environ['PATH'])
             wrapper = Path(__file__).resolve().parents[2] / 'scraper'
-            for args in (['--help'], ['monitor-downloads', '--help'], ['unknown-command']):
+            # Root help belongs to the host operator CLI; manual subcommands
+            # still pass through the existing Python application facade.
+            for args in (['monitor-downloads', '--help'], ['unknown-command']):
                 wrapped = subprocess.run([str(wrapper), *args], capture_output=True, text=True, env=env)
                 direct = subprocess.run([sys.executable, '-B', '-m', 'scrapper.cli', *args], capture_output=True, text=True)
                 self.assertEqual((wrapped.returncode, wrapped.stdout, wrapped.stderr), (direct.returncode, direct.stdout, direct.stderr))

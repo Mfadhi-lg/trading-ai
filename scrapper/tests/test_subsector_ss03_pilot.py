@@ -1,6 +1,8 @@
+from scrapper.tests.retained_audits import retained_source_audit
 import csv,json,sqlite3,unittest
 from scrapper.research.subsector_ss03 import pilot,build
 
+@retained_source_audit
 class PilotChecks(unittest.TestCase):
  @classmethod
  def setUpClass(cls):

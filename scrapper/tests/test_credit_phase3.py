@@ -1,4 +1,6 @@
 """Bounded Phase 3 source, period, qualification and replay regressions."""
+from scrapper.tests.retained_audits import retained_source_audit
+
 import copy
 import socket
 import sqlite3
@@ -12,6 +14,7 @@ from scrapper.research.document_intelligence.schema import DocumentContext
 ROOT=Path(__file__).resolve().parents[2]
 D=ROOT/'docs/credit-rating-intelligence-v1'
 
+@retained_source_audit
 class Phase3Tests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

@@ -1,4 +1,6 @@
 """Independent SS-02 tests for granular classification, history and eligibility."""
+from scrapper.tests.retained_audits import retained_source_audit
+
 import copy
 import json
 import sqlite3
@@ -100,6 +102,7 @@ class HistoricalTest(unittest.TestCase):
         c.close()
 
 
+@retained_source_audit
 class FullUniverseIntegrationTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
