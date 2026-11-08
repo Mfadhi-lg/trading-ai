@@ -19,7 +19,7 @@ class ScreenerCliTests(unittest.TestCase):
 
     def test_membership(self):
         names = cli._parser()._subparsers._group_actions[0].choices
-        self.assertEqual(set(COMMANDS), {n for n in names if n.startswith('screener-')} | {'reprocess-screener'})
+        self.assertEqual(set(COMMANDS), {n for n in names if n.startswith('screener-')} | {'reprocess-screener', 'financial-coverage-audit'})
 
     def test_discovery_and_worker_outcomes_arguments_and_errors(self):
         cases = [(['screener-discover-results','--query-role','results','--query','sales','--fixture','/tmp/screen.html','--dry-run'], 'discover_screener_results', [({'coverage_status':'complete'},0),({'coverage_status':'incomplete'},1)], dict(query_role='results',query='sales',fixture=Path('/tmp/screen.html'),dry_run=True,db_path=cli.DB_PATH)),
