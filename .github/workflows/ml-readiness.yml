@@ -18,7 +18,7 @@ jobs:
         shell: bash
         run: |
           test_root="$RUNNER_TEMP/trading-ai-test"
-          mkdir -p "$test_root"
+          mkdir -p "$test_root/state" "$test_root/store"
           {
             echo "TRADING_AI_TEST_ROOT=$test_root"
             echo "SCRAPER_STORE_PATH=$test_root/store"
