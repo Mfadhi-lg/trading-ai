@@ -1,0 +1,7 @@
+# Financial feature interface — C25.1
+
+Use `scrapper.research.features.company_quarter_features` with a caller-owned read-only SQLite connection, company identity, aware decision time, explicit standalone scope and feature version v1. Optional source disambiguates accepted sources; no parser or provider client is required. This is the reviewed B1 implementation, preserving units/scales, null/applicability statuses, immutable parse/blob/observation references, signed values and capture/acceptance cutoff eligibility. The legacy snapshot exporter and `scrapper.pipeline.ml_contracts` imports remain compatible.
+
+B1 disposition: forward-ported offline, without copied supporting code. The 29-row/464-value retained-export cohort remains EXPLORATORY_BACKFILL, and original database/source-byte reconciliation remains PARTIAL. PIT_SAFE_FROM_CAPTURE certifies stored capture eligibility only; it does not prove historical filing-time availability, universe membership or sector governance. No newest revision is backdated. Completeness is engineering coverage, not a selection decision. The original B1 dictionary, patch, reports and C03 archive remain historical evidence at their original paths. No historical report is rewritten as a fresh live result.
+
+No B2 draft selector, superseded thresholds, absent-member negative labels, Focus governance, document interface, model/LLM/news/markets/trading implementation is included. C25.2–C25.4 remain separate. Rollback restores the C24.4 legacy module and omits this overlay; no schema/data restore is needed.

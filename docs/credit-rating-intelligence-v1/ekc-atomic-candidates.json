@@ -1,0 +1,246 @@
+{
+  "source_sha256": "b0f06214a0b40f2327eb17e18b0ee88fc3f63436bd8430b9c455733781650a05",
+  "canonical_sha256": "1c2717f1f478ca9902a2fdcf77530b124e5d0ca80ee36895a6ed4aab76160708",
+  "review_metadata": {
+    "reviewer": "Codex implementation agent",
+    "date": "2026-10-24",
+    "basis": "Direct original PDF page 3 text and retained canonical liquidity paragraph; not independent human certification.",
+    "distinction": "Future repayment proposition was omitted from A16 statement/qualifications although present in its evidence fragments. It is a newly reviewed source-derived claim, not an original accepted extraction."
+  },
+  "candidates": [
+    {
+      "atomic_key": "A16.cash",
+      "parent_claim_id": "28d7ba37ea6982cdaac88d0acef96e4a361d0784b2057597cfd4e85da495e7b8",
+      "parent_candidate_sha256": "5d4a92edc56418bb0680f4df13bdc02a38dec244609522782c2c1434c333bb52",
+      "fields": [
+        "liquidity.cash_and_liquid_balances"
+      ],
+      "statement": "Free cash and bank balance was ₹64.9 crore as on March 31, 2024.",
+      "value": "64.9",
+      "unit": "₹ crore",
+      "period": "March 31, 2024",
+      "period_kind": "reporting_date",
+      "accounting_scope": null,
+      "attribution": "CARE Ratings",
+      "statement_kind": "agency_assessment",
+      "qualifications": [],
+      "conditions": [],
+      "derivation_basis": "retained_candidate_split",
+      "support": [
+        {
+          "page": 3,
+          "kind": "page_text",
+          "element": null,
+          "start": 1738,
+          "end": 2610,
+          "quote": "Liquidity: Adequate\nThe company’s liquidity is expected to remain adequate and improve further with healthy GCA expected above ₹130 crore in\nmedium term. In addition to this, EKCL’s average maximum utilisation of its working capital limits (inclusive of fund based and\nnon-fund-based limits) is comfortable at ~34% for last 12 months ended June 30, 2024. Moreover, the company’s free cash and\nbank balance was ₹64.9 crore as on March 31, 2024. Against all these sources of funds, the company currently has no principal\ndebt obligations; however, given the debt-funded capex both on standalone and consolidated basis, the repayment is expected\nto start from FY26-FY27 onwards. Despite the elongated working capital cycle due to high inventory days, considering the\ncompany’s healthy gross accruals, the EKCL’s liquidity is adequate to service the upcoming debt obligations.",
+          "text_origin": "native",
+          "bbox": null
+        }
+      ]
+    },
+    {
+      "atomic_key": "A16.utilisation",
+      "parent_claim_id": "28d7ba37ea6982cdaac88d0acef96e4a361d0784b2057597cfd4e85da495e7b8",
+      "parent_candidate_sha256": "5d4a92edc56418bb0680f4df13bdc02a38dec244609522782c2c1434c333bb52",
+      "fields": [
+        "liquidity.bank_limit_utilisation"
+      ],
+      "statement": "Average maximum utilisation of working capital limits was ~34% for last 12 months ended June 30, 2024.",
+      "value": "~34",
+      "unit": "%",
+      "period": "last 12 months ended June 30, 2024",
+      "period_kind": "observation_window",
+      "accounting_scope": null,
+      "attribution": "CARE Ratings",
+      "statement_kind": "agency_assessment",
+      "qualifications": [
+        "Average maximum, not average utilisation alone; inclusive of fund based and non-fund-based limits."
+      ],
+      "conditions": [],
+      "derivation_basis": "retained_candidate_split",
+      "support": [
+        {
+          "page": 3,
+          "kind": "page_text",
+          "element": null,
+          "start": 1738,
+          "end": 2610,
+          "quote": "Liquidity: Adequate\nThe company’s liquidity is expected to remain adequate and improve further with healthy GCA expected above ₹130 crore in\nmedium term. In addition to this, EKCL’s average maximum utilisation of its working capital limits (inclusive of fund based and\nnon-fund-based limits) is comfortable at ~34% for last 12 months ended June 30, 2024. Moreover, the company’s free cash and\nbank balance was ₹64.9 crore as on March 31, 2024. Against all these sources of funds, the company currently has no principal\ndebt obligations; however, given the debt-funded capex both on standalone and consolidated basis, the repayment is expected\nto start from FY26-FY27 onwards. Despite the elongated working capital cycle due to high inventory days, considering the\ncompany’s healthy gross accruals, the EKCL’s liquidity is adequate to service the upcoming debt obligations.",
+          "text_origin": "native",
+          "bbox": null
+        }
+      ]
+    },
+    {
+      "atomic_key": "A16.accruals",
+      "parent_claim_id": "28d7ba37ea6982cdaac88d0acef96e4a361d0784b2057597cfd4e85da495e7b8",
+      "parent_candidate_sha256": "5d4a92edc56418bb0680f4df13bdc02a38dec244609522782c2c1434c333bb52",
+      "fields": [
+        "liquidity.cash_accruals"
+      ],
+      "statement": "Healthy GCA is expected above ₹130 crore in medium term.",
+      "value": "above 130",
+      "unit": "₹ crore",
+      "period": "medium term",
+      "period_kind": "expectation_horizon",
+      "accounting_scope": null,
+      "attribution": "CARE Ratings",
+      "statement_kind": "agency_assessment",
+      "qualifications": [
+        "Expected, not realised; source label GCA retained."
+      ],
+      "conditions": [],
+      "derivation_basis": "retained_candidate_split",
+      "support": [
+        {
+          "page": 3,
+          "kind": "page_text",
+          "element": null,
+          "start": 1738,
+          "end": 2610,
+          "quote": "Liquidity: Adequate\nThe company’s liquidity is expected to remain adequate and improve further with healthy GCA expected above ₹130 crore in\nmedium term. In addition to this, EKCL’s average maximum utilisation of its working capital limits (inclusive of fund based and\nnon-fund-based limits) is comfortable at ~34% for last 12 months ended June 30, 2024. Moreover, the company’s free cash and\nbank balance was ₹64.9 crore as on March 31, 2024. Against all these sources of funds, the company currently has no principal\ndebt obligations; however, given the debt-funded capex both on standalone and consolidated basis, the repayment is expected\nto start from FY26-FY27 onwards. Despite the elongated working capital cycle due to high inventory days, considering the\ncompany’s healthy gross accruals, the EKCL’s liquidity is adequate to service the upcoming debt obligations.",
+          "text_origin": "native",
+          "bbox": null
+        }
+      ]
+    },
+    {
+      "atomic_key": "A16.current-repayments",
+      "parent_claim_id": "28d7ba37ea6982cdaac88d0acef96e4a361d0784b2057597cfd4e85da495e7b8",
+      "parent_candidate_sha256": "5d4a92edc56418bb0680f4df13bdc02a38dec244609522782c2c1434c333bb52",
+      "fields": [
+        "liquidity.repayment_obligations"
+      ],
+      "statement": "The company currently has no principal debt obligations.",
+      "value": "no principal debt obligations",
+      "unit": null,
+      "period": "currently",
+      "period_kind": "relative_observation",
+      "accounting_scope": null,
+      "attribution": "CARE Ratings",
+      "statement_kind": "agency_assessment",
+      "qualifications": [
+        "Current statement only; not absence of future repayments."
+      ],
+      "conditions": [
+        "Given the debt-funded capex both on standalone and consolidated basis, repayment is expected to start from FY26-FY27 onwards."
+      ],
+      "derivation_basis": "retained_candidate_split",
+      "support": [
+        {
+          "page": 3,
+          "kind": "page_text",
+          "element": null,
+          "start": 1738,
+          "end": 2610,
+          "quote": "Liquidity: Adequate\nThe company’s liquidity is expected to remain adequate and improve further with healthy GCA expected above ₹130 crore in\nmedium term. In addition to this, EKCL’s average maximum utilisation of its working capital limits (inclusive of fund based and\nnon-fund-based limits) is comfortable at ~34% for last 12 months ended June 30, 2024. Moreover, the company’s free cash and\nbank balance was ₹64.9 crore as on March 31, 2024. Against all these sources of funds, the company currently has no principal\ndebt obligations; however, given the debt-funded capex both on standalone and consolidated basis, the repayment is expected\nto start from FY26-FY27 onwards. Despite the elongated working capital cycle due to high inventory days, considering the\ncompany’s healthy gross accruals, the EKCL’s liquidity is adequate to service the upcoming debt obligations.",
+          "text_origin": "native",
+          "bbox": null
+        }
+      ]
+    },
+    {
+      "atomic_key": "A16.future-repayments",
+      "parent_claim_id": "28d7ba37ea6982cdaac88d0acef96e4a361d0784b2057597cfd4e85da495e7b8",
+      "parent_candidate_sha256": "5d4a92edc56418bb0680f4df13bdc02a38dec244609522782c2c1434c333bb52",
+      "fields": [
+        "liquidity.repayment_obligations"
+      ],
+      "statement": "Given the debt-funded capex both on standalone and consolidated basis, repayment is expected to start from FY26-FY27 onwards.",
+      "value": "repayment expected to start",
+      "unit": null,
+      "period": "FY26-FY27 onwards",
+      "period_kind": "expected_commencement",
+      "accounting_scope": null,
+      "attribution": "CARE Ratings",
+      "statement_kind": "agency_assessment",
+      "qualifications": [
+        "Expected commencement; no repayment amount disclosed here."
+      ],
+      "conditions": [
+        "Given the debt-funded capex both on standalone and consolidated basis."
+      ],
+      "derivation_basis": "source_review_addition",
+      "support": [
+        {
+          "page": 3,
+          "kind": "page_text",
+          "element": null,
+          "start": 1738,
+          "end": 2610,
+          "quote": "Liquidity: Adequate\nThe company’s liquidity is expected to remain adequate and improve further with healthy GCA expected above ₹130 crore in\nmedium term. In addition to this, EKCL’s average maximum utilisation of its working capital limits (inclusive of fund based and\nnon-fund-based limits) is comfortable at ~34% for last 12 months ended June 30, 2024. Moreover, the company’s free cash and\nbank balance was ₹64.9 crore as on March 31, 2024. Against all these sources of funds, the company currently has no principal\ndebt obligations; however, given the debt-funded capex both on standalone and consolidated basis, the repayment is expected\nto start from FY26-FY27 onwards. Despite the elongated working capital cycle due to high inventory days, considering the\ncompany’s healthy gross accruals, the EKCL’s liquidity is adequate to service the upcoming debt obligations.",
+          "text_origin": "native",
+          "bbox": null
+        }
+      ]
+    },
+    {
+      "atomic_key": "A16.liquidity-rationale",
+      "parent_claim_id": "28d7ba37ea6982cdaac88d0acef96e4a361d0784b2057597cfd4e85da495e7b8",
+      "parent_candidate_sha256": "5d4a92edc56418bb0680f4df13bdc02a38dec244609522782c2c1434c333bb52",
+      "fields": [
+        "liquidity.explanations_and_constraints"
+      ],
+      "statement": "Liquidity is expected to remain adequate and improve further; despite the elongated working capital cycle due to high inventory days, healthy gross accruals support servicing upcoming debt obligations.",
+      "value": "adequate",
+      "unit": null,
+      "period": null,
+      "period_kind": "unspecified",
+      "accounting_scope": null,
+      "attribution": "CARE Ratings",
+      "statement_kind": "agency_assessment",
+      "qualifications": [
+        "Agency assessment and expectation, not a guarantee of servicing debt."
+      ],
+      "conditions": [
+        "Despite the elongated working capital cycle due to high inventory days; considering healthy gross accruals."
+      ],
+      "derivation_basis": "source_review_addition",
+      "support": [
+        {
+          "page": 3,
+          "kind": "page_text",
+          "element": null,
+          "start": 1738,
+          "end": 2610,
+          "quote": "Liquidity: Adequate\nThe company’s liquidity is expected to remain adequate and improve further with healthy GCA expected above ₹130 crore in\nmedium term. In addition to this, EKCL’s average maximum utilisation of its working capital limits (inclusive of fund based and\nnon-fund-based limits) is comfortable at ~34% for last 12 months ended June 30, 2024. Moreover, the company’s free cash and\nbank balance was ₹64.9 crore as on March 31, 2024. Against all these sources of funds, the company currently has no principal\ndebt obligations; however, given the debt-funded capex both on standalone and consolidated basis, the repayment is expected\nto start from FY26-FY27 onwards. Despite the elongated working capital cycle due to high inventory days, considering the\ncompany’s healthy gross accruals, the EKCL’s liquidity is adequate to service the upcoming debt obligations.",
+          "text_origin": "native",
+          "bbox": null
+        }
+      ]
+    }
+  ],
+  "reviews": {
+    "A16.cash": {
+      "candidate_sha256": "1a392f9346a4e25a551def74d795209f30507d2831e65b56cdf753a3b35de423",
+      "decision": "SUPPORTED",
+      "reason": "Reviewed against complete page-3 liquidity paragraph. Unknown accounting scope retained; own literal time basis, value, unit and qualifications reviewed. Conditions are source-bound; no parent admission inherited."
+    },
+    "A16.utilisation": {
+      "candidate_sha256": "634dd780a6e28ae157b378b3549c4600f73139ab14924b9896402218d64e28c4",
+      "decision": "SUPPORTED",
+      "reason": "Reviewed against complete page-3 liquidity paragraph. Unknown accounting scope retained; own literal time basis, value, unit and qualifications reviewed. Conditions are source-bound; no parent admission inherited."
+    },
+    "A16.accruals": {
+      "candidate_sha256": "51ed4adf843edd899f88faa9ec7b9354a04f779038ee56125aeb9dd2ebb1d7d8",
+      "decision": "SUPPORTED",
+      "reason": "Reviewed against complete page-3 liquidity paragraph. Unknown accounting scope retained; own literal time basis, value, unit and qualifications reviewed. Conditions are source-bound; no parent admission inherited."
+    },
+    "A16.current-repayments": {
+      "candidate_sha256": "8627242fb71a955c62aac78d8e7cf02c06ef276f1b0e6091a8e396f5ada8f06b",
+      "decision": "SUPPORTED",
+      "reason": "Reviewed against complete page-3 liquidity paragraph. Unknown accounting scope retained; own literal time basis, value, unit and qualifications reviewed. Conditions are source-bound; no parent admission inherited."
+    },
+    "A16.future-repayments": {
+      "candidate_sha256": "3084c2790c895a18fafc7836ec6d81abc5f9434c3a6e1091583944cfad220482",
+      "decision": "SUPPORTED",
+      "reason": "Reviewed against complete page-3 liquidity paragraph. Unknown accounting scope retained; own literal time basis, value, unit and qualifications reviewed. Conditions are source-bound; no parent admission inherited."
+    },
+    "A16.liquidity-rationale": {
+      "candidate_sha256": "c3f8d496497df8575f117ede182875de56b2dc5e4c59c34560c54814708a96f9",
+      "decision": "SUPPORTED",
+      "reason": "Reviewed against complete page-3 liquidity paragraph. Unknown accounting scope retained; own literal time basis, value, unit and qualifications reviewed. Conditions are source-bound; no parent admission inherited."
+    }
+  }
+}

@@ -4,6 +4,7 @@ import hashlib
 import json
 import tempfile
 import unittest
+from unittest.mock import patch
 from dataclasses import replace
 from pathlib import Path
 
@@ -81,6 +82,17 @@ class RecoveryAttachmentTests(unittest.TestCase):
         self.root = Path(self.temp.name)
         self.conn = connect(self.root / "attachment.db")
         init_db(self.conn, apply_migrations=True)
+        # Explicit historical restricted-source fixture, independent of defaults.
+        self.policy_patches = []
+        for target in ('scrapper.core.access_policy.BLOCKED_TERMS_HOSTS',
+                       'scrapper.db.documents.recovery.targets.BLOCKED_TERMS_HOSTS',
+                       'scrapper.db.document_recovery_repo.BLOCKED_TERMS_HOSTS'):
+            policy_patch = patch(target, frozenset({'crisil.com', 'crisilratings.com', 'icra.in'}))
+            policy_patch.start()
+            self.policy_patches.append(policy_patch)
+            self.addCleanup(policy_patch.stop)
+        with self.conn:
+            self.conn.execute("UPDATE credit_rating_host_policy SET automation_status='BLOCKED_TERMS', max_concurrency=0 WHERE host IN ('crisil.com','www.crisil.com','crisilratings.com','www.crisilratings.com','icra.in','www.icra.in')")
         self.artifact_id, self.blocked_source_id = self._seed_blocked_artifact()
         build_recovery_targets(self.conn, observed_at_utc=NOW)
         target_row = self.conn.execute(
@@ -89,6 +101,8 @@ class RecoveryAttachmentTests(unittest.TestCase):
         self.target_id = int(target_row[0])
 
     def tearDown(self) -> None:
+        for policy_patch in getattr(self, "policy_patches", ()):
+            policy_patch.stop()
         self.conn.close()
         self.temp.cleanup()
 

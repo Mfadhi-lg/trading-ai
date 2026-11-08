@@ -1,0 +1,47 @@
+{
+  "company_identifier": "VIMTALABS",
+  "context": {
+    "document_id": "VIMTALABS-credit_rating",
+    "company_name": "Vimta Labs Limited",
+    "symbol": "VIMTALABS",
+    "document_type": "credit_rating",
+    "content_sha256": "7ed9acaec3a58c63fa1bdc78a8c69dc30f84fb9bfbfc85d48d32189a19781156",
+    "report_date": "2023-07-11",
+    "publication_date": null,
+    "filing_date": null,
+    "provenance": {
+      "source_inventory": {
+        "path": "artifacts/three-document-reality-check-v0.4/sources.json",
+        "sha256": "2d90a995e7215fd4efb77df5becc1b5923e97b1ec24329e91856af82977833e6"
+      },
+      "metadata_basis": "existing repository inventory; report date confirmed on PDF cover"
+    }
+  },
+  "pdf": {
+    "path": "sample_files-2/in_q1_focus_list/credit_ratings/CARE_Vimta_Labs_2023-07-11.pdf",
+    "sha256": "7ed9acaec3a58c63fa1bdc78a8c69dc30f84fb9bfbfc85d48d32189a19781156"
+  },
+  "canonical": {
+    "path": "artifacts/unified-financial-pilot-v0.1/offline-development/VIMTALABS/credit_rating.canonical.json",
+    "sha256": "361ec242b5405d3377e38914073c0bb1f2d1dbe71ec2fb78e203d47ab839aa7e"
+  },
+  "reviews": {
+    "path": "docs/credit-rating-intelligence-v1/vimta-source-reviews.json",
+    "sha256": "02610aef8181c403a9fad9754b03a2a54ec8bcdc25f6714739ca7e6bdbf20abf"
+  },
+  "responses": [
+    {
+      "path": "artifacts/three-document-reality-check-v0.4/challenger-comparison/gemini-execution/responses/test-A/response.raw.json",
+      "sha256": "3c22c28f3377624b189c368970610882272ead42ffaec37b8f4d6aa54304fca7"
+    },
+    {
+      "path": "artifacts/three-document-reality-check-v0.4/document-specific-recovery-v0.5/credit-discovery-execution/response.raw.json",
+      "sha256": "d00bae4053eeb75df41b51fedb2af63718b8925560f61d0990efdc4a9e6b483a",
+      "selected_indices": [
+        4,
+        11,
+        12
+      ]
+    }
+  ]
+}

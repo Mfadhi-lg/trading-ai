@@ -1,0 +1,20 @@
+{
+  "decision": "ACCEPT",
+  "scope": "Exact immutable combined AR-02 technical and evidence review only",
+  "signed_off_at_utc": "2026-10-08T13:26:00Z",
+  "reviewer_agent": "Codex /root/independent_release_reviewer",
+  "preparer_agent": "Codex /root",
+  "independence_disclosure": "Separate AI agent with independently authored verification and decision; shared workspace/tools/parent context; not human review or organizational separation; checksum-sealed written sign-off, not cryptographic identity signature",
+  "image_reference": "trading-ai-ar02-combined-release@sha256:4206ea61254ec1c490e5284d1aac0361c08b084c7e1186a86141a42c1a2c0b08",
+  "package_checksum_index_sha256": "46965ab5e380794dff07060feda9ee8c76f2e9921189885253e282c8525c68f4",
+  "archive_sha256": "aff9a394c3ee49f8ebf85b234df7fc3ed594f8e10be22f02137f6408b659cef5",
+  "source_projection_sha256": "aed3d89a082d7fe9852e69096169657f1f6875f66e29ad84345272536e6a3b56",
+  "blocking_findings": [],
+  "qualifications": ["Retained ledger-before resolves one historical path/hash", "Preparation-owned image proof changed to add offline hash-pinned test dependencies before final seal", "No publisher signature or registry proof", "No live result or actual operator delivery proof"],
+  "production_activation": "NOT_STARTED",
+  "production_activation_authorized": false,
+  "production_acceptance": "NOT_STARTED",
+  "AR_02_3": "NOT_STARTED",
+  "stopped_after_review": true,
+  "existing_sealed_package_and_prior_review_unchanged": true
+}

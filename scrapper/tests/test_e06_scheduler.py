@@ -596,6 +596,31 @@ class RevisionSweepTests(SchedulerCase):
         self.assertIn("30-Jun-2026", self.issued[0])
         self.assertIn("31-Mar-2026", self.issued[1])
 
+    def test_explicit_period_override_limits_the_query_to_that_quarter(self):
+        prepare_database(self.db)
+        payload = run_attempt(attempt=1, datasets=('nse_financial_results',),
+                              result_period='2026-03', db_path=self.db,
+                              snapshot_root=self.snapshots, now_utc=self.now,
+                              fetcher=self.fetcher(RESULT_FEED), thresholds=self.thresholds)
+        self.assertEqual(payload['result_period'], '2026-03')
+        self.assertIsNone(payload['revision_period'])
+        self.assertEqual(payload['revisions'], [])
+        self.assertEqual(len(self.issued), 1)
+        self.assertIn('31-Mar-2026', self.issued[0])
+
+    def test_scheduler_shares_priorities_and_accepts_delayed_source_period(self):
+        from scrapper.sources.exchange.reporting_periods import priority_result_periods
+        delayed = nse_results((
+            "ALPHA,Alpha Industries Limited,Capital Goods,Quarterly,31-MAR-2026,"
+            "Audited,Non-cumulative,Consolidated,05-Aug-2026 18:30:00",
+        ))
+        payload = self.attempt(1, delayed, datasets=('nse_financial_results',))
+        self.assertEqual((payload['result_period'], payload['revision_period']),
+                         priority_result_periods(scheduled_for=self.today))
+        rows = self.rows('SELECT result_period FROM exchange_result_filings')
+        self.assertEqual([row['result_period'] for row in rows], ['2026-03'])
+        self.assertEqual(payload['datasets'][0]['outcome'], 'published_changed')
+
     def test_the_sweep_runs_on_one_rung_a_day_not_every_rung(self) -> None:
         first = self.attempt(1, RESULT_FEED, datasets=("nse_financial_results",))
         second = self.attempt(2, RESULT_FEED, datasets=("nse_financial_results",))

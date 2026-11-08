@@ -1,0 +1,36 @@
+x-browser-development-environment: &browser-development-environment
+  TRADING_AI_ENV: development
+  TRADING_AI_RUNTIME_IDENTITY_FILE: ""
+  SCRAPER_STORE_PATH: /development-data
+  SCRAPER_DB_PATH: /development-data/scraper.db
+  SCRAPER_DOCUMENT_STORE_PATH: /development-documents
+  DOCUMENT_REQUIRE_SENTINEL: "0"
+  DOCUMENT_STORE_REQUIRE_CAPACITY_FILE: "0"
+  DOCUMENT_MIN_FREE_BYTES: "0"
+  DOCUMENT_MIN_FREE_PERCENT: "0"
+
+x-browser-development-service: &browser-development-service
+  image: trading-ai-c052-development:local
+  build:
+    context: .
+  environment:
+    <<: *browser-development-environment
+  configs: !reset []
+  volumes: !override
+    - development-data:/development-data
+    - development-documents:/development-documents
+    - ./scrapper:/app/scrapper
+
+services:
+  browser-rating-crisil:
+    <<: *browser-development-service
+  browser-rating-icra:
+    <<: *browser-development-service
+  browser-rating-other:
+    <<: *browser-development-service
+  browser-rating-extract:
+    <<: *browser-development-service
+
+volumes:
+  development-data:
+  development-documents:

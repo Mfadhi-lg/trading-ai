@@ -10,7 +10,7 @@ from pathlib import Path
 
 from ..config import DB_PATH, assert_configured_writable_targets
 from ..pipeline.extract_document import extract_document
-from .quarter_documents import build_inventory
+from ..workflows.documents.quarter import build_inventory
 
 
 def pending_contents(conn, *, period, limit):

@@ -15,7 +15,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_MANIFEST = ROOT / "docs/cleanup/baselines/C04.1/migration-manifest.json"
+DEFAULT_MANIFEST = ROOT / "docs/cleanup/baselines/C22.3/migration-manifest.json"
 MIGRATIONS_DIR = ROOT / "scrapper/db/migrations"
 
 

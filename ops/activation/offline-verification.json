@@ -1,0 +1,35 @@
+{
+  "status": "PASS",
+  "image_reference": "trading-ai-ar02-period-release@sha256:a7025c3e70ea14939874aa2c1337a41845e3311ba9b5a4fc1a1004c6d6f4c16d",
+  "packaged_tests": 139,
+  "host_activation_tests": 8,
+  "host_activation_subtests": 6,
+  "total_tests": 147,
+  "skips": 0,
+  "source_files_verified_in_image": 645,
+  "exact_source_delta": "three application and three test files",
+  "baseline_files_preserved": 61,
+  "baseline_archive_and_review_reused": true,
+  "migrations_repeated": false,
+  "recovery_rehearsals_repeated": false,
+  "unrelated_tests_repeated": false,
+  "production_acquisition_executed": false,
+  "continuous_scheduling_started": false,
+  "production_mounts_in_tests": [],
+  "offline_default_periods": [
+    "2026-09",
+    "2026-06"
+  ],
+  "offline_override_periods": [
+    "2024-03"
+  ],
+  "nse_default_compose_services": [],
+  "nse_selected_compose_services": [
+    "nse-results"
+  ],
+  "scheduler_digest_repinned": true,
+  "scheduler_identity_authorized": false,
+  "readiness": "READY_FOR_ONE_BOUNDED_NSE_RUN_SUBJECT_TO_EXISTING_AUTOMATIC_LIVE_CHECKS",
+  "live_acceptance": "UNPROVEN",
+  "production_activation_command": "python3 ops/activation/nse_results.py --execute"
+}

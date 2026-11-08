@@ -6,6 +6,8 @@ import json
 import sqlite3
 from pathlib import Path
 
+from .writers import write_json_payload
+
 from ..config import EXPORTS
 
 
@@ -148,13 +150,5 @@ def write_trendlyne_export(
         / f"{symbol.upper()}-{resolved_source_period}.json"
     )
     destination.parent.mkdir(parents=True, exist_ok=True)
-    destination.write_text(
-        json.dumps(
-            build_trendlyne_export(conn, company_id, parse_id),
-            indent=2,
-            sort_keys=True,
-        )
-        + "\n",
-        encoding="utf-8",
-    )
+    write_json_payload(build_trendlyne_export(conn, company_id, parse_id), destination)
     return destination

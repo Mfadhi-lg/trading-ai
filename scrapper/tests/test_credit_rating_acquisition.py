@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import tempfile
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 from typing import Any
 
@@ -88,6 +89,18 @@ class CreditRatingAcquisitionTests(unittest.TestCase):
         self.db_path = self.root / "scraper.db"
         self.conn = connect(self.db_path)
         init_db(self.conn, apply_migrations=True)
+        # Exercise explicit restricted-policy behavior, independently of defaults.
+        restricted_hosts = frozenset({'crisil.com', 'crisilratings.com', 'icra.in'})
+        self.policy_patches = []
+        for target in ('scrapper.core.access_policy.BLOCKED_TERMS_HOSTS',
+                       'scrapper.db.documents.recovery.targets.BLOCKED_TERMS_HOSTS',
+                       'scrapper.db.document_recovery_repo.BLOCKED_TERMS_HOSTS'):
+            policy_patch = patch(target, restricted_hosts)
+            policy_patch.start()
+            self.policy_patches.append(policy_patch)
+            self.addCleanup(policy_patch.stop)
+        with self.conn:
+            self.conn.execute("UPDATE credit_rating_host_policy SET automation_status='BLOCKED_TERMS', max_concurrency=0 WHERE host IN ('crisil.com','www.crisil.com','crisilratings.com','www.crisilratings.com','icra.in','www.icra.in')")
         blob_path = self.root / "company.html"
         body = b"<html><body>accepted company page</body></html>"
         blob_path.write_bytes(body)
@@ -148,6 +161,8 @@ class CreditRatingAcquisitionTests(unittest.TestCase):
         self.parse_id = int(parse_id)
 
     def tearDown(self) -> None:
+        for policy_patch in getattr(self, "policy_patches", ()):
+            policy_patch.stop()
         self.conn.close()
         self.temp.cleanup()
 
@@ -240,7 +255,7 @@ class CreditRatingAcquisitionTests(unittest.TestCase):
             [(row["document_url"], row["period_end"]) for row in rows],
             [
                 ("https://example.com/q1-fy27.pptx", "2026-06-30"),
-                ("https://example.com/q4-fy26.pptx", None),
+                ("https://example.com/q4-fy26.pptx", "2026-03-31"),
             ],
         )
 

@@ -1,0 +1,774 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "credit-rating-intelligence/1.0.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "identity",
+    "certification",
+    "claims",
+    "groups",
+    "coverage_ledger",
+    "evidence_review_queue",
+    "source_coverage",
+    "provenance",
+    "execution"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "credit-rating-intelligence/1.0.0"
+    },
+    "identity": {
+      "type": "object",
+      "required": [
+        "company_id",
+        "company_id_namespace",
+        "company_name",
+        "document_id",
+        "content_sha256",
+        "rating_agency",
+        "report_date",
+        "publication_date",
+        "filing_date",
+        "reporting_periods",
+        "source_pdf",
+        "field_states",
+        "evidence"
+      ],
+      "properties": {
+        "content_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "company_id": {
+          "type": "string"
+        },
+        "company_name": {
+          "type": "string"
+        },
+        "document_id": {
+          "type": "string"
+        },
+        "report_date": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "publication_date": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "filing_date": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reporting_periods": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "field_states": {
+          "type": "object",
+          "additionalProperties": {
+            "enum": [
+              "DISCLOSED",
+              "NOT_DISCLOSED",
+              "UNRESOLVED"
+            ]
+          }
+        },
+        "evidence": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/evidence"
+          }
+        }
+      }
+    },
+    "certification": {
+      "type": "string"
+    },
+    "claims": {
+      "type": "array",
+      "items": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/claim"
+          },
+          {
+            "properties": {
+              "evidence_decision": {
+                "const": "SUPPORTED"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "groups": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rating",
+        "liquidity",
+        "assessment"
+      ],
+      "properties": {
+        "rating": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "facility",
+            "tenor",
+            "current_rating",
+            "previous_rating",
+            "action",
+            "outlook",
+            "facility_amount",
+            "watch",
+            "withdrawal",
+            "action_date"
+          ],
+          "properties": {
+            "facility": {
+              "$ref": "#/$defs/field"
+            },
+            "tenor": {
+              "$ref": "#/$defs/field"
+            },
+            "current_rating": {
+              "$ref": "#/$defs/field"
+            },
+            "previous_rating": {
+              "$ref": "#/$defs/field"
+            },
+            "action": {
+              "$ref": "#/$defs/field"
+            },
+            "outlook": {
+              "$ref": "#/$defs/field"
+            },
+            "facility_amount": {
+              "$ref": "#/$defs/field"
+            },
+            "watch": {
+              "$ref": "#/$defs/field"
+            },
+            "withdrawal": {
+              "$ref": "#/$defs/field"
+            },
+            "action_date": {
+              "$ref": "#/$defs/field"
+            }
+          }
+        },
+        "liquidity": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "assessment",
+            "cash_and_liquid_balances",
+            "bank_limit_utilisation",
+            "repayment_obligations",
+            "cash_accruals",
+            "explanations_and_constraints"
+          ],
+          "properties": {
+            "assessment": {
+              "$ref": "#/$defs/field"
+            },
+            "cash_and_liquid_balances": {
+              "$ref": "#/$defs/field"
+            },
+            "bank_limit_utilisation": {
+              "$ref": "#/$defs/field"
+            },
+            "repayment_obligations": {
+              "$ref": "#/$defs/field"
+            },
+            "cash_accruals": {
+              "$ref": "#/$defs/field"
+            },
+            "explanations_and_constraints": {
+              "$ref": "#/$defs/field"
+            }
+          }
+        },
+        "assessment": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "accounting_approach",
+            "revenue_and_profitability",
+            "revenue_explanations",
+            "profitability_explanations",
+            "debt_and_leverage",
+            "interest_coverage_and_debt_protection",
+            "working_capital_intensity",
+            "operational_strengths",
+            "business_weaknesses",
+            "concentration_risks",
+            "capex_and_execution_risks",
+            "agency_expectations",
+            "upgrade_sensitivities",
+            "downgrade_sensitivities",
+            "material_conditions",
+            "raw_material_and_forex_risk",
+            "pricing_and_cost_pass_through",
+            "order_book_and_execution",
+            "payment_and_covenant_risk",
+            "group_support"
+          ],
+          "properties": {
+            "accounting_approach": {
+              "$ref": "#/$defs/field"
+            },
+            "revenue_and_profitability": {
+              "$ref": "#/$defs/field"
+            },
+            "revenue_explanations": {
+              "$ref": "#/$defs/field"
+            },
+            "profitability_explanations": {
+              "$ref": "#/$defs/field"
+            },
+            "debt_and_leverage": {
+              "$ref": "#/$defs/field"
+            },
+            "interest_coverage_and_debt_protection": {
+              "$ref": "#/$defs/field"
+            },
+            "working_capital_intensity": {
+              "$ref": "#/$defs/field"
+            },
+            "operational_strengths": {
+              "$ref": "#/$defs/field"
+            },
+            "business_weaknesses": {
+              "$ref": "#/$defs/field"
+            },
+            "concentration_risks": {
+              "$ref": "#/$defs/field"
+            },
+            "capex_and_execution_risks": {
+              "$ref": "#/$defs/field"
+            },
+            "agency_expectations": {
+              "$ref": "#/$defs/field"
+            },
+            "upgrade_sensitivities": {
+              "$ref": "#/$defs/field"
+            },
+            "downgrade_sensitivities": {
+              "$ref": "#/$defs/field"
+            },
+            "material_conditions": {
+              "$ref": "#/$defs/field"
+            },
+            "raw_material_and_forex_risk": {
+              "$ref": "#/$defs/field"
+            },
+            "pricing_and_cost_pass_through": {
+              "$ref": "#/$defs/field"
+            },
+            "order_book_and_execution": {
+              "$ref": "#/$defs/field"
+            },
+            "payment_and_covenant_risk": {
+              "$ref": "#/$defs/field"
+            },
+            "group_support": {
+              "$ref": "#/$defs/field"
+            }
+          }
+        }
+      }
+    },
+    "coverage_ledger": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rating.facility",
+        "rating.tenor",
+        "rating.current_rating",
+        "rating.previous_rating",
+        "rating.action",
+        "rating.outlook",
+        "rating.facility_amount",
+        "rating.watch",
+        "rating.withdrawal",
+        "rating.action_date",
+        "liquidity.assessment",
+        "liquidity.cash_and_liquid_balances",
+        "liquidity.bank_limit_utilisation",
+        "liquidity.repayment_obligations",
+        "liquidity.cash_accruals",
+        "liquidity.explanations_and_constraints",
+        "assessment.accounting_approach",
+        "assessment.revenue_and_profitability",
+        "assessment.revenue_explanations",
+        "assessment.profitability_explanations",
+        "assessment.debt_and_leverage",
+        "assessment.interest_coverage_and_debt_protection",
+        "assessment.working_capital_intensity",
+        "assessment.operational_strengths",
+        "assessment.business_weaknesses",
+        "assessment.concentration_risks",
+        "assessment.capex_and_execution_risks",
+        "assessment.agency_expectations",
+        "assessment.upgrade_sensitivities",
+        "assessment.downgrade_sensitivities",
+        "assessment.material_conditions",
+        "assessment.raw_material_and_forex_risk",
+        "assessment.pricing_and_cost_pass_through",
+        "assessment.order_book_and_execution",
+        "assessment.payment_and_covenant_risk",
+        "assessment.group_support"
+      ],
+      "properties": {
+        "rating.facility": {
+          "$ref": "#/$defs/field"
+        },
+        "rating.tenor": {
+          "$ref": "#/$defs/field"
+        },
+        "rating.current_rating": {
+          "$ref": "#/$defs/field"
+        },
+        "rating.previous_rating": {
+          "$ref": "#/$defs/field"
+        },
+        "rating.action": {
+          "$ref": "#/$defs/field"
+        },
+        "rating.outlook": {
+          "$ref": "#/$defs/field"
+        },
+        "rating.facility_amount": {
+          "$ref": "#/$defs/field"
+        },
+        "rating.watch": {
+          "$ref": "#/$defs/field"
+        },
+        "rating.withdrawal": {
+          "$ref": "#/$defs/field"
+        },
+        "rating.action_date": {
+          "$ref": "#/$defs/field"
+        },
+        "liquidity.assessment": {
+          "$ref": "#/$defs/field"
+        },
+        "liquidity.cash_and_liquid_balances": {
+          "$ref": "#/$defs/field"
+        },
+        "liquidity.bank_limit_utilisation": {
+          "$ref": "#/$defs/field"
+        },
+        "liquidity.repayment_obligations": {
+          "$ref": "#/$defs/field"
+        },
+        "liquidity.cash_accruals": {
+          "$ref": "#/$defs/field"
+        },
+        "liquidity.explanations_and_constraints": {
+          "$ref": "#/$defs/field"
+        },
+        "assessment.accounting_approach": {
+          "$ref": "#/$defs/field"
+        },
+        "assessment.revenue_and_profitability": {
+          "$ref": "#/$defs/field"
+        },
+        "assessment.revenue_explanations": {
+          "$ref": "#/$defs/field"
+        },
+        "assessment.profitability_explanations": {
+          "$ref": "#/$defs/field"
+        },
+        "assessment.debt_and_leverage": {
+          "$ref": "#/$defs/field"
+        },
+        "assessment.interest_coverage_and_debt_protection": {
+          "$ref": "#/$defs/field"
+        },
+        "assessment.working_capital_intensity": {
+          "$ref": "#/$defs/field"
+        },
+        "assessment.operational_strengths": {
+          "$ref": "#/$defs/field"
+        },
+        "assessment.business_weaknesses": {
+          "$ref": "#/$defs/field"
+        },
+        "assessment.concentration_risks": {
+          "$ref": "#/$defs/field"
+        },
+        "assessment.capex_and_execution_risks": {
+          "$ref": "#/$defs/field"
+        },
+        "assessment.agency_expectations": {
+          "$ref": "#/$defs/field"
+        },
+        "assessment.upgrade_sensitivities": {
+          "$ref": "#/$defs/field"
+        },
+        "assessment.downgrade_sensitivities": {
+          "$ref": "#/$defs/field"
+        },
+        "assessment.material_conditions": {
+          "$ref": "#/$defs/field"
+        },
+        "assessment.raw_material_and_forex_risk": {
+          "$ref": "#/$defs/field"
+        },
+        "assessment.pricing_and_cost_pass_through": {
+          "$ref": "#/$defs/field"
+        },
+        "assessment.order_book_and_execution": {
+          "$ref": "#/$defs/field"
+        },
+        "assessment.payment_and_covenant_risk": {
+          "$ref": "#/$defs/field"
+        },
+        "assessment.group_support": {
+          "$ref": "#/$defs/field"
+        }
+      }
+    },
+    "evidence_review_queue": {
+      "type": "array",
+      "items": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/claim"
+          },
+          {
+            "properties": {
+              "evidence_decision": {
+                "enum": [
+                  "NEEDS_REVIEW",
+                  "WITHHELD"
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    "source_coverage": {
+      "type": "object"
+    },
+    "provenance": {
+      "type": "object"
+    },
+    "execution": {
+      "type": "object",
+      "required": [
+        "network",
+        "database_connections",
+        "inference_calls",
+        "modes"
+      ],
+      "properties": {
+        "network": {
+          "const": "denied"
+        },
+        "database_connections": {
+          "const": "denied"
+        },
+        "inference_calls": {
+          "const": 0
+        },
+        "modes": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "deterministic_extraction",
+              "replayed_ai", "generated_ai"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "field": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "state",
+        "claim_ids",
+        "review_claim_ids",
+        "completeness",
+        "reason"
+      ],
+      "properties": {
+        "state": {
+          "enum": [
+            "DISCLOSED",
+            "NOT_DISCLOSED",
+            "UNRESOLVED"
+          ]
+        },
+        "claim_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "review_claim_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "completeness": {
+          "enum": [
+            "PARTIAL",
+            "UNRESOLVED"
+          ]
+        },
+        "reason": {
+          "type": "string"
+        }
+      }
+    },
+    "claim": {
+      "type": "object",
+      "required": [
+        "claim_id",
+        "fields",
+        "statement",
+        "value",
+        "unit",
+        "period",
+        "accounting_scope",
+        "attribution",
+        "qualifications",
+        "statement_kind",
+        "evidence_decision",
+        "phase5_status",
+        "evidence",
+        "validation",
+        "origin"
+      ],
+      "properties": {
+        "claim_id": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "rating.facility",
+              "rating.tenor",
+              "rating.current_rating",
+              "rating.previous_rating",
+              "rating.action",
+              "rating.outlook",
+              "rating.facility_amount",
+              "rating.watch",
+              "rating.withdrawal",
+              "rating.action_date",
+              "liquidity.assessment",
+              "liquidity.cash_and_liquid_balances",
+              "liquidity.bank_limit_utilisation",
+              "liquidity.repayment_obligations",
+              "liquidity.cash_accruals",
+              "liquidity.explanations_and_constraints",
+              "assessment.accounting_approach",
+              "assessment.revenue_and_profitability",
+              "assessment.revenue_explanations",
+              "assessment.profitability_explanations",
+              "assessment.debt_and_leverage",
+              "assessment.interest_coverage_and_debt_protection",
+              "assessment.working_capital_intensity",
+              "assessment.operational_strengths",
+              "assessment.business_weaknesses",
+              "assessment.concentration_risks",
+              "assessment.capex_and_execution_risks",
+              "assessment.agency_expectations",
+              "assessment.upgrade_sensitivities",
+              "assessment.downgrade_sensitivities",
+              "assessment.material_conditions",
+              "assessment.raw_material_and_forex_risk",
+              "assessment.pricing_and_cost_pass_through",
+              "assessment.order_book_and_execution",
+              "assessment.payment_and_covenant_risk",
+              "assessment.group_support"
+            ]
+          }
+        },
+        "statement": {
+          "type": "string"
+        },
+        "value": {},
+        "unit": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "period": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "accounting_scope": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "attribution": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "qualifications": {
+          "type": "array"
+        },
+        "statement_kind": {
+          "type": "string"
+        },
+        "evidence_decision": {
+          "enum": [
+            "SUPPORTED",
+            "NEEDS_REVIEW",
+            "WITHHELD"
+          ]
+        },
+        "phase5_status": {
+          "enum": [
+            "VERIFIED",
+            "EVIDENCED_STATEMENT",
+            "AMBIGUOUS",
+            "UNSUPPORTED"
+          ]
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/evidence"
+          }
+        },
+        "validation": {
+          "type": "object"
+        },
+        "origin": {
+          "type": "object",
+          "required": [
+            "mode"
+          ],
+          "properties": {
+            "mode": {
+              "enum": [
+                "deterministic_extraction",
+                "replayed_ai", "generated_ai",
+                "live_ai"
+              ]
+            }
+          }
+        },
+        "original_candidate": {
+          "type": "object"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "evidence_decision": {
+                "const": "SUPPORTED"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "evidence": {
+                "minItems": 1
+              },
+              "fields": {
+                "minItems": 1
+              }
+            }
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "type": "object",
+      "required": [
+        "source_document_sha256",
+        "region_id",
+        "canonical_sha256",
+        "page",
+        "kind",
+        "start",
+        "end",
+        "quote",
+        "text_origin",
+        "validation"
+      ],
+      "properties": {
+        "source_document_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "canonical_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "region_id": {
+          "type": "string"
+        },
+        "page": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "kind": {
+          "enum": [
+            "page_text",
+            "element_text",
+            "table_cell"
+          ]
+        },
+        "start": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "end": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "quote": {
+          "type": "string",
+          "minLength": 1
+        },
+        "text_origin": {
+          "enum": [
+            "native",
+            "ocr"
+          ]
+        },
+        "validation": {
+          "const": "EXACT_SOURCE_LOCATOR_VALIDATED"
+        }
+      }
+    }
+  }
+}

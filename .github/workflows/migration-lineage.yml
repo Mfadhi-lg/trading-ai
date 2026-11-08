@@ -16,5 +16,7 @@ jobs:
         run: python scripts/audit/check_migration_manifest.py
       - name: Check disposable ledger expectations
         run: python -m unittest scrapper.tests.test_migration_manifest -v
+      - name: Check explicit migration and read-only connection controls
+        run: python -m unittest scrapper.tests.test_database_migration_controls -v
       - name: Check rejected migration source and archive drift
         run: python -m unittest discover -s scripts/audit -p test_migration_lineage.py -v

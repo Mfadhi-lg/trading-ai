@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
+from .document_work_claims import OwnershipLost, assert_extraction_owned, release_extraction
 from dataclasses import dataclass
 from typing import Any
 
@@ -150,8 +151,20 @@ def persist_extraction(
     started_at_utc: str,
     completed_at_utc: str,
     error: dict[str, Any] | None = None,
+    claim: dict[str, Any] | None = None,
 ) -> PersistedExtraction:
     options_json = canonical_json(options)
+    if claim is not None:
+        expected_key = canonical_json([content_id, DOCUMENT_PARSER_NAME,
+            DOCUMENT_PARSER_VERSION, ocr_engine, ocr_engine_version, options_json])
+        if claim['resource_key'] != expected_key:
+            raise OwnershipLost('Extraction claim does not match content/parser/OCR/options')
+        conn.execute('BEGIN IMMEDIATE')
+        try:
+            assert_extraction_owned(conn, claim)
+        except BaseException:
+            conn.rollback()
+            raise
     existing = _existing(
         conn,
         content_id=content_id,
@@ -160,6 +173,9 @@ def persist_extraction(
         options_json=options_json,
     )
     if existing is not None:
+        if claim is not None:
+            release_extraction(conn, claim)
+            conn.commit()
         return _result(existing, reused=True)
     content = conn.execute(
         """SELECT content.artifact_id, content.media_type, content.extraction_status,
@@ -289,6 +305,8 @@ def persist_extraction(
                            transcript_preference_status=? WHERE artifact_id=?""",
                     (content_id, transcript_status, int(content["artifact_id"])),
                 )
+        if claim is not None:
+            release_extraction(conn, claim)
     row = conn.execute(
         "SELECT * FROM document_extractions WHERE extraction_id=?", (extraction_id,)
     ).fetchone()

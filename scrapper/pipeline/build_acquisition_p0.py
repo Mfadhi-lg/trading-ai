@@ -251,7 +251,6 @@ def _load_candidates(conn: sqlite3.Connection) -> tuple[ArtifactCandidate, ...]:
             features.add("source:alternate_rating_recovery")
         if any(
             str(item["automation_status"]) == "BLOCKED_TERMS"
-            or any(_matches(_host(str(item["document_url"])), base) for base in ("crisil.com", "crisilratings.com", "icra.in"))
             for item in source_rows
         ):
             features.add("source:blocked_cra_original")

@@ -1,0 +1,32 @@
+{
+  "scope": "Date-driven NSE acquisition offline correction",
+  "date": "2026-10-08",
+  "production_execution": false,
+  "sealed_release_modified": false,
+  "replacement_image_required": true,
+  "tests": [
+    "ops/activation/test_nse_results.py",
+    "scrapper/tests/test_reporting_periods.py",
+    "scrapper/tests/test_e06_scheduler.py",
+    "scrapper/tests/test_e01_exchange_universe.py",
+    "scrapper/tests/test_e02_snapshot_guard.py",
+    "scrapper/tests/test_ar02_snapshot_dates.py",
+    "scrapper/tests/test_ar022_access_block.py"
+  ],
+  "result": "147 passed, 30 subtests passed in 11.75s; no skips",
+  "python_version": "3.13.13 (host cached test environment; replacement image verification still required)",
+  "command": "env TRADING_AI_ENV=test SCRAPER_STORE_PATH=/private/tmp/trading-ai-period-tests PYTHONPATH=/Users/mohamedfadhi/.cache/uv/archive-v0/4GTYw8_mNnscx89r/lib/python3.13/site-packages /Users/mohamedfadhi/.cache/uv/archive-v0/-WyGD_mChAFVX11K/bin/python -m pytest ops/activation/test_nse_results.py scrapper/tests/test_reporting_periods.py scrapper/tests/test_e06_scheduler.py scrapper/tests/test_e01_exchange_universe.py scrapper/tests/test_e02_snapshot_guard.py scrapper/tests/test_ar02_snapshot_dates.py scrapper/tests/test_ar022_access_block.py -q --tb=short",
+  "offline_configuration": "PASS; priorities 2026-09, 2026-06; no production access",
+  "file_sha256": {
+    "scrapper/sources/exchange/reporting_periods.py": "ab2248dc0f554b96fcec5de2627bc382bf72de0152f8d945a6fd794fa73f58e4",
+    "scrapper/sources/exchange/result_filings.py": "0c4ea0ca298c7fe1e6e63e8cdb1ebd56c94bab74f7a8f015610d664c6315f9f7",
+    "scrapper/workflows/exchange/schedule.py": "89001464dd1f2e5238c80d72972631f22c32add2e5980b7321369c3b14dfba84",
+    "ops/activation/nse_results.py": "386c70b9b11317bbeedc536098d800ff8ae4945b96278491ad6395758f21d66c",
+    "ops/activation/nse_results_runtime.py": "99b405d55248d663f5c864ebe071891533a9f2c63220a71034b8e79c5c139fc7",
+    "ops/activation/compose.nse.json": "21c9b88c40c6c88503ca0879578fd862f3c36c4cf933232388599dc3dbdc3eaa",
+    "ops/activation/test_nse_results.py": "5e7ee2444b7ec92da3bd57715cb68620feba889995c2da12e8fdf8db0f9287bd",
+    "scrapper/tests/test_reporting_periods.py": "b9f4291562c8350268c754fc72b35590efb4af5fd003783beebecb690221849d",
+    "scrapper/tests/test_e01_exchange_universe.py": "75aad45422fffa2122822351090c984f441df78c87f250cfb1b5e5bbd9edf8f3",
+    "scrapper/tests/test_e06_scheduler.py": "f000c629726deeb2cf98eff9b5ed998672e555382552a33df19e3e1e5a650a87"
+  }
+}

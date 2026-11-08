@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any
 
 from .repo import utc_now
-from .artifact_reconciliation_repo import ensure_discovered_artifact_expectations
+from .documents.expectations import ensure_discovered_artifact_expectations
 from ..config import SNAPSHOTS
 from ..sources.documents.discovery import (
     DISCOVERY_PARSER_NAME,
@@ -103,9 +103,10 @@ def _store_discovery_blob(
         """INSERT OR IGNORE INTO response_blobs
            (content_sha256, content_type, encoding, byte_size, local_path,
             first_observed_at_utc, created_at_utc)
-           VALUES (?, 'text/html', 'utf-8', ?, ?, ?, ?)""",
+           VALUES (?, ?, 'utf-8', ?, ?, ?, ?)""",
         (
             sha256,
+            'application/json' if suffix=='.json' else 'text/html',
             len(page.content),
             str(destination.resolve()),
             observed_at_utc,
@@ -230,6 +231,7 @@ def persist_discovery_plan(
     *,
     observed_at_utc: str | None = None,
     snapshot_root: Path = SNAPSHOTS,
+    verified_company_id: int | None = None,
 ) -> DiscoveryPersistenceResult:
     """Persist a plan atomically and without mutating prior discovery evidence."""
 
@@ -242,9 +244,12 @@ def persist_discovery_plan(
     artifact_ids: list[int] = []
     source_ids: list[int] = []
     with conn:
-        company_id = _ensure_company(
-            conn, symbol=plan.symbol, company_name=plan.company_name
-        )
+        if verified_company_id is None:
+            company_id = _ensure_company(conn, symbol=plan.symbol, company_name=plan.company_name)
+        else:
+            company_id = verified_company_id
+            if not conn.execute('SELECT 1 FROM companies WHERE company_id=?', (company_id,)).fetchone():
+                raise ValueError('Unknown verified discovery company')
         for page in plan.pages:
             blob_id = _store_discovery_blob(
                 conn,
@@ -313,6 +318,8 @@ def persist_discovery_plan(
                     "discovery_page_sha256": candidate.discovery_page_sha256,
                     "parser_name": DISCOVERY_PARSER_NAME,
                     "parser_version": DISCOVERY_PARSER_VERSION,
+                    "published_at_utc": candidate.published_at_utc,
+                    "source_title_raw": candidate.title_raw,
                 },
                 sort_keys=True,
                 separators=(",", ":"),

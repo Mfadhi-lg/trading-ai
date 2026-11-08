@@ -1,0 +1,801 @@
+{
+  "source_sha256": "b0f06214a0b40f2327eb17e18b0ee88fc3f63436bd8430b9c455733781650a05",
+  "canonical_sha256": "1c2717f1f478ca9902a2fdcf77530b124e5d0ca80ee36895a6ed4aab76160708",
+  "review_metadata": {
+    "reviewer": "Codex implementation agent",
+    "date": "2026-10-24",
+    "basis": "Direct hash-verified original PDFs: EKC physical pages 2-3; Vimta physical page 2, compared with retained canonical text and the four original candidates. Not independent human certification.",
+    "distinction": "derivation_basis distinguishes retained statement splits from propositions introduced from source passages; no reference answers used."
+  },
+  "candidates": [
+    {
+      "atomic_key": "A16.cash",
+      "parent_claim_id": "28d7ba37ea6982cdaac88d0acef96e4a361d0784b2057597cfd4e85da495e7b8",
+      "parent_candidate_sha256": "5d4a92edc56418bb0680f4df13bdc02a38dec244609522782c2c1434c333bb52",
+      "fields": [
+        "liquidity.cash_and_liquid_balances"
+      ],
+      "statement": "Free cash and bank balance was ₹64.9 crore as on March 31, 2024.",
+      "value": "64.9",
+      "unit": "₹ crore",
+      "period": "March 31, 2024",
+      "period_kind": "reporting_date",
+      "accounting_scope": null,
+      "attribution": "CARE Ratings",
+      "statement_kind": "agency_assessment",
+      "qualifications": [],
+      "conditions": [],
+      "derivation_basis": "retained_candidate_split",
+      "support": [
+        {
+          "page": 3,
+          "kind": "page_text",
+          "element": null,
+          "start": 1738,
+          "end": 2610,
+          "quote": "Liquidity: Adequate\nThe company’s liquidity is expected to remain adequate and improve further with healthy GCA expected above ₹130 crore in\nmedium term. In addition to this, EKCL’s average maximum utilisation of its working capital limits (inclusive of fund based and\nnon-fund-based limits) is comfortable at ~34% for last 12 months ended June 30, 2024. Moreover, the company’s free cash and\nbank balance was ₹64.9 crore as on March 31, 2024. Against all these sources of funds, the company currently has no principal\ndebt obligations; however, given the debt-funded capex both on standalone and consolidated basis, the repayment is expected\nto start from FY26-FY27 onwards. Despite the elongated working capital cycle due to high inventory days, considering the\ncompany’s healthy gross accruals, the EKCL’s liquidity is adequate to service the upcoming debt obligations.",
+          "text_origin": "native",
+          "bbox": null
+        }
+      ]
+    },
+    {
+      "atomic_key": "A16.utilisation",
+      "parent_claim_id": "28d7ba37ea6982cdaac88d0acef96e4a361d0784b2057597cfd4e85da495e7b8",
+      "parent_candidate_sha256": "5d4a92edc56418bb0680f4df13bdc02a38dec244609522782c2c1434c333bb52",
+      "fields": [
+        "liquidity.bank_limit_utilisation"
+      ],
+      "statement": "Average maximum utilisation of working capital limits was ~34% for last 12 months ended June 30, 2024.",
+      "value": "~34",
+      "unit": "%",
+      "period": "last 12 months ended June 30, 2024",
+      "period_kind": "observation_window",
+      "accounting_scope": null,
+      "attribution": "CARE Ratings",
+      "statement_kind": "agency_assessment",
+      "qualifications": [
+        "Average maximum, not average utilisation alone; inclusive of fund based and non-fund-based limits."
+      ],
+      "conditions": [],
+      "derivation_basis": "retained_candidate_split",
+      "support": [
+        {
+          "page": 3,
+          "kind": "page_text",
+          "element": null,
+          "start": 1738,
+          "end": 2610,
+          "quote": "Liquidity: Adequate\nThe company’s liquidity is expected to remain adequate and improve further with healthy GCA expected above ₹130 crore in\nmedium term. In addition to this, EKCL’s average maximum utilisation of its working capital limits (inclusive of fund based and\nnon-fund-based limits) is comfortable at ~34% for last 12 months ended June 30, 2024. Moreover, the company’s free cash and\nbank balance was ₹64.9 crore as on March 31, 2024. Against all these sources of funds, the company currently has no principal\ndebt obligations; however, given the debt-funded capex both on standalone and consolidated basis, the repayment is expected\nto start from FY26-FY27 onwards. Despite the elongated working capital cycle due to high inventory days, considering the\ncompany’s healthy gross accruals, the EKCL’s liquidity is adequate to service the upcoming debt obligations.",
+          "text_origin": "native",
+          "bbox": null
+        }
+      ]
+    },
+    {
+      "atomic_key": "A16.accruals",
+      "parent_claim_id": "28d7ba37ea6982cdaac88d0acef96e4a361d0784b2057597cfd4e85da495e7b8",
+      "parent_candidate_sha256": "5d4a92edc56418bb0680f4df13bdc02a38dec244609522782c2c1434c333bb52",
+      "fields": [
+        "liquidity.cash_accruals"
+      ],
+      "statement": "Healthy GCA is expected above ₹130 crore in medium term.",
+      "value": "above 130",
+      "unit": "₹ crore",
+      "period": "medium term",
+      "period_kind": "expectation_horizon",
+      "accounting_scope": null,
+      "attribution": "CARE Ratings",
+      "statement_kind": "agency_assessment",
+      "qualifications": [
+        "Expected, not realised; source label GCA retained."
+      ],
+      "conditions": [],
+      "derivation_basis": "retained_candidate_split",
+      "support": [
+        {
+          "page": 3,
+          "kind": "page_text",
+          "element": null,
+          "start": 1738,
+          "end": 2610,
+          "quote": "Liquidity: Adequate\nThe company’s liquidity is expected to remain adequate and improve further with healthy GCA expected above ₹130 crore in\nmedium term. In addition to this, EKCL’s average maximum utilisation of its working capital limits (inclusive of fund based and\nnon-fund-based limits) is comfortable at ~34% for last 12 months ended June 30, 2024. Moreover, the company’s free cash and\nbank balance was ₹64.9 crore as on March 31, 2024. Against all these sources of funds, the company currently has no principal\ndebt obligations; however, given the debt-funded capex both on standalone and consolidated basis, the repayment is expected\nto start from FY26-FY27 onwards. Despite the elongated working capital cycle due to high inventory days, considering the\ncompany’s healthy gross accruals, the EKCL’s liquidity is adequate to service the upcoming debt obligations.",
+          "text_origin": "native",
+          "bbox": null
+        }
+      ]
+    },
+    {
+      "atomic_key": "A16.current-repayments",
+      "parent_claim_id": "28d7ba37ea6982cdaac88d0acef96e4a361d0784b2057597cfd4e85da495e7b8",
+      "parent_candidate_sha256": "5d4a92edc56418bb0680f4df13bdc02a38dec244609522782c2c1434c333bb52",
+      "fields": [
+        "liquidity.repayment_obligations"
+      ],
+      "statement": "The company currently has no principal debt obligations.",
+      "value": "no principal debt obligations",
+      "unit": null,
+      "period": "currently",
+      "period_kind": "relative_observation",
+      "accounting_scope": null,
+      "attribution": "CARE Ratings",
+      "statement_kind": "agency_assessment",
+      "qualifications": [
+        "Current statement only; not absence of future repayments."
+      ],
+      "conditions": [
+        "Given the debt-funded capex both on standalone and consolidated basis, repayment is expected to start from FY26-FY27 onwards."
+      ],
+      "derivation_basis": "retained_candidate_split",
+      "support": [
+        {
+          "page": 3,
+          "kind": "page_text",
+          "element": null,
+          "start": 1738,
+          "end": 2610,
+          "quote": "Liquidity: Adequate\nThe company’s liquidity is expected to remain adequate and improve further with healthy GCA expected above ₹130 crore in\nmedium term. In addition to this, EKCL’s average maximum utilisation of its working capital limits (inclusive of fund based and\nnon-fund-based limits) is comfortable at ~34% for last 12 months ended June 30, 2024. Moreover, the company’s free cash and\nbank balance was ₹64.9 crore as on March 31, 2024. Against all these sources of funds, the company currently has no principal\ndebt obligations; however, given the debt-funded capex both on standalone and consolidated basis, the repayment is expected\nto start from FY26-FY27 onwards. Despite the elongated working capital cycle due to high inventory days, considering the\ncompany’s healthy gross accruals, the EKCL’s liquidity is adequate to service the upcoming debt obligations.",
+          "text_origin": "native",
+          "bbox": null
+        }
+      ]
+    },
+    {
+      "atomic_key": "A16.future-repayments",
+      "parent_claim_id": "28d7ba37ea6982cdaac88d0acef96e4a361d0784b2057597cfd4e85da495e7b8",
+      "parent_candidate_sha256": "5d4a92edc56418bb0680f4df13bdc02a38dec244609522782c2c1434c333bb52",
+      "fields": [
+        "liquidity.repayment_obligations"
+      ],
+      "statement": "Given the debt-funded capex both on standalone and consolidated basis, repayment is expected to start from FY26-FY27 onwards.",
+      "value": "repayment expected to start",
+      "unit": null,
+      "period": "FY26-FY27 onwards",
+      "period_kind": "expected_commencement",
+      "accounting_scope": null,
+      "attribution": "CARE Ratings",
+      "statement_kind": "agency_assessment",
+      "qualifications": [
+        "Expected commencement; no repayment amount disclosed here."
+      ],
+      "conditions": [
+        "Given the debt-funded capex both on standalone and consolidated basis."
+      ],
+      "derivation_basis": "source_review_addition",
+      "support": [
+        {
+          "page": 3,
+          "kind": "page_text",
+          "element": null,
+          "start": 1738,
+          "end": 2610,
+          "quote": "Liquidity: Adequate\nThe company’s liquidity is expected to remain adequate and improve further with healthy GCA expected above ₹130 crore in\nmedium term. In addition to this, EKCL’s average maximum utilisation of its working capital limits (inclusive of fund based and\nnon-fund-based limits) is comfortable at ~34% for last 12 months ended June 30, 2024. Moreover, the company’s free cash and\nbank balance was ₹64.9 crore as on March 31, 2024. Against all these sources of funds, the company currently has no principal\ndebt obligations; however, given the debt-funded capex both on standalone and consolidated basis, the repayment is expected\nto start from FY26-FY27 onwards. Despite the elongated working capital cycle due to high inventory days, considering the\ncompany’s healthy gross accruals, the EKCL’s liquidity is adequate to service the upcoming debt obligations.",
+          "text_origin": "native",
+          "bbox": null
+        }
+      ]
+    },
+    {
+      "atomic_key": "A16.liquidity-rationale",
+      "parent_claim_id": "28d7ba37ea6982cdaac88d0acef96e4a361d0784b2057597cfd4e85da495e7b8",
+      "parent_candidate_sha256": "5d4a92edc56418bb0680f4df13bdc02a38dec244609522782c2c1434c333bb52",
+      "fields": [
+        "liquidity.explanations_and_constraints"
+      ],
+      "statement": "Liquidity is expected to remain adequate and improve further; despite the elongated working capital cycle due to high inventory days, healthy gross accruals support servicing upcoming debt obligations.",
+      "value": "adequate",
+      "unit": null,
+      "period": null,
+      "period_kind": "unspecified",
+      "accounting_scope": null,
+      "attribution": "CARE Ratings",
+      "statement_kind": "agency_assessment",
+      "qualifications": [
+        "Agency assessment and expectation, not a guarantee of servicing debt."
+      ],
+      "conditions": [
+        "Despite the elongated working capital cycle due to high inventory days; considering healthy gross accruals."
+      ],
+      "derivation_basis": "source_review_addition",
+      "support": [
+        {
+          "page": 3,
+          "kind": "page_text",
+          "element": null,
+          "start": 1738,
+          "end": 2610,
+          "quote": "Liquidity: Adequate\nThe company’s liquidity is expected to remain adequate and improve further with healthy GCA expected above ₹130 crore in\nmedium term. In addition to this, EKCL’s average maximum utilisation of its working capital limits (inclusive of fund based and\nnon-fund-based limits) is comfortable at ~34% for last 12 months ended June 30, 2024. Moreover, the company’s free cash and\nbank balance was ₹64.9 crore as on March 31, 2024. Against all these sources of funds, the company currently has no principal\ndebt obligations; however, given the debt-funded capex both on standalone and consolidated basis, the repayment is expected\nto start from FY26-FY27 onwards. Despite the elongated working capital cycle due to high inventory days, considering the\ncompany’s healthy gross accruals, the EKCL’s liquidity is adequate to service the upcoming debt obligations.",
+          "text_origin": "native",
+          "bbox": null
+        }
+      ]
+    },
+    {
+      "atomic_key": "A13.capex-estimate",
+      "parent_claim_id": "ef157f864906aec5ac6665821c1c4179effbc350cf4253db40c5676a6f7c5720",
+      "parent_candidate_sha256": "a514d18ec27581a596faf98d334648cfe992b198471efa7c42cb47cb727abcca",
+      "fields": [
+        "assessment.capex_and_execution_risks"
+      ],
+      "statement": "Capex in process in Mundra (India) and Egypt has an estimated total cost of ~₹307.00 crore, inclusive of interest capitalisation.",
+      "value": "~307.00",
+      "unit": "₹ crore",
+      "period": null,
+      "period_kind": "unspecified",
+      "accounting_scope": null,
+      "attribution": "CARE Ratings",
+      "statement_kind": "agency_assessment",
+      "qualifications": [
+        "Estimate for ongoing capex; not completed expenditure. The total expenditure period is not explicitly stated."
+      ],
+      "conditions": [],
+      "derivation_basis": "retained_candidate_split",
+      "disclosure_category": "capital_expenditure",
+      "support": [
+        {
+          "page": 2,
+          "kind": "page_text",
+          "element": null,
+          "start": 4206,
+          "end": 4662,
+          "quote": "The company is in process of incurring capex both in domestic (Mundra) and global market (Egypt). The total capex cost is\nestimated to ~₹307.00 crore, inclusive of interest capitalisation. Around 61% of the capex is scheduled to be funded by bank\nborrowings over FY25-FY26. Despite this addition of term loan, the company’s overall gearing is expected to remain below unity\nin coming years. This is due to healthy GCA strengthening the company’s net worth.",
+          "text_origin": "native",
+          "bbox": null
+        }
+      ]
+    },
+    {
+      "atomic_key": "A13.bank-funding",
+      "parent_claim_id": "ef157f864906aec5ac6665821c1c4179effbc350cf4253db40c5676a6f7c5720",
+      "parent_candidate_sha256": "a514d18ec27581a596faf98d334648cfe992b198471efa7c42cb47cb727abcca",
+      "fields": [
+        "assessment.capex_and_execution_risks"
+      ],
+      "statement": "Around 61% of the capex is scheduled to be funded by bank borrowings over FY25-FY26.",
+      "value": "around 61",
+      "unit": "%",
+      "period": "FY25-FY26",
+      "period_kind": "scheduled_funding_window",
+      "accounting_scope": null,
+      "attribution": "CARE Ratings",
+      "statement_kind": "agency_assessment",
+      "qualifications": [
+        "Scheduled funding, not realised borrowings; do not assign this window to all expenditure."
+      ],
+      "conditions": [],
+      "derivation_basis": "retained_candidate_split",
+      "disclosure_category": "capital_expenditure",
+      "support": [
+        {
+          "page": 2,
+          "kind": "page_text",
+          "element": null,
+          "start": 4206,
+          "end": 4662,
+          "quote": "The company is in process of incurring capex both in domestic (Mundra) and global market (Egypt). The total capex cost is\nestimated to ~₹307.00 crore, inclusive of interest capitalisation. Around 61% of the capex is scheduled to be funded by bank\nborrowings over FY25-FY26. Despite this addition of term loan, the company’s overall gearing is expected to remain below unity\nin coming years. This is due to healthy GCA strengthening the company’s net worth.",
+          "text_origin": "native",
+          "bbox": null
+        }
+      ]
+    },
+    {
+      "atomic_key": "A13.gearing-expectation",
+      "parent_claim_id": "ef157f864906aec5ac6665821c1c4179effbc350cf4253db40c5676a6f7c5720",
+      "parent_candidate_sha256": "a514d18ec27581a596faf98d334648cfe992b198471efa7c42cb47cb727abcca",
+      "fields": [
+        "assessment.capex_and_execution_risks"
+      ],
+      "statement": "Despite the addition of term loan, overall gearing is expected to remain below unity in coming years.",
+      "value": "below unity",
+      "unit": null,
+      "period": "coming years",
+      "period_kind": "expectation_horizon",
+      "accounting_scope": null,
+      "attribution": "CARE Ratings",
+      "statement_kind": "agency_assessment",
+      "qualifications": [
+        "CARE expectation; not an observed gearing ratio."
+      ],
+      "conditions": [
+        "Healthy GCA strengthening net worth."
+      ],
+      "derivation_basis": "source_review_addition",
+      "disclosure_category": "capital_expenditure",
+      "support": [
+        {
+          "page": 2,
+          "kind": "page_text",
+          "element": null,
+          "start": 4206,
+          "end": 4662,
+          "quote": "The company is in process of incurring capex both in domestic (Mundra) and global market (Egypt). The total capex cost is\nestimated to ~₹307.00 crore, inclusive of interest capitalisation. Around 61% of the capex is scheduled to be funded by bank\nborrowings over FY25-FY26. Despite this addition of term loan, the company’s overall gearing is expected to remain below unity\nin coming years. This is due to healthy GCA strengthening the company’s net worth.",
+          "text_origin": "native",
+          "bbox": null
+        }
+      ]
+    },
+    {
+      "atomic_key": "A13.net-debt-expectation",
+      "parent_claim_id": "ef157f864906aec5ac6665821c1c4179effbc350cf4253db40c5676a6f7c5720",
+      "parent_candidate_sha256": "a514d18ec27581a596faf98d334648cfe992b198471efa7c42cb47cb727abcca",
+      "fields": [
+        "assessment.capex_and_execution_risks"
+      ],
+      "statement": "Net debt is expected to increase in upcoming years due to debt-funded ongoing capex.",
+      "value": "expected increase",
+      "unit": null,
+      "period": "upcoming years",
+      "period_kind": "expectation_horizon",
+      "accounting_scope": null,
+      "attribution": "CARE Ratings",
+      "statement_kind": "agency_assessment",
+      "qualifications": [],
+      "conditions": [
+        "Debt-funded ongoing capex."
+      ],
+      "derivation_basis": "source_review_addition",
+      "disclosure_category": "capital_expenditure",
+      "support": [
+        {
+          "page": 2,
+          "kind": "page_text",
+          "element": null,
+          "start": 4663,
+          "end": 4877,
+          "quote": "Given the healthy cash and bank balance\nand overall low debt, the company’s net debt position is nil as on March 31, 2024. However, due to debt-funded on-going capex,\nsame is expected to increase in upcoming years.",
+          "text_origin": "native",
+          "bbox": null
+        }
+      ]
+    },
+    {
+      "atomic_key": "A13.egypt-country-risk",
+      "parent_claim_id": "ef157f864906aec5ac6665821c1c4179effbc350cf4253db40c5676a6f7c5720",
+      "parent_candidate_sha256": "a514d18ec27581a596faf98d334648cfe992b198471efa7c42cb47cb727abcca",
+      "fields": [
+        "assessment.capex_and_execution_risks"
+      ],
+      "statement": "Most capex is scheduled in Egypt via step-down subsidiary EKC Egypt, exposing financial performance to Egypt economic and political risks.",
+      "value": "economic and political risk",
+      "unit": null,
+      "period": null,
+      "period_kind": "unspecified",
+      "accounting_scope": null,
+      "attribution": "CARE Ratings",
+      "statement_kind": "agency_assessment",
+      "qualifications": [
+        "Entity relationship and geography do not establish accounting scope."
+      ],
+      "conditions": [],
+      "derivation_basis": "source_review_addition",
+      "disclosure_category": "execution_risk",
+      "support": [
+        {
+          "page": 2,
+          "kind": "page_text",
+          "element": null,
+          "start": 4206,
+          "end": 4662,
+          "quote": "The company is in process of incurring capex both in domestic (Mundra) and global market (Egypt). The total capex cost is\nestimated to ~₹307.00 crore, inclusive of interest capitalisation. Around 61% of the capex is scheduled to be funded by bank\nborrowings over FY25-FY26. Despite this addition of term loan, the company’s overall gearing is expected to remain below unity\nin coming years. This is due to healthy GCA strengthening the company’s net worth.",
+          "text_origin": "native",
+          "bbox": null
+        },
+        {
+          "page": 3,
+          "kind": "page_text",
+          "element": null,
+          "start": 29,
+          "end": 434,
+          "quote": "Risk associated with capex in Egypt\nOf the total capex, majority of capex is scheduled in Egypt via its step-down subsidiary, EKC Egypt. This makes the company\nvulnerable to economic and political risk of the said country as this will have a direct impact on the company’s financial\nperformance. The operation in the said entity is expected to commercialise by FY26 and same remains to be key monitorable.",
+          "text_origin": "native",
+          "bbox": null
+        }
+      ]
+    },
+    {
+      "atomic_key": "A13.egypt-commercialisation",
+      "parent_claim_id": "ef157f864906aec5ac6665821c1c4179effbc350cf4253db40c5676a6f7c5720",
+      "parent_candidate_sha256": "a514d18ec27581a596faf98d334648cfe992b198471efa7c42cb47cb727abcca",
+      "fields": [
+        "assessment.capex_and_execution_risks"
+      ],
+      "statement": "Operations in EKC Egypt are expected to commercialise by FY26 and remain a key monitorable.",
+      "value": "expected commercialisation",
+      "unit": null,
+      "period": "by FY26",
+      "period_kind": "expectation_horizon",
+      "accounting_scope": null,
+      "attribution": "CARE Ratings",
+      "statement_kind": "agency_assessment",
+      "qualifications": [
+        "Expected commencement; completion or stable operations are not established."
+      ],
+      "conditions": [],
+      "derivation_basis": "source_review_addition",
+      "disclosure_category": "execution_risk",
+      "support": [
+        {
+          "page": 3,
+          "kind": "page_text",
+          "element": null,
+          "start": 29,
+          "end": 434,
+          "quote": "Risk associated with capex in Egypt\nOf the total capex, majority of capex is scheduled in Egypt via its step-down subsidiary, EKC Egypt. This makes the company\nvulnerable to economic and political risk of the said country as this will have a direct impact on the company’s financial\nperformance. The operation in the said entity is expected to commercialise by FY26 and same remains to be key monitorable.",
+          "text_origin": "native",
+          "bbox": null
+        }
+      ]
+    },
+    {
+      "atomic_key": "A15.inventory-fy24",
+      "parent_claim_id": "9af68dc2852146bcb5cd351d70b799fa98da3e09f305e5e2dc03ce2e202cab8c",
+      "parent_candidate_sha256": "da32789c48c2667e287a1523b44143d446789521f7c48ba1d6f5ea1f6b412630",
+      "fields": [
+        "assessment.working_capital_intensity"
+      ],
+      "statement": "FY24 inventory days stood at 186 days.",
+      "value": "186",
+      "unit": "days",
+      "period": "FY24",
+      "period_kind": "financial_year",
+      "accounting_scope": null,
+      "attribution": "CARE Ratings",
+      "statement_kind": "reported_fact",
+      "qualifications": [],
+      "conditions": [],
+      "derivation_basis": "retained_candidate_split",
+      "disclosure_category": "working_capital",
+      "support": [
+        {
+          "page": 3,
+          "kind": "page_text",
+          "element": null,
+          "start": 435,
+          "end": 1084,
+          "quote": "Working capital intensive nature of operations\nAbsence of manufacturers of seamless steel tubes in India capable of meeting the stringent quality specifications and specific\ntube dimensions has compelled EKCL to source its raw material requirements from other countries such as China, Italy, among\nothers. Import of raw materials and company’s policy to maintain an inventory of ~four months to avoid disruption in meeting\nthe customer requirements is the reason for higher inventory. The inventory days continue to remain high at 186 days in FY24\n(FY23: 163 days), which has resulted in stretched working capital cycle at 221 days (FY23: 198 days).",
+          "text_origin": "native",
+          "bbox": null
+        }
+      ]
+    },
+    {
+      "atomic_key": "A15.inventory-fy23",
+      "parent_claim_id": "9af68dc2852146bcb5cd351d70b799fa98da3e09f305e5e2dc03ce2e202cab8c",
+      "parent_candidate_sha256": "da32789c48c2667e287a1523b44143d446789521f7c48ba1d6f5ea1f6b412630",
+      "fields": [
+        "assessment.working_capital_intensity"
+      ],
+      "statement": "FY23 inventory days stood at 163 days.",
+      "value": "163",
+      "unit": "days",
+      "period": "FY23",
+      "period_kind": "financial_year",
+      "accounting_scope": null,
+      "attribution": "CARE Ratings",
+      "statement_kind": "reported_fact",
+      "qualifications": [],
+      "conditions": [],
+      "derivation_basis": "retained_candidate_split",
+      "disclosure_category": "working_capital",
+      "support": [
+        {
+          "page": 3,
+          "kind": "page_text",
+          "element": null,
+          "start": 435,
+          "end": 1084,
+          "quote": "Working capital intensive nature of operations\nAbsence of manufacturers of seamless steel tubes in India capable of meeting the stringent quality specifications and specific\ntube dimensions has compelled EKCL to source its raw material requirements from other countries such as China, Italy, among\nothers. Import of raw materials and company’s policy to maintain an inventory of ~four months to avoid disruption in meeting\nthe customer requirements is the reason for higher inventory. The inventory days continue to remain high at 186 days in FY24\n(FY23: 163 days), which has resulted in stretched working capital cycle at 221 days (FY23: 198 days).",
+          "text_origin": "native",
+          "bbox": null
+        }
+      ]
+    },
+    {
+      "atomic_key": "A15.cycle-fy24",
+      "parent_claim_id": "9af68dc2852146bcb5cd351d70b799fa98da3e09f305e5e2dc03ce2e202cab8c",
+      "parent_candidate_sha256": "da32789c48c2667e287a1523b44143d446789521f7c48ba1d6f5ea1f6b412630",
+      "fields": [
+        "assessment.working_capital_intensity"
+      ],
+      "statement": "FY24 working capital cycle stood at 221 days.",
+      "value": "221",
+      "unit": "days",
+      "period": "FY24",
+      "period_kind": "financial_year",
+      "accounting_scope": null,
+      "attribution": "CARE Ratings",
+      "statement_kind": "reported_fact",
+      "qualifications": [
+        "FY24 cycle period follows the same FY24 sentence with explicit FY23 comparative."
+      ],
+      "conditions": [],
+      "derivation_basis": "retained_candidate_split",
+      "disclosure_category": "working_capital",
+      "support": [
+        {
+          "page": 3,
+          "kind": "page_text",
+          "element": null,
+          "start": 435,
+          "end": 1084,
+          "quote": "Working capital intensive nature of operations\nAbsence of manufacturers of seamless steel tubes in India capable of meeting the stringent quality specifications and specific\ntube dimensions has compelled EKCL to source its raw material requirements from other countries such as China, Italy, among\nothers. Import of raw materials and company’s policy to maintain an inventory of ~four months to avoid disruption in meeting\nthe customer requirements is the reason for higher inventory. The inventory days continue to remain high at 186 days in FY24\n(FY23: 163 days), which has resulted in stretched working capital cycle at 221 days (FY23: 198 days).",
+          "text_origin": "native",
+          "bbox": null
+        }
+      ]
+    },
+    {
+      "atomic_key": "A15.cycle-fy23",
+      "parent_claim_id": "9af68dc2852146bcb5cd351d70b799fa98da3e09f305e5e2dc03ce2e202cab8c",
+      "parent_candidate_sha256": "da32789c48c2667e287a1523b44143d446789521f7c48ba1d6f5ea1f6b412630",
+      "fields": [
+        "assessment.working_capital_intensity"
+      ],
+      "statement": "FY23 working capital cycle stood at 198 days.",
+      "value": "198",
+      "unit": "days",
+      "period": "FY23",
+      "period_kind": "financial_year",
+      "accounting_scope": null,
+      "attribution": "CARE Ratings",
+      "statement_kind": "reported_fact",
+      "qualifications": [],
+      "conditions": [],
+      "derivation_basis": "retained_candidate_split",
+      "disclosure_category": "working_capital",
+      "support": [
+        {
+          "page": 3,
+          "kind": "page_text",
+          "element": null,
+          "start": 435,
+          "end": 1084,
+          "quote": "Working capital intensive nature of operations\nAbsence of manufacturers of seamless steel tubes in India capable of meeting the stringent quality specifications and specific\ntube dimensions has compelled EKCL to source its raw material requirements from other countries such as China, Italy, among\nothers. Import of raw materials and company’s policy to maintain an inventory of ~four months to avoid disruption in meeting\nthe customer requirements is the reason for higher inventory. The inventory days continue to remain high at 186 days in FY24\n(FY23: 163 days), which has resulted in stretched working capital cycle at 221 days (FY23: 198 days).",
+          "text_origin": "native",
+          "bbox": null
+        }
+      ]
+    },
+    {
+      "atomic_key": "A15.inventory-policy",
+      "parent_claim_id": "9af68dc2852146bcb5cd351d70b799fa98da3e09f305e5e2dc03ce2e202cab8c",
+      "parent_candidate_sha256": "da32789c48c2667e287a1523b44143d446789521f7c48ba1d6f5ea1f6b412630",
+      "fields": [
+        "assessment.working_capital_intensity"
+      ],
+      "statement": "Imports and the policy of maintaining ~four months inventory to avoid disruption explain higher inventory.",
+      "value": "~four",
+      "unit": "months",
+      "period": null,
+      "period_kind": "undated_policy",
+      "accounting_scope": null,
+      "attribution": "CARE Ratings",
+      "statement_kind": "agency_assessment",
+      "qualifications": [
+        "Policy buffer, distinct from realised inventory days."
+      ],
+      "conditions": [
+        "India lacks seamless steel tube manufacturers meeting required quality specifications and tube dimensions; imports include China and Italy."
+      ],
+      "derivation_basis": "source_review_addition",
+      "disclosure_category": "working_capital",
+      "support": [
+        {
+          "page": 3,
+          "kind": "page_text",
+          "element": null,
+          "start": 435,
+          "end": 1084,
+          "quote": "Working capital intensive nature of operations\nAbsence of manufacturers of seamless steel tubes in India capable of meeting the stringent quality specifications and specific\ntube dimensions has compelled EKCL to source its raw material requirements from other countries such as China, Italy, among\nothers. Import of raw materials and company’s policy to maintain an inventory of ~four months to avoid disruption in meeting\nthe customer requirements is the reason for higher inventory. The inventory days continue to remain high at 186 days in FY24\n(FY23: 163 days), which has resulted in stretched working capital cycle at 221 days (FY23: 198 days).",
+          "text_origin": "native",
+          "bbox": null
+        }
+      ]
+    },
+    {
+      "atomic_key": "A15.raw-material-cost",
+      "parent_claim_id": "9af68dc2852146bcb5cd351d70b799fa98da3e09f305e5e2dc03ce2e202cab8c",
+      "parent_candidate_sha256": "da32789c48c2667e287a1523b44143d446789521f7c48ba1d6f5ea1f6b412630",
+      "fields": [
+        "assessment.raw_material_and_forex_risk"
+      ],
+      "statement": "Imported seamless steel tubes account for nearly 60-70% of operating expenses, exposing EKCL to raw material price volatility.",
+      "value": "nearly 60-70",
+      "unit": "%",
+      "period": null,
+      "period_kind": "unspecified",
+      "accounting_scope": null,
+      "attribution": "CARE Ratings",
+      "statement_kind": "agency_assessment",
+      "qualifications": [
+        "No financial year is specified for this cost share."
+      ],
+      "conditions": [],
+      "derivation_basis": "retained_candidate_split",
+      "disclosure_category": "working_capital",
+      "support": [
+        {
+          "page": 3,
+          "kind": "page_text",
+          "element": null,
+          "start": 1085,
+          "end": 1737,
+          "quote": "Exposure to raw material price volatility and foreign exchange fluctuation\nEKCL’s is exposed to risk associated with raw material price volatility. Raw material costs (imported seamless steel tubes) account\nfor nearly 60-70% of the EKCL’s operating expenses. CARE Ratings further observes that adverse change in the exchange rate\nbetween the US Dollar and the Indian rupee will have a negative impact on EKCL’s results of operations and financial condition\nas the seamless steel tubes (basic raw material) are majorly imported. EKCL does foreign currency hedging on a selective basis\nand is thus exposed to some volatility in exchange rate fluctuation.",
+          "text_origin": "native",
+          "bbox": null
+        }
+      ]
+    },
+    {
+      "atomic_key": "A15.forex-risk",
+      "parent_claim_id": "9af68dc2852146bcb5cd351d70b799fa98da3e09f305e5e2dc03ce2e202cab8c",
+      "parent_candidate_sha256": "da32789c48c2667e287a1523b44143d446789521f7c48ba1d6f5ea1f6b412630",
+      "fields": [
+        "assessment.raw_material_and_forex_risk"
+      ],
+      "statement": "CARE observes that adverse US Dollar/Indian rupee exchange rates would negatively affect operations and financial condition because seamless steel tubes are majorly imported.",
+      "value": "adverse exchange-rate exposure",
+      "unit": null,
+      "period": null,
+      "period_kind": "unspecified",
+      "accounting_scope": null,
+      "attribution": "CARE Ratings",
+      "statement_kind": "agency_assessment",
+      "qualifications": [],
+      "conditions": [
+        "Adverse movement in US Dollar/Indian rupee exchange rate."
+      ],
+      "derivation_basis": "source_review_addition",
+      "disclosure_category": "foreign_exchange_risk",
+      "support": [
+        {
+          "page": 3,
+          "kind": "page_text",
+          "element": null,
+          "start": 1085,
+          "end": 1737,
+          "quote": "Exposure to raw material price volatility and foreign exchange fluctuation\nEKCL’s is exposed to risk associated with raw material price volatility. Raw material costs (imported seamless steel tubes) account\nfor nearly 60-70% of the EKCL’s operating expenses. CARE Ratings further observes that adverse change in the exchange rate\nbetween the US Dollar and the Indian rupee will have a negative impact on EKCL’s results of operations and financial condition\nas the seamless steel tubes (basic raw material) are majorly imported. EKCL does foreign currency hedging on a selective basis\nand is thus exposed to some volatility in exchange rate fluctuation.",
+          "text_origin": "native",
+          "bbox": null
+        }
+      ]
+    },
+    {
+      "atomic_key": "A15.selective-hedging",
+      "parent_claim_id": "9af68dc2852146bcb5cd351d70b799fa98da3e09f305e5e2dc03ce2e202cab8c",
+      "parent_candidate_sha256": "da32789c48c2667e287a1523b44143d446789521f7c48ba1d6f5ea1f6b412630",
+      "fields": [
+        "assessment.raw_material_and_forex_risk"
+      ],
+      "statement": "EKCL hedges foreign currency selectively and remains exposed to some exchange-rate volatility.",
+      "value": "selective foreign currency hedging",
+      "unit": null,
+      "period": null,
+      "period_kind": "unspecified",
+      "accounting_scope": null,
+      "attribution": "CARE Ratings",
+      "statement_kind": "agency_assessment",
+      "qualifications": [
+        "CARE-reported company practice; neither full hedging nor no hedging."
+      ],
+      "conditions": [],
+      "derivation_basis": "source_review_addition",
+      "disclosure_category": "foreign_exchange_risk",
+      "support": [
+        {
+          "page": 3,
+          "kind": "page_text",
+          "element": null,
+          "start": 1085,
+          "end": 1737,
+          "quote": "Exposure to raw material price volatility and foreign exchange fluctuation\nEKCL’s is exposed to risk associated with raw material price volatility. Raw material costs (imported seamless steel tubes) account\nfor nearly 60-70% of the EKCL’s operating expenses. CARE Ratings further observes that adverse change in the exchange rate\nbetween the US Dollar and the Indian rupee will have a negative impact on EKCL’s results of operations and financial condition\nas the seamless steel tubes (basic raw material) are majorly imported. EKCL does foreign currency hedging on a selective basis\nand is thus exposed to some volatility in exchange rate fluctuation.",
+          "text_origin": "native",
+          "bbox": null
+        }
+      ]
+    }
+  ],
+  "reviews": {
+    "A16.cash": {
+      "candidate_sha256": "1a392f9346a4e25a551def74d795209f30507d2831e65b56cdf753a3b35de423",
+      "decision": "SUPPORTED",
+      "reason": "Reviewed against complete page-3 liquidity paragraph. Unknown accounting scope retained; own literal time basis, value, unit and qualifications reviewed. Conditions are source-bound; no parent admission inherited."
+    },
+    "A16.utilisation": {
+      "candidate_sha256": "634dd780a6e28ae157b378b3549c4600f73139ab14924b9896402218d64e28c4",
+      "decision": "SUPPORTED",
+      "reason": "Reviewed against complete page-3 liquidity paragraph. Unknown accounting scope retained; own literal time basis, value, unit and qualifications reviewed. Conditions are source-bound; no parent admission inherited."
+    },
+    "A16.accruals": {
+      "candidate_sha256": "51ed4adf843edd899f88faa9ec7b9354a04f779038ee56125aeb9dd2ebb1d7d8",
+      "decision": "SUPPORTED",
+      "reason": "Reviewed against complete page-3 liquidity paragraph. Unknown accounting scope retained; own literal time basis, value, unit and qualifications reviewed. Conditions are source-bound; no parent admission inherited."
+    },
+    "A16.current-repayments": {
+      "candidate_sha256": "8627242fb71a955c62aac78d8e7cf02c06ef276f1b0e6091a8e396f5ada8f06b",
+      "decision": "SUPPORTED",
+      "reason": "Reviewed against complete page-3 liquidity paragraph. Unknown accounting scope retained; own literal time basis, value, unit and qualifications reviewed. Conditions are source-bound; no parent admission inherited."
+    },
+    "A16.future-repayments": {
+      "candidate_sha256": "3084c2790c895a18fafc7836ec6d81abc5f9434c3a6e1091583944cfad220482",
+      "decision": "SUPPORTED",
+      "reason": "Reviewed against complete page-3 liquidity paragraph. Unknown accounting scope retained; own literal time basis, value, unit and qualifications reviewed. Conditions are source-bound; no parent admission inherited."
+    },
+    "A16.liquidity-rationale": {
+      "candidate_sha256": "c3f8d496497df8575f117ede182875de56b2dc5e4c59c34560c54814708a96f9",
+      "decision": "SUPPORTED",
+      "reason": "Reviewed against complete page-3 liquidity paragraph. Unknown accounting scope retained; own literal time basis, value, unit and qualifications reviewed. Conditions are source-bound; no parent admission inherited."
+    },
+    "A13.capex-estimate": {
+      "candidate_sha256": "717985d9185f19cd4ba139480b21ee5e9c0edf650206e8f040ea8cccac8523aa",
+      "decision": "SUPPORTED",
+      "reason": "Reviewed complete supporting passage(s) against original PDF; independent literal period, unknown scope where not established, attribution and all material qualifications retained."
+    },
+    "A13.bank-funding": {
+      "candidate_sha256": "d044a3180147bc57982baff376eb936f86a8f4eecd4fdfebc67fc3ae1f9d0bf7",
+      "decision": "SUPPORTED",
+      "reason": "Reviewed complete supporting passage(s) against original PDF; independent literal period, unknown scope where not established, attribution and all material qualifications retained."
+    },
+    "A13.gearing-expectation": {
+      "candidate_sha256": "47366f199523bf917ac103b47b1cb99544bc02271aa4ef20ff92885885a1c78f",
+      "decision": "SUPPORTED",
+      "reason": "Reviewed complete supporting passage(s) against original PDF; independent literal period, unknown scope where not established, attribution and all material qualifications retained."
+    },
+    "A13.net-debt-expectation": {
+      "candidate_sha256": "867b11d4975d2a4ba01271d6ebbcceb24b98ed75a7cf6a1dc77cfcc442da2ebf",
+      "decision": "SUPPORTED",
+      "reason": "Reviewed complete supporting passage(s) against original PDF; independent literal period, unknown scope where not established, attribution and all material qualifications retained."
+    },
+    "A13.egypt-country-risk": {
+      "candidate_sha256": "6be39b3fc57b7d8a147e4418a95fb39ae4340c2b8c8d9d5ee276e7859bf83933",
+      "decision": "SUPPORTED",
+      "reason": "Reviewed complete supporting passage(s) against original PDF; independent literal period, unknown scope where not established, attribution and all material qualifications retained."
+    },
+    "A13.egypt-commercialisation": {
+      "candidate_sha256": "52731084eb0cbf104fd0191173cf8f4ed2714a65ad44b77c6772f18905f47228",
+      "decision": "SUPPORTED",
+      "reason": "Reviewed complete supporting passage(s) against original PDF; independent literal period, unknown scope where not established, attribution and all material qualifications retained."
+    },
+    "A15.inventory-fy24": {
+      "candidate_sha256": "87ff88f5f6bc8b072d62fd0c36d33624f8251f14351f4c0ba59de0601c6051e1",
+      "decision": "SUPPORTED",
+      "reason": "Reviewed complete supporting passage(s) against original PDF; independent literal period, unknown scope where not established, attribution and all material qualifications retained."
+    },
+    "A15.inventory-fy23": {
+      "candidate_sha256": "11474ea10d0e65e025fd6e7d80c92db669c3b7ff569bb76c1ae5e19f4f0bcd87",
+      "decision": "SUPPORTED",
+      "reason": "Reviewed complete supporting passage(s) against original PDF; independent literal period, unknown scope where not established, attribution and all material qualifications retained."
+    },
+    "A15.cycle-fy24": {
+      "candidate_sha256": "f264bc173f34f00cf71cd680487c1716ba975f6ba4f95b0171c8377640fd48ce",
+      "decision": "SUPPORTED",
+      "reason": "Reviewed complete supporting passage(s) against original PDF; independent literal period, unknown scope where not established, attribution and all material qualifications retained."
+    },
+    "A15.cycle-fy23": {
+      "candidate_sha256": "d9e119b1b519878068f0daaab9e893ed6991dcc3b69e47c8e2d4488427de47b7",
+      "decision": "SUPPORTED",
+      "reason": "Reviewed complete supporting passage(s) against original PDF; independent literal period, unknown scope where not established, attribution and all material qualifications retained."
+    },
+    "A15.inventory-policy": {
+      "candidate_sha256": "5fb268ee1e783add84956523e1065a3d1b3ccbde8a13f6b3fa672d74de8d8fc6",
+      "decision": "SUPPORTED",
+      "reason": "Reviewed complete supporting passage(s) against original PDF; independent literal period, unknown scope where not established, attribution and all material qualifications retained."
+    },
+    "A15.raw-material-cost": {
+      "candidate_sha256": "89512f8f1732002d4bf4fba4c9b108ea808362b0771e14648cbf6b4e6b0add55",
+      "decision": "SUPPORTED",
+      "reason": "Reviewed complete supporting passage(s) against original PDF; independent literal period, unknown scope where not established, attribution and all material qualifications retained."
+    },
+    "A15.forex-risk": {
+      "candidate_sha256": "eb1eaa9399355f01b13ad84c11d7b55d24f826e0bd0f1ecab871d47ffd0632fb",
+      "decision": "SUPPORTED",
+      "reason": "Reviewed complete supporting passage(s) against original PDF; independent literal period, unknown scope where not established, attribution and all material qualifications retained."
+    },
+    "A15.selective-hedging": {
+      "candidate_sha256": "b3016676662fea24b33db4a1b57d1caabd5d0a00f9566a79a4db233b3fe7af88",
+      "decision": "SUPPORTED",
+      "reason": "Reviewed complete supporting passage(s) against original PDF; independent literal period, unknown scope where not established, attribution and all material qualifications retained."
+    }
+  },
+  "packet_version": "phase3/1"
+}

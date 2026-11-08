@@ -1,0 +1,15 @@
+trading-ai-artifact-reconciler-1	Exited (137) 7 days ago	trading-ai	artifact-reconciler
+trading-ai-credit-rating-worker-india-ratings-1	Exited (137) 7 days ago	trading-ai	credit-rating-worker-india-ratings
+trading-ai-rating-recovery-download-1	Exited (137) 7 days ago	trading-ai	rating-recovery-download
+trading-ai-credit-rating-worker-other-1	Exited (137) 7 days ago	trading-ai	credit-rating-worker-other
+trading-ai-daemon-1	Exited (137) 7 days ago	trading-ai	daemon
+trading-ai-market-cap-monitor-1	Exited (137) 7 days ago	trading-ai	market-cap-monitor
+trading-ai-credit-rating-worker-care-1	Exited (137) 7 days ago	trading-ai	credit-rating-worker-care
+trading-ai-document-download-worker-1	Exited (137) 7 days ago	trading-ai	document-download-worker
+trading-ai-rating-recovery-discovery-1	Exited (137) 7 days ago	trading-ai	rating-recovery-discovery
+trading-ai-june-extraction-worker-1	Exited (137) 7 days ago	trading-ai	june-extraction-worker
+trading-ai-scheduler-1	Exited (137) 7 days ago	trading-ai	scheduler
+trading-ai-browser-rating-crisil-1	Exited (0) 9 days ago	trading-ai	browser-rating-crisil
+trading-ai-browser-rating-other-1	Exited (0) 10 days ago	trading-ai	browser-rating-other
+trading-ai-browser-rating-extract-1	Exited (0) 9 days ago	trading-ai	browser-rating-extract
+screener-master-backfill-v2	Exited (0) 3 weeks ago	trading-ai	artifact-reconciler

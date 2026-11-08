@@ -1,0 +1,24 @@
+--- a/ops/activation/test_phase4_routine_schedule.py
++++ b/ops/activation/test_phase4_routine_schedule.py
+@@ -5,7 +5,11 @@
+ import phase4_schedule as schedule
+ 
+ class ScheduleTests(unittest.TestCase):
+-    def test_disabled_schedule_has_no_jobs(self):self.assertEqual(schedule.jobs(),[])
++    def test_disabled_schedule_has_no_jobs(self):
++        config = schedule.settings()
++        config["enabled"] = False
++        with patch.object(schedule, "settings", return_value=config):
++            self.assertEqual(schedule.jobs(), [])
+     def config(self):
+         c=schedule.settings();c.update(enabled=True,activated_at_utc='2026-10-12T00:00:00+00:00',expires_at_utc='2026-10-13T00:00:00+00:00',initial_free_bytes=375000000000);return c
+     def test_exact_initial_slots_and_expiry(self):
+@@ -20,7 +24,7 @@
+         installed=(schedule.HERE/'automatic_acquisition.py').read_text()
+         candidate=(schedule.HERE/'automatic_acquisition.phase4-candidate.py').read_text()
+         self.assertIn("elif exchange in ('FINANCIAL','CAP'):",candidate)
+-        self.assertNotIn('document_jobs',installed)
++        self.assertEqual(installed, candidate)  # Current authorized trial installed the candidate.
+         self.assertIn(' + document_jobs()',candidate)
+         self.assertIn("if exchange in ('FINANCIAL','CAP') or exchange.startswith('DOCUMENT_')",candidate)
+     def test_budget_matches_daily_physical_maximum(self):

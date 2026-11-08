@@ -1,0 +1,14 @@
+{
+  "authorized": false,
+  "environment": "production",
+  "git_commit": "c3ddbbb9c298d07b8b46a362996251417282476a",
+  "image_id": "sha256:fd141828b277cfeb1d774872f9ca6c71db1f92036df2cd74414c819485257855",
+  "release_id": "c28.1-ar021-20261008",
+  "targets": {
+    "db": "/data/scraper.db",
+    "store": "/data",
+    "documents": "/data/snapshots"
+  },
+  "source_projection_sha256": "1e773bd3c8282fe9eaad1e7a118d68c8395d564a5c2ed36b251de2d0cd8750f6",
+  "source_patch_sha256": "d3bb97915c57acac6ae769ab22d0e1088fa2d38f383a4bdf5d2172fb714b2ba5"
+}

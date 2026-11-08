@@ -1,0 +1,270 @@
+{
+  "source_sha256": "b0f06214a0b40f2327eb17e18b0ee88fc3f63436bd8430b9c455733781650a05",
+  "authority": "Codex offline source review, 2026-10-23; not human certification",
+  "review_basis": "Original complete D03 pages and original PDF renderings; immutable candidate fields compared for value, metric label, units, periods, scope, attribution and qualifications. No reference match authorizes admission.",
+  "historical_ledger": {
+    "path": "artifacts/three-document-reality-check-v0.4/ekc-generalization-v0.7/ekc-execution/adjudicated-evaluation/evidence-ledger.json",
+    "sha256": "9f344569ca264c5cc2756c240a6eb8a5ae677f7c0ddd8bc44875ce679045e952"
+  },
+  "source_inventory": {
+    "path": "artifacts/three-document-reality-check-v0.4/evidence-reconciliation-v0.6/ekc-source-inventory.json",
+    "sha256": "4395cf88626fcd951b256329281d9de838b78669ff6e56a54e18c8df4cedb542"
+  },
+  "claims": {
+    "gen-1792749747-BXbiPux2Gb0rFBy5C7nf:/disclosures/0": {
+      "candidate_sha256": "1fe18b1897ece903009fd7a12acce2b8fbaff8bae383e063167da71495c13166",
+      "canonical_sha256": "1c2717f1f478ca9902a2fdcf77530b124e5d0ca80ee36895a6ed4aab76160708",
+      "decision": "SUPPORTED",
+      "reason": "Source review supports the original asserted proposition and its material fields; omitted separate topics do not invalidate this narrower statement.",
+      "support_pages": [
+        1
+      ],
+      "fields": [
+        "rating.facility",
+        "rating.current_rating",
+        "rating.action",
+        "rating.outlook",
+        "rating.facility_amount"
+      ]
+    },
+    "gen-1792749747-BXbiPux2Gb0rFBy5C7nf:/disclosures/1": {
+      "candidate_sha256": "712800c1a78796f9ea4c709a960342b77314f511fbde2d91331e884ebf997f96",
+      "canonical_sha256": "1c2717f1f478ca9902a2fdcf77530b124e5d0ca80ee36895a6ed4aab76160708",
+      "decision": "SUPPORTED",
+      "reason": "Source review supports the original asserted proposition and its material fields; omitted separate topics do not invalidate this narrower statement.",
+      "support_pages": [
+        1
+      ],
+      "fields": [
+        "rating.facility",
+        "rating.current_rating",
+        "rating.action",
+        "rating.outlook",
+        "rating.facility_amount"
+      ]
+    },
+    "gen-1792749747-BXbiPux2Gb0rFBy5C7nf:/disclosures/2": {
+      "candidate_sha256": "bbeacffacf29f99f95978ca4c6cf605da686aa340135660477dcc71d2048524f",
+      "canonical_sha256": "1c2717f1f478ca9902a2fdcf77530b124e5d0ca80ee36895a6ed4aab76160708",
+      "decision": "SUPPORTED",
+      "reason": "Source review supports the original asserted proposition and its material fields; omitted separate topics do not invalidate this narrower statement.",
+      "support_pages": [
+        1
+      ],
+      "fields": [
+        "rating.facility",
+        "rating.current_rating",
+        "rating.previous_rating",
+        "rating.action",
+        "rating.facility_amount"
+      ]
+    },
+    "gen-1792749747-BXbiPux2Gb0rFBy5C7nf:/disclosures/3": {
+      "candidate_sha256": "de76e7d3d8db1174517830ab72a80d18f65ab628950eb85bec76eb9f7b093044",
+      "canonical_sha256": "1c2717f1f478ca9902a2fdcf77530b124e5d0ca80ee36895a6ed4aab76160708",
+      "decision": "SUPPORTED",
+      "reason": "Source review supports the original asserted proposition and its material fields; omitted separate topics do not invalidate this narrower statement.",
+      "support_pages": [
+        1
+      ],
+      "fields": [
+        "assessment.upgrade_sensitivities",
+        "assessment.material_conditions"
+      ]
+    },
+    "gen-1792749747-BXbiPux2Gb0rFBy5C7nf:/disclosures/4": {
+      "candidate_sha256": "f5b764e6bc6aa50544a0b169d948116d84fb7b05b550175a8160e17b7b8671b7",
+      "canonical_sha256": "1c2717f1f478ca9902a2fdcf77530b124e5d0ca80ee36895a6ed4aab76160708",
+      "decision": "SUPPORTED",
+      "reason": "Source review supports the original asserted proposition and its material fields; omitted separate topics do not invalidate this narrower statement.",
+      "support_pages": [
+        1
+      ],
+      "fields": [
+        "assessment.upgrade_sensitivities",
+        "assessment.material_conditions"
+      ]
+    },
+    "gen-1792749747-BXbiPux2Gb0rFBy5C7nf:/disclosures/5": {
+      "candidate_sha256": "69faecd1eb0e6a61e6c32c18f184d5a0719d8aefeba01fc01cc4d4932fc4e4d0",
+      "canonical_sha256": "1c2717f1f478ca9902a2fdcf77530b124e5d0ca80ee36895a6ed4aab76160708",
+      "decision": "SUPPORTED",
+      "reason": "Source review supports the original asserted proposition and its material fields; omitted separate topics do not invalidate this narrower statement.",
+      "support_pages": [
+        1
+      ],
+      "fields": [
+        "assessment.downgrade_sensitivities",
+        "assessment.material_conditions"
+      ]
+    },
+    "gen-1792749747-BXbiPux2Gb0rFBy5C7nf:/disclosures/6": {
+      "candidate_sha256": "c2c9d90ebaa25b9a0acd2012ea72011f5479fe7d51682a4d7d07bfbfa6d09b14",
+      "canonical_sha256": "1c2717f1f478ca9902a2fdcf77530b124e5d0ca80ee36895a6ed4aab76160708",
+      "decision": "SUPPORTED",
+      "reason": "Source review supports the original asserted proposition and its material fields; omitted separate topics do not invalidate this narrower statement.",
+      "support_pages": [
+        1
+      ],
+      "fields": [
+        "assessment.downgrade_sensitivities",
+        "assessment.material_conditions"
+      ]
+    },
+    "gen-1792749747-BXbiPux2Gb0rFBy5C7nf:/disclosures/7": {
+      "candidate_sha256": "a6c8acf7de990c08f60431ca79adeda90b305d3299bf79091a0bda07223e06db",
+      "canonical_sha256": "1c2717f1f478ca9902a2fdcf77530b124e5d0ca80ee36895a6ed4aab76160708",
+      "decision": "SUPPORTED",
+      "reason": "Source review supports the original asserted proposition and its material fields; omitted separate topics do not invalidate this narrower statement.",
+      "support_pages": [
+        1
+      ],
+      "fields": [
+        "assessment.revenue_and_profitability",
+        "assessment.revenue_explanations"
+      ]
+    },
+    "gen-1792749747-BXbiPux2Gb0rFBy5C7nf:/disclosures/8": {
+      "candidate_sha256": "e664156efc743e4dfaa9e908fecf0bbebcafc8aac04841729670ec1268cc52d3",
+      "canonical_sha256": "1c2717f1f478ca9902a2fdcf77530b124e5d0ca80ee36895a6ed4aab76160708",
+      "decision": "SUPPORTED",
+      "reason": "Source review supports the original asserted proposition and its material fields; omitted separate topics do not invalidate this narrower statement.",
+      "support_pages": [
+        2
+      ],
+      "fields": [
+        "assessment.concentration_risks"
+      ]
+    },
+    "gen-1792749747-BXbiPux2Gb0rFBy5C7nf:/disclosures/9": {
+      "candidate_sha256": "65d7b83e0bca0de70a3e5d8c7469de675c704623f54a6fa18aa213e364588489",
+      "canonical_sha256": "1c2717f1f478ca9902a2fdcf77530b124e5d0ca80ee36895a6ed4aab76160708",
+      "decision": "SUPPORTED",
+      "reason": "Source review supports the original asserted proposition and its material fields; omitted separate topics do not invalidate this narrower statement.",
+      "support_pages": [
+        1,
+        2
+      ],
+      "fields": [
+        "assessment.revenue_and_profitability",
+        "assessment.revenue_explanations"
+      ]
+    },
+    "gen-1792749747-BXbiPux2Gb0rFBy5C7nf:/disclosures/10": {
+      "candidate_sha256": "01578040bb185687f1a73374f1e18c6663352c85fc7faa0847b364b232ebfaef",
+      "canonical_sha256": "1c2717f1f478ca9902a2fdcf77530b124e5d0ca80ee36895a6ed4aab76160708",
+      "decision": "SUPPORTED",
+      "reason": "Source review supports the original asserted proposition and its material fields; omitted separate topics do not invalidate this narrower statement.",
+      "support_pages": [
+        1,
+        2
+      ],
+      "fields": [
+        "assessment.revenue_and_profitability"
+      ]
+    },
+    "gen-1792749747-BXbiPux2Gb0rFBy5C7nf:/disclosures/11": {
+      "candidate_sha256": "3350aa8357323c41b1eb81c07424d707bafa490edef948aee50ff1eabd45b872",
+      "canonical_sha256": "1c2717f1f478ca9902a2fdcf77530b124e5d0ca80ee36895a6ed4aab76160708",
+      "decision": "SUPPORTED",
+      "reason": "Source review supports the original asserted proposition and its material fields; omitted separate topics do not invalidate this narrower statement.",
+      "support_pages": [
+        2
+      ],
+      "fields": [
+        "assessment.concentration_risks"
+      ]
+    },
+    "gen-1792749747-BXbiPux2Gb0rFBy5C7nf:/disclosures/12": {
+      "candidate_sha256": "a514d18ec27581a596faf98d334648cfe992b198471efa7c42cb47cb727abcca",
+      "canonical_sha256": "1c2717f1f478ca9902a2fdcf77530b124e5d0ca80ee36895a6ed4aab76160708",
+      "decision": "NEEDS_REVIEW",
+      "reason": "Capex plan is correctly estimated/scheduled, but the added consolidated accounting_scope is not established locally. CARE source attribution is retained.",
+      "support_pages": [
+        1,
+        2
+      ],
+      "fields": [
+        "assessment.capex_and_execution_risks"
+      ]
+    },
+    "gen-1792749747-BXbiPux2Gb0rFBy5C7nf:/disclosures/13": {
+      "candidate_sha256": "52280edc9bb7050c221d375208f9640c0e0dc33132b8db966086f6b1557395ec",
+      "canonical_sha256": "1c2717f1f478ca9902a2fdcf77530b124e5d0ca80ee36895a6ed4aab76160708",
+      "decision": "SUPPORTED",
+      "reason": "Source review supports the original asserted proposition and its material fields; omitted separate topics do not invalidate this narrower statement.",
+      "support_pages": [
+        1,
+        2
+      ],
+      "fields": [
+        "assessment.debt_and_leverage",
+        "assessment.interest_coverage_and_debt_protection"
+      ]
+    },
+    "gen-1792749747-BXbiPux2Gb0rFBy5C7nf:/disclosures/14": {
+      "candidate_sha256": "da32789c48c2667e287a1523b44143d446789521f7c48ba1d6f5ea1f6b412630",
+      "canonical_sha256": "1c2717f1f478ca9902a2fdcf77530b124e5d0ca80ee36895a6ed4aab76160708",
+      "decision": "WITHHELD",
+      "reason": "Blanket consolidated scope applied to operational costs/inventory/working-capital paragraph without local scope support.",
+      "support_pages": [
+        1,
+        3
+      ],
+      "fields": [
+        "assessment.working_capital_intensity",
+        "assessment.raw_material_and_forex_risk"
+      ]
+    },
+    "gen-1792749747-BXbiPux2Gb0rFBy5C7nf:/disclosures/15": {
+      "candidate_sha256": "5d4a92edc56418bb0680f4df13bdc02a38dec244609522782c2c1434c333bb52",
+      "canonical_sha256": "1c2717f1f478ca9902a2fdcf77530b124e5d0ca80ee36895a6ed4aab76160708",
+      "decision": "WITHHELD",
+      "reason": "Blanket consolidated scope for cash/utilization is unsupported; omits explicit future FY26–FY27 principal repayments while reporting no current obligations.",
+      "support_pages": [
+        1,
+        3
+      ],
+      "fields": [
+        "liquidity.cash_and_liquid_balances",
+        "liquidity.bank_limit_utilisation",
+        "liquidity.cash_accruals",
+        "liquidity.repayment_obligations",
+        "liquidity.explanations_and_constraints"
+      ]
+    },
+    "gen-1792749747-BXbiPux2Gb0rFBy5C7nf:/disclosures/16": {
+      "candidate_sha256": "5e238ac4d2909351147afc0f9b4db6fd290e6345bf7d738bb24df5ebfe5a7ab4",
+      "canonical_sha256": "1c2717f1f478ca9902a2fdcf77530b124e5d0ca80ee36895a6ed4aab76160708",
+      "decision": "NEEDS_REVIEW",
+      "reason": "Numerical table matches, but original merged claim omits audited versus unaudited status and presents multiple periods under a single FY24 period field. Preserve without silently atomizing or repairing.",
+      "support_pages": [
+        1,
+        4
+      ],
+      "fields": [
+        "assessment.revenue_and_profitability",
+        "assessment.interest_coverage_and_debt_protection"
+      ]
+    },
+    "gen-1792749747-BXbiPux2Gb0rFBy5C7nf:/disclosures/17": {
+      "candidate_sha256": "aa86c2ac0f5719a460c613159a89b7674343bbca70a298c364f05b6a84ef3c01",
+      "canonical_sha256": "1c2717f1f478ca9902a2fdcf77530b124e5d0ca80ee36895a6ed4aab76160708",
+      "decision": "SUPPORTED",
+      "reason": "Source review supports the original asserted proposition and its material fields; omitted separate topics do not invalidate this narrower statement.",
+      "support_pages": [
+        4
+      ],
+      "fields": [
+        "rating.facility",
+        "rating.facility_amount"
+      ]
+    }
+  },
+  "omissions": [
+    "Liquidity amounts, utilisation, accrual forecast and FY26–FY27 repayment conditions remain withheld in the merged original A16. Only the explicit Adequate label is accepted.",
+    "Egypt implementation/country risk, working-capital import/inventory explanation, outlook drivers, full future debt conditions and consolidation entity list are not recovered as accepted findings.",
+    "Historical withdrawal in Annexure-2 is not a current rating action and remains unresolved.",
+    "The financial table is visible in evidence but A17 requires period/audit-status atomization before acceptance."
+  ]
+}

@@ -4,6 +4,7 @@ import hashlib
 import sqlite3
 import tempfile
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 from scrapper.config import MIGRATIONS_PATH
@@ -21,8 +22,21 @@ class RecoveryRegistryTests(unittest.TestCase):
         self.root = Path(self.temp.name)
         self.conn = connect(self.root / "recovery.db")
         init_db(self.conn, apply_migrations=True)
+        # Explicit historical restricted-source fixture, independent of defaults.
+        self.policy_patches = []
+        for target in ('scrapper.core.access_policy.BLOCKED_TERMS_HOSTS',
+                       'scrapper.db.documents.recovery.targets.BLOCKED_TERMS_HOSTS',
+                       'scrapper.db.document_recovery_repo.BLOCKED_TERMS_HOSTS'):
+            policy_patch = patch(target, frozenset({'crisil.com', 'crisilratings.com', 'icra.in'}))
+            policy_patch.start()
+            self.policy_patches.append(policy_patch)
+            self.addCleanup(policy_patch.stop)
+        with self.conn:
+            self.conn.execute("UPDATE credit_rating_host_policy SET automation_status='BLOCKED_TERMS', max_concurrency=0 WHERE host IN ('crisil.com','www.crisil.com','crisilratings.com','www.crisilratings.com','icra.in','www.icra.in')")
 
     def tearDown(self) -> None:
+        for policy_patch in getattr(self, "policy_patches", ()):
+            policy_patch.stop()
         self.conn.close()
         self.temp.cleanup()
 

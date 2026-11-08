@@ -12,7 +12,7 @@ from pathlib import Path
 from ..config import DB_PATH, SCREENER_MIN_MARKET_CAP_CRORE, SNAPSHOTS
 from ..core.collection_scope import numeric_cap, scope_snapshot
 from ..core.http import ScreenerHostClient
-from ..db.collection_scope_repo import after, bootstrap_scope, record_scope, scope_summary
+from ..db.collection_scope_repo import after, bootstrap_scope, record_scope, scope_summary, path_of
 from ..db.database import connect, init_db
 from ..db.repo import start_run, finish_run, store_blob, record_fetch, utc_now
 from ..sources.screener.urls import company_path_url
@@ -74,16 +74,24 @@ def apply_observation(conn, row, *, snapshot, now, evidence):
     return state
 
 
-def monitor(conn, *, limit, client=None, now_fn=utc_now, snapshot_root=SNAPSHOTS):
+def monitor(conn, *, limit, client=None, now_fn=utc_now, snapshot_root=SNAPSHOTS, shared_permits=False, before_claim=None, company_path=None):
     if not 1 <= limit <= 100:
         raise ValueError("Monitor limit must be between 1 and 100")
+    if shared_permits:
+        if client is not None:
+            raise ValueError('Shared monitor requires the canonical transport')
+        from ..operations.workers.screener_requests import SharedScreenerClient
+        client=SharedScreenerClient(conn,owner='scope-monitor-'+uuid.uuid4().hex)
     outcomes=[]
     for _ in range(limit):
+        if before_claim is not None and not before_claim():
+            break
         now=now_fn(); token=uuid.uuid4().hex
         conn.execute("BEGIN IMMEDIATE")
         row=conn.execute("""SELECT * FROM screener_collection_scope
-          WHERE next_check_at_utc<=? AND (claim_token IS NULL OR claim_expires_at_utc<=?)
-          ORDER BY next_check_at_utc,company_path LIMIT 1""",(now,now)).fetchone()
+          WHERE ((? IS NULL AND next_check_at_utc<=?) OR company_path=?)
+          AND (claim_token IS NULL OR claim_expires_at_utc<=?)
+          ORDER BY next_check_at_utc,company_path LIMIT 1""",(company_path,now,company_path,now)).fetchone()
         if row is None:
             conn.commit(); break
         conn.execute("UPDATE screener_collection_scope SET claim_token=?,claim_expires_at_utc=? WHERE company_path=?",
@@ -92,8 +100,18 @@ def monitor(conn, *, limit, client=None, now_fn=utc_now, snapshot_root=SNAPSHOTS
         run_id=None; stop=False
         try:
             client=client or ScreenerHostClient()
-            run_id=start_run(conn,"scope-monitor-1",{"mode":"market_cap_monitor","path":row["company_path"]})
-            response=client.fetch_company(company_path_url(row["company_path"])[0])
+            if shared_permits:
+                client.bind([('scope',row['company_path'],token)],now_fn)
+                client.check()
+            if not shared_permits:
+                run_id=start_run(conn,"scope-monitor-1",{"mode":"market_cap_monitor","path":row["company_path"]})
+            # Scope identity/history stays stable; use the verified current source mapping.
+            mapped=conn.execute("SELECT canonical_url FROM source_identifiers WHERE company_id=? AND source='screener' AND mapping_status='verified'",(row["company_id"],)).fetchone()
+            request_path=path_of(mapped[0]) if mapped else None
+            response=client.fetch_company(company_path_url(request_path or row["company_path"])[0])
+            if shared_permits:
+                client.check()
+                run_id=start_run(conn,"scope-monitor-1",{"mode":"market_cap_monitor","path":row["company_path"]})
             blob=store_blob(conn,response,row["company_path"].split("/")[2],"standalone",now,snapshot_root,resource_kind="market_cap_check")
             fetch=record_fetch(conn,run_id,row["company_id"],response,"standalone",now,blob,resource_kind="market_cap_check")
             if response.fetch_status != "ok":
@@ -104,12 +122,29 @@ def monitor(conn, *, limit, client=None, now_fn=utc_now, snapshot_root=SNAPSHOTS
                 owned=conn.execute("SELECT claim_token FROM screener_collection_scope WHERE company_path=?",(row["company_path"],)).fetchone()
                 if not owned or owned[0]!=token:
                     raise RuntimeError("Scope monitor lease was lost")
-                state=apply_observation(conn,row,snapshot=snapshot,now=now,evidence={"basis":"market_cap_check","fetch_id":fetch,"blob_id":blob})
+                state=apply_observation(conn,row,snapshot=snapshot,now=now,evidence={"basis":"market_cap_check","fetch_id":fetch,"blob_id":blob,
+                    "previous_eligibility":row["eligibility"],"previous_market_cap_crore":row["market_cap_crore"],
+                    "previous_observed_at_utc":row["observed_at_utc"]})
                 conn.execute("""UPDATE screener_collection_scope SET claim_token=NULL,claim_expires_at_utc=NULL,
                   check_failures=0,last_check_error=NULL WHERE company_path=? AND claim_token=?""",(row["company_path"],token))
             finish_run(conn,run_id,"ok")
-            outcomes.append({"path":row["company_path"],"eligibility":state,"cap":str(snapshot["market_cap_crore"])})
+            outcomes.append({"path":row["company_path"],"eligibility":state,"cap":str(snapshot["market_cap_crore"]),
+                "previous_eligibility":row["eligibility"],
+                "became_eligible":state=="eligible" and row["eligibility"]!="eligible",
+                "reentered":state=="eligible" and row["eligibility"]=="below_floor"})
         except Exception as exc:
+            from ..core.host_request_contracts import AdministrativeDefer
+            from ..db.document_work_claims import OwnershipLost
+            if shared_permits and isinstance(exc,OwnershipLost):
+                client.close()
+                raise
+            if shared_permits and isinstance(exc,AdministrativeDefer):
+                from ..db.screener_host_defer import defer
+                client.check()
+                client.preserve_partial(snapshot_root=snapshot_root,now_utc=now_fn())
+                defer(conn,'scope',row['company_path'],token,now=now_fn(),retry_at=exc.retry_at,dispatched=client.transport.dispatched,reason=exc.reason)
+                outcomes.append({'path':row['company_path'],'status':'administrative_defer','reason':exc.reason,'retry_at':exc.retry_at})
+                continue
             if run_id is not None:
                 finish_run(conn,run_id,"error")
             # Retain prior eligibility and explicitly flag a failed observation.
@@ -121,17 +156,23 @@ def monitor(conn, *, limit, client=None, now_fn=utc_now, snapshot_root=SNAPSHOTS
             outcomes.append({"path":row["company_path"],"error":str(exc)[:500]})
         if stop:
             break
+    if shared_permits:
+        client.close()
     return {"checked":len(outcomes),"outcomes":outcomes}
 
 
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument("--db",type=Path,default=DB_PATH)
-    group=p.add_mutually_exclusive_group(); group.add_argument("--bootstrap",action="store_true"); group.add_argument("--monitor",action="store_true")
+    group=p.add_mutually_exclusive_group(); group.add_argument("--bootstrap",action="store_true"); group.add_argument("--monitor",action="store_true"); group.add_argument("--serve",action="store_true")
     p.add_argument("--apply",action="store_true"); p.add_argument("--limit",type=int,default=40)
     args=p.parse_args()
-    if (args.bootstrap or args.monitor) and not args.apply:
+    if (args.bootstrap or args.monitor or args.serve) and not args.apply:
         p.error("Mutating commands require --apply; omit mode flags for read-only status")
+    if args.serve:
+        from ..operations.coordinator.collection import serve
+        print(json.dumps(serve(db_path=args.db,limit=args.limit),sort_keys=True))
+        return
     if args.bootstrap or args.monitor:
         conn=connect(args.db); init_db(conn)
     else:

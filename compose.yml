@@ -16,6 +16,23 @@ x-document-runtime-configs: &document-runtime-configs
     target: /data/.trading_ai_runtime_identity.json
 
 services:
+  # Canonical one-off CLI. Legacy service names remain explicitly runnable.
+  cli:
+    image: *runtime-image
+    command: ["--help"]
+    environment:
+      <<: *production-environment
+      SCRAPER_STORE_PATH: /data
+      SCRAPER_DB_PATH: /data/scraper.db
+      SCREENER_SESSION_FILE: /run/secrets/screener_session
+    volumes:
+      - scraper-data:/data
+      - ./exchange-inbox:/inbox:ro
+    configs: *core-runtime-configs
+    secrets:
+      - screener_session
+    profiles: ["manual"]
+
   discovery:
     image: *runtime-image
     command:
@@ -34,7 +51,7 @@ services:
     configs: *core-runtime-configs
     secrets:
       - screener_session
-    profiles: ["manual"]
+    profiles: ["manual-compat"]
 
   # Every exchange dataset on the IST retry ladder: 19:30, 21:00, and 06:00 the
   # next morning, then the weekly reconciliation report on Sunday. No Screener
@@ -95,7 +112,7 @@ services:
       - scraper-data:/data
       - ./exchange-inbox:/inbox:ro
     configs: *core-runtime-configs
-    profiles: ["manual"]
+    profiles: ["manual-compat"]
 
   exchange-results:
     image: *runtime-image
@@ -113,7 +130,7 @@ services:
       - scraper-data:/data
       - ./exchange-inbox:/inbox:ro
     configs: *core-runtime-configs
-    profiles: ["manual"]
+    profiles: ["manual-compat"]
 
   exchange-reconciliation:
     image: *runtime-image
@@ -125,7 +142,7 @@ services:
     volumes:
       - scraper-data:/data
     configs: *core-runtime-configs
-    profiles: ["manual"]
+    profiles: ["manual-compat"]
 
   worker:
     image: *runtime-image
@@ -143,7 +160,7 @@ services:
     configs: *core-runtime-configs
     secrets:
       - screener_session
-    profiles: ["manual"]
+    profiles: ["manual-compat"]
 
   daemon:
     image: *runtime-image
@@ -209,16 +226,7 @@ services:
   document-download-worker:
     image: *runtime-image
     restart: unless-stopped
-    entrypoint: ["/bin/sh", "-c"]
-    command:
-      - |
-        python -m scrapper.cli queue-accepted-document-downloads
-        while true; do
-          python -m scrapper.cli run-document-download-worker \
-            --scope-id accepted-screener-concall --limit 25 \
-            --throttle-seconds 1
-          sleep 2
-        done
+    command: ["run-acquisition-role", "--role", "document-download-worker"]
     environment:
       <<: *production-environment
       SCRAPER_STORE_PATH: /data
@@ -238,18 +246,13 @@ services:
       - "${TRADING_AI_DOCUMENT_HOST_PATH}:/documents"
     configs: *document-runtime-configs
 
-  june-extraction-worker:
+  document-processing-worker:
     image: *runtime-image
     restart: unless-stopped
     cpus: 0.5
-    entrypoint: ["/bin/sh", "-c"]
-    command:
-      - |
-        while true; do
-          python -m scrapper.commands.quarter_extract \
-            --period 2026-06-30 --apply --limit 10
-          sleep 60
-        done
+    entrypoint: ["python", "-m", "scrapper.commands.quarter_processing_role"]
+    command: ["--period", "2026-06-30", "--apply", "--limit", "10"]
+    stop_grace_period: 180s
     environment:
       <<: *production-environment
       SCRAPER_STORE_PATH: /data
@@ -260,8 +263,7 @@ services:
       - "${TRADING_AI_DOCUMENT_HOST_PATH}:/documents:ro"
     configs: *document-runtime-configs
 
-  # CRISIL and ICRA forbid automated access, so an accepted parse builds a DA-06
-  # recovery target instead of a download job. This worker searches the official
+  # Alternate-source recovery searches the official
   # NSE, BSE and issuer-IR surfaces for the same rating; attaching a candidate
   # materializes its download job into the da06-rating-recovery scope.
   rating-recovery-discovery:
@@ -306,15 +308,7 @@ services:
     image: *runtime-image
     restart: unless-stopped
     cpus: 0.6
-    entrypoint: ["/bin/sh", "-c"]
-    command:
-      - |
-        while true; do
-          python -m scrapper.cli run-document-download-worker \
-            --scope-id da06-rating-recovery --artifact-type credit_rating \
-            --limit 25 --throttle-seconds 1
-          sleep 2
-        done
+    command: ["run-acquisition-role", "--role", "rating-recovery-download"]
     environment:
       <<: *production-environment
       SCRAPER_STORE_PATH: /data
@@ -336,19 +330,12 @@ services:
 
   # Accepted company parses enqueue their own reports. Separate host-partitioned
   # workers keep document latency out of the company scrape and ensure only one
-  # request stream reaches any publisher. CRISIL and ICRA are excluded by the
-  # reviewed policy table because their terms prohibit automated access.
+  # request stream reaches any publisher. CRISIL/ICRA use the same queue with
+  # automatic browser acquisition and shared publisher pacing.
   credit-rating-worker-care:
     image: *runtime-image
     restart: unless-stopped
-    entrypoint: ["/bin/sh", "-c"]
-    command:
-      - |
-        while true; do
-          python -m scrapper.cli run-credit-rating-download-worker --limit 25 \
-            --host www.careratings.com --throttle-seconds 4
-          sleep 10
-        done
+    command: ["run-acquisition-role", "--role", "credit-rating-worker-care"]
     environment:
       <<: *production-environment
       SCRAPER_STORE_PATH: /data
@@ -371,14 +358,7 @@ services:
   credit-rating-worker-india-ratings:
     image: *runtime-image
     restart: unless-stopped
-    entrypoint: ["/bin/sh", "-c"]
-    command:
-      - |
-        while true; do
-          python -m scrapper.cli run-credit-rating-download-worker --limit 25 \
-            --host www.indiaratings.co.in --throttle-seconds 4
-          sleep 10
-        done
+    command: ["run-acquisition-role", "--role", "credit-rating-worker-india-ratings"]
     environment:
       <<: *production-environment
       SCRAPER_STORE_PATH: /data
@@ -401,20 +381,7 @@ services:
   credit-rating-worker-other:
     image: *runtime-image
     restart: unless-stopped
-    entrypoint: ["/bin/sh", "-c"]
-    command:
-      - |
-        while true; do
-          python -m scrapper.cli run-credit-rating-download-worker --limit 25 \
-            --host www.infomerics.com \
-            --host www.acuite.in \
-            --host connect.acuite.in \
-            --host bcrisp.in \
-            --host www.bcrisp.in \
-            --host www.brickworkratings.com \
-            --throttle-seconds 4
-          sleep 10
-        done
+    command: ["run-acquisition-role", "--role", "credit-rating-worker-other"]
     environment:
       <<: *production-environment
       SCRAPER_STORE_PATH: /data

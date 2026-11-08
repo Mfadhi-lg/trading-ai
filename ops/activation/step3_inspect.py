@@ -1,0 +1,49 @@
+"""Bounded production read-only inspection using the existing image and locks."""
+from datetime import datetime, timezone
+import argparse
+import fcntl
+import json
+from pathlib import Path
+import subprocess
+
+from production_ownership import owner_gate
+
+ROOT = Path(__file__).resolve().parents[2]
+HERE = Path(__file__).resolve().parent
+OUT = ROOT / 'artifacts/step3-financial-readiness'
+IMAGE = 'sha256:1a310808f878911b4bd0a324beaf2948f215e3743238c981a531656cf0eecbf9'
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--detail', action='store_true')
+    args = parser.parse_args()
+    runtime = 'step3_detail_runtime.py' if args.detail else 'step3_inspect_runtime.py'
+    stem = 'production-detail' if args.detail else 'production-inspection'
+    OUT.mkdir(parents=True, exist_ok=True)
+    with (HERE / '.nse-owner.lock').open('a') as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        before = owner_gate()
+        command = ['docker','run','--rm','--name','trading-ai-step3-readonly','--network','none',
+            '--read-only','--cap-drop','ALL','--security-opt','no-new-privileges',
+            '--cpus','0.5','--memory','1536m','--tmpfs','/tmp:rw,noexec,nosuid,size=32m',
+            '--mount','type=volume,source=trading-ai_scraper-data,target=/data,readonly',
+            '--mount','type=bind,source='+str(HERE)+',target=/activation,readonly',
+            '--env','PYTHONDONTWRITEBYTECODE=1','--entrypoint','python',IMAGE,
+            '/activation/' + runtime]
+        result = subprocess.run(command, capture_output=True, text=True, timeout=260)
+        (OUT/(stem+'.stderr')).write_text(result.stderr)
+        (OUT/(stem+'.json')).write_text(result.stdout)
+        (OUT/'inspection-command.json').write_text(json.dumps(command,indent=2)+'\n')
+        outcome = {'exit_code':result.returncode,'status':'PASS' if not result.returncode else 'STOP',
+            'owner_before':before,'owner_after':owner_gate(),'finished_at_utc':datetime.now(timezone.utc).isoformat(),
+            'production_mount':'read-only','source_requests':0,'worker_started':False}
+        (OUT/(stem+'-outcome.json')).write_text(json.dumps(outcome,indent=2)+'\n')
+        print(json.dumps({'status':outcome['status'],'path':str(OUT)}))
+        if result.returncode:
+            print(result.stderr)
+            raise SystemExit(result.returncode)
+
+
+if __name__ == '__main__':
+    main()

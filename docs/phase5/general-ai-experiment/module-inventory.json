@@ -1,0 +1,327 @@
+[
+  {
+    "module": "scrapper/research/document_intelligence/__init__.py",
+    "category": "Retain",
+    "retirement_authorized": false,
+    "condition": "No retirement until superior accuracy on independently checked unseen sources; current results do not establish superiority.",
+    "direct_importers": [],
+    "required_by_other_system": false,
+    "dependency_audit_limit": "Static direct Python import scan; dynamic/external consumers not proven absent."
+  },
+  {
+    "module": "scrapper/research/document_intelligence/charts.py",
+    "category": "Reuse with narrower responsibility",
+    "retirement_authorized": false,
+    "condition": "No retirement until superior accuracy on independently checked unseen sources; current results do not establish superiority.",
+    "direct_importers": [
+      "scrapper/research/document_intelligence/extract.py",
+      "scrapper/research/document_intelligence/offline.py",
+      "scrapper/research/document_intelligence/structure_research.py"
+    ],
+    "required_by_other_system": false,
+    "dependency_audit_limit": "Static direct Python import scan; dynamic/external consumers not proven absent."
+  },
+  {
+    "module": "scrapper/research/document_intelligence/claim_candidates.py",
+    "category": "Reuse with narrower responsibility",
+    "retirement_authorized": false,
+    "condition": "No retirement until superior accuracy on independently checked unseen sources; current results do not establish superiority.",
+    "direct_importers": [
+      "scrapper/research/document_intelligence/structure_research.py",
+      "scrapper/tests/test_phase5_claim_candidates.py",
+      "scrapper/tests/test_phase5_native_attribution.py",
+      "scrapper/tests/test_phase5_structure_research.py"
+    ],
+    "required_by_other_system": false,
+    "dependency_audit_limit": "Static direct Python import scan; dynamic/external consumers not proven absent."
+  },
+  {
+    "module": "scrapper/research/document_intelligence/context.py",
+    "category": "Reuse with narrower responsibility",
+    "retirement_authorized": false,
+    "condition": "No retirement until superior accuracy on independently checked unseen sources; current results do not establish superiority.",
+    "direct_importers": [
+      "scrapper/research/document_intelligence/claim_candidates.py",
+      "scrapper/research/document_intelligence/disclosures.py",
+      "scrapper/research/document_intelligence/evidence.py",
+      "scrapper/research/document_intelligence/extract.py",
+      "scrapper/research/document_intelligence/native_financial_tables.py",
+      "scrapper/research/document_intelligence/structure_research.py",
+      "scrapper/tests/test_phase5_accuracy_corrections.py",
+      "scrapper/tests/test_phase5_generalization.py"
+    ],
+    "required_by_other_system": false,
+    "dependency_audit_limit": "Static direct Python import scan; dynamic/external consumers not proven absent."
+  },
+  {
+    "module": "scrapper/research/document_intelligence/correction_evaluation.py",
+    "category": "Keep as research/test tooling",
+    "retirement_authorized": false,
+    "condition": "No retirement until superior accuracy on independently checked unseen sources; current results do not establish superiority.",
+    "direct_importers": [
+      "scrapper/research/document_intelligence/generalization_evaluation.py"
+    ],
+    "required_by_other_system": false,
+    "dependency_audit_limit": "Static direct Python import scan; dynamic/external consumers not proven absent."
+  },
+  {
+    "module": "scrapper/research/document_intelligence/disclosures.py",
+    "category": "Reuse with narrower responsibility",
+    "retirement_authorized": false,
+    "condition": "No retirement until superior accuracy on independently checked unseen sources; current results do not establish superiority.",
+    "direct_importers": [
+      "scrapper/research/document_intelligence/extract.py"
+    ],
+    "required_by_other_system": false,
+    "dependency_audit_limit": "Static direct Python import scan; dynamic/external consumers not proven absent."
+  },
+  {
+    "module": "scrapper/research/document_intelligence/evaluation.py",
+    "category": "Keep as research/test tooling",
+    "retirement_authorized": false,
+    "condition": "No retirement until superior accuracy on independently checked unseen sources; current results do not establish superiority.",
+    "direct_importers": [
+      "scrapper/research/document_intelligence/correction_evaluation.py",
+      "scrapper/tests/test_phase5_accuracy_corrections.py",
+      "scrapper/tests/test_phase5_claim_candidates.py",
+      "scrapper/tests/test_phase5_generalization.py",
+      "scrapper/tests/test_phase5_native_attribution.py",
+      "scrapper/tests/test_phase5_quality_evaluation.py"
+    ],
+    "required_by_other_system": false,
+    "dependency_audit_limit": "Static direct Python import scan; dynamic/external consumers not proven absent."
+  },
+  {
+    "module": "scrapper/research/document_intelligence/evidence.py",
+    "category": "Retain",
+    "retirement_authorized": false,
+    "condition": "No retirement until superior accuracy on independently checked unseen sources; current results do not establish superiority.",
+    "direct_importers": [
+      "scrapper/research/document_intelligence/charts.py",
+      "scrapper/research/document_intelligence/claim_candidates.py",
+      "scrapper/research/document_intelligence/correction_evaluation.py",
+      "scrapper/research/document_intelligence/disclosures.py",
+      "scrapper/research/document_intelligence/evaluation.py",
+      "scrapper/research/document_intelligence/extract.py",
+      "scrapper/research/document_intelligence/native_financial_tables.py",
+      "scrapper/research/document_intelligence/offline.py",
+      "scrapper/research/document_intelligence/ratings.py",
+      "scrapper/research/document_intelligence/source_review.py",
+      "scrapper/research/document_intelligence/transcripts.py",
+      "scrapper/research/general_ai_experiment/runner.py",
+      "scrapper/research/general_ai_experiment/verification.py",
+      "scrapper/tests/test_phase5_accuracy_corrections.py",
+      "scrapper/tests/test_phase5_claim_candidates.py",
+      "scrapper/tests/test_phase5_document_intelligence.py",
+      "scrapper/tests/test_phase5_evidence_preservation.py",
+      "scrapper/tests/test_phase5_focused_disclosures.py",
+      "scrapper/tests/test_phase5_generalization.py",
+      "scrapper/tests/test_phase5_native_attribution.py",
+      "scrapper/tests/test_phase5_source_review.py",
+      "scrapper/tests/test_phase5_structure_research.py"
+    ],
+    "required_by_other_system": false,
+    "dependency_audit_limit": "Static direct Python import scan; dynamic/external consumers not proven absent.",
+    "responsibility": "Preserve canonical evidence, review provenance and admission boundaries; no replacement by model judgments."
+  },
+  {
+    "module": "scrapper/research/document_intelligence/extract.py",
+    "category": "Reuse with narrower responsibility",
+    "retirement_authorized": false,
+    "condition": "No retirement until superior accuracy on independently checked unseen sources; current results do not establish superiority.",
+    "direct_importers": [
+      "scrapper/research/document_intelligence/__init__.py",
+      "scrapper/research/document_intelligence/claim_candidates.py",
+      "scrapper/research/document_intelligence/correction_evaluation.py",
+      "scrapper/research/document_intelligence/disclosures.py",
+      "scrapper/research/document_intelligence/evaluation.py",
+      "scrapper/research/document_intelligence/offline.py",
+      "scrapper/research/general_ai_experiment/runner.py",
+      "scrapper/tests/test_phase5_accuracy_corrections.py",
+      "scrapper/tests/test_phase5_evidence_preservation.py",
+      "scrapper/tests/test_phase5_focused_disclosures.py",
+      "scrapper/tests/test_phase5_generalization.py"
+    ],
+    "required_by_other_system": false,
+    "dependency_audit_limit": "Static direct Python import scan; dynamic/external consumers not proven absent."
+  },
+  {
+    "module": "scrapper/research/document_intelligence/generalization_evaluation.py",
+    "category": "Keep as research/test tooling",
+    "retirement_authorized": false,
+    "condition": "No retirement until superior accuracy on independently checked unseen sources; current results do not establish superiority.",
+    "direct_importers": [],
+    "required_by_other_system": false,
+    "dependency_audit_limit": "Static direct Python import scan; dynamic/external consumers not proven absent."
+  },
+  {
+    "module": "scrapper/research/document_intelligence/native_financial_tables.py",
+    "category": "Reuse with narrower responsibility",
+    "retirement_authorized": false,
+    "condition": "No retirement until superior accuracy on independently checked unseen sources; current results do not establish superiority.",
+    "direct_importers": [
+      "scrapper/research/document_intelligence/claim_candidates.py"
+    ],
+    "required_by_other_system": false,
+    "dependency_audit_limit": "Static direct Python import scan; dynamic/external consumers not proven absent."
+  },
+  {
+    "module": "scrapper/research/document_intelligence/native_layout.py",
+    "category": "Reuse with narrower responsibility",
+    "retirement_authorized": false,
+    "condition": "No retirement until superior accuracy on independently checked unseen sources; current results do not establish superiority.",
+    "direct_importers": [
+      "scrapper/tests/test_phase5_native_attribution.py"
+    ],
+    "required_by_other_system": false,
+    "dependency_audit_limit": "Static direct Python import scan; dynamic/external consumers not proven absent."
+  },
+  {
+    "module": "scrapper/research/document_intelligence/numbers.py",
+    "category": "Reuse with narrower responsibility",
+    "retirement_authorized": false,
+    "condition": "No retirement until superior accuracy on independently checked unseen sources; current results do not establish superiority.",
+    "direct_importers": [
+      "scrapper/research/document_intelligence/charts.py",
+      "scrapper/research/document_intelligence/claim_candidates.py",
+      "scrapper/research/document_intelligence/disclosures.py",
+      "scrapper/research/document_intelligence/evidence.py",
+      "scrapper/research/document_intelligence/extract.py",
+      "scrapper/research/document_intelligence/native_financial_tables.py",
+      "scrapper/research/document_intelligence/source_review.py",
+      "scrapper/research/document_intelligence/structure_research.py",
+      "scrapper/tests/test_phase5_accuracy_corrections.py",
+      "scrapper/tests/test_phase5_document_intelligence.py",
+      "scrapper/tests/test_phase5_focused_disclosures.py",
+      "scrapper/tests/test_phase5_structure_research.py"
+    ],
+    "required_by_other_system": false,
+    "dependency_audit_limit": "Static direct Python import scan; dynamic/external consumers not proven absent."
+  },
+  {
+    "module": "scrapper/research/document_intelligence/offline.py",
+    "category": "Keep as research/test tooling",
+    "retirement_authorized": false,
+    "condition": "No retirement until superior accuracy on independently checked unseen sources; current results do not establish superiority.",
+    "direct_importers": [
+      "scrapper/research/document_intelligence/correction_evaluation.py",
+      "scrapper/research/document_intelligence/evaluation.py",
+      "scrapper/research/document_intelligence/generalization_evaluation.py",
+      "scrapper/research/document_intelligence/source_review.py",
+      "scrapper/research/general_ai_experiment/local.py",
+      "scrapper/research/general_ai_experiment/runner.py",
+      "scrapper/tests/test_phase5_document_intelligence.py",
+      "scrapper/tests/test_phase5_focused_disclosures.py"
+    ],
+    "required_by_other_system": false,
+    "dependency_audit_limit": "Static direct Python import scan; dynamic/external consumers not proven absent."
+  },
+  {
+    "module": "scrapper/research/document_intelligence/ratings.py",
+    "category": "Reuse with narrower responsibility",
+    "retirement_authorized": false,
+    "condition": "No retirement until superior accuracy on independently checked unseen sources; current results do not establish superiority.",
+    "direct_importers": [
+      "scrapper/research/document_intelligence/disclosures.py",
+      "scrapper/research/document_intelligence/extract.py",
+      "scrapper/tests/test_phase5_accuracy_corrections.py"
+    ],
+    "required_by_other_system": false,
+    "dependency_audit_limit": "Static direct Python import scan; dynamic/external consumers not proven absent."
+  },
+  {
+    "module": "scrapper/research/document_intelligence/research_features.py",
+    "category": "Reuse with narrower responsibility",
+    "retirement_authorized": false,
+    "condition": "No retirement until superior accuracy on independently checked unseen sources; current results do not establish superiority.",
+    "direct_importers": [
+      "scrapper/research/document_intelligence/correction_evaluation.py",
+      "scrapper/research/document_intelligence/evaluation.py",
+      "scrapper/research/document_intelligence/offline.py",
+      "scrapper/tests/test_phase5_accuracy_corrections.py",
+      "scrapper/tests/test_phase5_focused_disclosures.py",
+      "scrapper/tests/test_phase5_quality_evaluation.py"
+    ],
+    "required_by_other_system": false,
+    "dependency_audit_limit": "Static direct Python import scan; dynamic/external consumers not proven absent.",
+    "responsibility": "Preserve canonical evidence, review provenance and admission boundaries; no replacement by model judgments."
+  },
+  {
+    "module": "scrapper/research/document_intelligence/schema.py",
+    "category": "Retain",
+    "retirement_authorized": false,
+    "condition": "No retirement until superior accuracy on independently checked unseen sources; current results do not establish superiority.",
+    "direct_importers": [
+      "scrapper/research/document_intelligence/__init__.py",
+      "scrapper/research/document_intelligence/charts.py",
+      "scrapper/research/document_intelligence/claim_candidates.py",
+      "scrapper/research/document_intelligence/disclosures.py",
+      "scrapper/research/document_intelligence/evaluation.py",
+      "scrapper/research/document_intelligence/extract.py",
+      "scrapper/research/document_intelligence/offline.py",
+      "scrapper/research/document_intelligence/ratings.py",
+      "scrapper/research/document_intelligence/source_review.py",
+      "scrapper/research/general_ai_experiment/runner.py",
+      "scrapper/research/general_ai_experiment/verification.py",
+      "scrapper/tests/test_phase5_quality_evaluation.py",
+      "scrapper/tests/test_phase5_source_review.py"
+    ],
+    "required_by_other_system": false,
+    "dependency_audit_limit": "Static direct Python import scan; dynamic/external consumers not proven absent.",
+    "responsibility": "Preserve canonical evidence, review provenance and admission boundaries; no replacement by model judgments."
+  },
+  {
+    "module": "scrapper/research/document_intelligence/source_review.py",
+    "category": "Reuse with narrower responsibility",
+    "retirement_authorized": false,
+    "condition": "No retirement until superior accuracy on independently checked unseen sources; current results do not establish superiority.",
+    "direct_importers": [
+      "scrapper/research/general_ai_experiment/runner.py",
+      "scrapper/tests/test_phase5_source_review.py"
+    ],
+    "required_by_other_system": false,
+    "dependency_audit_limit": "Static direct Python import scan; dynamic/external consumers not proven absent.",
+    "responsibility": "Preserve canonical evidence, review provenance and admission boundaries; no replacement by model judgments."
+  },
+  {
+    "module": "scrapper/research/document_intelligence/structure_research.py",
+    "category": "Keep as research/test tooling",
+    "retirement_authorized": false,
+    "condition": "No retirement until superior accuracy on independently checked unseen sources; current results do not establish superiority.",
+    "direct_importers": [
+      "scrapper/tests/test_phase5_structure_research.py"
+    ],
+    "required_by_other_system": false,
+    "dependency_audit_limit": "Static direct Python import scan; dynamic/external consumers not proven absent."
+  },
+  {
+    "module": "scrapper/research/document_intelligence/temporal.py",
+    "category": "Retain",
+    "retirement_authorized": false,
+    "condition": "No retirement until superior accuracy on independently checked unseen sources; current results do not establish superiority.",
+    "direct_importers": [
+      "scrapper/research/document_intelligence/__init__.py",
+      "scrapper/research/document_intelligence/offline.py",
+      "scrapper/tests/test_phase5_evidence_preservation.py",
+      "scrapper/tests/test_phase5_quality_evaluation.py",
+      "scrapper/tests/test_phase5_source_review.py"
+    ],
+    "required_by_other_system": false,
+    "dependency_audit_limit": "Static direct Python import scan; dynamic/external consumers not proven absent.",
+    "responsibility": "Preserve canonical evidence, review provenance and admission boundaries; no replacement by model judgments."
+  },
+  {
+    "module": "scrapper/research/document_intelligence/transcripts.py",
+    "category": "Reuse with narrower responsibility",
+    "retirement_authorized": false,
+    "condition": "No retirement until superior accuracy on independently checked unseen sources; current results do not establish superiority.",
+    "direct_importers": [
+      "scrapper/research/document_intelligence/claim_candidates.py",
+      "scrapper/research/document_intelligence/disclosures.py",
+      "scrapper/research/document_intelligence/extract.py",
+      "scrapper/tests/test_phase5_generalization.py"
+    ],
+    "required_by_other_system": false,
+    "dependency_audit_limit": "Static direct Python import scan; dynamic/external consumers not proven absent."
+  }
+]

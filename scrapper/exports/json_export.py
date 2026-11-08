@@ -6,6 +6,8 @@ import json
 import sqlite3
 from pathlib import Path
 
+from .writers import write_json_payload
+
 from ..config import EXPORTS
 
 
@@ -264,8 +266,5 @@ def write_export(
     payload = build_export(conn, company_id, parse_id)
     destination = export_root / str(run_id) / "screener" / f"{symbol.upper()}.json"
     destination.parent.mkdir(parents=True, exist_ok=True)
-    destination.write_text(
-        json.dumps(payload, indent=2, sort_keys=True, ensure_ascii=False) + "\n",
-        encoding="utf-8",
-    )
+    write_json_payload(payload, destination, ensure_ascii=False)
     return destination

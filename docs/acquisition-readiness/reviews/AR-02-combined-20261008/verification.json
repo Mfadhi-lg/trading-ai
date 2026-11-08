@@ -1,0 +1,37 @@
+{
+  "status": "PASS",
+  "reviewed_digest": "sha256:4206ea61254ec1c490e5284d1aac0361c08b084c7e1186a86141a42c1a2c0b08",
+  "package_checksum_index_sha256": "46965ab5e380794dff07060feda9ee8c76f2e9921189885253e282c8525c68f4",
+  "sealed_files_verified": 56,
+  "archive_sha256": "aff9a394c3ee49f8ebf85b234df7fc3ed594f8e10be22f02137f6408b659cef5",
+  "source_projection_sha256": "aed3d89a082d7fe9852e69096169657f1f6875f66e29ad84345272536e6a3b56",
+  "actual_oci_application_files_verified": 643,
+  "oci_compressed_and_uncompressed_layer_digests_verified": 13,
+  "attestation_predicate_subjects_verified": [
+    "https://spdx.dev/Document",
+    "https://slsa.dev/provenance/v1"
+  ],
+  "intended_delta": [
+    "scrapper/tests/test_ar022_access_block.py",
+    "scrapper/tests/test_ar02_snapshot_dates.py",
+    "scrapper/workflows/exchange/schedule.py",
+    "scrapper/workflows/exchange/universe.py"
+  ],
+  "original_ar021_and_preexisting_files_verified": 760,
+  "reused_checksums_verified": 135,
+  "historical_ledger_resolutions": [
+    {
+      "historical_path": "docs/current/TRADING_AI_ACQUISITION_READINESS_EXECUTION.md",
+      "retained_path": "docs/acquisition-readiness/baselines/AR-02-combined-20261008/ledger-before.md",
+      "sha256": "86da1b945d3d9423a76e7c2f6c029fc3197c8dd455a89664e579d75d5f851e23"
+    }
+  ],
+  "focused_tests_reused": 10,
+  "test_wheels_hash_verified": 5,
+  "role_configs_verified": 21,
+  "historical_stopped_inventory": 15,
+  "docker_commands_executed": false,
+  "production_access": false,
+  "exchange_requests": 0,
+  "tests_builds_migrations_repeated": false
+}

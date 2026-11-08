@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
+import secrets
 from datetime import datetime, timedelta, timezone
 from typing import Any, Iterable
 from urllib.parse import urlsplit
@@ -180,6 +181,7 @@ def materialize_download_queue(
     created_at_utc: str | None = None,
     artifact_ids: Iterable[int] | None = None,
     include_queue_counts: bool = True,
+    reuse_existing_jobs: bool = False,
 ) -> dict[str, Any]:
     """Idempotently materialize artifact/URL jobs for one explicit scope."""
 
@@ -192,6 +194,10 @@ def materialize_download_queue(
     with conn:
         for row in targets:
             url = str(row["document_url"])
+            if reuse_existing_jobs and conn.execute(
+                'SELECT 1 FROM artifact_download_queue WHERE artifact_id=? AND requested_url=?',
+                (row['artifact_id'],url)).fetchone():
+                continue
             parsed = urlsplit(url)
             host = (parsed.hostname or "").lower()
             valid_url = parsed.scheme in {"http", "https"} and bool(host)
@@ -205,7 +211,7 @@ def materialize_download_queue(
                 result_status = PUBLISHER_TERMS_RESULT
                 error = PUBLISHER_TERMS_ERROR
                 blocked_targets += 1
-            elif bool(row["has_content"]):
+            elif bool(row["has_content"]) and not revision_scope(conn, scope_id, int(row["artifact_id"]), url):
                 status = "SKIPPED_ALREADY_HAVE_CONTENT"
                 result_status = None
                 error = None
@@ -244,6 +250,11 @@ def materialize_download_queue(
                       last_error=NULL, updated_at_utc=?
                 WHERE scope_id=?
                   AND status IN ('PENDING', 'RETRYABLE_FAILURE')
+                  AND NOT EXISTS (SELECT 1 FROM artifact_download_scopes rs
+                    WHERE rs.scope_id=artifact_download_queue.scope_id
+                    AND json_extract(rs.policy_json,'$.revision_artifact_id')=artifact_download_queue.artifact_id
+                    AND json_extract(rs.policy_json,'$.revision_url')=artifact_download_queue.requested_url
+                    AND json_extract(rs.policy_json,'$.revision_indicator') IS NOT NULL)
                   AND EXISTS (
                     SELECT 1 FROM artifact_contents AS content
                      WHERE content.artifact_id=artifact_download_queue.artifact_id
@@ -280,11 +291,18 @@ def claim_download_job(
     scope_id: str | None = None,
     excluded_hosts: Iterable[str] = (),
     artifact_types: Iterable[str] = (),
+    allowed_job_ids: Iterable[int] | None = None,
 ) -> sqlite3.Row | None:
     """Claim one row under ``BEGIN IMMEDIATE`` and recover stale leases."""
 
     if lease_seconds < 1:
         raise ValueError("lease_seconds must be positive")
+    selected_jobs = None if allowed_job_ids is None else tuple(dict.fromkeys(allowed_job_ids))
+    if selected_jobs is not None:
+        if not selected_jobs:
+            return None
+        if len(selected_jobs) > 100 or any(type(x) is not int or x <= 0 for x in selected_jobs):
+            raise ValueError('Select at most 100 positive download job IDs')
     excluded = tuple(sorted({host.lower() for host in excluded_hosts}))
     selected_types = tuple(sorted({str(value) for value in artifact_types}))
     conn.execute("BEGIN IMMEDIATE")
@@ -295,9 +313,13 @@ def claim_download_job(
             _scope(conn, scope_id)
             scope_filter = " AND scope_id=?"
             parameters.append(scope_id)
+        if selected_jobs is not None:
+            scope_filter += f" AND download_job_id IN ({','.join('?' for _ in selected_jobs)})"
+            parameters.extend(selected_jobs)
         # Re-evaluate policy on every claim so rows queued before a policy
         # review (including active/stale leases) cannot reach a worker.
-        _skip_blocked_terms_jobs(conn, now_utc=now_utc, scope_id=scope_id)
+        if selected_jobs is None:
+            _skip_blocked_terms_jobs(conn, now_utc=now_utc, scope_id=scope_id)
         conn.execute(
             f"""UPDATE artifact_download_queue
                    SET status='RETRYABLE_FAILURE', lease_owner=NULL,
@@ -318,6 +340,11 @@ def claim_download_job(
                        last_error=NULL, updated_at_utc=?
                  WHERE status IN ('PENDING', 'RETRYABLE_FAILURE')
                        {scope_filter}
+                   AND NOT EXISTS (SELECT 1 FROM artifact_download_scopes rs
+                     WHERE rs.scope_id=artifact_download_queue.scope_id
+                     AND json_extract(rs.policy_json,'$.revision_artifact_id')=artifact_download_queue.artifact_id
+                     AND json_extract(rs.policy_json,'$.revision_url')=artifact_download_queue.requested_url
+                    AND json_extract(rs.policy_json,'$.revision_indicator') IS NOT NULL)
                    AND EXISTS (
                      SELECT 1 FROM artifact_contents AS content
                       WHERE content.artifact_id=artifact_download_queue.artifact_id
@@ -358,10 +385,20 @@ def claim_download_job(
                     )
                )""",
         ]
+        # Once handed off, publisher rating links have one durable owner.
+        from ..documents.rating_browser import browser_host_sql
+        where.append(f"""NOT (artifact.artifact_type='credit_rating'
+            AND {browser_host_sql('queue.target_host')}
+            AND EXISTS(SELECT 1 FROM credit_rating_download_queue rating
+              WHERE rating.artifact_id=queue.artifact_id
+                AND rating.requested_url=queue.requested_url))""")
         select_parameters: list[Any] = [now_utc, now_utc, now_utc]
         if scope_id is not None:
             where.append("scope_id=?")
             select_parameters.append(scope_id)
+        if selected_jobs is not None:
+            where.append(f"queue.download_job_id IN ({','.join('?' for _ in selected_jobs)})")
+            select_parameters.extend(selected_jobs)
         if excluded:
             where.append(f"target_host NOT IN ({','.join('?' for _ in excluded)})")
             select_parameters.extend(excluded)
@@ -406,18 +443,19 @@ def claim_download_job(
         conn.execute(
             """UPDATE artifact_download_queue
                   SET status='LEASED', attempt_count=attempt_count+1,
-                      lease_owner=?, lease_expires_at_utc=?, updated_at_utc=?
+                      lease_owner=?, lease_expires_at_utc=?, updated_at_utc=?, claim_token=?
                 WHERE download_job_id=?""",
-            (worker, _after(now_utc, lease_seconds), now_utc, job_id),
+            (worker, _after(now_utc, lease_seconds), now_utc, secrets.token_hex(16), job_id),
         )
-        conn.commit()
-        return conn.execute(
+        claimed = conn.execute(
             """SELECT queue.*, artifact.artifact_type
                  FROM artifact_download_queue AS queue
                  JOIN document_artifacts AS artifact USING (artifact_id)
                 WHERE download_job_id=?""",
             (job_id,),
         ).fetchone()
+        conn.commit()
+        return claimed
     except Exception:
         conn.rollback()
         raise
@@ -428,6 +466,8 @@ def finish_download_job(
     *,
     job_id: int,
     worker: str,
+    claim_attempt_count: int,
+    claim_token: str,
     status: str,
     result_status: str,
     error: str | None,
@@ -450,7 +490,7 @@ def finish_download_job(
                   SET status=?, next_attempt_at_utc=?, lease_owner=NULL,
                       lease_expires_at_utc=NULL, last_result_status=?,
                       last_error=?, updated_at_utc=?
-                WHERE download_job_id=? AND status='LEASED' AND lease_owner=?""",
+                WHERE download_job_id=? AND status='LEASED' AND lease_owner=? AND attempt_count=? AND claim_token=?""",
             (
                 status,
                 next_attempt,
@@ -459,6 +499,8 @@ def finish_download_job(
                 now_utc,
                 job_id,
                 worker,
+                claim_attempt_count,
+                claim_token,
             ),
         )
         if cursor.rowcount != 1:
@@ -577,3 +619,11 @@ def ensure_recovery_download_scope(
         created_at_utc=now,
         artifact_ids=(artifact_id,),
     )
+
+
+def revision_scope(conn, scope_id, artifact_id, url):
+    """Narrow exception to content skipping, backed by immutable scope evidence."""
+    row = conn.execute('SELECT policy_json FROM artifact_download_scopes WHERE scope_id=?', (scope_id,)).fetchone()
+    policy = json.loads(row[0]) if row else {}
+    return (policy.get('revision_artifact_id') == artifact_id and
+            policy.get('revision_url') == url and bool(policy.get('revision_indicator')))

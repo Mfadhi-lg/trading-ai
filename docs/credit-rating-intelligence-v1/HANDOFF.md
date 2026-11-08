@@ -1,0 +1,15 @@
+# Next-stage handoff
+
+The offline build milestone is met: both original CARE PDFs produce deterministic, source-backed company records with honest partial coverage, and the admission boundary rejects changed or unreviewed candidates. The complete Credit Rating V1 coverage objective remains unfinished.
+
+The smallest next implementation step is a **source-bound atomic candidate adapter for the already saved EKC A16 liquidity claim**. Split its original propositions without rewriting the retained response, bind each to the full page-3 liquidity paragraph, preserve unknown accounting scope, and keep the FY26–FY27 repayment qualification. The omitted repayment condition must remain source context until an explicitly reviewed new derived candidate is admitted; it must not be filled from reference answers. Add focused tests for cash date, twelve-month utilisation window, the medium-term accrual expectation and current-versus-future repayment distinction. This closes the most consequential unresolved block without another benchmark or inference call.
+
+Completing all required coverage then means applying that same adapter/review boundary to the enumerated omissions, particularly conditional debt/capex, working capital, agency outlook and historical withdrawal. Some facts have no retained candidate; they require explicit source-backed deterministic extraction or separately authorized fresh extraction. Do not call the whole V1 complete after resolving one block.
+
+For fresh AI extraction, `replay_candidate(candidate, review, context, extraction, origin)` already separates proposed content from admission. A future provider adapter can submit candidates with `origin.mode = live_ai`; none is implemented or authorized here. Still missing: a model request/response adapter, a source-ID candidate schema for qualitative disclosures, paragraph/table relation selection and field-level evidence review. Reuse `claim_candidates.build_packet/qualify` for numerical relations, and `evidence.validate_evidence` for exact locators. A new model's self-reported support or reference agreement must never substitute for source review. The offline CLI remains network-denied.
+
+Keep Phase 5 statuses and rating taxonomy unchanged. Do not sum repeated facility amounts across tenors. Do not treat a report date as an independently established action/publication date. Preserve uncertain scope and agency-specific definitions. Expand tests only for the adapter being implemented; no platform rewrite, acquisition work, database integration or broad experiment is necessary.
+
+## Phase 2 completion
+
+The bounded atomic adapter step described above is implemented and verified; see [Phase 2 results and replay instructions](PHASE2.md). The original baseline remains unchanged, with the opt-in Phase 2 EKC manifest supplying the reviewed packet. Next, use the same mechanism for the small working-capital/capex batch identified in the [remaining-gap register](PHASE2-GAPS.md), then address table-header/audit-state binding. Full V1 coverage remains unfinished. Stop here until that next stage is requested.

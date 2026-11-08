@@ -17,9 +17,9 @@ from scrapper.pipeline.screener_vertical import ingest_screener_response
 from scrapper.pipeline.trendlyne_vertical import ingest_trendlyne_response
 from scrapper.tests.test_screener_vertical import (
     FIRST_FETCH as SCREENER_FETCH,
-    FIXTURE as SCREENER_FIXTURE,
-    fixture_peer_response,
-    fixture_response as screener_response,
+    STANDALONE_FIXTURE as SCREENER_FIXTURE,
+    fixture_standalone_peer_response as fixture_peer_response,
+    fixture_standalone_response as screener_response,
 )
 from scrapper.tests.test_trendlyne_t01 import (
     FIRST_FETCH as TRENDLYNE_FETCH,
@@ -29,7 +29,7 @@ from scrapper.tests.test_trendlyne_t01 import (
 
 
 TEST_ROOT = Path(__file__).resolve().parent
-GOLDEN = TEST_ROOT / "golden" / "p01_quality_report_expected.json"
+GOLDEN = TEST_ROOT / "golden" / "p01_quality_report_standalone_expected.json"
 GENERATED_AT = "2026-08-04T18:00:00+00:00"
 
 
@@ -48,7 +48,7 @@ class QualityReportTests(unittest.TestCase):
         prepare_database(self.db_path)
         ingest_screener_response(
             "LAURUSLABS",
-            "consolidated",
+            "standalone",
             screener_response(content),
             fixture_peer_response(),
             db_path=self.db_path,

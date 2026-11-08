@@ -423,6 +423,11 @@ def resolve_credit_rating(
         else:
             status = "INTERACTION_REQUIRED" if last_html is not None else "RETRYABLE_RESOLUTION_FAILURE"
         return CreditRatingResolution(status, original_url, None, tuple(steps), "no_validated_report_target")
+    except Exception as exc:
+        from ..core.host_request_contracts import AdministrativeDefer
+        if isinstance(exc, AdministrativeDefer):
+            exc.steps = tuple(steps)
+        raise
     finally:
         if owned:
             session.close()

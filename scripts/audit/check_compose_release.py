@@ -13,6 +13,15 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 RELEASE = ROOT / "ops/docker/release/c05.3"
 EXPECTED_PRODUCTION_SERVICES = 16
+TOPOLOGY = ROOT / "docs/cleanup/baselines/C23.5/topology-manifest.json"
+if not TOPOLOGY.exists():
+    TOPOLOGY = ROOT / "docs/cleanup/baselines/C23.4/topology-manifest.json"
+if not TOPOLOGY.exists():
+    TOPOLOGY = ROOT / "docs/cleanup/baselines/C23.3/topology-manifest.json"
+if not TOPOLOGY.exists():
+    TOPOLOGY = ROOT / "docs/cleanup/baselines/C23.2/topology-manifest.json"
+if not TOPOLOGY.exists():
+    TOPOLOGY = ROOT / "docs/cleanup/baselines/C23.1/topology-manifest.json"
 EXPECTED_BROWSER_SERVICES = 4
 IDENTITY_TARGET = "/run/trading-ai/runtime-identity.json"
 PRODUCTION_DATA_TARGETS = {"/data", "/documents"}
@@ -34,6 +43,7 @@ def compose_config(*files: str) -> dict:
     env.update({
         "TRADING_AI_DOCUMENT_HOST_PATH": "/tmp/c052-production-documents",
         "SCREENER_SESSION_FILE": "/tmp/c052-screener-session",
+        "BROWSER_RATING_RUN_ID": "offline-release-audit",
     })
     command = ["docker", "compose", "--profile", "*"]
     for filename in files:
@@ -63,7 +73,21 @@ def validate_identities() -> str:
     image_reference = release["compose_repository_digest"]
     if not re.fullmatch(r"[^@\s]+@sha256:[0-9a-f]{64}", image_reference):
         raise ContractError("production image reference is not digest-qualified")
-    for relative, expected in manifest.get("operator_manifests", {}).items():
+    operator_manifests = dict(manifest.get("operator_manifests", {}))
+    if TOPOLOGY.exists():
+        topology = load_json(TOPOLOGY)
+        released_hash = hashlib.sha256((RELEASE / "release-manifest.json").read_bytes()).hexdigest()
+        if topology.get("base_release_manifest_sha256") != released_hash:
+            raise ContractError("manual topology has a different release base")
+        expected_inputs = {"compose.yml", "compose.development.yml"}
+        if topology.get("chunk") == "C23.5":
+            expected_inputs.add("compose.browser-recovery.yml")
+        if set(topology.get("operator_manifests", {})) != expected_inputs:
+            raise ContractError("topology may override only its reviewed Compose inputs")
+        if topology.get("production_services") != 17 or topology.get("manual_service") != "cli":
+            raise ContractError("unexpected manual topology contract")
+        operator_manifests.update(topology["operator_manifests"])
+    for relative, expected in operator_manifests.items():
         actual = "sha256:" + hashlib.sha256((ROOT / relative).read_bytes()).hexdigest()
         if actual != expected:
             raise ContractError(f"operator manifest hash drifted: {relative}")
@@ -154,10 +178,11 @@ def validate_development(config: dict, expected_count: int) -> None:
 def main() -> int:
     try:
         image_reference = validate_identities()
-        validate_production(compose_config("compose.yml"), EXPECTED_PRODUCTION_SERVICES, image_reference)
+        expected_count = 17 if TOPOLOGY.exists() else EXPECTED_PRODUCTION_SERVICES
+        validate_production(compose_config("compose.yml"), expected_count, image_reference)
         validate_development(
             compose_config("compose.yml", "compose.development.yml"),
-            EXPECTED_PRODUCTION_SERVICES,
+            expected_count,
         )
         validate_production(
             compose_config("compose.browser-recovery.yml"),
@@ -176,7 +201,7 @@ def main() -> int:
         return 1
     print(json.dumps({
         "status": "PASS",
-        "production_services": EXPECTED_PRODUCTION_SERVICES,
+        "production_services": expected_count,
         "browser_services": EXPECTED_BROWSER_SERVICES,
         "immutable_image": image_reference,
         "development_data_targets": ["/development-data", "/development-documents"],
