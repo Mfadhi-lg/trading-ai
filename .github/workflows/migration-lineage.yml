@@ -7,6 +7,10 @@ on:
 jobs:
   migration-lineage:
     runs-on: ubuntu-latest
+    # Migration-control tests write only to temporary fixtures. Never inherit a
+    # developer or production runtime identity in CI.
+    env:
+      TRADING_AI_ENV: test
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
