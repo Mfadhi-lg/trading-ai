@@ -66,6 +66,50 @@ def load_screener_manifest(path: Path = MANIFEST_PATH) -> dict[str, Any]:
     return manifest
 
 
+SHAREHOLDING_UNAVAILABLE = "Shareholding pattern is currently not available for this company."
+
+
+def shareholding_unavailable(soup: BeautifulSoup, frequency: str) -> bool:
+    """Require an explicit source notice in the matching empty container."""
+    container = soup.select_one(f"section#shareholding #{frequency}-shp")
+    return bool(
+        container is not None
+        and container.find("table") is None
+        and container.get_text(" ", strip=True) == SHAREHOLDING_UNAVAILABLE
+    )
+
+
+def _is_optional(row: dict[str, Any]) -> bool:
+    """True when the source may legitimately omit this component from a page.
+
+    A decision is optional either because capture depends on an access or
+    response condition (`status: conditional`) or because the source only
+    renders the component for some companies (`presence_condition`).
+    """
+    return row.get("status") == "conditional" or bool(row.get("presence_condition"))
+
+
+def _coverage_error(
+    label: str, rows: list[dict[str, Any]], key: Any, actual: set[Any]
+) -> str | None:
+    """Compare a page inventory against a manifest group.
+
+    A component the manifest does not know about is always an error: that is
+    the uncovered source data this audit exists to catch. A component the
+    manifest marks optional may be absent without an error.
+    """
+    allowed = {key(row) for row in rows}
+    required = {key(row) for row in rows if not _is_optional(row)}
+    if required <= actual <= allowed:
+        return None
+    return (
+        f"{label} differ: "
+        f"actual={sorted(actual)!r} "
+        f"required={sorted(required)!r} "
+        f"allowed={sorted(allowed)!r}"
+    )
+
+
 def _top_level_tables(section: Tag) -> list[Tag]:
     return [table for table in section.find_all("table") if table.find_parent("table") is None]
 
@@ -105,27 +149,33 @@ def audit_screener_fixture_coverage(
     """
     manifest = manifest or load_screener_manifest()
     soup = BeautifulSoup(content, "html.parser")
+    unavailable = {
+        frequency for frequency in ("quarterly", "yearly")
+        if shareholding_unavailable(soup, frequency)
+    }
+    unavailable_table_codes = {f"{frequency}_shareholding" for frequency in unavailable}
+    manifest = dict(manifest)
+    manifest["tables"] = [
+        dict(row, presence_condition="explicit source unavailable notice")
+        if row.get("code") in unavailable_table_codes else row
+        for row in manifest["tables"]
+    ]
+    manifest["shareholder_drilldowns"] = [
+        dict(row, presence_condition="explicit source unavailable notice")
+        if row["frequency"] in unavailable else row
+        for row in manifest["shareholder_drilldowns"]
+    ]
     errors: list[str] = []
 
     actual_regions = {"#top"} if soup.select_one("#top") else set()
     actual_regions.update(
         f"section#{node['id']}" for node in soup.select("main section[id]")
     )
-    expected_regions = {row["selector"] for row in manifest["regions"]}
-    if actual_regions != expected_regions:
-        errors.append(
-            f"regions differ: actual={sorted(actual_regions)!r} expected={sorted(expected_regions)!r}"
-        )
 
     actual_profile = {
         " ".join(node.get_text(" ", strip=True).split())
         for node in soup.select("#top .company-profile .title")
     }
-    expected_profile = {row["heading"] for row in manifest["profile_blocks"]}
-    if actual_profile != expected_profile:
-        errors.append(
-            f"profile blocks differ: actual={sorted(actual_profile)!r} expected={sorted(expected_profile)!r}"
-        )
 
     actual_tables: set[tuple[str, int]] = set()
     for section in soup.select("main section[id]"):
@@ -133,41 +183,11 @@ def audit_screener_fixture_coverage(
             (str(section["id"]), index)
             for index, _ in enumerate(_top_level_tables(section))
         )
-    expected_tables = {
-        (row["section"], int(row["table_index"])) for row in manifest["tables"]
-    }
-    if actual_tables != expected_tables:
-        errors.append(
-            f"tables differ: actual={sorted(actual_tables)!r} expected={sorted(expected_tables)!r}"
-        )
 
     actual_documents = {
         " ".join(node.get_text(" ", strip=True).split())
         for node in soup.select("section#documents h3")
     }
-    allowed_documents = {row["heading"] for row in manifest["document_lists"]}
-    required_documents = {
-        row["heading"]
-        for row in manifest["document_lists"]
-        if row["status"] != "conditional"
-    }
-    if (
-        not required_documents <= actual_documents
-        or not actual_documents <= allowed_documents
-    ):
-        errors.append(
-            "document lists differ: "
-            f"actual={sorted(actual_documents)!r} "
-            f"required={sorted(required_documents)!r} "
-            f"allowed={sorted(allowed_documents)!r}"
-        )
-
-    actual_controls = _control_keys(soup)
-    expected_controls = {row["key"] for row in manifest["controls"]}
-    if actual_controls != expected_controls:
-        errors.append(
-            f"controls differ: actual={sorted(actual_controls)!r} expected={sorted(expected_controls)!r}"
-        )
 
     actual_chart = {
         (
@@ -177,14 +197,6 @@ def audit_screener_fixture_coverage(
         for node in soup.select("section#chart button[name='metrics'][value]")
         if str(node.get("value", ""))
     }
-    expected_chart = {
-        (row["label"], row["request_metrics"]) for row in manifest["chart_series"]
-    }
-    if actual_chart != expected_chart:
-        errors.append(
-            f"chart series differ: actual={sorted(actual_chart)!r} expected={sorted(expected_chart)!r}"
-        )
-
     schedule_pattern = re.compile(r"showSchedule\('([^']+)',\s*'([^']+)'")
     actual_schedules: set[tuple[str, str]] = set()
     for node in soup.select("button[onclick*='Company.showSchedule']"):
@@ -193,23 +205,6 @@ def audit_screener_fixture_coverage(
             errors.append("unparseable Company.showSchedule control")
         else:
             actual_schedules.add((match.group(2), match.group(1)))
-    allowed_schedules = {
-        (row["section"], row["schedule_key"])
-        for row in manifest["expandable_schedules"]
-    }
-    required_schedules = {
-        (row["section"], row["schedule_key"])
-        for row in manifest["expandable_schedules"]
-        if not row.get("presence_condition")
-    }
-    if not required_schedules <= actual_schedules or not actual_schedules <= allowed_schedules:
-        errors.append(
-            "expandable schedules differ: "
-            f"actual={sorted(actual_schedules)!r} "
-            f"required={sorted(required_schedules)!r} "
-            f"allowed={sorted(allowed_schedules)!r}"
-        )
-
     shareholder_pattern = re.compile(r"showShareholders\('([^']+)',\s*'([^']+)'")
     actual_shareholders: set[tuple[str, str]] = set()
     for node in soup.select("button[onclick*='Company.showShareholders']"):
@@ -218,32 +213,47 @@ def audit_screener_fixture_coverage(
             errors.append("unparseable Company.showShareholders control")
         else:
             actual_shareholders.add((match.group(2), match.group(1)))
-    allowed_shareholders = {
-        (row["frequency"], row["classification"])
-        for row in manifest["shareholder_drilldowns"]
-    }
-    required_shareholders = {
-        (row["frequency"], row["classification"])
-        for row in manifest["shareholder_drilldowns"]
-        if not row.get("presence_condition")
-    }
-    if (
-        not required_shareholders <= actual_shareholders
-        or not actual_shareholders <= allowed_shareholders
-    ):
-        errors.append(
-            "shareholder drilldowns differ: "
-            f"actual={sorted(actual_shareholders)!r} "
-            f"required={sorted(required_shareholders)!r} "
-            f"allowed={sorted(allowed_shareholders)!r}"
-        )
+    group_inventories = (
+        ("regions", "regions", actual_regions, lambda row: row["selector"]),
+        ("profile_blocks", "profile blocks", actual_profile, lambda row: row["heading"]),
+        (
+            "tables",
+            "tables",
+            actual_tables,
+            lambda row: (row["section"], int(row["table_index"])),
+        ),
+        (
+            "document_lists",
+            "document lists",
+            actual_documents,
+            lambda row: row["heading"],
+        ),
+        ("controls", "controls", _control_keys(soup), lambda row: row["key"]),
+        (
+            "chart_series",
+            "chart series",
+            actual_chart,
+            lambda row: (row["label"], row["request_metrics"]),
+        ),
+        (
+            "expandable_schedules",
+            "expandable schedules",
+            actual_schedules,
+            lambda row: (row["section"], row["schedule_key"]),
+        ),
+        (
+            "shareholder_drilldowns",
+            "shareholder drilldowns",
+            actual_shareholders,
+            lambda row: (row["frequency"], row["classification"]),
+        ),
+    )
+    for group, label, actual, key in group_inventories:
+        error = _coverage_error(label, manifest[group], key, actual)
+        if error is not None:
+            errors.append(error)
 
     for row in manifest["linked_components"]:
-        presence_is_conditional = bool(row.get("presence_condition"))
-        if (
-            row["status"] != "conditional"
-            and not presence_is_conditional
-            and not soup.select_one(row["selector"])
-        ):
+        if not _is_optional(row) and not soup.select_one(row["selector"]):
             errors.append(f"linked component selector is absent: {row['code']}")
     return errors

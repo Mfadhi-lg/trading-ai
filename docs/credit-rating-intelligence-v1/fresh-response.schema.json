@@ -1,0 +1,198 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Fresh atomic provider response (untrusted proposals)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "identity",
+    "disclosures"
+  ],
+  "properties": {
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "company_name",
+        "document_id",
+        "content_sha256",
+        "report_date"
+      ],
+      "properties": {
+        "company_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "document_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "content_sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "report_date": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "disclosures": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "accounting_scope",
+          "attribution",
+          "conditions",
+          "disclosure_category",
+          "field",
+          "id",
+          "period",
+          "period_kind",
+          "qualifications",
+          "statement",
+          "statement_kind",
+          "support_region_ids",
+          "unit",
+          "value"
+        ],
+        "properties": {
+          "value": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "unit": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "period": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "accounting_scope": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "attribution": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "statement": {
+            "type": "string",
+            "minLength": 1
+          },
+          "field": {
+            "type": "string",
+            "enum": [
+              "rating.facility",
+              "rating.tenor",
+              "rating.current_rating",
+              "rating.previous_rating",
+              "rating.action",
+              "rating.outlook",
+              "rating.facility_amount",
+              "rating.watch",
+              "rating.withdrawal",
+              "rating.action_date",
+              "liquidity.assessment",
+              "liquidity.cash_and_liquid_balances",
+              "liquidity.bank_limit_utilisation",
+              "liquidity.repayment_obligations",
+              "liquidity.cash_accruals",
+              "liquidity.explanations_and_constraints",
+              "assessment.accounting_approach",
+              "assessment.revenue_and_profitability",
+              "assessment.revenue_explanations",
+              "assessment.profitability_explanations",
+              "assessment.debt_and_leverage",
+              "assessment.interest_coverage_and_debt_protection",
+              "assessment.working_capital_intensity",
+              "assessment.operational_strengths",
+              "assessment.business_weaknesses",
+              "assessment.concentration_risks",
+              "assessment.capex_and_execution_risks",
+              "assessment.agency_expectations",
+              "assessment.upgrade_sensitivities",
+              "assessment.downgrade_sensitivities",
+              "assessment.material_conditions",
+              "assessment.raw_material_and_forex_risk",
+              "assessment.pricing_and_cost_pass_through",
+              "assessment.order_book_and_execution",
+              "assessment.payment_and_covenant_risk",
+              "assessment.group_support"
+            ]
+          },
+          "disclosure_category": {
+            "type": "string",
+            "enum": [
+              "rating",
+              "liquidity",
+              "assessment"
+            ]
+          },
+          "statement_kind": {
+            "type": "string",
+            "enum": [
+              "historical_fact",
+              "assessment",
+              "assumption",
+              "expectation"
+            ]
+          },
+          "period_kind": {
+            "type": "string",
+            "enum": [
+              "historical_period",
+              "as_of",
+              "expectation_horizon",
+              "report_date",
+              "unknown"
+            ]
+          },
+          "conditions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "qualifications": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "support_region_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1
+          }
+        }
+      }
+    }
+  }
+}

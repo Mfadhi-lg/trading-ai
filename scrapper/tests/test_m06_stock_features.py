@@ -22,7 +22,7 @@ class MFStockMonthlyFeaturesM06Tests(unittest.TestCase):
     def setUp(self) -> None:
         self.temp = tempfile.TemporaryDirectory()
         self.conn = connect(Path(self.temp.name) / "scraper.sqlite")
-        init_db(self.conn)
+        init_db(self.conn, apply_migrations=True)
         self.fixture = json.loads(FIXTURE.read_text(encoding="utf-8"))
         self.scheme_ids: dict[str, int] = {}
         self.security_ids: dict[str, int] = {}

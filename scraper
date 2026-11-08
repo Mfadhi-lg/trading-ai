@@ -1,0 +1,4 @@
+#!/bin/bash
+# Compatibility operator entry; host operations own lifecycle and CLI dispatch.
+cd "$(dirname "$0")"
+exec bash ops/host/scraper_lifecycle.sh "$@"

@@ -1,0 +1,15 @@
+59625c43769f3866988a66cc0faa1d468dd195470ef699814b36a5e9ae48e291  docs/acquisition-readiness/baselines/AR-01.3/migration-activation-review/clone-size-observation.json
+52fa18a9cfa5f6c3476ca13d34c91bc8f4aa346180f1b6b019005f5f99801901  docs/acquisition-readiness/baselines/AR-01.3/migration-activation-review/db-volume-capacity.json
+70bd820862514071bb653122344317e4262af96c9bd84e149b644e8833c36e62  docs/acquisition-readiness/baselines/AR-01.3/migration-activation-review/document-volume.plist
+62c3441084a9c1e13a9536593e7aa11ff9eb8002e577917808959ea0a7de3382  docs/acquisition-readiness/baselines/AR-01.3/migration-activation-review/documents-capacity.json
+661648920750f947b1322bc1b375de78c1387e2ad8a9ce722582a0459f5433fa  docs/acquisition-readiness/baselines/AR-01.3/migration-activation-review/fresh-canary/ar013_readonly_db.py
+8941e1367dca919ebd7796eee9527002c1a18344fde0d2dd2f6b336797a6d416  docs/acquisition-readiness/baselines/AR-01.3/migration-activation-review/fresh-canary/docker-command.txt
+7fd6d1ff8c2124321afcc978c0c53f4f80532c491e09c38b72df508fce3907e8  docs/acquisition-readiness/baselines/AR-01.3/migration-activation-review/fresh-canary/host-gate-after.json
+1a4e37a533dd1c39509cbc3248b5bda67e6173b89ced6d3cd34c307f4668d81d  docs/acquisition-readiness/baselines/AR-01.3/migration-activation-review/fresh-canary/host-gate.json
+10a24dfeca3ca7971301e70c5aa9d41078df607f0c1b90bef985a7ef2fc72289  docs/acquisition-readiness/baselines/AR-01.3/migration-activation-review/fresh-canary/result.json
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  docs/acquisition-readiness/baselines/AR-01.3/migration-activation-review/fresh-canary/stderr.log
+851bf6444d4724860dc14d23072b934a3269d17ac7ea9b56056f1da5794f799a  docs/acquisition-readiness/baselines/AR-01.3/migration-activation-review/fresh-canary/stdout.log
+9b465af011b4cd24c246aaedf2e35cd1112d5ba948df6fe94fab286f1d674c2b  docs/acquisition-readiness/baselines/AR-01.3/migration-activation-review/reconfirm.py
+a01c60d4b917a6db74c31295f0ff8e57f5acb3a5db251924636a0ae68e2d06e3  docs/acquisition-readiness/baselines/AR-01.3/migration-activation-review/review-verification.json
+1069ba6e03773b080d0252639dc76b9a9bc48b9536900605a6fae30d11b3a37e  docs/acquisition-readiness/baselines/AR-01.3/migration-activation-review/sql-review.json
+0ec3405063202690d6b77f089104d9d627a17b055145ece3734bdd826467ee64  docs/acquisition-readiness/chunks/AR-01.3-migration-activation-review.md

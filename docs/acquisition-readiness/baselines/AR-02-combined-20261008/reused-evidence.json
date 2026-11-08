@@ -1,0 +1,686 @@
+{
+  "files": [
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/docs/acquisition-readiness/baselines/AR-01.2/build-initial-epoch-metadata.json",
+      "sha256": "ec3888837d257e3f40ffaca8b95cd16646b797c02b500efce6800f3f84020885"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/docs/acquisition-readiness/baselines/AR-01.2/build-initial-epoch.log",
+      "sha256": "75c0f453c5c2e4625761d3b3946f5c1ac8bfa3464d3aab0ef341cdc2f87d1aff"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/docs/acquisition-readiness/baselines/AR-01.2/build-metadata.json",
+      "sha256": "5055a8377c727c90e1a7947196deeb73b1596c24a5a790f9b54d09361e5d080b"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/docs/acquisition-readiness/baselines/AR-01.2/build.log",
+      "sha256": "9598991303222701aedde7e27c6aaf2da7beea2ba824b6e3243923425b9d7b7f"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/docs/acquisition-readiness/baselines/AR-01.2/candidate-rendered.json",
+      "sha256": "c6de8f791c73edd63255ae6479d5d76e8fd6000c74723673b1ed444c58e6ee54"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/docs/acquisition-readiness/baselines/AR-01.2/config-mount-map.json",
+      "sha256": "4b5756a22c06bc3a58fb9c5f1d0ea6658b7672260b49933d9d65142405cc2c71"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/docs/acquisition-readiness/baselines/AR-01.2/default-services.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/docs/acquisition-readiness/baselines/AR-01.2/dependency-config-inventory.json",
+      "sha256": "15dc82293533bc73d8ea8da4fb6f85780b8e9d1e1be21985ad2d1be5e4d3125e"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/docs/acquisition-readiness/baselines/AR-01.2/host-checks.log",
+      "sha256": "d11d8ae627c44eb95b70e78ece8e595fab9233d4d526dd18d84805402f28113d"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/docs/acquisition-readiness/baselines/AR-01.2/image-load.log",
+      "sha256": "a7498acc9d648178721fa5c5b82767328531a19d22cba2b34b41d84e5ea9e105"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/docs/acquisition-readiness/baselines/AR-01.2/ledger-concurrent-ar013.md",
+      "sha256": "96f9c05bc0cba81790b32bd83884a7b44f92cad83f27b216be1d347d24417c62"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/docs/acquisition-readiness/baselines/AR-01.2/loaded-image.json",
+      "sha256": "d0d04819cce2edea1b46d084413856372b2001b8db4cdec9cc738fd2d95b11fa"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/docs/acquisition-readiness/baselines/AR-01.2/migration-lineage.log",
+      "sha256": "5b4b05e74acadbc7f1d59e95e930dd941afd111e4a04524093ca391714744c99"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/docs/acquisition-readiness/baselines/AR-01.2/migration-manifest.json",
+      "sha256": "1cf54abd04006105082ab1af4f3b60533e7e9d564898eb6f45a8c0d1ec4d5075"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/docs/acquisition-readiness/baselines/AR-01.2/oci-verification.json",
+      "sha256": "02fb873a057538f451e569c5d7d6fbd2af2feeffd69c01dd5f8c8c29b32fbcb4"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/docs/acquisition-readiness/baselines/AR-01.2/package-verification.json",
+      "sha256": "dd65c8e654592b9e7a803ebd7956a5a1f196d16535c77766bf746f0bec98da7c"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/docs/acquisition-readiness/baselines/AR-01.2/package.py",
+      "sha256": "c6983ede48eb82dcdba2f9780dafecc3737c24e8df3242c535f1b44f37f62239"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/docs/acquisition-readiness/baselines/AR-01.2/prepare.py",
+      "sha256": "1b3ae33784ec50d36a1296f2167e069cf84e0337ca938e6c43c4a1afad3aa4dd"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/docs/acquisition-readiness/baselines/AR-01.2/prerequisite-checksums.log",
+      "sha256": "5f898698f9343b9a9eefb60f65af9a586e386777b47352714bc56e5e520a7de4"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/docs/acquisition-readiness/baselines/AR-01.2/prior-compose-check.log",
+      "sha256": "f4f34400a219e2aa1282a506be1c1b92bee5c4ea85e41f6ce2b1d47300f120b3"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/docs/acquisition-readiness/baselines/AR-01.2/prior-image-identity.json",
+      "sha256": "654dee874b46bdb39e5ac9929b5b2490222b6068665628a9c81afdb2b55c3d62"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/docs/acquisition-readiness/baselines/AR-01.2/provenance.json",
+      "sha256": "df8e92f33cc1a86d3d447b0a69598a7264561b4761260db39678dfb7dc2a8858"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/docs/acquisition-readiness/baselines/AR-01.2/release-manifest-initial.json",
+      "sha256": "78e09cdfbffbed6943e72c540f11c7555c0cdd2463cd8bf213530072d39fd12b"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/docs/acquisition-readiness/baselines/AR-01.2/runtime-after.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/docs/acquisition-readiness/baselines/AR-01.2/runtime-before.jsonl",
+      "sha256": "9b94cab2f707a09b18b0a43b5b54245f82e328ac48a8f986d14be923000cc583"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/docs/acquisition-readiness/baselines/AR-01.2/sbom.json",
+      "sha256": "a0d3157b0296a9e8ba1858917fb62559ed22f36492f9f70b8b955b54aa074c02"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/docs/acquisition-readiness/baselines/AR-01.2/smoke-host-only-tests.log",
+      "sha256": "ed1fee85007b1d807eafdae47de551a98b1dae28b50e16033d74f6e19af6d580"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/docs/acquisition-readiness/baselines/AR-01.2/smoke-initial-import-path.log",
+      "sha256": "0861bdfa32e081e1c3e6ceef997e12b40eaae36dc5caff41121d00f9cd0c2c15"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/docs/acquisition-readiness/baselines/AR-01.2/smoke.log",
+      "sha256": "b2807ce845a43a6729ef5f624fefa84c806ab1239e9b0eef0e9f00d1e96f2271"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/docs/acquisition-readiness/baselines/AR-01.2/smoke.py",
+      "sha256": "fc38d93e7603ee47a9469fe8df1e0a7365e3eae838c4adcca1cb56852153ef99"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/docs/acquisition-readiness/baselines/AR-01.2/source-manifest.json",
+      "sha256": "e6089d4dcf2e9261df7c6cca5d63e80e06c9491709e6e340a3ec7df1709eb9b7"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/docs/acquisition-readiness/baselines/AR-01.2/verify_package.py",
+      "sha256": "509397af5f34b719e97be77118d4cd73020975f1b5f660fa39d7eba586117a1e"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/docs/acquisition-readiness/baselines/AR-01.2/working-tree-before.json",
+      "sha256": "c454848bbdbf0b5ee51f854c333714dee80e8fcfadb883cf9831c9ee9660de1f"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/docs/acquisition-readiness/chunks/AR-01.2.md",
+      "sha256": "5611f0c45577c366ea6a795c0eea1a780cd7c39d9a392a05edc66b954f05e06a"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/ops/docker/release/c28.1/README.md",
+      "sha256": "29bfee03654dc3b20e05937257b7d30c2e974797b2ea6c7e7f841542e6660314"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/ops/docker/release/c28.1/ROLLOUT_ROLLBACK.md",
+      "sha256": "323430153aee665857c94fc8ef4085d7785cc48e0499343935d5bd9c48d3d4ea"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/ops/docker/release/c28.1/compose.candidate.json",
+      "sha256": "dab46d09d22252126352ce02b649b1f53f9a8689ee4b388a48f861478ca7dd59"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/ops/docker/release/c28.1/core-documents-sentinel.json",
+      "sha256": "2d0bf67aea44ecbc4ffa46582d4fae553d8440248d0cdd1debed81079f55e9d1"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/ops/docker/release/c28.1/external-documents-sentinel.json",
+      "sha256": "8ddae3a1d85d8e87771ffa9a4bc82158def90bf1b0507517805543cc4ad0b6fd"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/ops/docker/release/c28.1/release-manifest.json",
+      "sha256": "3e834b09e5df5833cd4390b36d10c8f99ec402669799aad1b9c76d7dff5320fe"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/ops/docker/release/c28.1/runtime-identity-core.json",
+      "sha256": "b9cbb4aa22016b31bad9d99b80908f35927f1eb0df9ae5dc91f465dc024f3c77"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/ops/docker/release/c28.1/runtime-identity-documents.json",
+      "sha256": "3abce5b2baaa354f5a0e61e98f403867b774c962835c893936edca38a3fb728f"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.2/reviewed-package/ops/docker/release/c28.1/store-sentinel.json",
+      "sha256": "bf885c5205ace8e3b68eacd4cf946a39353626e09fc3803aef5cbdc730ee641b"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/SHA256SUMS",
+      "path": "artifacts/acquisition-readiness/AR-02.1-release-20261008/release.oci.tar",
+      "sha256": "d2f11067393237e75afcb94f07a4190ddcee315e0e2c03201839c85ee24a2d9b"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/build-command.json",
+      "sha256": "6bca0f767cb94fb7500280c952bed8cc5310c803b55dbe63ee38b67d5a2b31e3"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/build-exit.json",
+      "sha256": "81868a6e94ffc0178bf833deb1c9013d9fab4ee95ddb876a5e8ec4f1d26376d2"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/build-metadata.json",
+      "sha256": "5aec9babd32be1655113afe158d85c0bc0ad535c06727df4275f623311e7ace1"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/build.log",
+      "sha256": "c7b2ec33952b118bb351997e22c4669856d69795266644dfe48d1b218378e58b"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/build.py",
+      "sha256": "732b7436d81cdc320687cff8b2a686ea190e171efc4c3ec286d049325f91360d"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/candidate-rendered.json",
+      "sha256": "9a614205d954542d112529e259c743f2c43cfb1b0767942b2b4ace5c55ee9f7c"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/default-services.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/final-verification.json",
+      "sha256": "9b9bb09d9c0f2b99c3793b389f731560729b31e0c63d09d80f1a19a22ec43a87"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/image-load.log",
+      "sha256": "f9424d6f2290489f12b49b7af9d1a75ebac5c77bba1bb700ac7172d68a16071f"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/image-proof-command.json",
+      "sha256": "8857fb04ccdb4a55889b2f1a1d5769dd4316a6abb9e6898581d621ac9e38fb84"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/image-proof-exit.json",
+      "sha256": "81868a6e94ffc0178bf833deb1c9013d9fab4ee95ddb876a5e8ec4f1d26376d2"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/image-proof.log",
+      "sha256": "6f8baa021b560a6e528f50b55c569cb32f93ef173c1f85e987b8232df67016f3"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/image_proof.py",
+      "sha256": "65b0e5e2e2089ebd5b1266674d7afce61896b6a237d155fdb8cb70d4f208fd69"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/layer-reuse.json",
+      "sha256": "065df14ed8e62d66c217e90a9d8c84741c22a0d510d351ad7e8757dbe669d56f"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/ledger-before.md",
+      "sha256": "9a67fc672908665bc6ad0f411851b8823262642328e9c1442cad2a00c41c8475"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/loaded-image.json",
+      "sha256": "2cb72f3ff67e6cffa7f5cad80ab65d1592f2d50698850e97ef5cb2a9283d523f"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/oci-config.json",
+      "sha256": "8f223ee2b6cd9acc36ab33de1ef28092fe23712175e53bc38d1b96e7d38fb3b9"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/oci-verification.json",
+      "sha256": "0d4cc8c62d68bc9a8a97ec03c4db6d45a74ea62dc54c2f5b5ea77c01285d259b"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/package-verification.json",
+      "sha256": "71dfa0d8c3171149a3e8e6e20c62808b32e7e35b2bc87cd8ea8a9dee2bfd857a"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/package.py",
+      "sha256": "82f5924b76aac855df2fbd4a8496f91cb02ced8d8dcf34bf10d9ba4648d5705d"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/prepare.py",
+      "sha256": "52c0c37d9397db7ba0aa94deb8fa7e9363eb0b412c569d6d8145ede904643deb"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/provenance.json",
+      "sha256": "dfac21a363cc4595aa373199abdd387a0882d8f61b38d6ef956125c9bccef235"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/reused-evidence.json",
+      "sha256": "cd5add4fe67e6de6bcf529c5ac689c81b69bdbe8de0d73530ab98e73e5855d5c"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/runtime-after.log",
+      "sha256": "16bbb81c5c9344d423cad63b9f52c10da9149e651ee7511649b825c68fd7e75f"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/runtime-before.log",
+      "sha256": "16bbb81c5c9344d423cad63b9f52c10da9149e651ee7511649b825c68fd7e75f"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/sbom.json",
+      "sha256": "e08d79952c88ff4720ed62bb0be58326e29334b18086add23b3ad8edb91091ed"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/seal.py",
+      "sha256": "392249ccd65ab7c22d56af28c3fbf9ec9e23d5f0f235fadc067adadaed4d29cb"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/source-manifest.json",
+      "sha256": "ead18f38ca242cb1e5ea79ad2c1e3c411be8e11bf1b97138a9cc6e17c924eb86"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/verify_image.py",
+      "sha256": "49f09bb23ebc9d429d5566b24b9f76a239b21b4af7f0eaa8eef68eddefe8fcba"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/working-tree-before.json",
+      "sha256": "341f81941e541aee4a3cf09da1d9d31bc8461afe1fa8ee178990662bcaf326f8"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/chunks/AR-02.1-patched-release-20261008.md",
+      "sha256": "bc30db2d9ce5c6409775f63e2dd36cff053932a30835498635e8eb398283e3ae"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-02.2/ledger-before.md",
+      "sha256": "5abaab1c1ecf8d4d5997e4c4b88ad2bf33d97d2f378147858cc989cb34aab4b2"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/SHA256SUMS",
+      "path": "ops/docker/release/ar02.1-20261008/ACTIVATION_BOUNDARY.md",
+      "sha256": "83e5e96bca8c87f8aff6b45b132a4dcc9c6ad31d59242cc9073be31853933396"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/SHA256SUMS",
+      "path": "ops/docker/release/ar02.1-20261008/README.md",
+      "sha256": "881685cb08675851fc257187c304a26c1af6df752d1971424ad444f4de4f6956"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/SHA256SUMS",
+      "path": "ops/docker/release/ar02.1-20261008/compose.candidate.json",
+      "sha256": "280866486210f78851340a9732c885291ce3d40d71b25cbfc4a3c7cee0bdbc92"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/SHA256SUMS",
+      "path": "ops/docker/release/ar02.1-20261008/core-documents-sentinel.json",
+      "sha256": "deb38e838312c7c25706b0635586115605b33a4dc0bad844f76e0442e684fb7e"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/SHA256SUMS",
+      "path": "ops/docker/release/ar02.1-20261008/external-documents-sentinel.json",
+      "sha256": "02de7dc42427aab520a677c0e6f42196619c88f4ed62733052bb605ec1c6ca01"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/SHA256SUMS",
+      "path": "ops/docker/release/ar02.1-20261008/release-manifest.json",
+      "sha256": "1a29990c3a76fad5233f2d30442548ee7c37ab8b363287b0c4510a0288df926b"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/SHA256SUMS",
+      "path": "ops/docker/release/ar02.1-20261008/runtime-identity-core.json",
+      "sha256": "fac6bdb67bd405a7db0191128210ee23c64bc598685b48312f551a2450b2b609"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/SHA256SUMS",
+      "path": "ops/docker/release/ar02.1-20261008/runtime-identity-documents.json",
+      "sha256": "46da6109b546d43226e7feebe780dd5b4d52014044a5c7b0c8856663071320f1"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/SHA256SUMS",
+      "path": "ops/docker/release/ar02.1-20261008/store-sentinel.json",
+      "sha256": "20f9f4e1a58317f2261d50dc140cc7b4a89d507af36cfb1c55e5c02b01f02577"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-02.2/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-02.2/identity-and-reuse.json",
+      "sha256": "a0b5fda1b74ed9bab8320302d759f279cbb5a5c752b57e8cec617519a7b69130"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-02.2/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-02.2/inspect_retained.py",
+      "sha256": "4938b1926e1fa4365d048607df02d5020f1876066c26473fe89282342afb15af"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-02.2/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-02.2/ledger-before.md",
+      "sha256": "5abaab1c1ecf8d4d5997e4c4b88ad2bf33d97d2f378147858cc989cb34aab4b2"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-02.2/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-02.2/retained-evidence.json",
+      "sha256": "413df6768a0b2a426cddc3be70ff1909ccadcde33a1f6fdf19018687a43cce38"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-02.2/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-02.2/schedule-before.py",
+      "sha256": "32e68151941be1bdc93633ad241e94d645c08b8ea44bd5b10c430bee4ec4ec3c"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-02.2/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-02.2/source.patch",
+      "sha256": "f8904243058b818d0ac4bf7dda98f17f4983c873a3a98039ba038ff70ddf59d3"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-02.2/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-02.2/tests.log",
+      "sha256": "f880181fbe5f94c45041628f3d00c0dbf67deab8f68a573e321970eefe12534c"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-02.2/SHA256SUMS",
+      "path": "docs/acquisition-readiness/chunks/AR-02.2.md",
+      "sha256": "c07072aa80d880be5177d3db94cc4ea9cd0521bb83622060d54ff9b3ca52b0e7"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-02.2/SHA256SUMS",
+      "path": "docs/current/TRADING_AI_ACQUISITION_READINESS_EXECUTION.md",
+      "sha256": "86da1b945d3d9423a76e7c2f6c029fc3197c8dd455a89664e579d75d5f851e23"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-02.2/SHA256SUMS",
+      "path": "ops/runbooks/bse-access-block.md",
+      "sha256": "8d03ab38ca6066e76453be65c4088511b16f90955930b93547bdacc2f4c07aea"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-02.2/SHA256SUMS",
+      "path": "scrapper/tests/test_ar022_access_block.py",
+      "sha256": "ed715272bcd47db6a7c51fe4cedd6c9b69969f475b99a786449792d6cb0ea517"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-02.2/SHA256SUMS",
+      "path": "scrapper/workflows/exchange/schedule.py",
+      "sha256": "a7e449805e376ae8fed95658a3cdee2c493a3b213d759738f8dbe6261e3c9949"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/attempt.json",
+      "sha256": "50b74f7be1f03f27c9d9840e66767ce24653209c2b7dd152ddae98907b77f818"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/baseline.json",
+      "sha256": "3fd9b4b340804561c9e4c63c488b220ff31bbf6a9d6c42d5642a33bfec84ac85"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/driver.py",
+      "sha256": "738fbc0fb18b17e595477006b812f83e494052736e799b8af7e4c70ab6a32da7"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/final.json",
+      "sha256": "db49a6a433354463b28093a8136ba29fd0c78d668d657618e081186f48bbcaf5"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/minute-00/command.json",
+      "sha256": "73039439cf1dcb614404d878c2313eb020cc3cb552f8b5ad5ce3a3d368d56310"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/minute-00/exit.json",
+      "sha256": "f7c246f41936da482912264900c892ed59ac146f1146a20993a952f934fc33c3"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/minute-00/image-identity.json",
+      "sha256": "c0a486b08fc3a2d4308b07b6d75228beef3b5cba712df70fce4c52ca43dbe192"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/minute-00/result.json",
+      "sha256": "c7e0441dba0129d2e566a50a4e865b6df4f326c7ce1366a11396b94af1a08218"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/minute-00/stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/minute-00/stdout.log",
+      "sha256": "c7e0441dba0129d2e566a50a4e865b6df4f326c7ce1366a11396b94af1a08218"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/minute-00/volume-identity.json",
+      "sha256": "c5d204feeac6f45356b15e7af7aab8095e2c67c8d7a139f17a7d61c6ae920169"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/minute-00/writer-after.json",
+      "sha256": "7aed2007fd46204cc975cdbc4547609bfcd887939f7ea9f06c4b7228d74e25cf"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/minute-00/writer-before.json",
+      "sha256": "fb5ea0a67c0356a4e18e04cedaf6009f70098eb169d1fb4c010a2442d05289b6"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/minute-05/command.json",
+      "sha256": "27ac6f845b592fcc3770130f07e8b414781543e171d1ea048bd191cf2d14cbcc"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/minute-05/exit.json",
+      "sha256": "61bfb111ab0c3336b934962bfaea495fcae555c8039d6373911f53ec2bea591d"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/minute-05/image-identity.json",
+      "sha256": "c0a486b08fc3a2d4308b07b6d75228beef3b5cba712df70fce4c52ca43dbe192"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/minute-05/result.json",
+      "sha256": "c7e0441dba0129d2e566a50a4e865b6df4f326c7ce1366a11396b94af1a08218"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/minute-05/stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/minute-05/stdout.log",
+      "sha256": "c7e0441dba0129d2e566a50a4e865b6df4f326c7ce1366a11396b94af1a08218"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/minute-05/volume-identity.json",
+      "sha256": "c5d204feeac6f45356b15e7af7aab8095e2c67c8d7a139f17a7d61c6ae920169"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/minute-05/writer-after.json",
+      "sha256": "f7d8b4cfe602058e8ad85d269c6aaf5f25679e96aae2513c4fa0f15f34d1278b"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/minute-05/writer-before.json",
+      "sha256": "c1589fb02946c780de9f7fcd25d03ea1914cfabdcab9b5641f862bfe0959e20b"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/minute-15/command.json",
+      "sha256": "c6aeabb2b49f72e7781aa3e264a2d520cc8b7d1ce3cec525ada3e5a866858619"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/minute-15/exit.json",
+      "sha256": "b1724ffb305d5810347141fc5c6bf348e6a7a2aa498349e3c1ded5e747a47f0e"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/minute-15/image-identity.json",
+      "sha256": "c0a486b08fc3a2d4308b07b6d75228beef3b5cba712df70fce4c52ca43dbe192"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/minute-15/result.json",
+      "sha256": "c7e0441dba0129d2e566a50a4e865b6df4f326c7ce1366a11396b94af1a08218"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/minute-15/stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/minute-15/stdout.log",
+      "sha256": "c7e0441dba0129d2e566a50a4e865b6df4f326c7ce1366a11396b94af1a08218"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/minute-15/volume-identity.json",
+      "sha256": "c5d204feeac6f45356b15e7af7aab8095e2c67c8d7a139f17a7d61c6ae920169"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/minute-15/writer-after.json",
+      "sha256": "b02c8c0e3a9b3a4d02b57553fa47143db94d20856b93faaf97f121f171b4e1b2"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/minute-15/writer-before.json",
+      "sha256": "26f3978361a8ccaa0c708d512b77da240909fdf6954e87f62faa8e920d8e532c"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/probe.py",
+      "sha256": "e21392a03135d0bde2dc04cc8cf59410515d2555da407645041915382cda5778"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/progress.json",
+      "sha256": "ffc9c15850039d48c871583796f2056315509a549be0dc7ea6ee59b2cf135e66"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/reused-evidence.json",
+      "sha256": "e18a2612e9a4b7f998f8db5ae0ed578e87b5d0cc86f3d4368531c58dfb9a20b8"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/schedule.json",
+      "sha256": "553a25bd784298300d07338775a835620af0d1103794a9546125c28a872b599c"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/chunks/AR-01.3-parent-acceptance-20261008.md",
+      "sha256": "82904fab62948a5bba89735bc921792d25869db1c159cec7957f0a08f5ca8198"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/SHA256SUMS",
+      "path": "docs/acquisition-readiness/baselines/AR-02.1-release-20261008/ledger-before.md",
+      "sha256": "9a67fc672908665bc6ad0f411851b8823262642328e9c1442cad2a00c41c8475"
+    },
+    {
+      "index": "docs/acquisition-readiness/baselines/AR-01.3-parent-20261008/SHA256SUMS",
+      "path": "ops/docker/canary/ar013_readonly_host.py",
+      "sha256": "e0c17d7e4388e58997970e36c4948bf1728493a7b4a68a31437aff6cd39cb6e3"
+    }
+  ],
+  "migrations_repeated": false,
+  "original_capture_repeated": false,
+  "original_replay_repeated": false,
+  "restore_repeated": false,
+  "reuse_reason": "Exact retained unchanged proofs; new combined payload requires focused in-image proof.",
+  "status": "PASS",
+  "tests_repeated": false
+}

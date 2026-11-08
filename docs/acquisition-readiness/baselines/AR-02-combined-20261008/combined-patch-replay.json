@@ -1,0 +1,6 @@
+{
+  "status": "PASS",
+  "context_files": 645,
+  "combined_patch_reproduces_exact_manifest": true,
+  "behavioral_tests_repeated": false
+}

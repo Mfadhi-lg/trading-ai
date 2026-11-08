@@ -1,0 +1,58 @@
+{
+  "authentic_originals": [
+    {
+      "after_IST": "failed",
+      "findings": [
+        "row_count_floor"
+      ],
+      "parsed_accepted": 0,
+      "parsed_rejected": 0,
+      "sha256": "cfbc3d1f66e23620e1b0d1ec43b0b0409c25557d6e02f533b78e9f1babf42e82",
+      "snapshot_id": 266
+    },
+    {
+      "after_IST": "passed",
+      "findings": [],
+      "parsed_accepted": 4351,
+      "parsed_rejected": 1,
+      "sha256": "dfa299c4a21d31bc29aacc51b50cd516e92d059c6aa1c74d2d69330782e4f869",
+      "snapshot_id": 261
+    }
+  ],
+  "exact_patch_replay_files": 645,
+  "previous_review_checksum_index_sha256": "571a2f2c49ea2bfefdcbef4b476cbae07c3da9b4bb0aaed0d369d86efeac087f",
+  "previous_review_records_verified": 4,
+  "retained_94_test_suite": "PASS; not rerun",
+  "retained_parent_probes": [
+    {
+      "completed_offset_seconds": 15.145212875000652,
+      "db_sha256": "b01f61dba625c6ca3b73f50f1e1cceb0da11f4246464352024459bf90977c70a",
+      "duration_seconds": 14.652464916000099,
+      "exit_code": 0,
+      "minute": 0,
+      "started_offset_seconds": 0.21150604200011003,
+      "status": "PASS"
+    },
+    {
+      "completed_offset_seconds": 314.5321285420014,
+      "db_sha256": "b01f61dba625c6ca3b73f50f1e1cceb0da11f4246464352024459bf90977c70a",
+      "duration_seconds": 13.907834792000358,
+      "exit_code": 0,
+      "minute": 5,
+      "started_offset_seconds": 300.35134537500016,
+      "status": "PASS"
+    },
+    {
+      "completed_offset_seconds": 915.0643758750011,
+      "db_sha256": "b01f61dba625c6ca3b73f50f1e1cceb0da11f4246464352024459bf90977c70a",
+      "duration_seconds": 14.578584625000076,
+      "exit_code": 0,
+      "minute": 15,
+      "started_offset_seconds": 900.2091968330005,
+      "status": "PASS"
+    }
+  ],
+  "scope": "Offline existing evidence only; no database opened or operations repeated",
+  "status": "PASS",
+  "whole_compose_equal_after_only_image_and_config_file_path_normalization": true
+}

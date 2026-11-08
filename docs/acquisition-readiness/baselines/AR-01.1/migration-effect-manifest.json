@@ -1,0 +1,124 @@
+{
+  "scope": "AR-01.1 / CLONE_REHEARSAL; no production activation",
+  "reviewer": "Codex technical source review; not independent release sign-off",
+  "ordering": "Full-filename lexical order. Historical 065 identities are distinct; canonical source omits archived exchange 065 and accepts its recorded ledger identity. No renumbering/replay.",
+  "migrations": [
+    {
+      "filename": "069_worker_claim_fencing.sql",
+      "sha256": "3207e495e464d079ffd5d18ade9197d5f9cd3510916e83f2dd281f7aec7a71cb",
+      "baseline_schema_prerequisites": [
+        "artifact_download_queue",
+        "credit_rating_download_queue",
+        "browser_rating_recovery_jobs"
+      ],
+      "dependency": "Audited 068 baseline and earlier files in the reviewed sequence; no additional cross-file dependency except within 071 state before permits.",
+      "preconditions": "Full filename absent in schema_migrations; all listed new objects/columns absent; prerequisites present; no worker writes.",
+      "intended_effect": "Add nullable TEXT claim_token to each of three existing queues. Existing rows get NULL; no claim reset or data transform.",
+      "new_objects": [],
+      "new_columns": [
+        "artifact_download_queue.claim_token",
+        "credit_rating_download_queue.claim_token",
+        "browser_rating_recovery_jobs.claim_token"
+      ],
+      "expected_existing_row_delta": 0,
+      "expected_new_table_rows": 0
+    },
+    {
+      "filename": "070_document_extraction_claims.sql",
+      "sha256": "cc6c82616d2e78d622a4e925c8b8bf7f9916c9b4b585a0ae9663f7541e7e447b",
+      "baseline_schema_prerequisites": [],
+      "dependency": "Audited 068 baseline and earlier files in the reviewed sequence; no additional cross-file dependency except within 071 state before permits.",
+      "preconditions": "Full filename absent in schema_migrations; all listed new objects/columns absent; prerequisites present; no worker writes.",
+      "intended_effect": "Create durable extraction ownership/lease table with ACTIVE/RELEASED status constraint.",
+      "new_objects": [
+        "document_extraction_claims"
+      ],
+      "new_columns": [],
+      "expected_existing_row_delta": 0,
+      "expected_new_table_rows": 0
+    },
+    {
+      "filename": "071_shared_host_permits.sql",
+      "sha256": "c27f8542dc2d0ea2fa12a3736eb6c08b1e8a4a1f0f90c3317c006e370a9daa32",
+      "baseline_schema_prerequisites": [],
+      "dependency": "Audited 068 baseline and earlier files in the reviewed sequence; no additional cross-file dependency except within 071 state before permits.",
+      "preconditions": "Full filename absent in schema_migrations; all listed new objects/columns absent; prerequisites present; no worker writes.",
+      "intended_effect": "Create host state and permit tables, permit-to-state foreign key, mode/status/lease constraints and active-permit index.",
+      "new_objects": [
+        "acquisition_host_state",
+        "acquisition_host_permits",
+        "idx_acquisition_host_active"
+      ],
+      "new_columns": [],
+      "expected_existing_row_delta": 0,
+      "expected_new_table_rows": 0
+    },
+    {
+      "filename": "072_document_processing_work.sql",
+      "sha256": "71f2e6662a34959334c393ca8a35f71fd0155c22fdfecd34c148d3bc354e2897",
+      "baseline_schema_prerequisites": [
+        "artifact_contents",
+        "document_extractions"
+      ],
+      "dependency": "Audited 068 baseline and earlier files in the reviewed sequence; no additional cross-file dependency except within 071 state before permits.",
+      "preconditions": "Full filename absent in schema_migrations; all listed new objects/columns absent; prerequisites present; no worker writes.",
+      "intended_effect": "Create processing inbox and work tables with content/extraction foreign keys, unique resource/config identities, and AFTER INSERT artifact_contents trigger. No historical inbox seed or processing launch.",
+      "new_objects": [
+        "document_processing_inbox",
+        "document_processing_work",
+        "document_processing_saved"
+      ],
+      "new_columns": [],
+      "expected_existing_row_delta": 0,
+      "expected_new_table_rows": 0
+    },
+    {
+      "filename": "073_exchange_coordinator_tasks.sql",
+      "sha256": "e514e175670059b67aa23a06510532bee4742b88dbc253dcf0c5c9438f859571",
+      "baseline_schema_prerequisites": [],
+      "dependency": "Audited 068 baseline and earlier files in the reviewed sequence; no additional cross-file dependency except within 071 state before permits.",
+      "preconditions": "Full filename absent in schema_migrations; all listed new objects/columns absent; prerequisites present; no worker writes.",
+      "intended_effect": "Create coordinator task inbox with kind/attempt/priority/state and RUNNING owner/lease constraints, unique schedule identity and ready index. Existing schedules/snapshots unchanged.",
+      "new_objects": [
+        "exchange_coordinator_tasks",
+        "exchange_coordinator_ready"
+      ],
+      "new_columns": [],
+      "expected_existing_row_delta": 0,
+      "expected_new_table_rows": 0
+    },
+    {
+      "filename": "074_collection_scope_tasks.sql",
+      "sha256": "11c16d9edf80189409b9c5fdfe1158f91d5f717fdcfdee068f6b5d11f6f4b871",
+      "baseline_schema_prerequisites": [],
+      "dependency": "Audited 068 baseline and earlier files in the reviewed sequence; no additional cross-file dependency except within 071 state before permits.",
+      "preconditions": "Full filename absent in schema_migrations; all listed new objects/columns absent; prerequisites present; no worker writes.",
+      "intended_effect": "Create bounded scope admission task table (budget 1\u2013100) and partial unique single-PENDING index. Does not observe caps or admit company work.",
+      "new_objects": [
+        "collection_scope_tasks",
+        "collection_scope_single_pending"
+      ],
+      "new_columns": [],
+      "expected_existing_row_delta": 0,
+      "expected_new_table_rows": 0
+    },
+    {
+      "filename": "075_periodic_dispatch.sql",
+      "sha256": "ef3758d563a8791e3c889158e20b165fc295f6818ea83b32f3048c6086a059e1",
+      "baseline_schema_prerequisites": [],
+      "dependency": "Audited 068 baseline and earlier files in the reviewed sequence; no additional cross-file dependency except within 071 state before permits.",
+      "preconditions": "Full filename absent in schema_migrations; all listed new objects/columns absent; prerequisites present; no worker writes.",
+      "intended_effect": "Create bounded periodic admission task table for delayed/recovery/housekeeping and partial unique per-kind PENDING index. Existing delayed and recovery queues unchanged.",
+      "new_objects": [
+        "periodic_dispatch_tasks",
+        "periodic_single_pending"
+      ],
+      "new_columns": [],
+      "expected_existing_row_delta": 0,
+      "expected_new_table_rows": 0
+    }
+  ],
+  "data_transforms": "None in 069\u2013075. All additive; no DROP, UPDATE, DELETE or historical INSERT.",
+  "downgrade": "No source downgrade scripts; do not drop additive state after live writes. Clone rollback is recreation from hash-verified 068 baseline. Production recovery package remains AR-01.2 work.",
+  "interruption": "Application executescript/ledger update is not atomic across statements. Fixture proves partial 069 with missing ledger and failed blind resume. Stop; retain failed state; restore verified quiescent pre-change snapshot only before new accepted writes, or separately design forward recovery. Never skip partial DDL by ledger fabrication."
+}

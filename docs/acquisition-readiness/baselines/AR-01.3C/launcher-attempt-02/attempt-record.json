@@ -1,0 +1,16 @@
+{
+  "attempt_id": "AR-01.3C-corrected-launch-attempt-02",
+  "status": "PREPARED_LAUNCHER_ONLY",
+  "execution_authorized": false,
+  "execution_performed": false,
+  "previous_failed_attempt_marker": "docs/acquisition-readiness/baselines/AR-01.3C/execution/attempt.json",
+  "previous_failed_attempt_marker_sha256": "241eb6f7c25256856dfbf587e32966625535c13ed4157f448f20ce5f56e18a7a",
+  "previous_attempt_evidence_unchanged": 75,
+  "resource_key": "AR-01.3C/control-ownership/2026-10-08/v1",
+  "pinned_image": "trading-ai-c281-release@sha256:4d289faa67334bc870d4f2a6a181feecee777fd427eac209b9adef68ecab0238",
+  "image_argument_zero_based": 39,
+  "code_argument_zero_based": 41,
+  "code_sha256": "937352ea7d4a5fae5dbcaf879d9821f4b5ae3ebd5bb8d5c6acd7d238654ed992",
+  "normal_mutation_limit": 2,
+  "authorization_requirement": "New explicit user authorization required before production execution; repeat all original fresh gates and establish a new single-attempt fence."
+}

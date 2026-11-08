@@ -6,7 +6,9 @@ import json
 import sqlite3
 from pathlib import Path
 
-from ..db.mf_feature_repo import FEATURE_SCOPES
+from .writers import write_json_payload
+
+from ..db.mutual_funds.features import FEATURE_SCOPES
 
 
 def build_mf_feature_export(
@@ -164,7 +166,5 @@ def write_mf_feature_export(
     )
     output = Path(output)
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(
-        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
-    )
+    write_json_payload(payload, output)
     return output

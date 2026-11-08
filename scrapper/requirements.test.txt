@@ -1,0 +1,6 @@
+-r requirements.txt
+-c requirements.lock
+
+# Test-only dependency. Production installs requirements.lock, which is compiled
+# solely from requirements.txt; CI installs requirements.test.lock.
+pytest>=9,<10

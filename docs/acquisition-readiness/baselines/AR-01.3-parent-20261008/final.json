@@ -1,0 +1,40 @@
+{
+  "status": "PASS",
+  "production_writes": 0,
+  "operational_workers_started": false,
+  "network_requests": 0,
+  "migrations_repeated": false,
+  "write_canary_repeated": false,
+  "offline_tests_repeated": false,
+  "probes": [
+    {
+      "minute": 0,
+      "started_offset_seconds": 0.21150604200011003,
+      "completed_offset_seconds": 15.145212875000652,
+      "duration_seconds": 14.652464916000099,
+      "exit_code": 0,
+      "status": "PASS",
+      "db_sha256": "b01f61dba625c6ca3b73f50f1e1cceb0da11f4246464352024459bf90977c70a"
+    },
+    {
+      "minute": 5,
+      "started_offset_seconds": 300.35134537500016,
+      "completed_offset_seconds": 314.5321285420014,
+      "duration_seconds": 13.907834792000358,
+      "exit_code": 0,
+      "status": "PASS",
+      "db_sha256": "b01f61dba625c6ca3b73f50f1e1cceb0da11f4246464352024459bf90977c70a"
+    },
+    {
+      "minute": 15,
+      "started_offset_seconds": 900.2091968330005,
+      "completed_offset_seconds": 915.0643758750011,
+      "duration_seconds": 14.578584625000076,
+      "exit_code": 0,
+      "status": "PASS",
+      "db_sha256": "b01f61dba625c6ca3b73f50f1e1cceb0da11f4246464352024459bf90977c70a"
+    }
+  ],
+  "completed_at_utc": "2026-10-08T08:54:01.591959+00:00",
+  "parent_acceptance": "PASS_FOR_BOUNDED_CANARY_SCOPE"
+}

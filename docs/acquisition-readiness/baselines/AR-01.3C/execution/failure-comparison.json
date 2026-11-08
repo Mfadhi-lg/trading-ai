@@ -1,0 +1,31 @@
+{
+  "status": "FAIL_LAUNCH_BEFORE_APPLICATION",
+  "pre_write_gate": "PASS",
+  "docker_exit_code": 125,
+  "root_cause": "shlex split retained shell backslash-newline continuations as literal newline argument tokens",
+  "newline_argument_indices": [
+    19,
+    22,
+    25,
+    28,
+    31,
+    34,
+    37,
+    42,
+    45,
+    48,
+    50
+  ],
+  "application_ran": false,
+  "normal_row_mutations": 0,
+  "control_row": null,
+  "source_full_hash_and_identity_unchanged": true,
+  "schema_ledger_unchanged": true,
+  "unexpected_other_db_changes": 0,
+  "new_fk_violations": 0,
+  "new_fk_proof": "entire source main byte hash/sidecar identity equal to freshly fingerprinted and FK-checked baseline",
+  "retry_performed": false,
+  "automatic_recovery": false,
+  "restore_performed": false,
+  "application_py_files_preserved": 2539
+}

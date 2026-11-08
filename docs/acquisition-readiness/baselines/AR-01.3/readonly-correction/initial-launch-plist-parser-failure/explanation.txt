@@ -1,0 +1,1 @@
+Second host gate exited 2 before Docker launch. Two Privado vendor plists contain whitespace before XML declarations. The harness now strips leading whitespace before plist parsing and still rejects unparseable files. Vendor files were read only, not changed.

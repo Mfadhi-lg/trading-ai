@@ -1,0 +1,15 @@
+test_code_intact_one_argument (__main__.LauncherTests.test_code_intact_one_argument) ... ok
+test_json_transport_preserves_arguments (__main__.LauncherTests.test_json_transport_preserves_arguments) ... ok
+test_network_and_isolation_preserved (__main__.LauncherTests.test_network_and_isolation_preserved) ... ok
+test_no_stray_line_arguments (__main__.LauncherTests.test_no_stray_line_arguments) ... ok
+test_only_bad_continuations_removed_from_failed_vector (__main__.LauncherTests.test_only_bad_continuations_removed_from_failed_vector) ... ok
+test_pinned_image_exact_positional_boundary (__main__.LauncherTests.test_pinned_image_exact_positional_boundary) ... ok
+test_reject_code_change (__main__.LauncherTests.test_reject_code_change) ... ok
+test_reject_injected_newline (__main__.LauncherTests.test_reject_injected_newline) ... ok
+test_reject_split_code (__main__.LauncherTests.test_reject_split_code) ... ok
+test_reject_wrong_image (__main__.LauncherTests.test_reject_wrong_image) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.004s
+
+OK

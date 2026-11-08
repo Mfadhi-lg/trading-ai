@@ -1,0 +1,2621 @@
+{
+  "acceptance_events": {
+    "columns": [
+      "acceptance_id",
+      "company_id",
+      "source",
+      "reporting_scope",
+      "resolved_source_period",
+      "parse_id",
+      "action",
+      "accepted_at_utc",
+      "accepted_by",
+      "acceptance_mode",
+      "reason_json"
+    ],
+    "rows": 18985,
+    "sha256": "6464b16066f7e4e913a0e74250bc04924d5b1d6d9dba3af7fefe69fe6aca9e7c"
+  },
+  "accepted_page_versions": {
+    "columns": [
+      "company_id",
+      "source",
+      "reporting_scope",
+      "resolved_source_period",
+      "parse_id",
+      "accepted_at_utc",
+      "accepted_by",
+      "acceptance_mode"
+    ],
+    "rows": 6328,
+    "sha256": "2a404e20c86140758ddaf148940edc986ede7364b02a0ff27622b18a804449fe"
+  },
+  "artifact_check_events": {
+    "columns": [
+      "check_id",
+      "expectation_id",
+      "checked_at_utc",
+      "source",
+      "requested_url",
+      "result_status",
+      "evidence_json",
+      "discovered_artifact_id",
+      "error_json",
+      "retryable",
+      "next_check_at_utc",
+      "claim_token"
+    ],
+    "rows": 171628,
+    "sha256": "8c5965f6898531f20935e3347b23cb87c3faf3759a088d5d252f3bb030dc8720"
+  },
+  "artifact_content_relationships": {
+    "columns": [
+      "relationship_id",
+      "artifact_id",
+      "source_content_id",
+      "derived_content_id",
+      "relationship_type",
+      "created_at_utc"
+    ],
+    "rows": 6065,
+    "sha256": "30f0d108bda880a0948dd3b4550324bca03adf865c727d4ed60d6af5068e0dd2"
+  },
+  "artifact_contents": {
+    "columns": [
+      "content_id",
+      "artifact_id",
+      "blob_id",
+      "media_type",
+      "content_sha256",
+      "byte_size",
+      "extraction_status",
+      "is_official",
+      "content_origin",
+      "created_at_utc"
+    ],
+    "rows": 78202,
+    "sha256": "f954b69d2b35d77573049a507957fe6225d89eb4ba4ee713eedb5d14c123b041"
+  },
+  "artifact_discovery_pages": {
+    "columns": [
+      "discovery_page_id",
+      "company_id",
+      "discovered_from_source",
+      "discovery_page_url",
+      "publisher_claim",
+      "blob_id",
+      "parser_name",
+      "parser_version",
+      "first_observed_at_utc"
+    ],
+    "rows": 14744,
+    "sha256": "260229dc50d6a74f2739dc340d8611b3098558e17f1005ca8bd2362b5e477124"
+  },
+  "artifact_download_attempt_sources": {
+    "columns": [
+      "download_attempt_id",
+      "artifact_source_id"
+    ],
+    "rows": 133787,
+    "sha256": "cf8e5b0f16f35c8b618636c8eed13073149787ec10681e7d74cd036c9efa57cc"
+  },
+  "artifact_download_attempts": {
+    "columns": [
+      "download_attempt_id",
+      "artifact_id",
+      "requested_url",
+      "final_url",
+      "started_at_utc",
+      "fetched_at_utc",
+      "elapsed_ms",
+      "http_status",
+      "response_headers_json",
+      "redirect_chain_json",
+      "declared_media_type",
+      "detected_media_type",
+      "byte_size",
+      "content_sha256",
+      "blob_id",
+      "content_id",
+      "result_status",
+      "limits_json",
+      "error_json"
+    ],
+    "rows": 84698,
+    "sha256": "5760b637001dfe8243b7b0e31d81dc1650c87b2b10efde76baafb3984102de0b"
+  },
+  "artifact_download_host_health": {
+    "columns": [
+      "host",
+      "blocked_until_utc",
+      "last_http_status",
+      "consecutive_blocks",
+      "last_result_status",
+      "retry_after_raw",
+      "updated_at_utc"
+    ],
+    "rows": 438,
+    "sha256": "bfdf2b2aa837b450d80ba45caa5efda40785c0322c8f01b193761e364a804939"
+  },
+  "artifact_download_queue": {
+    "columns": [
+      "download_job_id",
+      "artifact_id",
+      "requested_url",
+      "target_host",
+      "priority",
+      "scope_id",
+      "status",
+      "attempt_count",
+      "next_attempt_at_utc",
+      "lease_owner",
+      "lease_expires_at_utc",
+      "last_result_status",
+      "last_error",
+      "created_at_utc",
+      "updated_at_utc"
+    ],
+    "rows": 147417,
+    "sha256": "1b5a13fb480f78490ed3a1f308d6c691a3b3575ed2974e908c878828599aef3b"
+  },
+  "artifact_download_queue_attempts": {
+    "columns": [
+      "download_job_id",
+      "download_attempt_id"
+    ],
+    "rows": 71856,
+    "sha256": "30fbe1838080aa769009db57832c3c2b4b21c322f25c6e0516a963509836c9bb"
+  },
+  "artifact_download_scope_artifacts": {
+    "columns": [
+      "scope_id",
+      "artifact_id"
+    ],
+    "rows": 140092,
+    "sha256": "74d1d1e03ba6ce3468cd3e1cb876492b9fa4474bddd1555ba6053891ee9f57a3"
+  },
+  "artifact_download_scope_companies": {
+    "columns": [
+      "scope_id",
+      "company_id",
+      "symbol",
+      "outcome_label",
+      "archetype"
+    ],
+    "rows": 5486,
+    "sha256": "2a20df18b4e5d560a5dcc0f2b81cc5e06ee3f701aa77c97bace29521dbab4b15"
+  },
+  "artifact_download_scopes": {
+    "columns": [
+      "scope_id",
+      "scope_kind",
+      "description",
+      "artifact_types_json",
+      "policy_json",
+      "created_at_utc",
+      "updated_at_utc"
+    ],
+    "rows": 4,
+    "sha256": "f4779bf98a579f3d2a91adc7a9210df64d2c27f059da05eaf823e9248d959918"
+  },
+  "artifact_events": {
+    "columns": [
+      "event_id",
+      "company_id",
+      "event_key",
+      "event_type",
+      "event_date",
+      "period_end",
+      "fiscal_year",
+      "fiscal_quarter",
+      "evidenced_at_utc",
+      "evidence_source",
+      "evidence_json"
+    ],
+    "rows": 6323,
+    "sha256": "97a5433f6e0d679900d326752bb96e2893717bb8a8531888bfbe9ae7ff45d63a"
+  },
+  "artifact_expectations": {
+    "columns": [
+      "expectation_id",
+      "company_id",
+      "artifact_type",
+      "event_id",
+      "expectation_basis",
+      "expected_after_utc",
+      "availability_status",
+      "first_checked_at_utc",
+      "last_checked_at_utc",
+      "next_check_at_utc",
+      "attempt_count",
+      "terminal_reason",
+      "last_error_json",
+      "schedule_json",
+      "claim_token",
+      "claimed_at_utc",
+      "claim_expires_at_utc",
+      "created_at_utc",
+      "updated_at_utc"
+    ],
+    "rows": 25290,
+    "sha256": "0389d3b98d7f6419d3f1b6e5315b36327e5e1648369bb6fe79e92f8538b668a4"
+  },
+  "artifact_period_corrections": {
+    "columns": [
+      "correction_id",
+      "artifact_id",
+      "old_period_end",
+      "new_period_end",
+      "reason",
+      "evidence_json",
+      "corrected_at_utc"
+    ],
+    "rows": 52,
+    "sha256": "b19cd4b03e0d5796a013d3e5f1a49a9f6de3799c44e291bdb360314758a17da2"
+  },
+  "artifact_recovery_attempts": {
+    "columns": [
+      "recovery_attempt_id",
+      "recovery_target_id",
+      "source_type",
+      "attempt_number",
+      "status",
+      "started_at_utc",
+      "completed_at_utc",
+      "request_evidence_json",
+      "result_evidence_json",
+      "error_json"
+    ],
+    "rows": 20886,
+    "sha256": "20772a93b7cb1e5a3962bbd5ce31e7fd2a9254db16486460781113dc1d72e1ca"
+  },
+  "artifact_recovery_candidates": {
+    "columns": [
+      "candidate_id",
+      "recovery_target_id",
+      "artifact_id",
+      "candidate_url",
+      "retrieval_host",
+      "source_type",
+      "discovered_at_utc",
+      "discovery_page_url",
+      "discovery_blob_id",
+      "document_title",
+      "publication_date",
+      "published_at_utc",
+      "available_at_utc",
+      "availability_basis",
+      "company_identifiers_json",
+      "document_originator",
+      "rating",
+      "outlook",
+      "instrument_or_facility",
+      "source_evidence_json",
+      "matching_features_json",
+      "confidence",
+      "rejection_reason",
+      "content_class",
+      "contract_version",
+      "attached_source_id",
+      "created_at_utc",
+      "updated_at_utc"
+    ],
+    "rows": 4618,
+    "sha256": "5c36a9b6ee7ef3c005079f754e44e6c0499d1059a965e3edf8ce896e2a698a11"
+  },
+  "artifact_recovery_quarantine": {
+    "columns": [
+      "artifact_id",
+      "reason_code",
+      "evidence_json",
+      "quarantined_at_utc",
+      "updated_at_utc"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "artifact_recovery_targets": {
+    "columns": [
+      "recovery_target_id",
+      "artifact_id",
+      "company_id",
+      "artifact_type",
+      "document_originator",
+      "blocked_source_id",
+      "blocked_source_url",
+      "blocked_source_host",
+      "company_canonical_name",
+      "company_aliases_json",
+      "nse_symbols_json",
+      "bse_codes_json",
+      "isins_json",
+      "event_date",
+      "fiscal_period",
+      "rating",
+      "outlook",
+      "rating_action",
+      "instrument_or_facility",
+      "amount",
+      "amount_unit",
+      "source_confidence",
+      "field_provenance_json",
+      "contract_version",
+      "status",
+      "full_rationale_coverage",
+      "basic_rating_coverage",
+      "resolved_candidate_id",
+      "attempt_count",
+      "next_attempt_at_utc",
+      "lease_owner",
+      "lease_expires_at_utc",
+      "created_at_utc",
+      "updated_at_utc"
+    ],
+    "rows": 7208,
+    "sha256": "42312b590d4fe67375bd19dff125ec8a8a4afc0d66c327b49e0c7650e61e8178"
+  },
+  "artifact_source_evidence_classifications": {
+    "columns": [
+      "classification_id",
+      "artifact_source_id",
+      "content_id",
+      "content_class",
+      "classification_basis_json",
+      "classifier_name",
+      "classifier_version",
+      "classified_at_utc"
+    ],
+    "rows": 17965,
+    "sha256": "80efbd57d2a267822f0d61254366acc32c26863f05326704bc86bf29b6a1922a"
+  },
+  "artifact_sources": {
+    "columns": [
+      "artifact_source_id",
+      "artifact_id",
+      "discovery_page_id",
+      "discovered_from_source",
+      "discovery_page_url",
+      "document_url",
+      "publisher_claim",
+      "exchange_announcement_id",
+      "source_position",
+      "source_title_raw",
+      "classification_evidence_json",
+      "is_primary_source",
+      "first_observed_at_utc",
+      "last_checked_at_utc",
+      "availability_status",
+      "automation_status",
+      "document_originator",
+      "retrieval_source_type",
+      "retrieval_host",
+      "published_at_utc",
+      "available_at_utc",
+      "availability_basis",
+      "recovery_target_id",
+      "recovery_candidate_id",
+      "matching_confidence",
+      "recovery_evidence_json"
+    ],
+    "rows": 131903,
+    "sha256": "dbd1f995e0175a893c3085a1487ce9af0ba634c996838c885103945092e1dfb9"
+  },
+  "browser_rating_recovery_hosts": {
+    "columns": [
+      "run_id",
+      "target_host",
+      "blocked_until_utc",
+      "last_http_status",
+      "consecutive_blocks",
+      "reason",
+      "updated_at_utc"
+    ],
+    "rows": 1,
+    "sha256": "be51eea7de9bff1e87793d885d63211528a50c7495d584655d436f6ced04eee7"
+  },
+  "browser_rating_recovery_jobs": {
+    "columns": [
+      "browser_job_id",
+      "run_id",
+      "artifact_id",
+      "artifact_source_id",
+      "requested_url",
+      "target_host",
+      "company_name",
+      "status",
+      "attempt_count",
+      "lease_owner",
+      "lease_expires_at_utc",
+      "content_id",
+      "final_url",
+      "error",
+      "evidence_json",
+      "created_at_utc",
+      "updated_at_utc"
+    ],
+    "rows": 5821,
+    "sha256": "c967d077c5ddc0a1acf88ffd0d2ccf0dfcf11b4cba2caaf4483e099c8bd62fce"
+  },
+  "browser_rating_recovery_workers": {
+    "columns": [
+      "worker_id",
+      "run_id",
+      "status",
+      "heartbeat_at_utc",
+      "stopped_at_utc"
+    ],
+    "rows": 5,
+    "sha256": "a6f18345ba071ca501f03504bee4e2f900c6f795f57f39382654e05daec9fd2c"
+  },
+  "companies": {
+    "columns": [
+      "company_id",
+      "current_legal_name",
+      "status"
+    ],
+    "rows": 4428,
+    "sha256": "cd78a752c1aea229e3a21c75561d708e1de5cb85102c5697e51c1c7b337e5a66"
+  },
+  "company_document_followups": {
+    "columns": [
+      "queue_item_id",
+      "status",
+      "attempt_count",
+      "next_check_at_utc",
+      "last_parse_id",
+      "updated_at_utc"
+    ],
+    "rows": 1231,
+    "sha256": "e6f17253796fb60e9e1cff7f243d8b9845aa293fe37497ff69f6075e9d28d1ab"
+  },
+  "company_metric_observations": {
+    "columns": [
+      "metric_observation_id",
+      "parse_id",
+      "reporting_scope",
+      "metric_code",
+      "label_raw",
+      "position",
+      "display_value",
+      "value_decimal",
+      "value_json",
+      "unit_code",
+      "scale_multiplier",
+      "missing_kind",
+      "first_observed_at_utc",
+      "source_published_at_utc",
+      "available_at_utc",
+      "availability_basis"
+    ],
+    "rows": 483676,
+    "sha256": "7dcd799d6e9fe0e2df015f45cbd51d434ee475162e03a88e9cfb176a1cbf5771"
+  },
+  "company_period_scope_policy": {
+    "columns": [
+      "company_id",
+      "period",
+      "reporting_scope",
+      "parse_id",
+      "accepted_at_utc"
+    ],
+    "rows": 4894,
+    "sha256": "aeb8403e9103836491d9a7fb5a4d7b8830f46c60256cdd9f16d0324ecb39256b"
+  },
+  "company_profile_links": {
+    "columns": [
+      "company_profile_link_id",
+      "parse_id",
+      "reporting_scope",
+      "link_type",
+      "label_raw",
+      "identifier_value",
+      "position",
+      "source_url",
+      "first_observed_at_utc",
+      "source_published_at_utc",
+      "available_at_utc",
+      "availability_basis"
+    ],
+    "rows": 41271,
+    "sha256": "78af9d1c9a7aac89489ba6bd0cb944e9a6a7e555c34c928300840e9be783597f"
+  },
+  "company_text_observations": {
+    "columns": [
+      "company_text_observation_id",
+      "parse_id",
+      "reporting_scope",
+      "text_type",
+      "heading_raw",
+      "position",
+      "display_text",
+      "content_origin",
+      "is_source_generated",
+      "first_observed_at_utc",
+      "source_published_at_utc",
+      "available_at_utc",
+      "availability_basis"
+    ],
+    "rows": 168175,
+    "sha256": "1c3da1140f9e72a20a159b5caa5f7bf8effba10af4464d654707999aa260b9a5"
+  },
+  "credit_rating_actions": {
+    "columns": [
+      "rating_action_id",
+      "normalization_id",
+      "source_table_id",
+      "source_row_position",
+      "facility_or_instrument_raw",
+      "facility_or_instrument_code",
+      "amount_display",
+      "amount_decimal",
+      "currency",
+      "unit_code",
+      "scale_multiplier",
+      "rating_raw",
+      "rating_code",
+      "outlook_raw",
+      "outlook_code",
+      "rating_action_raw",
+      "rating_action_code",
+      "action_date_raw",
+      "action_date",
+      "canonical_status",
+      "is_canonical",
+      "source_row_json",
+      "ambiguity_json"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "credit_rating_download_queue": {
+    "columns": [
+      "download_job_id",
+      "artifact_id",
+      "requested_url",
+      "priority",
+      "status",
+      "attempt_count",
+      "next_attempt_at_utc",
+      "lease_owner",
+      "lease_expires_at_utc",
+      "last_result_status",
+      "last_error",
+      "created_at_utc",
+      "updated_at_utc",
+      "target_host"
+    ],
+    "rows": 14822,
+    "sha256": "643498b7f323644f0754641a8417f272c667dc05163d2d1ca6ca2120b6453892"
+  },
+  "credit_rating_field_evidence": {
+    "columns": [
+      "evidence_id",
+      "normalization_id",
+      "rating_action_id",
+      "extraction_id",
+      "source_table_id",
+      "field_code",
+      "page_number",
+      "element_position",
+      "source_row_position",
+      "source_column_position",
+      "source_value_raw",
+      "text_origin",
+      "evidence_kind",
+      "bbox_json"
+    ],
+    "rows": 11482,
+    "sha256": "b0e459cf3276e09ff26a2cfedcc22ab5714e1944aeb44c936947918c8e79ef64"
+  },
+  "credit_rating_host_health": {
+    "columns": [
+      "host",
+      "blocked_until_utc",
+      "last_http_status",
+      "consecutive_blocks",
+      "last_result_status",
+      "updated_at_utc"
+    ],
+    "rows": 1,
+    "sha256": "d5457502416ba4cb35dd0fc68cbc15928ff915d73549603d119734eff9f00583"
+  },
+  "credit_rating_host_policy": {
+    "columns": [
+      "host",
+      "automation_status",
+      "max_concurrency",
+      "min_delay_seconds",
+      "policy_basis",
+      "source_url",
+      "reviewed_at_utc"
+    ],
+    "rows": 14,
+    "sha256": "5094a1af341bc9ca6205c03a380538416502f51366cc5defc636a9dfb94b1ecd"
+  },
+  "credit_rating_normalization_validations": {
+    "columns": [
+      "normalization_id",
+      "rule_code",
+      "severity",
+      "status",
+      "expected_value",
+      "actual_value",
+      "details_json"
+    ],
+    "rows": 58500,
+    "sha256": "65a5a45b5ab378a8468327ebe012385b305ac6dd6bafa6c5463ce6e9ae2c9a55"
+  },
+  "credit_rating_normalizations": {
+    "columns": [
+      "normalization_id",
+      "artifact_id",
+      "content_id",
+      "extraction_id",
+      "parser_name",
+      "parser_version",
+      "options_json",
+      "document_class",
+      "agency_raw",
+      "agency_code",
+      "action_date_raw",
+      "action_date",
+      "normalization_status",
+      "accepted_action_count",
+      "review_action_count",
+      "conflict_action_count",
+      "started_at_utc",
+      "completed_at_utc",
+      "error_json",
+      "created_at_utc"
+    ],
+    "rows": 5850,
+    "sha256": "3ad60db1dd4c48ada6fe8c4231ddf54a94edb5ee93e8b8be8bdac09d0417316f"
+  },
+  "credit_rating_passages": {
+    "columns": [
+      "normalization_id",
+      "extraction_id",
+      "page_number",
+      "passage_position",
+      "element_position",
+      "passage_kind",
+      "text_raw",
+      "text_origin",
+      "bbox_json"
+    ],
+    "rows": 1498316,
+    "sha256": "6c933a3c795a2c687cf328e588c1aa81f3e017ee51f17f3dcd0624e4de85ba6f"
+  },
+  "credit_rating_resolution_attempts": {
+    "columns": [
+      "resolution_attempt_id",
+      "download_job_id",
+      "artifact_id",
+      "original_url",
+      "started_at_utc",
+      "completed_at_utc",
+      "resolution_status",
+      "resolver_version",
+      "final_url",
+      "error_json"
+    ],
+    "rows": 8086,
+    "sha256": "c9e6c0b4000c56430bf5a339e5abcae2c533f7a8d8b734999108969340f331e6"
+  },
+  "credit_rating_resolution_steps": {
+    "columns": [
+      "resolution_attempt_id",
+      "step_position",
+      "step_type",
+      "requested_url",
+      "final_url",
+      "request_method",
+      "http_status",
+      "declared_media_type",
+      "detected_media_type",
+      "blob_id",
+      "selected",
+      "evidence_json"
+    ],
+    "rows": 9464,
+    "sha256": "fbefca8a5e2022c20ff6e975a7b3a5f7e8cd3bb162aac95f9e25761bc92b6d26"
+  },
+  "credit_rating_source_tables": {
+    "columns": [
+      "source_table_id",
+      "normalization_id",
+      "extraction_id",
+      "page_number",
+      "element_position",
+      "source_rows_json",
+      "header_mapping_json",
+      "bbox_json",
+      "table_status",
+      "review_reason_json"
+    ],
+    "rows": 36871,
+    "sha256": "46a5c550843d414e625989aa7ba825e714f35bc0fb30268722e8a0779cf7b9b4"
+  },
+  "document_acquisition_closure_states": {
+    "columns": [
+      "scope_id",
+      "artifact_id",
+      "final_state",
+      "evidence_json",
+      "evaluated_at_utc"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "document_artifacts": {
+    "columns": [
+      "artifact_id",
+      "company_id",
+      "artifact_key",
+      "artifact_type",
+      "publisher",
+      "title_raw",
+      "event_date",
+      "period_end",
+      "fiscal_year",
+      "fiscal_quarter",
+      "published_at_utc",
+      "first_observed_at_utc",
+      "preferred_content_id",
+      "acquisition_status",
+      "transcript_preference_status"
+    ],
+    "rows": 83232,
+    "sha256": "409144b52a31995aa46379ba720c4297333e7eb512ff379897ed1f1376830dbe"
+  },
+  "document_download_recovery_actions": {
+    "columns": [
+      "recovery_action_id",
+      "artifact_id",
+      "queue_kind",
+      "download_job_id",
+      "action_type",
+      "reason_code",
+      "reason_detail",
+      "replaced_artifact_source_id",
+      "replacement_artifact_source_id",
+      "previous_status",
+      "previous_result_status",
+      "previous_error",
+      "old_url",
+      "new_url",
+      "evidence_json",
+      "applied_at_utc"
+    ],
+    "rows": 4,
+    "sha256": "2828d4a6a9cbccc43883021b5852a9f61fe59c4d2d9ec887dab4235f3a4073a4"
+  },
+  "document_extraction_validations": {
+    "columns": [
+      "extraction_id",
+      "rule_code",
+      "severity",
+      "status",
+      "expected_value",
+      "actual_value",
+      "details_json"
+    ],
+    "rows": 168200,
+    "sha256": "cf139a517cd03a1987ad8e7ba5280eead2f43267bb7e4b3d9c9043f22b94e18e"
+  },
+  "document_extractions": {
+    "columns": [
+      "extraction_id",
+      "content_id",
+      "parser_name",
+      "parser_version",
+      "ocr_engine",
+      "ocr_engine_version",
+      "options_json",
+      "started_at_utc",
+      "completed_at_utc",
+      "extraction_status",
+      "page_or_slide_count",
+      "native_page_count",
+      "ocr_page_count",
+      "unusable_page_count",
+      "error_json",
+      "created_at_utc"
+    ],
+    "rows": 33640,
+    "sha256": "e2c859cd34dcf60c83d74cc8848d742daed49decef906380c6d49b3608b1fe0e"
+  },
+  "document_link_promotions": {
+    "columns": [
+      "document_link_id",
+      "artifact_id",
+      "artifact_source_id",
+      "promotion_status",
+      "promotion_reason",
+      "normalized_url",
+      "artifact_type",
+      "promoter_version",
+      "promoted_at_utc"
+    ],
+    "rows": 308142,
+    "sha256": "ca9ad2a067fc2b3857c328c0ff9b973d376ab396028012f9d73c5e8d06ad2b92"
+  },
+  "document_links": {
+    "columns": [
+      "document_link_id",
+      "parse_id",
+      "reporting_scope",
+      "document_type",
+      "period_label_raw",
+      "title_raw",
+      "position",
+      "source_url",
+      "publisher",
+      "availability_status",
+      "first_observed_at_utc",
+      "source_published_at_utc",
+      "available_at_utc",
+      "availability_basis"
+    ],
+    "rows": 786885,
+    "sha256": "e0dbfe2afb23f22d2033bd0dcc13f3f01e73e176510a0323c002a576d1ad21b7"
+  },
+  "document_page_elements": {
+    "columns": [
+      "extraction_id",
+      "page_or_slide_number",
+      "element_position",
+      "element_kind",
+      "text_origin",
+      "text_raw",
+      "title_raw",
+      "rows_json",
+      "reference_json",
+      "bbox_json"
+    ],
+    "rows": 23770097,
+    "sha256": "14b6743ac7a8c36b789c095a9ef351f5326cb1196fd874c4f305452546097bd2"
+  },
+  "document_pages": {
+    "columns": [
+      "extraction_id",
+      "content_id",
+      "page_or_slide_number",
+      "page_kind",
+      "title_raw",
+      "native_text",
+      "ocr_text",
+      "selected_text",
+      "selected_text_origin",
+      "native_text_usable",
+      "native_unusable_reason",
+      "extraction_confidence",
+      "speaker_notes_available",
+      "speaker_notes_text",
+      "layout_json"
+    ],
+    "rows": 545160,
+    "sha256": "60e64182c9e258ab6ecaef082806d76a0cce16ea4be8425035e9e75e342626c7"
+  },
+  "exchange_company_links": {
+    "columns": [
+      "link_id",
+      "registry_company_id",
+      "exchange_security_id",
+      "link_basis",
+      "linked_from_date",
+      "unlinked_from_date",
+      "is_current",
+      "created_at_utc"
+    ],
+    "rows": 8420,
+    "sha256": "e30a9d3feb7ef22831d3073d644bdc8ad659e50c3edb6b8ad9ef87c1f27a3199"
+  },
+  "exchange_company_registry": {
+    "columns": [
+      "registry_company_id",
+      "isin",
+      "canonical_name_raw",
+      "company_id",
+      "first_observed_date",
+      "last_observed_date",
+      "created_at_utc",
+      "updated_at_utc"
+    ],
+    "rows": 5928,
+    "sha256": "2b72fda1143a25b5acbaed5eb4c51aada0824465e95c4f8e5ce6835c3dc0d101"
+  },
+  "exchange_company_result_state": {
+    "columns": [
+      "exchange",
+      "exchange_key",
+      "reporting_scope",
+      "latest_filed_result_period",
+      "latest_broadcast_at_utc",
+      "latest_filing_id",
+      "latest_queued_result_period",
+      "updated_at_utc"
+    ],
+    "rows": 10924,
+    "sha256": "64bde607aaca0c27918525138fc8ec88867cd149a1cf44d9234a28032c69a554"
+  },
+  "exchange_identity_conflicts": {
+    "columns": [
+      "conflict_id",
+      "snapshot_id",
+      "exchange_security_id",
+      "conflict_type",
+      "exchange",
+      "exchange_key",
+      "existing_value",
+      "incoming_value",
+      "existing_source_type",
+      "resolution",
+      "detected_at_utc",
+      "resolved_at_utc"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "exchange_result_filing_collisions": {
+    "columns": [
+      "collision_id",
+      "exchange",
+      "filing_key",
+      "existing_filing_id",
+      "snapshot_id",
+      "raw_sha256",
+      "raw_row_json",
+      "first_seen_at_utc",
+      "review_status"
+    ],
+    "rows": 521,
+    "sha256": "26f8771a2c115f8691c637e31c8d89dc435aac6c2816f2012f76c34badf8b8c3"
+  },
+  "exchange_result_filings": {
+    "columns": [
+      "filing_id",
+      "snapshot_id",
+      "exchange",
+      "filing_key",
+      "exchange_key",
+      "isin",
+      "company_name_raw",
+      "result_period",
+      "period_end_date",
+      "reporting_scope",
+      "audited_raw",
+      "cumulative_raw",
+      "relating_to_raw",
+      "broadcast_raw",
+      "broadcast_at_utc",
+      "raw_row_json",
+      "discovered_at_utc"
+    ],
+    "rows": 25713,
+    "sha256": "b3e4af66b08bb6dded97a05f73aa0c43a8d2832574139849e27ca664de681b8e"
+  },
+  "exchange_result_watermarks": {
+    "columns": [
+      "exchange",
+      "dataset",
+      "last_broadcast_at_utc",
+      "last_snapshot_id",
+      "updated_at_utc"
+    ],
+    "rows": 2,
+    "sha256": "91ee374484504ef4a2532f0e5b3aa42f9792c80f79802eef38dd874c660dfe4c"
+  },
+  "exchange_schedule_runs": {
+    "columns": [
+      "schedule_run_id",
+      "dataset",
+      "scheduled_for",
+      "attempt",
+      "role",
+      "result_period",
+      "outcome",
+      "snapshot_id",
+      "error",
+      "started_at_utc",
+      "finished_at_utc"
+    ],
+    "rows": 389,
+    "sha256": "ad80eb02a4b471bdd9c63851b9e0b7c1dbed9fe63ae8a0440a9228dad59d3cbd"
+  },
+  "exchange_screener_enqueues": {
+    "columns": [
+      "enqueue_id",
+      "filing_id",
+      "decision",
+      "decision_reason",
+      "company_path_normalized",
+      "reporting_scope",
+      "result_period",
+      "path_basis",
+      "registry_company_id",
+      "queue_item_id",
+      "created_at_utc"
+    ],
+    "rows": 25713,
+    "sha256": "372a6db60802f1d28a0cdabf27dd55e90c9a835176cd396ecc0b04149c1d7e69"
+  },
+  "exchange_securities": {
+    "columns": [
+      "exchange_security_id",
+      "exchange",
+      "segment",
+      "exchange_key",
+      "nse_symbol",
+      "bse_scrip_code",
+      "current_isin",
+      "current_name_raw",
+      "current_status",
+      "current_version_id",
+      "is_present",
+      "first_observed_date",
+      "first_observed_snapshot_id",
+      "last_observed_date",
+      "last_observed_snapshot_id",
+      "created_at_utc",
+      "updated_at_utc",
+      "absence_streak",
+      "first_absent_date",
+      "last_absent_snapshot_id",
+      "source_type",
+      "verification_status",
+      "official_presence"
+    ],
+    "rows": 8405,
+    "sha256": "dc38d9f375695dc4a84be66a75fb75b299876d509f9f0fd0f1b3fba8137c0415"
+  },
+  "exchange_security_events": {
+    "columns": [
+      "security_event_id",
+      "exchange_security_id",
+      "snapshot_id",
+      "event_date",
+      "event_type",
+      "from_value",
+      "to_value",
+      "evidence_json",
+      "recorded_at_utc"
+    ],
+    "rows": 15365,
+    "sha256": "85c739b2ae6e99e8f9d946ffd29d22745bf7408378286453d96f5dbf22d1710c"
+  },
+  "exchange_security_versions": {
+    "columns": [
+      "version_id",
+      "exchange_security_id",
+      "snapshot_id",
+      "isin",
+      "name_raw",
+      "status",
+      "status_raw",
+      "series_or_group",
+      "instrument_raw",
+      "face_value_raw",
+      "listing_date",
+      "attributes_json",
+      "row_sha256",
+      "valid_from_date",
+      "valid_to_date",
+      "recorded_at_utc"
+    ],
+    "rows": 13125,
+    "sha256": "d6094e29afeef2801fc3ef9862d1fd66bdd54dd402e2828a7014c8664cabebf2"
+  },
+  "exchange_snapshot_validations": {
+    "columns": [
+      "validation_id",
+      "snapshot_id",
+      "baseline_snapshot_id",
+      "status",
+      "findings_json",
+      "metrics_json",
+      "thresholds_json",
+      "evaluated_at_utc"
+    ],
+    "rows": 264,
+    "sha256": "211e22a25b1d35acaf44f097c4625cfdd8b88e14aff8d45f01fb0292f0b80beb"
+  },
+  "exchange_source_access_events": {
+    "columns": [
+      "event_id",
+      "dataset",
+      "action",
+      "event_at_utc",
+      "evidence"
+    ],
+    "rows": 2,
+    "sha256": "8051bb826d9849a4251af3a45a03bd54f2e267ae2529d6d26af05e897e0161c4"
+  },
+  "exchange_source_excluded_rows": {
+    "columns": [
+      "snapshot_id",
+      "row_position",
+      "instrument_class",
+      "reason_detail",
+      "raw_cells_json"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "exchange_source_rejected_rows": {
+    "columns": [
+      "snapshot_id",
+      "row_position",
+      "reason_code",
+      "reason_detail",
+      "raw_cells_json"
+    ],
+    "rows": 619,
+    "sha256": "7bce9038b79a8c8520154a56a69ba339244d948e6bf85179e0f5008779684fce"
+  },
+  "exchange_source_snapshots": {
+    "columns": [
+      "snapshot_id",
+      "exchange",
+      "dataset",
+      "effective_date",
+      "source_label",
+      "requested_url",
+      "acquisition_mode",
+      "fetch_id",
+      "blob_id",
+      "parser_name",
+      "parser_version",
+      "source_encoding",
+      "observed_at_utc",
+      "header_json",
+      "accepted_row_count",
+      "rejected_row_count",
+      "validation_status",
+      "compression",
+      "excluded_row_count"
+    ],
+    "rows": 266,
+    "sha256": "1ef4b8160c948e2e3a8cda59d8ca5ac463bea6270ad1876475d1a9172c8e43cb"
+  },
+  "exchange_symbol_changes": {
+    "columns": [
+      "symbol_change_id",
+      "snapshot_id",
+      "exchange",
+      "change_kind",
+      "company_name_raw",
+      "old_value",
+      "new_value",
+      "effective_date",
+      "applied_status",
+      "exchange_security_id",
+      "recorded_at_utc"
+    ],
+    "rows": 3102,
+    "sha256": "2f448cec284f50a7058b248ce6d0c7c251954a1fe20a7c806fafed32629a0729"
+  },
+  "fetch_observations": {
+    "columns": [
+      "fetch_id",
+      "run_id",
+      "company_id",
+      "source",
+      "reporting_scope",
+      "requested_source_period",
+      "resolved_source_period",
+      "requested_url",
+      "final_url",
+      "fetched_at_utc",
+      "http_status",
+      "etag",
+      "last_modified",
+      "auth_mode",
+      "blob_id",
+      "fetch_status",
+      "resource_kind"
+    ],
+    "rows": 78699,
+    "sha256": "5874c59b9dda43291075aa383a5fac4e73afe714378927a5c495ba6d5228421d"
+  },
+  "financial_observations": {
+    "columns": [
+      "financial_observation_id",
+      "parse_id",
+      "reporting_scope",
+      "section_code",
+      "line_item_code",
+      "line_item_raw",
+      "row_position",
+      "period_label_raw",
+      "period_end",
+      "period_type",
+      "fiscal_year",
+      "column_position",
+      "first_observed_at_utc",
+      "source_published_at_utc",
+      "available_at_utc",
+      "availability_basis",
+      "display_value",
+      "value_decimal",
+      "unit_code",
+      "scale_multiplier",
+      "missing_kind",
+      "is_expandable",
+      "schedule_key"
+    ],
+    "rows": 9818117,
+    "sha256": "99ca8b0953127d1394e867f925c7874e5eb9943a7a2a7ff046ccc739f4ecd23c"
+  },
+  "growth_observations": {
+    "columns": [
+      "growth_observation_id",
+      "parse_id",
+      "reporting_scope",
+      "metric_code",
+      "metric_label_raw",
+      "block_position",
+      "row_position",
+      "period_code",
+      "period_label_raw",
+      "display_value",
+      "value_decimal",
+      "unit_code",
+      "missing_kind",
+      "first_observed_at_utc",
+      "source_published_at_utc",
+      "available_at_utc",
+      "availability_basis"
+    ],
+    "rows": 298672,
+    "sha256": "914f08b113054e3eef5db829a195d914d5e3b0b0d55fd61a69098c5733b2ef55"
+  },
+  "html_document_renderings": {
+    "columns": [
+      "rendering_id",
+      "artifact_id",
+      "source_content_id",
+      "rendered_content_id",
+      "renderer_name",
+      "renderer_version",
+      "options_json",
+      "visible_character_count",
+      "block_count",
+      "created_at_utc"
+    ],
+    "rows": 6313,
+    "sha256": "2497b212b0359b503d019f0c4bac305336dcaab4c256fa917ed31d35475b7688"
+  },
+  "machine_transcription_runs": {
+    "columns": [
+      "transcription_run_id",
+      "transcript_artifact_id",
+      "recording_artifact_id",
+      "normalization_id",
+      "source_media_content_id",
+      "source_media_sha256",
+      "source_media_duration_ms",
+      "source_recording_content_id",
+      "source_recording_sha256",
+      "engine",
+      "engine_version",
+      "model_version",
+      "options_json",
+      "comparison_requested",
+      "gate_reason",
+      "detected_language",
+      "language_confidence",
+      "duration_coverage",
+      "started_at_utc",
+      "completed_at_utc",
+      "run_status",
+      "generated_content_id",
+      "transcript_id",
+      "error_json"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "manual_document_imports": {
+    "columns": [
+      "manual_import_id",
+      "artifact_id",
+      "artifact_source_id",
+      "content_id",
+      "input_filename",
+      "input_sha256",
+      "byte_size",
+      "detected_media_type",
+      "official_assertion",
+      "reason_detail",
+      "evidence_json",
+      "imported_at_utc"
+    ],
+    "rows": 5,
+    "sha256": "647582a84a01e7722ae17bcd900d98970576c00d497ef2f5a123ea27975cfd38"
+  },
+  "mf_accepted_version_events": {
+    "columns": [
+      "accepted_version_event_id",
+      "publisher",
+      "scheme_id",
+      "disclosure_month",
+      "import_file_id",
+      "previous_import_file_id",
+      "scheme_classification_id",
+      "accepted_at_utc",
+      "accepted_by",
+      "acceptance_mode"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "mf_accepted_versions": {
+    "columns": [
+      "publisher",
+      "scheme_id",
+      "disclosure_month",
+      "import_file_id",
+      "accepted_at_utc",
+      "accepted_by",
+      "acceptance_mode"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "mf_holdings": {
+    "columns": [
+      "holding_id",
+      "import_file_id",
+      "sheet_id",
+      "source_table_position",
+      "source_table_kind",
+      "source_row",
+      "publisher",
+      "source",
+      "source_quality",
+      "scheme_name_raw",
+      "scheme_code",
+      "disclosure_month",
+      "source_security_code_raw",
+      "security_name_raw",
+      "isin_raw",
+      "isin_normalized",
+      "isin_validation_status",
+      "quantity_decimal",
+      "quantity_missing_kind",
+      "market_value_decimal",
+      "market_value_missing_kind",
+      "percentage_of_nav_decimal",
+      "percentage_of_aum_decimal",
+      "percentage_missing_kind",
+      "percentage_qualifier",
+      "percentage_basis",
+      "instrument_type_raw",
+      "instrument_type_code",
+      "industry_or_rating_raw",
+      "position_direction_raw",
+      "currency",
+      "quantity_unit_code",
+      "market_value_unit_code",
+      "market_value_scale_multiplier",
+      "percentage_unit_code",
+      "normalization_rule_version",
+      "first_observed_at_utc",
+      "accepted_at_utc",
+      "security_id",
+      "security_match_status",
+      "scheme_id",
+      "scheme_category"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "mf_import_files": {
+    "columns": [
+      "import_file_id",
+      "publisher",
+      "requested_disclosure_month",
+      "detected_disclosure_month",
+      "original_filename",
+      "submitted_path",
+      "content_sha256",
+      "workbook_blob_id",
+      "workbook_type",
+      "byte_size",
+      "import_state",
+      "first_observed_at_utc",
+      "accepted_at_utc",
+      "state_reason_json",
+      "detected_publisher",
+      "workbook_manifest_version"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "mf_import_observations": {
+    "columns": [
+      "import_observation_id",
+      "import_file_id",
+      "observed_at_utc",
+      "submitted_path",
+      "original_filename",
+      "requested_publisher",
+      "requested_disclosure_month",
+      "observation_result",
+      "decision_json"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "mf_import_state_events": {
+    "columns": [
+      "state_event_id",
+      "import_file_id",
+      "from_state",
+      "to_state",
+      "changed_at_utc",
+      "changed_by",
+      "reason_json"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "mf_scheme_classifications": {
+    "columns": [
+      "scheme_classification_id",
+      "scheme_id",
+      "scheme_management_type",
+      "is_equity_scheme",
+      "scheme_category",
+      "valid_from_month",
+      "valid_to_month",
+      "classification_source",
+      "classification_rule_version",
+      "first_seen_import_file_id",
+      "created_at_utc"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "mf_scheme_month_change_sets": {
+    "columns": [
+      "change_set_id",
+      "publisher",
+      "scheme_id",
+      "previous_month",
+      "current_month",
+      "previous_import_file_id",
+      "current_import_file_id",
+      "comparison_status",
+      "reason_code",
+      "completeness_evidence_json",
+      "engine_version",
+      "input_fingerprint",
+      "generated_at_utc"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "mf_scheme_month_change_validations": {
+    "columns": [
+      "change_set_id",
+      "rule_code",
+      "severity",
+      "validation_status",
+      "details_json"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "mf_scheme_name_versions": {
+    "columns": [
+      "scheme_name_version_id",
+      "scheme_id",
+      "scheme_name_raw",
+      "valid_from_month",
+      "valid_to_month",
+      "naming_source",
+      "naming_rule_version",
+      "first_seen_import_file_id",
+      "created_at_utc"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "mf_scheme_security_month_changes": {
+    "columns": [
+      "scheme_security_change_id",
+      "change_set_id",
+      "publisher",
+      "scheme_id",
+      "security_id",
+      "isin_normalized",
+      "previous_month",
+      "current_month",
+      "previous_holding_id",
+      "current_holding_id",
+      "previous_row_presence",
+      "current_row_presence",
+      "previous_quantity_decimal",
+      "current_quantity_decimal",
+      "quantity_change_decimal",
+      "previous_weight_decimal",
+      "current_weight_decimal",
+      "portfolio_weight_change_decimal",
+      "change_class",
+      "previous_import_file_id",
+      "current_import_file_id",
+      "completeness_evidence_json",
+      "generated_at_utc"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "mf_schemes": {
+    "columns": [
+      "scheme_id",
+      "publisher",
+      "scheme_code",
+      "current_name"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "mf_securities": {
+    "columns": [
+      "security_id",
+      "canonical_name",
+      "created_at_utc"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "mf_security_identifiers": {
+    "columns": [
+      "security_identifier_id",
+      "security_id",
+      "identifier_type",
+      "identifier_value",
+      "structurally_valid",
+      "first_seen_import_file_id",
+      "first_seen_disclosure_month",
+      "created_at_utc"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "mf_security_match_decisions": {
+    "columns": [
+      "match_decision_id",
+      "holding_id",
+      "decision_version",
+      "is_current",
+      "security_id",
+      "match_method",
+      "match_status",
+      "match_key",
+      "rule_version",
+      "candidate_security_ids_json",
+      "evidence_json",
+      "decided_at_utc",
+      "decided_by"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "mf_security_name_evidence": {
+    "columns": [
+      "name_evidence_id",
+      "security_id",
+      "normalized_name",
+      "security_name_raw",
+      "import_file_id",
+      "sheet_id",
+      "source_row",
+      "evidence_basis",
+      "rule_version",
+      "observed_at_utc"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "mf_stock_month_feature_inputs": {
+    "columns": [
+      "feature_set_id",
+      "change_set_id",
+      "scheme_id",
+      "scheme_classification_id",
+      "previous_import_file_id",
+      "current_import_file_id",
+      "previous_content_sha256",
+      "current_content_sha256"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "mf_stock_month_feature_lineage": {
+    "columns": [
+      "stock_month_feature_id",
+      "scheme_security_change_id",
+      "scheme_classification_id",
+      "previous_content_sha256",
+      "current_content_sha256"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "mf_stock_month_feature_sets": {
+    "columns": [
+      "feature_set_id",
+      "publisher",
+      "previous_month",
+      "current_month",
+      "aggregation_status",
+      "reason_code",
+      "completeness_evidence_json",
+      "engine_version",
+      "input_fingerprint",
+      "generated_at_utc"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "mf_stock_month_feature_validations": {
+    "columns": [
+      "feature_set_id",
+      "rule_code",
+      "severity",
+      "validation_status",
+      "details_json"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "mf_stock_monthly_features": {
+    "columns": [
+      "stock_month_feature_id",
+      "feature_set_id",
+      "publisher",
+      "security_id",
+      "isin_normalized",
+      "disclosure_month",
+      "feature_scope",
+      "active_fund_holder_count",
+      "new_fund_entries",
+      "complete_fund_exits",
+      "funds_increasing_quantity",
+      "funds_decreasing_quantity",
+      "funds_unchanged",
+      "gross_quantity_bought",
+      "gross_quantity_sold",
+      "net_quantity_change",
+      "total_portfolio_weight",
+      "portfolio_weight_change",
+      "active_equity_holder_count",
+      "passive_holder_count",
+      "arbitrage_holder_count",
+      "accumulation_breadth",
+      "distribution_breadth",
+      "active_fund_accumulation_breadth",
+      "generated_at_utc"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "mf_workbook_acceptance_events": {
+    "columns": [
+      "workbook_acceptance_event_id",
+      "import_file_id",
+      "decided_at_utc",
+      "decided_by",
+      "acceptance_mode",
+      "validation_status",
+      "scheme_count",
+      "previous_import_file_ids_json",
+      "decision_json"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "mf_workbook_blobs": {
+    "columns": [
+      "workbook_blob_id",
+      "content_sha256",
+      "workbook_type",
+      "byte_size",
+      "local_path",
+      "first_observed_at_utc",
+      "created_at_utc",
+      "safety_status",
+      "safety_report_json"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "mf_workbook_cells": {
+    "columns": [
+      "sheet_id",
+      "row_position",
+      "column_position",
+      "coordinate",
+      "raw_value",
+      "display_value",
+      "formula",
+      "data_type",
+      "number_format",
+      "cell_role",
+      "normalized_field_code",
+      "cell_position",
+      "table_position"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "mf_workbook_merged_ranges": {
+    "columns": [
+      "sheet_id",
+      "merge_position",
+      "range_reference",
+      "start_row",
+      "start_column",
+      "end_row",
+      "end_column"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "mf_workbook_sheets": {
+    "columns": [
+      "sheet_id",
+      "import_file_id",
+      "sheet_position",
+      "sheet_name_raw",
+      "visibility_state",
+      "package_part",
+      "detected_scheme_code",
+      "detected_scheme_name_raw",
+      "detection_evidence_json",
+      "parse_status",
+      "table_start_row",
+      "table_end_row",
+      "sheet_classification",
+      "manifest_version"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "mf_workbook_tables": {
+    "columns": [
+      "table_id",
+      "sheet_id",
+      "table_position",
+      "table_kind",
+      "heading_raw",
+      "start_row",
+      "end_row",
+      "start_column",
+      "end_column",
+      "header_start_row",
+      "header_end_row",
+      "source_total_rows_json",
+      "required_columns_json",
+      "detection_evidence_json"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "mf_workbook_validation_results": {
+    "columns": [
+      "validation_id",
+      "import_file_id",
+      "rule_code",
+      "severity",
+      "passed",
+      "details_json"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "mfdata_accepted_version_events": {
+    "columns": [
+      "mfdata_version_event_id",
+      "publisher",
+      "scheme_id",
+      "disclosure_month",
+      "mfdata_snapshot_id",
+      "previous_mfdata_snapshot_id",
+      "accepted_at_utc",
+      "accepted_by"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "mfdata_accepted_versions": {
+    "columns": [
+      "publisher",
+      "scheme_id",
+      "disclosure_month",
+      "mfdata_snapshot_id",
+      "accepted_at_utc",
+      "accepted_by"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "mfdata_crosscheck_results": {
+    "columns": [
+      "mfdata_crosscheck_result_id",
+      "mfdata_crosscheck_run_id",
+      "result_position",
+      "result_status",
+      "security_id",
+      "isin_normalized",
+      "security_name_raw",
+      "official_holding_ids_json",
+      "mfdata_holding_id",
+      "official_quantity_decimal",
+      "mfdata_quantity_decimal",
+      "official_market_value_lakh_decimal",
+      "mfdata_market_value_lakh_decimal",
+      "official_percentage_of_nav_decimal",
+      "mfdata_percentage_of_nav_decimal",
+      "conflict_fields_json",
+      "preferred_source",
+      "preferred_source_quality"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "mfdata_crosscheck_runs": {
+    "columns": [
+      "mfdata_crosscheck_run_id",
+      "mfdata_snapshot_id",
+      "publisher",
+      "scheme_id",
+      "disclosure_month",
+      "comparison_status",
+      "official_observation_count",
+      "third_party_observation_count",
+      "matched_count",
+      "conflict_count",
+      "official_only_count",
+      "third_party_only_count",
+      "unmatched_third_party_count",
+      "official_precedence_enforced",
+      "input_fingerprint",
+      "generated_at_utc"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "mfdata_holdings": {
+    "columns": [
+      "mfdata_holding_id",
+      "mfdata_snapshot_id",
+      "source_position",
+      "holding_type",
+      "holding_type_position",
+      "publisher",
+      "scheme_id",
+      "scheme_code",
+      "provider_family_id",
+      "disclosure_month",
+      "source",
+      "source_quality",
+      "security_name_raw",
+      "isin_raw",
+      "isin_normalized",
+      "isin_validation_status",
+      "quantity_display",
+      "quantity_decimal",
+      "market_value_cr_display",
+      "market_value_cr_decimal",
+      "market_value_lakh_decimal",
+      "percentage_of_nav_display",
+      "percentage_of_nav_decimal",
+      "change_mom_display",
+      "change_mom_decimal",
+      "currency",
+      "quantity_unit_code",
+      "market_value_source_unit_code",
+      "market_value_normalized_unit_code",
+      "percentage_unit_code",
+      "source_row_json",
+      "security_id",
+      "security_match_status",
+      "normalization_rule_version",
+      "first_observed_at_utc",
+      "accepted_at_utc"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "mfdata_snapshot_observations": {
+    "columns": [
+      "mfdata_observation_id",
+      "mfdata_snapshot_id",
+      "observed_at_utc",
+      "submitted_path",
+      "observation_result"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "mfdata_snapshots": {
+    "columns": [
+      "mfdata_snapshot_id",
+      "provider",
+      "source",
+      "source_quality",
+      "publisher",
+      "scheme_id",
+      "scheme_code",
+      "provider_family_id",
+      "requested_disclosure_month",
+      "detected_disclosure_month",
+      "response_url",
+      "content_sha256",
+      "byte_size",
+      "submitted_path",
+      "immutable_path",
+      "parser_version",
+      "parse_status",
+      "first_observed_at_utc",
+      "accepted_at_utc"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "parse_artifacts": {
+    "columns": [
+      "parse_id",
+      "blob_id",
+      "parser_name",
+      "parser_version",
+      "manifest_version",
+      "parsed_at_utc",
+      "parse_status",
+      "validation_status"
+    ],
+    "rows": 34414,
+    "sha256": "268899ec51f895fee788ee067c4115025b00ba28df98015b0d7efaf6529d800d"
+  },
+  "peer_observations": {
+    "columns": [
+      "peer_observation_id",
+      "parse_id",
+      "reporting_scope",
+      "row_kind",
+      "peer_source_company_id",
+      "peer_name_raw",
+      "peer_source_url",
+      "is_subject_company",
+      "row_position",
+      "column_position",
+      "metric_code",
+      "metric_label_raw",
+      "display_value",
+      "value_decimal",
+      "unit_code",
+      "scale_multiplier",
+      "missing_kind",
+      "first_observed_at_utc",
+      "source_published_at_utc",
+      "available_at_utc",
+      "availability_basis"
+    ],
+    "rows": 1299987,
+    "sha256": "fd53b8e14bd578a71e820dbf4688adf4cd644d65d6f85637fa7bb96157999947"
+  },
+  "preferred_credit_rating_normalizations": {
+    "columns": [
+      "artifact_id",
+      "normalization_id",
+      "updated_at_utc"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "preferred_transcripts": {
+    "columns": [
+      "artifact_id",
+      "transcript_id",
+      "updated_at_utc"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "quote_observations": {
+    "columns": [
+      "parse_id",
+      "reporting_scope",
+      "price_display_value",
+      "price_decimal",
+      "currency",
+      "quote_timestamp_raw",
+      "quote_timestamp_utc",
+      "quote_timezone",
+      "quote_timestamp_status",
+      "first_observed_at_utc"
+    ],
+    "rows": 18667,
+    "sha256": "6d2a3180419267cddd54d522199f9cc33e786b5715f00c6e331731a44c685635"
+  },
+  "recording_normalization_validations": {
+    "columns": [
+      "normalization_id",
+      "rule_code",
+      "severity",
+      "status",
+      "expected_value",
+      "actual_value",
+      "details_json"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "recording_normalizations": {
+    "columns": [
+      "normalization_id",
+      "artifact_id",
+      "source_content_id",
+      "normalized_content_id",
+      "resolution_basis",
+      "probe_engine",
+      "probe_engine_version",
+      "normalizer_engine",
+      "normalizer_engine_version",
+      "options_json",
+      "started_at_utc",
+      "completed_at_utc",
+      "normalization_status",
+      "source_duration_ms",
+      "source_container_formats_json",
+      "source_streams_json",
+      "normalized_duration_ms",
+      "normalized_container_formats_json",
+      "normalized_streams_json",
+      "error_json"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "response_blobs": {
+    "columns": [
+      "blob_id",
+      "content_sha256",
+      "content_type",
+      "encoding",
+      "byte_size",
+      "local_path",
+      "first_observed_at_utc",
+      "created_at_utc"
+    ],
+    "rows": 144445,
+    "sha256": "6eed8801494dd2573ec1ef0f1daa08b23f0ed4055b909b477c6c9d7f46bdc9db"
+  },
+  "schema_migrations": {
+    "columns": [
+      "version",
+      "applied_at_utc"
+    ],
+    "rows": 76,
+    "sha256": "3ecd34023e63312e134745b0794b7e4b95c6aa20a28795d163e0268c702d07c5"
+  },
+  "scrape_runs": {
+    "columns": [
+      "run_id",
+      "started_at_utc",
+      "completed_at_utc",
+      "code_version",
+      "config_json",
+      "status"
+    ],
+    "rows": 24916,
+    "sha256": "303af7c57f05d91d07a3f0f67fe47b1dccc321d35136232ff2f716e3c7f993da"
+  },
+  "screener_collection_scope": {
+    "columns": [
+      "company_path",
+      "company_id",
+      "eligibility",
+      "market_cap_crore",
+      "floor_crore",
+      "observed_at_utc",
+      "evidence_json",
+      "next_check_at_utc",
+      "claim_token",
+      "claim_expires_at_utc",
+      "check_failures",
+      "last_check_error"
+    ],
+    "rows": 5490,
+    "sha256": "0e7d44c573de284a34eb1e45c14c1610f51b75fda7e3e220af807cacaa7548c6"
+  },
+  "screener_company_collection_state": {
+    "columns": [
+      "company_path_normalized",
+      "reporting_scope",
+      "company_id",
+      "latest_discovered_result_period",
+      "latest_accepted_result_period",
+      "latest_accepted_parse_id",
+      "updated_at_utc"
+    ],
+    "rows": 6258,
+    "sha256": "a8b8386ae8b617b07fbab2ccff871c824938c8fdd18d94b4130888764deec697"
+  },
+  "screener_company_queue": {
+    "columns": [
+      "queue_item_id",
+      "origin",
+      "candidate_id",
+      "exchange_filing_id",
+      "company_path_normalized",
+      "reporting_scope",
+      "result_period",
+      "queue_reason",
+      "status",
+      "attempt_count",
+      "next_attempt_at_utc",
+      "claim_token",
+      "claimed_at_utc",
+      "claim_expires_at_utc",
+      "accepted_parse_id",
+      "accepted_export_path",
+      "last_error_json",
+      "created_at_utc",
+      "updated_at_utc",
+      "collection_disposition"
+    ],
+    "rows": 12749,
+    "sha256": "53b501ea2d5e1e7ae94740d35d5682a51b0cdc87f861dfc4950a971d3fb66b2b"
+  },
+  "screener_company_queue_events": {
+    "columns": [
+      "queue_event_id",
+      "queue_item_id",
+      "event_at_utc",
+      "from_status",
+      "to_status",
+      "worker_id",
+      "evidence_json"
+    ],
+    "rows": 89246,
+    "sha256": "85032da22c462fc297f7613fd99164ba5350775795175674f4ca767f5ee6a253"
+  },
+  "screener_result_candidates": {
+    "columns": [
+      "candidate_id",
+      "screen_run_id",
+      "source_position",
+      "screen_row_company_id",
+      "company_name_raw",
+      "company_href_raw",
+      "company_path_normalized",
+      "reporting_scope_hint",
+      "last_result_date_display",
+      "result_period",
+      "discovered_at_utc"
+    ],
+    "rows": 100,
+    "sha256": "6fb6e088853a5e89114e7a5984393e35f07b1214319c54c93b0a7a556f3a1435"
+  },
+  "screener_scope_aliases": {
+    "columns": [
+      "company_path",
+      "scope_path",
+      "identity_basis"
+    ],
+    "rows": 7828,
+    "sha256": "04c7be76bbc2e16025d7aa13c4df63a26ab1f7c7fc30e5f6f3e75997e0c189dd"
+  },
+  "screener_scope_observations": {
+    "columns": [
+      "observation_id",
+      "company_path",
+      "observed_at_utc",
+      "eligibility",
+      "market_cap_crore",
+      "evidence_json"
+    ],
+    "rows": 2307,
+    "sha256": "738c146865a1f188ae5dd01de0a6d1543dc1ec99ce3d7d853b51f5a0f9ebe79f"
+  },
+  "screener_screen_runs": {
+    "columns": [
+      "screen_run_id",
+      "query_role",
+      "query_raw",
+      "requested_url",
+      "fetch_id",
+      "blob_id",
+      "parser_name",
+      "parser_version",
+      "observed_at_utc",
+      "result_count",
+      "page_number",
+      "page_count",
+      "captured_row_count",
+      "coverage_status",
+      "validation_status"
+    ],
+    "rows": 4,
+    "sha256": "0d3826d4223b7b808c76f2a9fe0d91ebcdd41d4ce2263ec944c98f80f6ef6404"
+  },
+  "screener_screen_source_cells": {
+    "columns": [
+      "screen_run_id",
+      "row_position",
+      "column_position",
+      "row_label_raw",
+      "column_label_raw",
+      "raw_text",
+      "normalized_display_text",
+      "link_url",
+      "cell_role"
+    ],
+    "rows": 1296,
+    "sha256": "aa6e9fcc649ffbf5791a326245b02b8f40b66b944921d178bb1bde9b2c984a52"
+  },
+  "security_identifiers": {
+    "columns": [
+      "security_identifier_id",
+      "company_id",
+      "identifier_type",
+      "identifier_value",
+      "valid_from",
+      "valid_to",
+      "is_current"
+    ],
+    "rows": 6662,
+    "sha256": "acebbe810d6f472cbb19cb42806fc07ec41adbad3261b12a06c85cffc5618985"
+  },
+  "shareholding_observations": {
+    "columns": [
+      "shareholding_observation_id",
+      "parse_id",
+      "reporting_scope",
+      "frequency",
+      "holder_code",
+      "holder_label_raw",
+      "row_position",
+      "column_position",
+      "period_label_raw",
+      "period_end",
+      "display_value",
+      "value_decimal",
+      "unit_code",
+      "classification_regime",
+      "missing_kind",
+      "first_observed_at_utc",
+      "source_published_at_utc",
+      "available_at_utc",
+      "availability_basis"
+    ],
+    "rows": 1897639,
+    "sha256": "5e94fd2c146ac04db7fd978098fd65056b2a4e877de0a43065d438b865f2d533"
+  },
+  "source_fields": {
+    "columns": [
+      "section_id",
+      "field_position",
+      "field_key_raw",
+      "raw_text",
+      "normalized_display_text",
+      "link_url",
+      "field_role",
+      "visibility_state"
+    ],
+    "rows": 1664919,
+    "sha256": "0742fa9d6c73656f1aa68039343a4d9a93088a57ab635878120c1b6705f948f0"
+  },
+  "source_identifiers": {
+    "columns": [
+      "source_identifier_id",
+      "company_id",
+      "source",
+      "source_company_id",
+      "source_symbol",
+      "source_slug",
+      "canonical_url",
+      "mapping_status",
+      "verified_at_utc"
+    ],
+    "rows": 4428,
+    "sha256": "f163eefc84f62d5ff11b198a0502ed651b9f9130d2b995143d37f9743295d890"
+  },
+  "source_sections": {
+    "columns": [
+      "section_id",
+      "parse_id",
+      "section_code",
+      "heading_raw",
+      "position",
+      "parse_status",
+      "error_json"
+    ],
+    "rows": 258331,
+    "sha256": "56f22e8234fd4c774337eaa77e14b9828984947633e77ca06da77d2b65612271"
+  },
+  "source_table_cells": {
+    "columns": [
+      "section_id",
+      "table_position",
+      "row_position",
+      "column_position",
+      "row_label_raw",
+      "column_label_raw",
+      "raw_text",
+      "normalized_display_text",
+      "link_url",
+      "cell_role",
+      "visibility_state",
+      "rowspan",
+      "colspan"
+    ],
+    "rows": 16749569,
+    "sha256": "0d81dcbabb810ff3d4998dfd40083836069d4749ae22560524eeb42592c74c8c"
+  },
+  "supplemental_parse_links": {
+    "columns": [
+      "parent_parse_id",
+      "component_code",
+      "supplemental_parse_id"
+    ],
+    "rows": 18661,
+    "sha256": "7b56d5583a0f6f6d1d3427224169ade9cfc9d858aab53e2c1b9a7b806aacdcef"
+  },
+  "transcript_section_boundaries": {
+    "columns": [
+      "transcript_id",
+      "boundary_position",
+      "section_kind",
+      "page_number",
+      "element_position",
+      "start_ms",
+      "label_raw",
+      "text_origin",
+      "bbox_json"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "transcript_segments": {
+    "columns": [
+      "transcript_id",
+      "segment_position",
+      "page_start",
+      "page_end",
+      "element_start",
+      "element_end",
+      "start_ms",
+      "end_ms",
+      "speaker_raw",
+      "speaker_normalized",
+      "text_raw",
+      "confidence",
+      "section_kind",
+      "text_origin",
+      "source_fragments_json",
+      "uncertainty_json"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "transcript_validations": {
+    "columns": [
+      "transcript_id",
+      "rule_code",
+      "severity",
+      "status",
+      "expected_value",
+      "actual_value",
+      "details_json"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "transcripts": {
+    "columns": [
+      "transcript_id",
+      "artifact_id",
+      "content_id",
+      "extraction_id",
+      "origin",
+      "source_media_content_id",
+      "language",
+      "engine",
+      "model_version",
+      "options_json",
+      "document_marker_raw",
+      "document_marker_page",
+      "created_at_utc",
+      "validation_status",
+      "segment_count",
+      "page_start",
+      "page_end",
+      "prepared_segment_count",
+      "qa_segment_count",
+      "unknown_segment_count",
+      "error_json"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "trendlyne_backfill_items": {
+    "columns": [
+      "plan_id",
+      "request_position",
+      "company_id",
+      "source_company_id",
+      "source_symbol",
+      "source_slug",
+      "requested_source_period",
+      "requested_url",
+      "status",
+      "attempt_count",
+      "last_started_at_utc",
+      "completed_at_utc",
+      "fetch_id",
+      "parse_id",
+      "last_error_json"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "trendlyne_backfill_plans": {
+    "columns": [
+      "plan_id",
+      "plan_key",
+      "pilot_code",
+      "end_source_period",
+      "month_count",
+      "company_count",
+      "request_count",
+      "batch_size",
+      "plan_json",
+      "status",
+      "created_at_utc",
+      "updated_at_utc"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "trendlyne_fund_observations": {
+    "columns": [
+      "fund_observation_id",
+      "parse_id",
+      "reporting_scope",
+      "table_position",
+      "row_position",
+      "column_position",
+      "source_scheme_id",
+      "scheme_name_raw",
+      "metric_code",
+      "period_role",
+      "period_label_raw",
+      "source_period",
+      "period_end",
+      "period_type",
+      "display_value",
+      "value_decimal",
+      "unit_code",
+      "scale_multiplier",
+      "missing_kind",
+      "first_observed_at_utc",
+      "source_published_at_utc",
+      "available_at_utc",
+      "availability_basis"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "trendlyne_fund_source_rows": {
+    "columns": [
+      "parse_id",
+      "table_position",
+      "row_position",
+      "source_scheme_id",
+      "scheme_name_raw",
+      "source_url"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "trendlyne_mf_page_summaries": {
+    "columns": [
+      "parse_id",
+      "reporting_scope",
+      "period_label_raw",
+      "source_period",
+      "period_end",
+      "headline_raw",
+      "headline_display_text",
+      "headline_period_label_raw",
+      "headline_buyers_display",
+      "headline_buyers",
+      "headline_sellers_display",
+      "headline_sellers",
+      "headline_net_change_display",
+      "headline_net_change",
+      "headline_is_canonical",
+      "table_total_shares_display",
+      "table_total_shares",
+      "table_total_change_display",
+      "table_total_change",
+      "computed_buyers",
+      "computed_sellers",
+      "computed_holders",
+      "computed_net_change",
+      "computed_values_are_canonical",
+      "computation_basis_json",
+      "first_observed_at_utc",
+      "source_published_at_utc",
+      "available_at_utc",
+      "availability_basis"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "trendlyne_month_links": {
+    "columns": [
+      "parse_id",
+      "link_position",
+      "period_label_raw",
+      "source_period",
+      "source_url",
+      "source_url_period_raw",
+      "source_company_id",
+      "source_symbol",
+      "source_slug",
+      "is_active",
+      "first_observed_at_utc",
+      "source_published_at_utc",
+      "available_at_utc",
+      "availability_basis"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "trendlyne_monthly_pages": {
+    "columns": [
+      "parse_id",
+      "reporting_scope",
+      "source_company_id",
+      "source_symbol",
+      "source_slug",
+      "company_name_raw",
+      "bse_code",
+      "canonical_url",
+      "canonical_source_company_id",
+      "canonical_symbol",
+      "canonical_period",
+      "selected_month_raw",
+      "active_month_raw",
+      "active_month_url",
+      "active_url_period_raw",
+      "heading_raw",
+      "heading_month_raw",
+      "resolved_source_period"
+    ],
+    "rows": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "validation_results": {
+    "columns": [
+      "validation_id",
+      "parse_id",
+      "rule_code",
+      "severity",
+      "status",
+      "expected_value",
+      "actual_value",
+      "details_json",
+      "created_at_utc"
+    ],
+    "rows": 843401,
+    "sha256": "3a1c3c52b2a5185515e8759a52b1999e8898ad16aba672f0eecc3b6e8a079e22"
+  }
+}

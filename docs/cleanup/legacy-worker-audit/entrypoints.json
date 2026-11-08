@@ -1,0 +1,527 @@
+[
+  {
+    "file": "scrapper/cli/__main__.py",
+    "module": "scrapper.cli.__main__",
+    "category": "MAINTENANCE",
+    "sha256": "3c3f2be867444a27af8bf36ca75d53b0408fd267e0e217ee782cc4f853b6013c",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "scrapper/commands/automatic_document_processing.py",
+    "module": "scrapper.commands.automatic_document_processing",
+    "category": "MAINTENANCE",
+    "sha256": "5061967b63a7542060333484820ff44b087f184aa6c65439e2d4d528df254fa7",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "scrapper/commands/automatic_documents.py",
+    "module": "scrapper.commands.automatic_documents",
+    "category": "MAINTENANCE",
+    "sha256": "cd1dcd0471d8ed2836bc8d97600e2e269113502c1d7b8f579524885272c2c661",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "scrapper/commands/browser_rating_headed.py",
+    "module": "scrapper.commands.browser_rating_headed",
+    "category": "MAINTENANCE",
+    "sha256": "481d811f6f2f283d24f394ae63243c3fe3e8ca2f18de76d23b45604118d9af67",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "scrapper/commands/browser_rating_host.py",
+    "module": "scrapper.commands.browser_rating_host",
+    "category": "MAINTENANCE",
+    "sha256": "90c5bc2ace9ea8b03b1af9769fbe33bc2790d7cfa9506b922a195f8cb7d6054a",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "scrapper/commands/browser_rating_probe.py",
+    "module": "scrapper.commands.browser_rating_probe",
+    "category": "MAINTENANCE",
+    "sha256": "4a8b320e06ee9404935a81ab284c6f5aa123015263ace77fcf6b0a278f75d02b",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "scrapper/commands/browser_rating_progress.py",
+    "module": "scrapper.commands.browser_rating_progress",
+    "category": "MAINTENANCE",
+    "sha256": "7236d5597292523dff0d1787112ffe1ff7e061b788c59441492ea9c5699c226e",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "scrapper/commands/browser_rating_recovery.py",
+    "module": "scrapper.commands.browser_rating_recovery",
+    "category": "MAINTENANCE",
+    "sha256": "b6cd3e73c88e59c7bc1e40a07afbad6768ceb7f4f8522c6ab7f14db646cc90d2",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "scrapper/commands/collection_scope.py",
+    "module": "scrapper.commands.collection_scope",
+    "category": "ACTIVE",
+    "sha256": "895dbcd389273baacf32e3d9f4cf3693ab4c8d69a36788328faf22a7d50c2e39",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "scrapper/commands/diagnose_retryable_failures.py",
+    "module": "scrapper.commands.diagnose_retryable_failures",
+    "category": "MAINTENANCE",
+    "sha256": "848a820aadd7c59f6d421134fdd62929ddb38c3281004e3a15d8c62b153d06f5",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "scrapper/commands/periodic_dispatch.py",
+    "module": "scrapper.commands.periodic_dispatch",
+    "category": "UNKNOWN",
+    "sha256": "f54743fad0cefbef552b5340ff6ee997dc7e6fe39a36bc3a53035cd038eaa8b9",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "scrapper/commands/processing_campaign.py",
+    "module": "scrapper.commands.processing_campaign",
+    "category": "MAINTENANCE",
+    "sha256": "6576b18885112f24bc8e92b2194485aa8bef6288dcd10b1d56fe16cd94848ac1",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "scrapper/commands/publish_document_store_capacity.py",
+    "module": "scrapper.commands.publish_document_store_capacity",
+    "category": "UNKNOWN",
+    "sha256": "baa39114c91fa4b3f2b08c50968eb3055aee241df2c2c832c45df9d066797034",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "scrapper/commands/quarter_documents.py",
+    "module": "scrapper.commands.quarter_documents",
+    "category": "MAINTENANCE",
+    "sha256": "6f42eb9da102fdbc3d0e14fec7715b530d16d7fbc1f7266292a9f0a32395572b",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "scrapper/commands/quarter_extract.py",
+    "module": "scrapper.commands.quarter_extract",
+    "category": "MAINTENANCE",
+    "sha256": "5011113715bbd3e04ae6c84b9057405f73781f35a0361d819af37d44e0beeb40",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "scrapper/commands/quarter_processing_role.py",
+    "module": "scrapper.commands.quarter_processing_role",
+    "category": "MAINTENANCE",
+    "sha256": "46543c67d0db73d768e7d80e2aee13e2ed6c7b5aa910ba61b9d4b7a264aab4d3",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "scrapper/commands/recover_quarter_document_links.py",
+    "module": "scrapper.commands.recover_quarter_document_links",
+    "category": "MAINTENANCE",
+    "sha256": "eb4720e02e5aead5ba2c49bd7e8d022e5dbe25c36f956a7bd08baa131d043a3e",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "scrapper/pipeline/audit_acquisition_scope.py",
+    "module": "scrapper.pipeline.audit_acquisition_scope",
+    "category": "MAINTENANCE",
+    "sha256": "69e77a7fba0ad5854d77b300578afdcc842776a56f9adde7a49fbb1ce6827f6c",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "scrapper/pipeline/build_acquisition_p0.py",
+    "module": "scrapper.pipeline.build_acquisition_p0",
+    "category": "MAINTENANCE",
+    "sha256": "7d6d4f61cb6ccb5261d7c3eee5757e9e16a82349118de2ca8e9958adf5387a51",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "scrapper/pipeline/build_final_acquisition_reports.py",
+    "module": "scrapper.pipeline.build_final_acquisition_reports",
+    "category": "MAINTENANCE",
+    "sha256": "a11db184feef35df4d34f6549f87e03bc6c25bcb3c2937e9abe0ab6bbad819d4",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "scrapper/pipeline/build_full_acquisition_scope.py",
+    "module": "scrapper.pipeline.build_full_acquisition_scope",
+    "category": "MAINTENANCE",
+    "sha256": "de30a5935239836f1321477c7e32b13018e2e3d9edfeb388d5997ff01d262488",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "scrapper/pipeline/build_gate_evidence.py",
+    "module": "scrapper.pipeline.build_gate_evidence",
+    "category": "MAINTENANCE",
+    "sha256": "be2d5c70c9f31b62dbd952cd553aae509a2aca7ee43eec9a2c12c39503fb7999",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "scrapper/pipeline/build_p0_governance.py",
+    "module": "scrapper.pipeline.build_p0_governance",
+    "category": "MAINTENANCE",
+    "sha256": "100e8ab04534c0b5164db413273598d0423540206bb67f3ee1c1609c87f98706",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "scrapper/pipeline/build_transcript_coverage.py",
+    "module": "scrapper.pipeline.build_transcript_coverage",
+    "category": "MAINTENANCE",
+    "sha256": "e7a0f6117f1accc0cdd99d874e6527efa6bb4ff1daf4caba922f1b2809708fdc",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "scrapper/pipeline/evaluate_document_acquisition_gate.py",
+    "module": "scrapper.pipeline.evaluate_document_acquisition_gate",
+    "category": "MAINTENANCE",
+    "sha256": "54f6764f38b546fe34c6387d306cc89edac5bab116cdf4572cffc72ae9c1635e",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "scrapper/pipeline/finalize_acquisition_states.py",
+    "module": "scrapper.pipeline.finalize_acquisition_states",
+    "category": "MAINTENANCE",
+    "sha256": "e728792dfae5b5d32e83b696c0c4c50e378d0e8c2815dab4d6a21466fa873c55",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "scrapper/pipeline/reconcile_issuer_retrieval_provenance.py",
+    "module": "scrapper.pipeline.reconcile_issuer_retrieval_provenance",
+    "category": "MAINTENANCE",
+    "sha256": "2f41867dad70de794d2e1ea18a26bd41baa5d958ddaf2b7ed387e80acbf0dd81",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "scrapper/pipeline/render_html_documents.py",
+    "module": "scrapper.pipeline.render_html_documents",
+    "category": "MAINTENANCE",
+    "sha256": "3d452551c35745a2b769e04e393504629a85b75c3c825b1a508b30cd574461f4",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "scrapper/pipeline/run_scope_extraction.py",
+    "module": "scrapper.pipeline.run_scope_extraction",
+    "category": "MAINTENANCE",
+    "sha256": "01418da314243922a148d8d55c44fc837fef07177766094c4d0a0165c38c8e72",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "scrapper/research/bse_browser_results.py",
+    "module": "scrapper.research.bse_browser_results",
+    "category": "ACTIVE",
+    "sha256": "cba82fe6e2933ae6d4c1adeb6ab827ee55b0e76ed3c31bb85e1e06470ce42c8a",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "scrapper/research/focus/build_p0_governance.py",
+    "module": "scrapper.research.focus.build_p0_governance",
+    "category": "MAINTENANCE",
+    "sha256": "58542f0f5883086f7e15f624a6a6a71a4eb521397bc59d0b4180b340930ea370",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "scrapper/runtime_capabilities.py",
+    "module": "scrapper.runtime_capabilities",
+    "category": "MAINTENANCE",
+    "sha256": "7703743ee3dbe2869267d4cdbadcd56b94bdc5ddb353fdd75930afcdb33da509",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "scrapper/tests/fixtures/documents/generate_d03_fixtures.py",
+    "module": "scrapper.tests.fixtures.documents.generate_d03_fixtures",
+    "category": "MAINTENANCE",
+    "sha256": "ef4d2c922d8d48689ec01558cf834fa3ac22d62424466a0185ec396cf84c2ad2",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "scrapper/view/browser_rating_monitor.py",
+    "module": "scrapper.view.browser_rating_monitor",
+    "category": "MAINTENANCE",
+    "sha256": "a55b5a69d5c9cd45e7bc987383b9dbd38b7c109e25971600a4d19901c0108484",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "ops/host/lifecycle_config.py",
+    "module": "ops.host.lifecycle_config",
+    "category": "MAINTENANCE",
+    "sha256": "ba3fb7ec51dedbf0a6707cab47e93cf3bf05c1f725191bf8e231d25fa471ee7c",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "ops/activation/automatic_acquisition.phase4-candidate.py",
+    "module": "ops.activation.automatic_acquisition.phase4-candidate",
+    "category": "MAINTENANCE",
+    "sha256": "b98715f2cea59107a1dd24ed85d634a6180c3a3e406ecfaea1a17b6c0de961f6",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "ops/activation/automatic_acquisition.py",
+    "module": "ops.activation.automatic_acquisition",
+    "category": "ACTIVE",
+    "sha256": "b98715f2cea59107a1dd24ed85d634a6180c3a3e406ecfaea1a17b6c0de961f6",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "ops/activation/bse_retained.py",
+    "module": "ops.activation.bse_retained",
+    "category": "MAINTENANCE",
+    "sha256": "c8a3f2495d6e5d4d335ea75e04ec29d46bbadf35a9af92355d98290846efc9e1",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "ops/activation/bse_retained_runtime.py",
+    "module": "ops.activation.bse_retained_runtime",
+    "category": "MAINTENANCE",
+    "sha256": "bdfcbf019d865db919e5f992a0a5bd798d52c610a21f648b1651431cf58b50fb",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "ops/activation/bse_scheduled_runtime.py",
+    "module": "ops.activation.bse_scheduled_runtime",
+    "category": "ACTIVE",
+    "sha256": "1c0cb506477071b60a0a07c6cce2c3a6e7f1e22e151c5cd32a71b883765c557d",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "ops/activation/install_automatic_acquisition.py",
+    "module": "ops.activation.install_automatic_acquisition",
+    "category": "ACTIVE",
+    "sha256": "2e6862dc7a07cffb50276035151bbac25647a9ea1cfc2210102c0215e223d097",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "ops/activation/monitor_phase4_receipts.py",
+    "module": "ops.activation.monitor_phase4_receipts",
+    "category": "ACTIVE",
+    "sha256": "ab18e9ade7ce25439154e0b0f315a8f6ff320197a080f287891537a1be4db1d3",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "ops/activation/nse_results.py",
+    "module": "ops.activation.nse_results",
+    "category": "ACTIVE",
+    "sha256": "41cc4383a45ad9f74dc013e2a812cd9dac7ffb47601467e692ef457e42976bf7",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "ops/activation/nse_results_runtime.py",
+    "module": "ops.activation.nse_results_runtime",
+    "category": "ACTIVE",
+    "sha256": "3296fab91afae60fbf5aaecb77974c37204cf72635a7d17e72e68e2310f3b837",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "ops/activation/phase3_bse_reassess.py",
+    "module": "ops.activation.phase3_bse_reassess",
+    "category": "MAINTENANCE",
+    "sha256": "74098de9f327de97b0d475bd0f30c16694e65f403d55f3e546f3487a70807d09",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "ops/activation/phase3_inspect.py",
+    "module": "ops.activation.phase3_inspect",
+    "category": "MAINTENANCE",
+    "sha256": "7986beed99afaff36edc9d1302d8e848fcf705ac98751a8513a424e7ba09d0f1",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "ops/activation/phase4_attempt02_verify.py",
+    "module": "ops.activation.phase4_attempt02_verify",
+    "category": "MAINTENANCE",
+    "sha256": "ef1ad3ab28dcdc1eeaaa69a9b1c3af38c23468246997eb92232ab4a91c8aac79",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "ops/activation/phase4_attempt03_verify.py",
+    "module": "ops.activation.phase4_attempt03_verify",
+    "category": "MAINTENANCE",
+    "sha256": "59d5893906a8b9031d328ac39d9b4acbaa1d2deb4b027cfedcf0d06dff5d2a6f",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "ops/activation/phase4_canary_verify.py",
+    "module": "ops.activation.phase4_canary_verify",
+    "category": "MAINTENANCE",
+    "sha256": "cd87a92849cb7a4c3e0ae549a9a03aa202af450249f20711f3efcaa8a359483c",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "ops/activation/phase4_documents.py",
+    "module": "ops.activation.phase4_documents",
+    "category": "MAINTENANCE",
+    "sha256": "d4fc573de7ecca50d8f3d58bd09f48e88caaf575090c9355fcf6edb84d78b93d",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "ops/activation/phase4_documents_runtime.py",
+    "module": "ops.activation.phase4_documents_runtime",
+    "category": "MAINTENANCE",
+    "sha256": "56348978314f99d62089b071f70683ccddbc981419a728e072f54ab3769ef7dc",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "ops/activation/phase4_inspect.py",
+    "module": "ops.activation.phase4_inspect",
+    "category": "MAINTENANCE",
+    "sha256": "64a023212836ba766ae134dd936e1faf6b0822263dc290cd6e78354de943c10c",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "ops/activation/phase4_offline_lifecycle.py",
+    "module": "ops.activation.phase4_offline_lifecycle",
+    "category": "MAINTENANCE",
+    "sha256": "41860c3ed796cc9ae2935803f013f378abc73454450c6f50ea9aba67747032e4",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "ops/activation/phase4_routine_runtime.py",
+    "module": "ops.activation.phase4_routine_runtime",
+    "category": "MAINTENANCE",
+    "sha256": "3e36a88fef332cdc1be3b26c96b7323b9fccba09951e5b9606d2c36c2fbb803c",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "ops/activation/phase4_trial_observer.py",
+    "module": "ops.activation.phase4_trial_observer",
+    "category": "ACTIVE",
+    "sha256": "fea4d6270740b9a7dd03c179e6bb8a2188765a35569053dc3db063ad6f50c9ab",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "ops/activation/phase4_trial_preflight.py",
+    "module": "ops.activation.phase4_trial_preflight",
+    "category": "MAINTENANCE",
+    "sha256": "04090b4b5ac6892f18ae5796367cbe1ebee25f9b98caa5f3ba109b2e695e1b90",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "ops/activation/prepare_phase4_routine.py",
+    "module": "ops.activation.prepare_phase4_routine",
+    "category": "MAINTENANCE",
+    "sha256": "d7917f0306459026db2b8ec39b25856a376641792fd13554a4645e9b99609e3f",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "ops/activation/screener_auth_check.py",
+    "module": "ops.activation.screener_auth_check",
+    "category": "MAINTENANCE",
+    "sha256": "6bd8a6fe92427a4c681be8cb8e1215772f61446185a2fab0272b62ea76aa85d4",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "ops/activation/screener_auth_check_runtime.py",
+    "module": "ops.activation.screener_auth_check_runtime",
+    "category": "MAINTENANCE",
+    "sha256": "8ccf00fcb77999506eb3409830807d0abf758babc81329d2feecc452d03cd168",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "ops/activation/step3_accepted_details_runtime.py",
+    "module": "ops.activation.step3_accepted_details_runtime",
+    "category": "MAINTENANCE",
+    "sha256": "2f6c0897f572b8fe27333c5284c09c6e77f30dad8ba4004bae6cfb60df6df173",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "ops/activation/step3_canary_state.py",
+    "module": "ops.activation.step3_canary_state",
+    "category": "MAINTENANCE",
+    "sha256": "115e67a4756cfe9796ef50b77fa5d3163249124706b0dcb8e102d28a367e6598",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "ops/activation/step3_canary_state_runtime.py",
+    "module": "ops.activation.step3_canary_state_runtime",
+    "category": "MAINTENANCE",
+    "sha256": "b539c0d961c1a5f2429b72c1701dac706bc7587c217476fcbaf870c626207d78",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "ops/activation/step3_detail_runtime.py",
+    "module": "ops.activation.step3_detail_runtime",
+    "category": "MAINTENANCE",
+    "sha256": "f944e530e3d2da60d54f4072e8a13eff9da6a1cd11fbf3b79b1c576b5c8ac87f",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "ops/activation/step3_financial.py",
+    "module": "ops.activation.step3_financial",
+    "category": "MAINTENANCE",
+    "sha256": "ff235fe4090a4f3560ad2bf2ee0dffb42c5dae67136c187705f1137d2fc62d73",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "ops/activation/step3_financial_runtime.py",
+    "module": "ops.activation.step3_financial_runtime",
+    "category": "ACTIVE",
+    "sha256": "54b4d1ad121885a1024058248dcaf10eb51d6d88c75d107c03d56f3ec0a15d6c",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "ops/activation/step3_inspect.py",
+    "module": "ops.activation.step3_inspect",
+    "category": "MAINTENANCE",
+    "sha256": "12cb1d8dfe9ab074941db9724ce564a6041f6b8544e23804a888a7c835429aaf",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "ops/activation/step3_inspect_runtime.py",
+    "module": "ops.activation.step3_inspect_runtime",
+    "category": "MAINTENANCE",
+    "sha256": "b022910b7fb257e60890c1bd4e7933b1929644676cc75720ead65b709333a5e7",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "ops/activation/verify_unattended_acquisition.py",
+    "module": "ops.activation.verify_unattended_acquisition",
+    "category": "MAINTENANCE",
+    "sha256": "40dac0b47c0c66e9e6e0af1963d3e494eaf87d3d4387f002cd537fadedbb1d64",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "ops/benchmarks/phase4_throughput.py",
+    "module": "ops.benchmarks.phase4_throughput",
+    "category": "MAINTENANCE",
+    "sha256": "8a6c130864803853f45fe8f026bc90f8ea3cc413697357101d3621f1ef1581cf",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "ops/benchmarks/run_phase4_throughput.py",
+    "module": "ops.benchmarks.run_phase4_throughput",
+    "category": "MAINTENANCE",
+    "sha256": "2f8061277794db041573ddd8dfa2bea56506f0a7c5e3ed43bd5959244ac13a66",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "scripts/audit/check_compose_release.py",
+    "module": "scripts.audit.check_compose_release",
+    "category": "MAINTENANCE",
+    "sha256": "17e6ecab4c2a1ccf77df401b6e4f407d1b6f6a5231a9dad75ce0a1a7993aeb05",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "scripts/audit/check_migration_manifest.py",
+    "module": "scripts.audit.check_migration_manifest",
+    "category": "MAINTENANCE",
+    "sha256": "75c9887ad8cc87f08d340e0d19cf5834a7de2e8e02218faf301d962db08e6630",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "scripts/audit/check_oci_release.py",
+    "module": "scripts.audit.check_oci_release",
+    "category": "MAINTENANCE",
+    "sha256": "2222df94df2def28bbe05c7380c9010d6306d7082263e7d69425741ed6300ca2",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "scripts/audit/run_release_clone_tests.py",
+    "module": "scripts.audit.run_release_clone_tests",
+    "category": "MAINTENANCE",
+    "sha256": "eda4a56d16ebbd070a6a03ad80865a800fc7f735ae14f15eb54b13ad442ebc68",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  },
+  {
+    "file": "scripts/cleanup/materialize_cumulative_candidate.py",
+    "module": "scripts.cleanup.materialize_cumulative_candidate",
+    "category": "MAINTENANCE",
+    "sha256": "b9d85c6989275064b9991ff583804ffbecf9edd810cf31d7d97a3a6c9933ac6f",
+    "reason": "Explicit module/CLI operation; no zero-reference assumption permits deletion"
+  }
+]

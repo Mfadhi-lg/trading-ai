@@ -1,0 +1,3 @@
+{"at_utc": "2026-10-07T18:25:39Z", "stage": "quick_check_start"}
+{"at_utc": "2026-10-07T18:40:24Z", "stage": "quick_check_end", "result": ["ok"]}
+{"at_utc": "2026-10-07T18:40:24Z", "stage": "integrity_check_start"}

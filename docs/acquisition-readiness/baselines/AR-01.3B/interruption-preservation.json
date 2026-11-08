@@ -1,0 +1,27 @@
+{
+  "status": "INCOMPLETE_RUNTIME_INTERRUPTION",
+  "preserved_post_capture": "/Users/mohamedfadhi/Fadhi/trading-ai/artifacts/acquisition-readiness/AR-01.3B/post-migration/raw/scraper.db",
+  "sha256": "d773f4863e41266ca2cbbd76f1d542eb888878be1380e40114c34b4164fe4afc",
+  "bytes": 14602240000,
+  "mode": "0o444",
+  "full_captured_075_schema_and_ledger_verified": true,
+  "sqlite_checks": {
+    "integrity_check": [
+      "ok"
+    ],
+    "quick_check": [
+      "ok"
+    ]
+  },
+  "schema_objects_added": 19,
+  "schema_objects_modified": 3,
+  "schema_objects_removed": 0,
+  "fk_output_exists": false,
+  "row_fingerprint_output_exists": false,
+  "schema075_canary_exists": false,
+  "migration_retried": false,
+  "production_restore": false,
+  "docker_socket_exists": true,
+  "live_production_after_interruption_reconfirmed": false,
+  "at_utc": "2026-10-08T04:22:58.808599+00:00"
+}

@@ -15,18 +15,34 @@ from pathlib import Path
 from typing import Any, Callable
 
 from .. import __version__
-from ..config import DB_PATH, SNAPSHOTS
+from ..config import (
+    DB_PATH,
+    EXCHANGE_GUARD_ABSENCE_VOLUME_FLOOR,
+    EXCHANGE_GUARD_ABSENCE_VOLUME_RATIO,
+    EXCHANGE_GUARD_DUPLICATE_ISIN_RATE,
+    EXCHANGE_GUARD_REJECTED_ROW_RATE,
+    EXCHANGE_GUARD_ROW_COUNT_DROP_RATIO,
+    EXCHANGE_GUARD_ROW_FLOOR,
+    SNAPSHOTS,
+)
 from ..core.http import FetchResponse, fetch_exchange_dataset
 from ..db.database import connect, init_db
-from ..db.exchange_repo import (
+from ..db.exchange.filings import (
+    ingest_result_filings,
+    preview_filing_decisions,
+    enqueue_result_filings,
+)
+from ..db.exchange.securities import (
+    absence_preview,
     apply_corporate_changes,
     apply_security_master,
-    enqueue_result_filings,
-    ingest_result_filings,
-    persist_snapshot,
-    preview_filing_decisions,
-    record_exchange_fetch,
+)
+from ..db.exchange.snapshots import (
     store_exchange_blob,
+    record_exchange_fetch,
+    persist_snapshot,
+    latest_passed_snapshot,
+    record_snapshot_validation,
 )
 from ..db.repo import finish_run, start_run, utc_now
 from ..sources.exchange import (
@@ -39,6 +55,12 @@ from ..sources.exchange.corporate_changes import (
     CORPORATE_CHANGE_DATASETS,
     parse_corporate_changes,
 )
+from ..sources.exchange.datasets import (
+    DATASET_KEYS,
+    authoritative_segments,
+    dataset_config,
+    default_url_for,
+)
 from ..sources.exchange.result_filings import (
     RESULT_FILING_DATASETS,
     parse_result_filings,
@@ -47,15 +69,37 @@ from ..sources.exchange.security_master import (
     SECURITY_MASTER_DATASETS,
     parse_security_master,
 )
-from ..sources.exchange.tabular import effective_date_or_today
+from ..sources.exchange.snapshot_guard import (
+    GuardThresholds,
+    GuardVerdict,
+    SnapshotMetrics,
+    evaluate_snapshot,
+    isin_metrics,
+    override,
+)
+from ..sources.exchange.tabular import (
+    decompress_source,
+    effective_date_or_today,
+    is_json_payload,
+    read_delimited,
+    read_json_records,
+)
 
 
-EXCHANGE_SCHEMA_VERSION = "1.0.0"
-UNIVERSE_DATASETS = SECURITY_MASTER_DATASETS + CORPORATE_CHANGE_DATASETS
+EXCHANGE_SCHEMA_VERSION = "1.2.0"
+
+
+from ..workflows.exchange.universe import DatasetNotPublished, ExchangeSourceAccessBlocked
+
+
+UNIVERSE_DATASETS =SECURITY_MASTER_DATASETS + CORPORATE_CHANGE_DATASETS
 ALL_DATASETS = UNIVERSE_DATASETS + RESULT_FILING_DATASETS
-DATASET_EXCHANGE = {
-    dataset: ("BSE" if dataset.startswith("bse_") else "NSE") for dataset in ALL_DATASETS
-}
+DATASET_EXCHANGE = {dataset: dataset_config(dataset).exchange for dataset in DATASET_KEYS}
+
+
+def resolve_url(dataset: str, url: str | None, *, result_period: str | None) -> str | None:
+    from ..workflows.exchange import universe as _owner
+    return _owner.resolve_url(dataset, url, result_period=result_period, default_url_for=default_url_for)
 
 
 def _acquire(
@@ -65,64 +109,75 @@ def _acquire(
     url: str | None,
     fetcher: Callable[[str, str], FetchResponse],
 ) -> tuple[FetchResponse, str, str]:
-    """Read an operator-supplied file or fetch one allowlisted official URL."""
-    if (file is None) == (url is None):
-        raise ValueError("Provide exactly one of --file or --url")
-    exchange = DATASET_EXCHANGE[dataset]
-    if file is not None:
-        content = file.read_bytes()
-        response = FetchResponse(
-            requested_url=file.resolve().as_uri(),
-            final_url=file.resolve().as_uri(),
-            status_code=200,
-            content=content,
-            content_type="text/csv",
-            encoding=None,
-            etag=None,
-            last_modified=None,
-            auth_mode="operator_file",
-            fetch_status="ok",
-        )
-        return response, "operator_file", str(file.resolve())
-    response = fetcher(str(url), exchange)
-    return response, "fetched", str(url)
+    from ..workflows.exchange import universe as _owner
+    return _owner._acquire(dataset=dataset, file=file, url=url, fetcher=fetcher, DATASET_EXCHANGE=DATASET_EXCHANGE, FetchResponse=FetchResponse)
 
 
 def _parse(
     dataset: str, content: bytes, *, result_period: str | None = None
-) -> Any:
-    if dataset in SECURITY_MASTER_DATASETS:
-        return parse_security_master(content, dataset)
-    if dataset in CORPORATE_CHANGE_DATASETS:
-        return parse_corporate_changes(content, dataset)
-    return parse_result_filings(content, dataset, result_period=result_period)
+) -> tuple[Any, str]:
+    from ..workflows.exchange import universe as _owner
+    return _owner._parse(dataset, content, result_period=result_period, CORPORATE_CHANGE_DATASETS=CORPORATE_CHANGE_DATASETS, SECURITY_MASTER_DATASETS=SECURITY_MASTER_DATASETS, decompress_source=decompress_source, parse_corporate_changes=parse_corporate_changes, parse_result_filings=parse_result_filings, parse_security_master=parse_security_master)
 
 
 def _parser_name(dataset: str) -> str:
-    if dataset in SECURITY_MASTER_DATASETS:
-        return SECURITY_MASTER_PARSER_NAME
-    if dataset in CORPORATE_CHANGE_DATASETS:
-        return CORPORATE_CHANGE_PARSER_NAME
-    return RESULT_FILING_PARSER_NAME
+    from ..workflows.exchange import universe as _owner
+    return _owner._parser_name(dataset, CORPORATE_CHANGE_DATASETS=CORPORATE_CHANGE_DATASETS, CORPORATE_CHANGE_PARSER_NAME=CORPORATE_CHANGE_PARSER_NAME, RESULT_FILING_PARSER_NAME=RESULT_FILING_PARSER_NAME, SECURITY_MASTER_DATASETS=SECURITY_MASTER_DATASETS, SECURITY_MASTER_PARSER_NAME=SECURITY_MASTER_PARSER_NAME)
+
+
+def thresholds_for_dataset(dataset: str) -> GuardThresholds:
+    from ..workflows.exchange import universe as _owner
+    return _owner.thresholds_for_dataset(dataset, DATASET_KEYS=DATASET_KEYS, EXCHANGE_GUARD_ABSENCE_VOLUME_FLOOR=EXCHANGE_GUARD_ABSENCE_VOLUME_FLOOR, EXCHANGE_GUARD_ABSENCE_VOLUME_RATIO=EXCHANGE_GUARD_ABSENCE_VOLUME_RATIO, EXCHANGE_GUARD_DUPLICATE_ISIN_RATE=EXCHANGE_GUARD_DUPLICATE_ISIN_RATE, EXCHANGE_GUARD_REJECTED_ROW_RATE=EXCHANGE_GUARD_REJECTED_ROW_RATE, EXCHANGE_GUARD_ROW_COUNT_DROP_RATIO=EXCHANGE_GUARD_ROW_COUNT_DROP_RATIO, EXCHANGE_GUARD_ROW_FLOOR=EXCHANGE_GUARD_ROW_FLOOR, GuardThresholds=GuardThresholds, SECURITY_MASTER_DATASETS=SECURITY_MASTER_DATASETS, dataset_config=dataset_config)
+
+
+def _isins(parsed: Any) -> list[str | None]:
+    from ..workflows.exchange import universe as _owner
+    return _owner._isins(parsed)
+
+
+def _evaluate(
+    conn: sqlite3.Connection,
+    parsed: Any,
+    *,
+    dataset: str,
+    effective_date: str,
+    observed_at_utc: str,
+    thresholds: GuardThresholds,
+    override_validation: bool,
+    exclude_snapshot_id: int | None = None,
+) -> GuardVerdict:
+    from ..workflows.exchange import universe as _owner
+    return _owner._evaluate(conn, parsed, dataset=dataset, effective_date=effective_date, observed_at_utc=observed_at_utc, thresholds=thresholds, override_validation=override_validation, exclude_snapshot_id=exclude_snapshot_id, SECURITY_MASTER_DATASETS=SECURITY_MASTER_DATASETS, SnapshotMetrics=SnapshotMetrics, _isins=_isins, absence_preview=absence_preview, authoritative_segments=authoritative_segments, evaluate_snapshot=evaluate_snapshot, isin_metrics=isin_metrics, latest_passed_snapshot=latest_passed_snapshot, override=override)
+
+
+def _guard(
+    conn: sqlite3.Connection,
+    parsed: Any,
+    *,
+    dataset: str,
+    snapshot_id: int,
+    effective_date: str,
+    observed_at_utc: str,
+    thresholds: GuardThresholds,
+    override_validation: bool,
+) -> GuardVerdict:
+    from ..workflows.exchange import universe as _owner
+    return _owner._guard(conn, parsed, dataset=dataset, snapshot_id=snapshot_id, effective_date=effective_date, observed_at_utc=observed_at_utc, thresholds=thresholds, override_validation=override_validation, _evaluate=_evaluate, record_snapshot_validation=record_snapshot_validation)
 
 
 def _readonly(db_path: Path) -> sqlite3.Connection | None:
-    if not db_path.exists():
-        return None
-    connection = sqlite3.connect(f"file:{db_path.resolve()}?mode=ro", uri=True)
-    connection.row_factory = sqlite3.Row
-    return connection
+    from ..workflows.exchange import universe as _owner
+    return _owner._readonly(db_path, sqlite3=sqlite3)
 
 
 def _rejected_payload(parsed: Any) -> list[dict[str, Any]]:
-    return [
-        {
-            "row_position": item.row_position,
-            "reason_code": item.reason_code,
-            "reason_detail": item.reason_detail,
-        }
-        for item in parsed.rejected
-    ]
+    from ..workflows.exchange import universe as _owner
+    return _owner._rejected_payload(parsed)
+
+
+def _excluded_counts(parsed: Any) -> dict[str, int]:
+    from ..workflows.exchange import universe as _owner
+    return _owner._excluded_counts(parsed)
 
 
 def _ingest(
@@ -137,97 +192,25 @@ def _ingest(
     now_utc: Callable[[], str],
     fetcher: Callable[[str, str], FetchResponse],
     result_period: str | None = None,
+    thresholds: GuardThresholds | None = None,
+    override_validation: bool = False,
 ) -> tuple[dict[str, Any], Any, sqlite3.Connection | None, int | None]:
-    """Acquire, parse, and (unless dry-run) persist one dated snapshot."""
-    if dataset not in ALL_DATASETS:
-        raise ValueError(f"Unknown exchange dataset: {dataset!r}")
-    observed_at = now_utc()
-    effective = effective_date_or_today(effective_date, now_utc=observed_at)
-    response, acquisition_mode, source_label = _acquire(
-        dataset=dataset, file=file, url=url, fetcher=fetcher
-    )
-    if response.fetch_status != "ok":
-        raise RuntimeError(
-            "Exchange dataset rejected before parsing: "
-            f"status={response.status_code} classification={response.fetch_status}"
-        )
-    parsed = _parse(dataset, response.content, result_period=result_period)
-    base = {
-        "schema_version": EXCHANGE_SCHEMA_VERSION,
-        "mode": "dry_run" if dry_run else "persisted",
-        "dataset": dataset,
-        "exchange": DATASET_EXCHANGE[dataset],
-        "effective_date": effective,
-        "acquisition_mode": acquisition_mode,
-        "source_label": source_label,
-        "requested_url": url,
-        "content_sha256": hashlib.sha256(response.content).hexdigest(),
-        "source_encoding": parsed.encoding,
-        "observed_at_utc": observed_at,
-        "headers": list(parsed.headers),
-        "accepted_row_count": parsed.accepted_row_count,
-        "rejected_row_count": parsed.rejected_row_count,
-        "excluded_row_count": getattr(parsed, "excluded_row_count", 0),
-        "rejected_rows": _rejected_payload(parsed),
-    }
-    if dry_run:
-        return base | {"snapshot_id": None, "created": False}, parsed, None, None
+    from ..workflows.exchange import universe as _owner
+    return _owner._ingest(dataset=dataset, file=file, url=url, effective_date=effective_date, dry_run=dry_run, db_path=db_path, snapshot_root=snapshot_root, now_utc=now_utc, fetcher=fetcher, result_period=result_period, thresholds=thresholds, override_validation=override_validation, ALL_DATASETS=ALL_DATASETS, DATASET_EXCHANGE=DATASET_EXCHANGE, DatasetNotPublished=DatasetNotPublished, EXCHANGE_PARSER_VERSION=EXCHANGE_PARSER_VERSION, EXCHANGE_SCHEMA_VERSION=EXCHANGE_SCHEMA_VERSION, ExchangeSourceAccessBlocked=ExchangeSourceAccessBlocked, __version__=__version__, _acquire=_acquire, _evaluate=_evaluate, _excluded_counts=_excluded_counts, _guard=_guard, _parse=_parse, _parser_name=_parser_name, _readonly=_readonly, _rejected_payload=_rejected_payload, connect=connect, effective_date_or_today=effective_date_or_today, finish_run=finish_run, hashlib=hashlib, init_db=init_db, persist_snapshot=persist_snapshot, record_exchange_fetch=record_exchange_fetch, start_run=start_run, store_exchange_blob=store_exchange_blob, thresholds_for_dataset=thresholds_for_dataset)
 
-    conn = connect(db_path)
-    init_db(conn)
-    run_id = start_run(
-        conn,
-        __version__,
-        {"source": DATASET_EXCHANGE[dataset], "mode": "exchange_universe", "dataset": dataset},
-    )
-    try:
-        blob_id = store_exchange_blob(
-            conn, response,
-            exchange=DATASET_EXCHANGE[dataset], dataset=dataset,
-            effective_date=effective, observed_at_utc=observed_at,
-            snapshot_root=snapshot_root,
-        )
-        fetch_id = (
-            record_exchange_fetch(
-                conn, run_id, response,
-                exchange=DATASET_EXCHANGE[dataset], blob_id=blob_id,
-                fetched_at_utc=observed_at,
-            )
-            if acquisition_mode == "fetched"
-            else None
-        )
-        snapshot_id, created = persist_snapshot(
-            conn,
-            exchange=DATASET_EXCHANGE[dataset],
-            dataset=dataset,
-            effective_date=effective,
-            source_label=source_label,
-            requested_url=url,
-            acquisition_mode=acquisition_mode,
-            fetch_id=fetch_id,
-            blob_id=blob_id,
-            parser_name=_parser_name(dataset),
-            parser_version=EXCHANGE_PARSER_VERSION,
-            source_encoding=parsed.encoding,
-            observed_at_utc=observed_at,
-            headers=parsed.headers,
-            accepted_row_count=parsed.accepted_row_count,
-            rejected=parsed.rejected,
-        )
-    except Exception:
-        finish_run(conn, run_id, "error")
-        conn.close()
-        raise
-    payload = base | {
-        "run_id": run_id,
-        "blob_id": blob_id,
-        "fetch_id": fetch_id,
-        "snapshot_id": snapshot_id,
-        "created": created,
-        "parser_name": _parser_name(dataset),
-        "parser_version": EXCHANGE_PARSER_VERSION,
-    }
-    return payload, parsed, conn, run_id
+
+def inspect_exchange_dataset(
+    *,
+    dataset: str,
+    file: Path | None = None,
+    url: str | None = None,
+    result_period: str | None = None,
+    sample_rows: int = 3,
+    now_utc: Callable[[], str] = utc_now,
+    fetcher: Callable[[str, str], FetchResponse] = fetch_exchange_dataset,
+) -> dict[str, Any]:
+    from ..workflows.exchange import universe as _owner
+    return _owner.inspect_exchange_dataset(dataset=dataset, file=file, url=url, result_period=result_period, sample_rows=sample_rows, now_utc=now_utc, fetcher=fetcher, DATASET_EXCHANGE=DATASET_EXCHANGE, DATASET_KEYS=DATASET_KEYS, DatasetNotPublished=DatasetNotPublished, EXCHANGE_SCHEMA_VERSION=EXCHANGE_SCHEMA_VERSION, _acquire=_acquire, decompress_source=decompress_source, hashlib=hashlib, is_json_payload=is_json_payload, read_delimited=read_delimited, read_json_records=read_json_records, resolve_url=resolve_url)
 
 
 def refresh_exchange_universe(
@@ -241,40 +224,11 @@ def refresh_exchange_universe(
     snapshot_root: Path = SNAPSHOTS,
     now_utc: Callable[[], str] = utc_now,
     fetcher: Callable[[str, str], FetchResponse] = fetch_exchange_dataset,
+    thresholds: GuardThresholds | None = None,
+    override_validation: bool = False,
 ) -> dict[str, Any]:
-    """Fold one dated security master or corporate-change file into the registry."""
-    if dataset not in UNIVERSE_DATASETS:
-        raise ValueError(
-            f"{dataset!r} is not a universe dataset; use exchange-discover-results"
-        )
-    payload, parsed, conn, run_id = _ingest(
-        dataset=dataset, file=file, url=url, effective_date=effective_date,
-        dry_run=dry_run, db_path=db_path, snapshot_root=snapshot_root,
-        now_utc=now_utc, fetcher=fetcher,
-    )
-    if conn is None or run_id is None:
-        return payload | {"registry": None}
-    try:
-        if dataset in SECURITY_MASTER_DATASETS:
-            registry = apply_security_master(
-                conn, parsed,
-                snapshot_id=int(payload["snapshot_id"]),
-                effective_date=str(payload["effective_date"]),
-                now_utc=str(payload["observed_at_utc"]),
-            )
-        else:
-            registry = apply_corporate_changes(
-                conn, parsed,
-                snapshot_id=int(payload["snapshot_id"]),
-                now_utc=str(payload["observed_at_utc"]),
-            )
-        finish_run(conn, run_id, "ok")
-        return payload | {"registry": registry}
-    except Exception:
-        finish_run(conn, run_id, "error")
-        raise
-    finally:
-        conn.close()
+    from ..workflows.exchange import universe as _owner
+    return _owner.refresh_exchange_universe(dataset=dataset, file=file, url=url, effective_date=effective_date, dry_run=dry_run, db_path=db_path, snapshot_root=snapshot_root, now_utc=now_utc, fetcher=fetcher, thresholds=thresholds, override_validation=override_validation, SECURITY_MASTER_DATASETS=SECURITY_MASTER_DATASETS, UNIVERSE_DATASETS=UNIVERSE_DATASETS, _ingest=_ingest, apply_corporate_changes=apply_corporate_changes, apply_security_master=apply_security_master, authoritative_segments=authoritative_segments, finish_run=finish_run, resolve_url=resolve_url)
 
 
 def discover_exchange_results(
@@ -289,47 +243,8 @@ def discover_exchange_results(
     snapshot_root: Path = SNAPSHOTS,
     now_utc: Callable[[], str] = utc_now,
     fetcher: Callable[[str, str], FetchResponse] = fetch_exchange_dataset,
+    thresholds: GuardThresholds | None = None,
+    override_validation: bool = False,
 ) -> dict[str, Any]:
-    """Ingest one official result feed and queue only advanced reporting periods."""
-    if dataset not in RESULT_FILING_DATASETS:
-        raise ValueError(
-            f"{dataset!r} is not a result dataset; use exchange-refresh-universe"
-        )
-    payload, parsed, conn, run_id = _ingest(
-        dataset=dataset, file=file, url=url, effective_date=effective_date,
-        dry_run=dry_run, db_path=db_path, snapshot_root=snapshot_root,
-        now_utc=now_utc, fetcher=fetcher, result_period=result_period,
-    )
-    periods = sorted({item.result_period for item in parsed.filings})
-    payload = payload | {
-        "result_periods": periods,
-        "max_broadcast_at_utc": parsed.max_broadcast_at_utc,
-    }
-    if conn is None or run_id is None:
-        readonly = _readonly(db_path)
-        try:
-            planned = (
-                preview_filing_decisions(readonly, parsed) if readonly is not None else {}
-            )
-        finally:
-            if readonly is not None:
-                readonly.close()
-        return payload | {"filings": None, "enqueue": planned}
-    try:
-        filings = ingest_result_filings(
-            conn, parsed,
-            snapshot_id=int(payload["snapshot_id"]),
-            now_utc=str(payload["observed_at_utc"]),
-        )
-        enqueue = enqueue_result_filings(
-            conn,
-            snapshot_id=int(payload["snapshot_id"]),
-            now_utc=str(payload["observed_at_utc"]),
-        )
-        finish_run(conn, run_id, "ok")
-        return payload | {"filings": filings, "enqueue": enqueue}
-    except Exception:
-        finish_run(conn, run_id, "error")
-        raise
-    finally:
-        conn.close()
+    from ..workflows.exchange import universe as _owner
+    return _owner.discover_exchange_results(dataset=dataset, file=file, url=url, effective_date=effective_date, result_period=result_period, dry_run=dry_run, db_path=db_path, snapshot_root=snapshot_root, now_utc=now_utc, fetcher=fetcher, thresholds=thresholds, override_validation=override_validation, RESULT_FILING_DATASETS=RESULT_FILING_DATASETS, _ingest=_ingest, _readonly=_readonly, enqueue_result_filings=enqueue_result_filings, finish_run=finish_run, ingest_result_filings=ingest_result_filings, preview_filing_decisions=preview_filing_decisions, resolve_url=resolve_url)

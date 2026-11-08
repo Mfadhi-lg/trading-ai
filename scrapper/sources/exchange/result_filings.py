@@ -95,6 +95,12 @@ _BSE_REQUIRED = {
         "BROADCAST DATE",
     ),
 }
+_BSE_CURRENT_EXPORT_REQUIRED = {
+    "scrip_code": ("SECURITY CODE",),
+    "company_name": ("SECURITY NAME",),
+    "period_end": ("PERIOD",),
+    "broadcast": ("BROADCAST DATE & TIME", "BROADCAST DATE/TIME", "BROADCAST DATE"),
+}
 _BSE_OPTIONAL = {
     "isin": ("ISIN NO", "ISIN", "ISIN NUMBER"),
     "security_id": ("SECURITY ID", "SCRIP ID"),
@@ -198,8 +204,17 @@ def _filing(row: SourceRow, *, exchange: str, headers: tuple[str, ...]) -> Resul
     name = clean_text(row.value("company_name"))
     if not name:
         raise SourceRowError("missing_name", "Filing has no company name")
-    period_end = parse_source_date(row.value("period_end"), field="period ended")
-    scope = normalize_reporting_scope(row.value("scope"))
+    period_raw = clean_text(row.value("period_end"))
+    if exchange == "BSE" and _BSE_QUARTER_CODE_RE.fullmatch(period_raw.upper()):
+        period_end = _bse_quarter_end(period_raw)
+    else:
+        period_end = parse_source_date(period_raw, field="period ended")
+    scope_raw = clean_text(row.value("scope"))
+    # The current browser CSV is an announcement index. It exposes the period
+    # and available XBRL links but does not publish a scope column. Treat it as
+    # a standalone discovery signal; the subsequent company-page/result
+    # validation remains authoritative for accepted financial data.
+    scope = normalize_reporting_scope(scope_raw or "standalone")
     broadcast_raw = clean_text(row.value("broadcast")) or clean_text(
         row.value("revised_broadcast")
     )
@@ -270,9 +285,8 @@ def _parse_bse_integrated(
     for row in table.rows:
         try:
             period_end = _bse_quarter_end(row.value("quarter_code"))
-            if result_period is not None and period_from_date(period_end) != result_period:
-                excluded += 1
-                continue
+            # Query period is a priority hint. Source fiscal-quarter metadata
+            # remains authoritative for newly published late/revised filings.
             scopes: list[str] = []
             if clean_text(row.value("standalone_content")):
                 scopes.append("standalone")
@@ -301,8 +315,10 @@ def _parse_bse_integrated(
                 seen[filing.filing_key] = row.row_position
                 filings.append(filing)
         except SourceRowError as exc:
-            if result_period is not None and exc.reason_code == "unsupported_period_code":
-                excluded += 1
+            nonquarter=re.fullmatch(r"(?:[JSDM]C|[SM]H|[SD]N)(\d{4})-(\d{4})",clean_text(row.value("quarter_code")).upper())
+            if (exc.reason_code == "unsupported_period_code" and nonquarter
+                    and int(nonquarter[2])==int(nonquarter[1])+1):
+                excluded += 1  # Explicit non-quarterly records, never converted into quarters.
                 continue
             rejected.append(
                 RejectedRow(row.row_position, exc.reason_code, exc.detail, row.cells)
@@ -337,7 +353,15 @@ def parse_result_filings(
     if dataset == NSE_FINANCIAL_RESULTS:
         required, optional, exchange = _NSE_REQUIRED, _NSE_OPTIONAL, "NSE"
     else:
-        required, optional, exchange = _BSE_REQUIRED, _BSE_OPTIONAL, "BSE"
+        current_bse_export = (
+            not is_json_payload(content)
+            and b"SECURITY CODE" in content.upper()
+            and b"AUDITED/UNAUDITE" in content.upper()
+        )
+        required, optional, exchange = (
+            (_BSE_CURRENT_EXPORT_REQUIRED, _BSE_OPTIONAL, "BSE")
+            if current_bse_export else (_BSE_REQUIRED, _BSE_OPTIONAL, "BSE")
+        )
     # Both exchanges publish these feeds as JSON records and as delimited
     # exports; the shape is read from the bytes, never assumed from the dataset.
     reader = read_json_records if is_json_payload(content) else read_delimited
@@ -353,9 +377,8 @@ def parse_result_filings(
         except SourceRowError as exc:
             rejected.append(RejectedRow(row.row_position, exc.reason_code, exc.detail, row.cells))
             continue
-        if result_period is not None and filing.result_period != result_period:
-            excluded += 1
-            continue
+        # Query priority is not an acceptance filter on either exchange.
+        # Preserve actual source periods and publication times for late/revised work.
         previous = seen.get(filing.filing_key)
         if previous is not None:
             rejected.append(

@@ -1,0 +1,23 @@
+{
+  "returncode": 2,
+  "command": [
+    "/Users/mohamedfadhi/.cache/uv/archive-v0/-WyGD_mChAFVX11K/bin/python",
+    "-B",
+    "-m",
+    "pytest",
+    "-p",
+    "no:cacheprovider",
+    "--basetemp",
+    "/var/folders/z4/798rx5nd4f5fv98497lf3pvc0000gn/T/host-export-regressions-wgxe7jth/pytest",
+    "ops/host/test_acquisition_lifecycle.py",
+    "ops/host/test_acquisition_observations.py",
+    "ops/host/test_acquisition_terminal.py",
+    "-k",
+    "not shell_shortcuts and not shell_legacy and not new_cli_routes",
+    "-q"
+  ],
+  "scope": "Three host test modules; shell subprocess tests explicitly deselected because runner denies non-Python subprocesses; bash syntax checked separately",
+  "network": "denied",
+  "sqlite": "memory or dedicated temporary fixtures only",
+  "summary": "9 deselected, 1 error in 0.09s"
+}

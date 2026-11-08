@@ -1,0 +1,50 @@
+{
+  "source_mount": "/source",
+  "production_write_mount": false,
+  "network_requests": 0,
+  "application_imports": false,
+  "files": [
+    {
+      "snapshot_id": 266,
+      "blob_id": 128211,
+      "source_path": "/source/snapshots/exchange/NSE/nse_financial_results/2026-10-01/cfbc3d1f66e23620e1b0d1ec43b0b0409c25557d6e02f533b78e9f1babf42e82.csv",
+      "expected_sha256": "cfbc3d1f66e23620e1b0d1ec43b0b0409c25557d6e02f533b78e9f1babf42e82",
+      "expected_bytes": 263,
+      "actual_sha256": "cfbc3d1f66e23620e1b0d1ec43b0b0409c25557d6e02f533b78e9f1babf42e82",
+      "actual_bytes": 263,
+      "source_stat_before": [
+        1322891,
+        263,
+        1790863203763032805
+      ],
+      "source_stat_after": [
+        1322891,
+        263,
+        1790863203763032805
+      ],
+      "status": "HASH_VERIFIED_ORIGINAL",
+      "retained_file": "originals/cfbc3d1f66e23620e1b0d1ec43b0b0409c25557d6e02f533b78e9f1babf42e82.csv"
+    },
+    {
+      "snapshot_id": 261,
+      "blob_id": 141470,
+      "source_path": "/source/snapshots/exchange/NSE/nse_financial_results/2026-10-03/dfa299c4a21d31bc29aacc51b50cd516e92d059c6aa1c74d2d69330782e4f869.csv",
+      "expected_sha256": "dfa299c4a21d31bc29aacc51b50cd516e92d059c6aa1c74d2d69330782e4f869",
+      "expected_bytes": 1611721,
+      "actual_sha256": "dfa299c4a21d31bc29aacc51b50cd516e92d059c6aa1c74d2d69330782e4f869",
+      "actual_bytes": 1611721,
+      "source_stat_before": [
+        1594515,
+        1611721,
+        1791036285250943336
+      ],
+      "source_stat_after": [
+        1594515,
+        1611721,
+        1791036285250943336
+      ],
+      "status": "HASH_VERIFIED_ORIGINAL",
+      "retained_file": "originals/dfa299c4a21d31bc29aacc51b50cd516e92d059c6aa1c74d2d69330782e4f869.csv"
+    }
+  ]
+}

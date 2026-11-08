@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/proof/observe.py", line 51, in <module>
+    if row is not None or other_claims or before!=baseline['db_before']:raise RuntimeError('Control key/table or DB identity differs before writes')
+                                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: Control key/table or DB identity differs before writes

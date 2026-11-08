@@ -1,0 +1,13 @@
+{
+  "root_commit": "44d306254a0230f6abfbbcad81a3f248be8d8a2e",
+  "tip_commit": "272a1da16ab56afee737e3e83efb3cce32b0f8f1",
+  "commit_count": 2,
+  "root_commit_parents": "",
+  "remote_names": [],
+  "status": "",
+  "fsck": "",
+  "alternates_present": false,
+  "tracked_files": 725,
+  "old_git_copied": false,
+  "remote_operations_performed": false
+}

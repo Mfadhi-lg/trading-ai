@@ -1,0 +1,65 @@
+# Byte-compiled files
+__pycache__/
+*.py[cod]
+
+# Distribution / packaging
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+*.egg-info/
+dist/*
+build/*
+tradingview_scraper.egg-info/*
+
+# IDEs and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Pytest
+.cache
+
+# Coverage
+coverage.xml
+*.cover
+*.py,cover
+
+# Mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# Pylint
+pylint-report.txt
+pylint-output.txt
+
+# Other
+*.log
+*.pot
+*.pyc
+/export/*.json
+
+# Ignore test script
+*test.py
+
+# Ignore running script
+run.py
+
+# Docs
+.DS_Store
+docs/_build/
+docs/_static/
+docs/_templates
+
+# Environment variables file
+.env

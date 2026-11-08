@@ -1,8 +1,8 @@
 {
   "accepted_versions": [
     {
-      "manifest_version": "1.3.0",
-      "parser_version": "1.0.0",
+      "manifest_version": "1.4.0",
+      "parser_version": "1.1.0",
       "period": "not_applicable",
       "scope": "consolidated",
       "sha256": "92fa4d723e5efe3000277d38d07a71cd6fbe96dbeec882da2f76d77cfe6a61de",
@@ -22,7 +22,7 @@
       "action": "accepted",
       "current": true,
       "failure_rules": [],
-      "manifest_version": "1.3.0",
+      "manifest_version": "1.4.0",
       "normalized_counts": {
         "company_metric_observations": 9,
         "company_profile_links": 4,
@@ -34,7 +34,7 @@
         "shareholding_observations": 115
       },
       "parse_status": "ok",
-      "parser_version": "1.0.0",
+      "parser_version": "1.1.0",
       "result": "accepted",
       "section_statuses": {
         "balance_sheet": "ok",
@@ -70,7 +70,7 @@
       "failure_rules": [
         "known_document_link_types"
       ],
-      "manifest_version": "1.3.0",
+      "manifest_version": "1.4.0",
       "normalized_counts": {
         "company_metric_observations": 9,
         "company_profile_links": 4,
@@ -82,7 +82,7 @@
         "shareholding_observations": 115
       },
       "parse_status": "ok",
-      "parser_version": "1.0.0",
+      "parser_version": "1.1.0",
       "result": "manual_review",
       "section_statuses": {
         "balance_sheet": "ok",

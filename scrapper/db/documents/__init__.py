@@ -1,0 +1,1 @@
+"""Grouped document persistence repositories."""

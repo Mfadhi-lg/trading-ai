@@ -1,0 +1,8 @@
+{
+  "environment": "production",
+  "path": "/data",
+  "release_id": "c28.1-ar012-20261007",
+  "roles": [
+    "store"
+  ]
+}

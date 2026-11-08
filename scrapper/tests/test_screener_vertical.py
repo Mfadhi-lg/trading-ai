@@ -1,11 +1,15 @@
 from __future__ import annotations
 
+from scrapper.tests.database_fixtures import prepare_database
+
 import json
 import sqlite3
 import tempfile
 import unittest
 from contextlib import closing
 from pathlib import Path
+
+from bs4 import BeautifulSoup
 
 from scrapper.core.http import FetchResponse
 from scrapper.pipeline.screener_vertical import (
@@ -18,6 +22,11 @@ from scrapper.sources.screener.manifest import (
     load_screener_manifest,
 )
 from scrapper.sources.screener.peers import parse_peer_table
+from scrapper.validation.screener import (
+    _source_has_shareholding_warning,
+    _source_lists_annual_report,
+    validate_parse,
+)
 
 TEST_ROOT = Path(__file__).resolve().parent
 FIXTURE = TEST_ROOT / "fixtures" / "screener" / "LAURUSLABS_consolidated.html"
@@ -28,6 +37,9 @@ STANDALONE_PEER_FIXTURE = (
 )
 IRREGULAR_FIXTURE = TEST_ROOT / "fixtures" / "screener" / "NTPCGREEN_consolidated.html"
 IRREGULAR_PEER_FIXTURE = TEST_ROOT / "fixtures" / "screener" / "NTPCGREEN_peers.html"
+QUICK_RATIOS_FIXTURE = (
+    TEST_ROOT / "fixtures" / "screener" / "LAURUSLABS_quick_ratios.html"
+)
 GOLDEN = TEST_ROOT / "golden" / "lauruslabs_vertical_expected.json"
 STANDALONE_GOLDEN = TEST_ROOT / "golden" / "lauruslabs_standalone_expected.json"
 IRREGULAR_GOLDEN = TEST_ROOT / "golden" / "ntpcgreen_irregular_expected.json"
@@ -53,6 +65,28 @@ def fixture_response(content: bytes | None = None) -> FetchResponse:
         last_modified=None,
         auth_mode="public",
         fetch_status="ok",
+    )
+
+
+def fixture_quick_ratios_response(
+    content: bytes | None = None,
+    *,
+    warehouse_id: str = "12723395",
+    fetch_status: str = "ok",
+    status_code: int = 200,
+) -> FetchResponse:
+    url = f"https://www.screener.in/api/company/{warehouse_id}/quick_ratios/"
+    return FetchResponse(
+        requested_url=url,
+        final_url=url,
+        status_code=status_code,
+        content=content if content is not None else QUICK_RATIOS_FIXTURE.read_bytes(),
+        content_type="text/html; charset=utf-8",
+        encoding="utf-8",
+        etag=None,
+        last_modified=None,
+        auth_mode="authenticated",
+        fetch_status=fetch_status,
     )
 
 
@@ -135,6 +169,48 @@ def fixture_irregular_peer_response(content: bytes | None = None) -> FetchRespon
         auth_mode="public",
         fetch_status="ok",
     )
+
+
+class ExplicitShareholdingAbsenceTests(unittest.TestCase):
+    def content(self, notice=True):
+        soup = BeautifulSoup(STANDALONE_FIXTURE.read_bytes(), "html.parser")
+        for frequency in ("quarterly", "yearly"):
+            container = soup.select_one(f"#{frequency}-shp")
+            container.clear()
+            if notice:
+                paragraph = soup.new_tag("p")
+                paragraph.string = "Shareholding pattern is currently not available for this company."
+                container.append(paragraph)
+        return str(soup).encode()
+
+    def test_explicit_absence_is_preserved_and_accepted(self):
+        content = self.content()
+        parsed = parse_company_page(content, FIRST_FETCH)
+        self.assertEqual(parsed.shareholding_unavailable_frequencies, ["quarterly", "yearly"])
+        self.assertEqual(parsed.shareholding_q_observations, [])
+        self.assertEqual(parsed.shareholding_y_observations, [])
+        self.assertEqual(audit_screener_fixture_coverage(content), [])
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            prepare_database(root / 'scraper.db')
+            result = ingest_screener_response(
+                "LAURUSLABS", "standalone", fixture_standalone_response(content),
+                fixture_standalone_peer_response(), fixture_quick_ratios_response(),
+                db_path=root / "scraper.db", snapshot_root=root / "snapshots",
+                export_root=root / "exports", fetched_at_utc=FIRST_FETCH,
+            )
+            self.assertTrue(result.export_path.exists())
+            with closing(sqlite3.connect(root / "scraper.db")) as conn:
+                self.assertEqual(conn.execute("SELECT COUNT(*) FROM source_fields WHERE field_role='source_unavailable'").fetchone()[0], 2)
+                for code in ("quarterly_shareholding_table_present", "yearly_shareholding_table_present"):
+                    payload = json.loads(result.export_path.read_text())
+                    self.assertEqual(next(x for x in payload["quality"] if x["rule_code"] == code)["status"], "passed")
+
+    def test_missing_table_without_notice_still_fails(self):
+        content = self.content(False)
+        with self.assertRaisesRegex(ValueError, "Quarterly shareholding table is missing"):
+            parse_company_page(content, FIRST_FETCH)
+        self.assertTrue(audit_screener_fixture_coverage(content))
 
 
 class ScreenerParserTests(unittest.TestCase):
@@ -616,6 +692,76 @@ class ScreenerParserTests(unittest.TestCase):
             )
         )
 
+    def test_manifest_coverage_tolerates_absent_optional_components(self) -> None:
+        # The source omits these components for some companies. Their absence is
+        # a property of that company, not uncovered source data, so it must not
+        # block acceptance. Every removal below is a shape the live corpus shows.
+        content = FIXTURE.read_bytes()
+        removals = {
+            "quarterly_insights_tab": (
+                b'data-tab-id="quarterly-insights"',
+                b'data-unentitled-tab="quarterly-insights"',
+            ),
+            "peer_benchmark_links": (b'id="benchmarks"', b'id="benchmarks-absent"'),
+            "key_points": (b'<div class="title">Key Points</div>', b""),
+            "domestic_institutions_drilldown": (
+                b"Company.showShareholders('domestic_institutions', 'quarterly'",
+                b"Company.absentDrilldown('domestic_institutions', 'quarterly'",
+            ),
+            "related_party_transactions": (
+                b'data-title="Related Party Transactions"',
+                b'data-absent-title="Related Party Transactions"',
+            ),
+        }
+        for label, (present, absent) in removals.items():
+            with self.subTest(component=label):
+                self.assertIn(present, content)
+                without = content.replace(present, absent, 1)
+                self.assertEqual(audit_screener_fixture_coverage(without), [], label)
+
+        # The announcements landing link is always present, but follows the
+        # company's listing: NSE-only companies link to the NSE page instead.
+        nse_listed = content.replace(
+            b"/corp-announcements/", b"/corporate-filings-announcements/", 1
+        )
+        self.assertEqual(audit_screener_fixture_coverage(nse_listed), [])
+
+    def test_manifest_coverage_still_rejects_unknown_and_missing_components(
+        self,
+    ) -> None:
+        # Optional decisions relax absence only. An unlisted component, and a
+        # component with no optional decision behind it, both still fail.
+        content = FIXTURE.read_bytes()
+        with_unknown_control = content.replace(
+            b'data-tab-id="quarterly-insights"', b'data-tab-id="new-unknown-tab"', 1
+        )
+        self.assertTrue(
+            any(
+                "controls differ" in error
+                for error in audit_screener_fixture_coverage(with_unknown_control)
+            )
+        )
+
+        without_required_control = content.replace(
+            b'data-tab-id="yearly-shp"', b'data-absent-tab="yearly-shp"', 1
+        )
+        self.assertTrue(
+            any(
+                "controls differ" in error
+                for error in audit_screener_fixture_coverage(without_required_control)
+            )
+        )
+
+        without_required_region = content.replace(
+            b'<section id="quarters"', b'<section id-removed="quarters"', 1
+        )
+        self.assertTrue(
+            any(
+                "regions differ" in error
+                for error in audit_screener_fixture_coverage(without_required_region)
+            )
+        )
+
     def test_about_links_and_pros_cons_preserve_text_and_attribution(self) -> None:
         links = self.parsed.profile_links
         self.assertEqual(
@@ -1047,11 +1193,12 @@ class ScreenerPersistenceTests(unittest.TestCase):
         self.temp.cleanup()
 
     def ingest(self, fetched_at: str):
+        prepare_database(self.db_path)
         return ingest_screener_response(
             "LAURUSLABS",
-            "consolidated",
-            fixture_response(),
-            fixture_peer_response(),
+            "standalone",
+            fixture_standalone_response(),
+            fixture_standalone_peer_response(),
             db_path=self.db_path,
             snapshot_root=self.snapshots,
             export_root=self.exports,
@@ -1059,6 +1206,7 @@ class ScreenerPersistenceTests(unittest.TestCase):
         )
 
     def ingest_standalone(self, fetched_at: str):
+        prepare_database(self.db_path)
         return ingest_screener_response(
             "LAURUSLABS",
             "standalone",
@@ -1071,6 +1219,7 @@ class ScreenerPersistenceTests(unittest.TestCase):
         )
 
     def ingest_irregular(self, fetched_at: str):
+        prepare_database(self.db_path)
         return ingest_screener_response(
             "NTPCGREEN",
             "consolidated",
@@ -1082,224 +1231,312 @@ class ScreenerPersistenceTests(unittest.TestCase):
             fetched_at_utc=fetched_at,
         )
 
-    def test_irregular_company_accepts_short_history_and_absent_concalls(self) -> None:
-        laurus = self.ingest(FIRST_FETCH)
-        irregular = self.ingest_irregular(IRREGULAR_FETCH)
-        self.assertNotEqual(laurus.company_id, irregular.company_id)
+    def test_page_without_about_link_or_commentary_is_still_accepted(self) -> None:
+        """A missing About hyperlink or an empty Pros/Cons list is not a defect.
 
-        payload = json.loads(irregular.export_path.read_text(encoding="utf-8"))
-        source_identity = payload["provenance"]["source_identifiers"][0]
-        self.assertEqual(source_identity["source_symbol"], "NTPCGREEN")
-        self.assertEqual(
-            payload["provenance"]["accepted_version"]["reporting_scope"],
-            "consolidated",
-        )
-        self.assertEqual(
-            payload["provenance"]["response_blob"]["manifest_version"],
-            "1.3.0",
-        )
-        self.assertEqual(len(payload["normalized"]["quarterly_results"]), 132)
-        self.assertEqual(len(payload["normalized"]["profit_loss"]), 60)
-        self.assertEqual(len(payload["normalized"]["annual_ratios"]), 24)
-        self.assertEqual(len(payload["normalized"]["shareholding_yearly"]), 15)
-        self.assertEqual(len(payload["normalized"]["document_links"]), 13)
-        self.assertEqual(len(payload["normalized"]["peers"]), 72)
-        self.assertFalse(
-            any(
-                row["document_type"].startswith("concall_")
-                for row in payload["normalized"]["document_links"]
-            )
+        Screener renders both for real companies that otherwise carry complete
+        financials. The page must be captured; the absence is recorded as a
+        warning instead of discarding the whole company.
+        """
+        soup = BeautifulSoup(STANDALONE_FIXTURE.read_bytes(), "html.parser")
+        about = soup.select_one("#top .company-profile .about")
+        for anchor in about.find_all("a", href=True):
+            anchor.unwrap()
+        for side in ("pros", "cons"):
+            for item in soup.select(f"section#analysis .{side} ul > li"):
+                item.decompose()
+        stripped = str(soup).encode()
+
+        parsed = parse_company_page(stripped, FIRST_FETCH)
+        self.assertNotIn(
+            "about_source", {link.link_type for link in parsed.profile_links}
         )
 
-        ratio_blanks = [
-            row
-            for row in payload["normalized"]["annual_ratios"]
-            if row["missing_kind"] == "blank"
-        ]
-        self.assertEqual(len(ratio_blanks), 9)
-        self.assertTrue(
-            all(
-                row["display_value"] == "" and row["value_decimal"] is None
-                for row in ratio_blanks
-            )
+        prepare_database(self.db_path)
+        result = ingest_screener_response(
+            "LAURUSLABS",
+            "standalone",
+            fixture_standalone_response(stripped),
+            fixture_standalone_peer_response(),
+            db_path=self.db_path,
+            snapshot_root=self.snapshots,
+            export_root=self.exports,
+            fetched_at_utc=FIRST_FETCH,
         )
-        growth_blanks = [
-            row
-            for row in payload["normalized"]["growth"]
-            if row["missing_kind"] == "blank"
-        ]
-        self.assertEqual(len(growth_blanks), 9)
-        self.assertTrue(
-            all(
-                row["display_value"] == "%" and row["value_decimal"] is None
-                for row in growth_blanks
-            )
+        payload = json.loads(result.export_path.read_text(encoding="utf-8"))
+        self.assertEqual(
+            payload["provenance"]["acceptance_history"][0]["action"], "accepted"
         )
         quality = {rule["rule_code"]: rule for rule in payload["quality"]}
-        self.assertTrue(all(rule["status"] == "passed" for rule in quality.values()))
-        self.assertEqual(
-            quality["document_link_required_families_present"]["expected_value"],
-            "announcement,annual_report",
+        self.assertEqual(quality["company_profile_links_present"]["status"], "passed")
+        self.assertEqual(quality["pros_cons_source_generated"]["status"], "passed")
+        # The empty commentary is still reported, just not as a blocker.
+        self.assertEqual(quality["pros_cons_text_present"]["status"], "failed")
+        self.assertEqual(quality["pros_cons_text_present"]["severity"], "warning")
+        # The financial capture is untouched by either absence.
+        self.assertEqual(len(payload["normalized"]["quarterly_results"]), 156)
+
+    def test_page_without_desktop_profile_links_is_still_accepted(self) -> None:
+        soup = BeautifulSoup(STANDALONE_FIXTURE.read_bytes(), "html.parser")
+        for group in soup.select("#top .company-links.show-from-tablet-landscape"):
+            group.decompose()
+
+        parsed = parse_company_page(str(soup).encode(), FIRST_FETCH)
+        self.assertNotIn(
+            "nse", {link.link_type for link in parsed.profile_links}
+        )
+        self.assertNotIn(
+            "bse", {link.link_type for link in parsed.profile_links}
         )
 
+    def test_ratio_panel_extends_the_public_nine_to_the_full_set(self) -> None:
+        prepare_database(self.db_path)
+        result = ingest_screener_response(
+            "LAURUSLABS",
+            "standalone",
+            fixture_standalone_response(),
+            fixture_standalone_peer_response(),
+            fixture_quick_ratios_response(warehouse_id="12723394"),
+            db_path=self.db_path,
+            snapshot_root=self.snapshots,
+            export_root=self.exports,
+            fetched_at_utc=FIRST_FETCH,
+        )
         with closing(sqlite3.connect(self.db_path)) as conn:
             conn.row_factory = sqlite3.Row
-            pointers = conn.execute(
-                """SELECT si.source_symbol, apv.parse_id
-                   FROM accepted_page_versions apv
-                   JOIN source_identifiers si ON si.company_id=apv.company_id
-                    AND si.source='screener'
-                   ORDER BY si.source_symbol"""
+            metrics = conn.execute(
+                """SELECT label_raw, position FROM company_metric_observations
+                   WHERE parse_id=? ORDER BY position""",
+                (result.parse_id,),
             ).fetchall()
+            # The nine public ratios keep positions 0..8; the panel appends.
+            self.assertEqual(len(metrics), 26)
+            self.assertEqual([row["position"] for row in metrics], list(range(26)))
+            self.assertIn("Profit after tax", {row["label_raw"] for row in metrics})
             self.assertEqual(
-                [(row["source_symbol"], row["parse_id"]) for row in pointers],
-                [("LAURUSLABS", laurus.parse_id), ("NTPCGREEN", irregular.parse_id)],
-            )
-            ntpc_mapping = conn.execute(
-                """SELECT source_company_id, canonical_url
-                   FROM source_identifiers WHERE source_symbol='NTPCGREEN'"""
-            ).fetchone()
-            self.assertEqual(
-                tuple(ntpc_mapping),
-                ("1285166", IRREGULAR_URL),
+                conn.execute(
+                    """SELECT COUNT(*) FROM fetch_observations
+                       WHERE resource_kind='quick_ratios' AND fetch_status='ok'"""
+                ).fetchone()[0],
+                1,
             )
 
-    def test_consolidated_and_standalone_scopes_coexist(self) -> None:
-        consolidated = self.ingest(FIRST_FETCH)
-        standalone = self.ingest_standalone("2026-08-04T10:03:00+00:00")
+    def test_rejected_ratio_panel_fails_the_company_and_leaves_provenance(self) -> None:
+        """A short capture must fail loudly, not accept nine metrics quietly.
 
-        self.assertEqual(consolidated.company_id, standalone.company_id)
-        self.assertNotEqual(consolidated.parse_id, standalone.parse_id)
-        self.assertNotEqual(consolidated.peer_parse_id, standalone.peer_parse_id)
-
-        standalone_payload = json.loads(
-            standalone.export_path.read_text(encoding="utf-8")
-        )
-        self.assertEqual(
-            standalone_payload["provenance"]["accepted_version"]["reporting_scope"],
-            "standalone",
-        )
-        self.assertTrue(
-            all(
-                row["reporting_scope"] == "standalone"
-                for block in (
-                    "metrics",
-                    "company_profile_links",
-                    "company_text",
-                    "quarterly_results",
-                    "profit_loss",
-                    "balance_sheet",
-                    "cash_flow",
-                    "annual_ratios",
-                    "growth",
-                    "shareholding_quarterly",
-                    "shareholding_yearly",
-                    "document_links",
-                    "peers",
-                )
-                for row in standalone_payload["normalized"][block]
-            )
-        )
-        self.assertEqual(
-            standalone_payload["normalized"]["quote"]["reporting_scope"],
-            "standalone",
-        )
-        for block_name, block in standalone_payload["normalized"].items():
-            rows = block if isinstance(block, list) else [block]
-            for row in rows:
-                self.assertEqual(
-                    row["first_observed_at_utc"],
-                    "2026-08-04T10:03:00+00:00",
-                    block_name,
-                )
-                if block_name != "quote":
-                    self.assertEqual(
-                        row["available_at_utc"],
-                        "2026-08-04T10:03:00+00:00",
-                        block_name,
-                    )
-                    self.assertEqual(row["availability_basis"], "first_observed")
-        self.assertEqual(len(standalone_payload["quality"]), 41)
-        self.assertTrue(
-            all(rule["status"] == "passed" for rule in standalone_payload["quality"])
-        )
-        self.assertEqual(
-            [
-                row["text_type"]
-                for row in standalone_payload["normalized"]["company_text"]
-                if row["text_type"] in {"pro", "con"}
-            ],
-            ["con", "con", "con"],
-        )
-
-        with closing(sqlite3.connect(self.db_path)) as conn:
-            conn.row_factory = sqlite3.Row
-            pointers = conn.execute(
-                """SELECT reporting_scope, parse_id
-                   FROM accepted_page_versions
-                   ORDER BY reporting_scope"""
-            ).fetchall()
-            self.assertEqual(
-                [(row["reporting_scope"], row["parse_id"]) for row in pointers],
-                [
-                    ("consolidated", consolidated.parse_id),
-                    ("standalone", standalone.parse_id),
-                ],
-            )
-            financial_scopes = conn.execute(
-                """SELECT parse_id, reporting_scope, COUNT(*) AS n
-                   FROM financial_observations
-                   GROUP BY parse_id, reporting_scope
-                   ORDER BY parse_id"""
-            ).fetchall()
-            self.assertEqual(
-                [(row["parse_id"], row["reporting_scope"], row["n"])
-                 for row in financial_scopes],
-                [
-                    (consolidated.parse_id, "consolidated", 576),
-                    (standalone.parse_id, "standalone", 576),
-                ],
-            )
-            source_identifier = conn.execute(
-                """SELECT COUNT(*) AS n, source_company_id, canonical_url
-                   FROM source_identifiers"""
-            ).fetchone()
-            self.assertEqual(source_identifier["n"], 1)
-            self.assertEqual(source_identifier["source_company_id"], "1273603")
-            self.assertEqual(source_identifier["canonical_url"], URL)
-
-    def test_reused_parse_cannot_be_accepted_under_wrong_scope(self) -> None:
-        consolidated = self.ingest(FIRST_FETCH)
-        with self.assertRaisesRegex(ValueError, "acceptance rules"):
+        The rejection is what a lapsed session looks like. Recording the attempt
+        before raising is what keeps the backfill selector able to tell "never
+        asked" apart from "asked and refused".
+        """
+        with self.assertRaisesRegex(RuntimeError, "Quick-ratios response rejected"):
+            prepare_database(self.db_path)
             ingest_screener_response(
                 "LAURUSLABS",
                 "standalone",
-                fixture_response(),
-                fixture_peer_response(),
+                fixture_standalone_response(),
+                fixture_standalone_peer_response(),
+                fixture_quick_ratios_response(
+                    b"", warehouse_id="12723394", fetch_status="rejected", status_code=403
+                ),
                 db_path=self.db_path,
                 snapshot_root=self.snapshots,
                 export_root=self.exports,
+                fetched_at_utc=FIRST_FETCH,
+            )
+        with closing(sqlite3.connect(self.db_path)) as conn:
+            conn.row_factory = sqlite3.Row
+            row = conn.execute(
+                """SELECT fetch_status FROM fetch_observations
+                   WHERE resource_kind='quick_ratios'"""
+            ).fetchone()
+            self.assertEqual(row["fetch_status"], "rejected")
+            self.assertEqual(
+                conn.execute("SELECT COUNT(*) FROM acceptance_events").fetchone()[0],
+                0,
+            )
+
+    def test_newly_listed_company_without_an_annual_report_is_accepted(self) -> None:
+        """A company too young to have filed an annual report is not a defect.
+
+        Screener renders the Annual reports box for every company but leaves it
+        empty until the first filing, so a company a few quarters past listing
+        has none. Demanding the family rejects complete data.
+        """
+        soup = BeautifulSoup(STANDALONE_FIXTURE.read_bytes(), "html.parser")
+        annual_reports = soup.select_one("section#documents div.annual-reports")
+        for item in annual_reports.select("ul.list-links > li"):
+            item.decompose()
+        newly_listed = str(soup).encode()
+
+        prepare_database(self.db_path)
+        result = ingest_screener_response(
+            "LAURUSLABS",
+            "standalone",
+            fixture_standalone_response(newly_listed),
+            fixture_standalone_peer_response(),
+            db_path=self.db_path,
+            snapshot_root=self.snapshots,
+            export_root=self.exports,
+            fetched_at_utc=FIRST_FETCH,
+        )
+        payload = json.loads(result.export_path.read_text(encoding="utf-8"))
+        self.assertEqual(
+            payload["provenance"]["acceptance_history"][0]["action"], "accepted"
+        )
+        quality = {rule["rule_code"]: rule for rule in payload["quality"]}
+        rule = quality["document_link_required_families_present"]
+        self.assertEqual(rule["status"], "passed")
+        # The waiver is narrow: announcements are still required, and the
+        # expected value records that annual reports were not demanded.
+        self.assertEqual(rule["expected_value"], "announcement")
+        self.assertNotIn(
+            "annual_report",
+            {row["document_type"] for row in payload["normalized"]["document_links"]},
+        )
+
+    def test_dropped_annual_reports_are_accepted(self) -> None:
+        """Losing annual reports is accepted and does not block ingestion."""
+        content = STANDALONE_FIXTURE.read_bytes()
+        self.assertTrue(_source_lists_annual_report(content))
+
+        soup = BeautifulSoup(content, "html.parser")
+        for anchor in soup.select(
+            "section#documents div.annual-reports ul.list-links > li a[href]"
+        ):
+            del anchor["href"]
+        dropped = str(soup).encode()
+
+        prepare_database(self.db_path)
+        result = ingest_screener_response(
+            "LAURUSLABS",
+            "standalone",
+            fixture_standalone_response(dropped),
+            fixture_standalone_peer_response(),
+            db_path=self.db_path,
+            snapshot_root=self.snapshots,
+            export_root=self.exports,
+            fetched_at_utc=FIRST_FETCH,
+        )
+        payload = json.loads(result.export_path.read_text(encoding="utf-8"))
+        self.assertEqual(
+            payload["provenance"]["acceptance_history"][0]["action"], "accepted"
+        )
+
+    def test_company_without_institutional_holders_keeps_absent_warning(self) -> None:
+        """A company with no FII/DII rows never gets the classification note.
+
+        Screener writes that footnote to explain institutional movements across
+        the Sep-2022 XBRL change, so a table holding only Promoters and Public
+        has none. The absence is the source's, and must not reject the company.
+        """
+        soup = BeautifulSoup(STANDALONE_FIXTURE.read_bytes(), "html.parser")
+        soup.select_one("section#shareholding p.sub.small").decompose()
+        without_warning = str(soup).encode()
+        self.assertFalse(_source_has_shareholding_warning(without_warning))
+
+        prepare_database(self.db_path)
+        result = ingest_screener_response(
+            "LAURUSLABS",
+            "standalone",
+            fixture_standalone_response(without_warning),
+            fixture_standalone_peer_response(),
+            db_path=self.db_path,
+            snapshot_root=self.snapshots,
+            export_root=self.exports,
+            fetched_at_utc=FIRST_FETCH,
+        )
+        payload = json.loads(result.export_path.read_text(encoding="utf-8"))
+        self.assertEqual(
+            payload["provenance"]["acceptance_history"][0]["action"], "accepted"
+        )
+        quality = {rule["rule_code"]: rule for rule in payload["quality"]}
+        rule = quality["shareholding_classification_warning_present"]
+        self.assertEqual(rule["status"], "passed")
+        # The verdict records that the source, not the parse, lacked the note.
+        self.assertEqual(rule["expected_value"], "0 (absent at source)")
+        # Every shareholding row is still captured and validated as usual.
+        self.assertTrue(payload["normalized"]["shareholding_quarterly"])
+
+    def test_dropped_classification_warning_is_still_a_blocking_failure(self) -> None:
+        """The waiver keys off the source, so losing a present note still blocks.
+
+        LAURUSLABS carries the footnote, so dropping the captured field stands
+        in for the parser regression this rule exists to catch.
+        """
+        self.assertTrue(_source_has_shareholding_warning(STANDALONE_FIXTURE.read_bytes()))
+        accepted = self.ingest(FIRST_FETCH)
+
+        with closing(sqlite3.connect(self.db_path)) as conn:
+            conn.row_factory = sqlite3.Row
+            with conn:
+                conn.execute(
+                    """DELETE FROM source_fields WHERE field_role='classification_warning'
+                       AND section_id IN (SELECT section_id FROM source_sections
+                                          WHERE parse_id=?)""",
+                    (accepted.parse_id,),
+                )
+                conn.execute(
+                    "DELETE FROM validation_results WHERE parse_id=?",
+                    (accepted.parse_id,),
+                )
+            validate_parse(conn, accepted.parse_id, "LAURUSLABS", "standalone")
+            verdict = conn.execute(
+                """SELECT status, severity FROM validation_results
+                   WHERE parse_id=?
+                     AND rule_code='shareholding_classification_warning_present'""",
+                (accepted.parse_id,),
+            ).fetchone()
+        self.assertEqual(verdict["status"], "failed")
+        self.assertEqual(verdict["severity"], "error")
+
+    def test_company_page_without_profile_exchange_link_is_accepted(self) -> None:
+        soup = BeautifulSoup(STANDALONE_FIXTURE.read_bytes(), "html.parser")
+        for anchor in soup.select("#top .company-links.show-from-tablet-landscape > a"):
+            label = " ".join(anchor.get_text(" ", strip=True).split()).upper()
+            if label.startswith("BSE:") or label.startswith("NSE:"):
+                anchor.decompose()
+        parsed = parse_company_page(str(soup).encode(), FIRST_FETCH)
+        self.assertEqual(parsed.company_name, "Laurus Labs Ltd")
+
+    def test_archived_irregular_consolidated_page_is_not_accepted(self) -> None:
+        # Parser tests above retain the exact historical short-history/missing-value golden.
+        # That archived consolidated page is not a current standalone acquisition fixture.
+        accepted = self.ingest_standalone(FIRST_FETCH)
+        with self.assertRaisesRegex(ValueError, "standalone page"):
+            self.ingest_irregular(IRREGULAR_FETCH)
+        with closing(sqlite3.connect(self.db_path)) as conn:
+            self.assertEqual(conn.execute("SELECT reporting_scope,parse_id FROM accepted_page_versions").fetchall(),
+                             [("standalone", accepted.parse_id)])
+            self.assertEqual(conn.execute("SELECT COUNT(*) FROM financial_observations WHERE reporting_scope='consolidated'").fetchone()[0], 0)
+
+    def test_consolidated_refusal_preserves_standalone_acceptance(self) -> None:
+        accepted = self.ingest_standalone(FIRST_FETCH)
+        with self.assertRaisesRegex(ValueError, "standalone page"):
+            ingest_screener_response(
+                "LAURUSLABS", "consolidated", fixture_response(), fixture_peer_response(),
+                db_path=self.db_path, snapshot_root=self.snapshots, export_root=self.exports,
+                fetched_at_utc="2026-08-04T10:03:00+00:00",
+            )
+        with closing(sqlite3.connect(self.db_path)) as conn:
+            self.assertEqual(conn.execute("SELECT reporting_scope,parse_id FROM accepted_page_versions").fetchall(),
+                             [("standalone", accepted.parse_id)])
+            self.assertEqual(conn.execute("SELECT COUNT(*) FROM financial_observations WHERE reporting_scope='consolidated'").fetchone()[0], 0)
+
+    def test_reused_standalone_parse_cannot_be_accepted_under_wrong_scope(self) -> None:
+        accepted = self.ingest_standalone(FIRST_FETCH)
+        with self.assertRaisesRegex(ValueError, "requires reporting_scope=standalone"):
+            ingest_screener_response(
+                "LAURUSLABS", "consolidated", fixture_standalone_response(), fixture_standalone_peer_response(),
+                db_path=self.db_path, snapshot_root=self.snapshots, export_root=self.exports,
                 fetched_at_utc="2026-08-04T10:03:00+00:00",
             )
         with closing(sqlite3.connect(self.db_path)) as conn:
             conn.row_factory = sqlite3.Row
-            pointers = conn.execute(
-                """SELECT reporting_scope, parse_id
-                   FROM accepted_page_versions"""
-            ).fetchall()
-            self.assertEqual(
-                [(row["reporting_scope"], row["parse_id"]) for row in pointers],
-                [("consolidated", consolidated.parse_id)],
-            )
-            rejection = conn.execute(
-                """SELECT reporting_scope, action, reason_json
-                   FROM acceptance_events
-                   WHERE action='rejected'"""
-            ).fetchone()
-            self.assertEqual(rejection["reporting_scope"], "standalone")
-            reason = json.loads(rejection["reason_json"])
-            self.assertEqual(reason["requested_reporting_scope"], "standalone")
-            self.assertEqual(reason["actual_reporting_scope"], "consolidated")
+            self.assertEqual([tuple(r) for r in conn.execute("SELECT reporting_scope,parse_id FROM accepted_page_versions")],
+                             [("standalone", accepted.parse_id)])
+            self.assertEqual(conn.execute("SELECT COUNT(*) FROM acceptance_events").fetchone()[0], 1)
+            self.assertEqual(conn.execute("SELECT COUNT(*) FROM financial_observations WHERE reporting_scope='consolidated'").fetchone()[0], 0)
+
 
     def test_end_to_end_acceptance_and_export(self) -> None:
         result = self.ingest(FIRST_FETCH)
@@ -1312,7 +1549,7 @@ class ScreenerPersistenceTests(unittest.TestCase):
         )
         self.assertEqual(len(payload["normalized"]["metrics"]), 9)
         self.assertEqual(len(payload["normalized"]["company_profile_links"]), 4)
-        self.assertEqual(len(payload["normalized"]["company_text"]), 9)
+        self.assertEqual(len(payload["normalized"]["company_text"]), 7)
         self.assertEqual(len(payload["normalized"]["quarterly_results"]), 156)
         self.assertEqual(len(payload["normalized"]["profit_loss"]), 156)
         self.assertEqual(len(payload["normalized"]["balance_sheet"]), 120)
@@ -1424,14 +1661,14 @@ class ScreenerPersistenceTests(unittest.TestCase):
             if section["section_code"] == "pros_cons"
         )
         self.assertEqual(analysis_section["position"], 3)
-        self.assertEqual(len(analysis_section["fields"]), 9)
+        self.assertEqual(len(analysis_section["fields"]), 7)
         self.assertEqual(analysis_section["fields"][0]["normalized_display_text"], "Pros")
-        self.assertEqual(analysis_section["fields"][2]["normalized_display_text"], "Cons")
+        self.assertEqual(analysis_section["fields"][1]["normalized_display_text"], "Cons")
         self.assertEqual(analysis_section["fields"][-1]["visibility_state"], "conditional")
 
         text_rows = payload["normalized"]["company_text"]
         commentary = [row for row in text_rows if row["text_type"] in {"pro", "con"}]
-        self.assertEqual(len(commentary), 5)
+        self.assertEqual(len(commentary), 3)
         self.assertTrue(all(row["is_source_generated"] == 1 for row in commentary))
         self.assertTrue(
             all(row["content_origin"] == "source_generated_commentary" for row in commentary)
@@ -1613,10 +1850,10 @@ class ScreenerPersistenceTests(unittest.TestCase):
                           first_observed_at_utc
                    FROM quote_observations"""
             ).fetchone()
-            self.assertEqual(quote["reporting_scope"], "consolidated")
-            self.assertEqual(quote["price_display_value"], "₹ 1,836")
-            self.assertEqual(quote["quote_timestamp_raw"], "04 Aug 3:32 p.m.")
-            self.assertEqual(quote["quote_timestamp_utc"], FIRST_FETCH)
+            self.assertEqual(quote["reporting_scope"], "standalone")
+            self.assertEqual(quote["price_display_value"], "₹ 1,850")
+            self.assertEqual(quote["quote_timestamp_raw"], "04 Aug - close price")
+            self.assertIsNone(quote["quote_timestamp_utc"])
             self.assertEqual(quote["first_observed_at_utc"], FIRST_FETCH)
             fetch_periods = conn.execute(
                 """SELECT requested_source_period, resolved_source_period
@@ -1663,9 +1900,10 @@ class ScreenerPersistenceTests(unittest.TestCase):
 
     def test_saved_blobs_reprocess_without_new_fetch_observations(self) -> None:
         first = self.ingest(FIRST_FETCH)
+        prepare_database(self.db_path)
         replay = reprocess_screener_blobs(
             "LAURUSLABS",
-            "consolidated",
+            "standalone",
             first.blob_id,
             first.peer_blob_id,
             db_path=self.db_path,
@@ -1687,12 +1925,15 @@ class ScreenerPersistenceTests(unittest.TestCase):
 
     def test_new_accepted_parse_supersedes_without_losing_history(self) -> None:
         first = self.ingest(FIRST_FETCH)
-        changed = FIXTURE.read_bytes().replace(b"3:32 p.m.", b"3:33 p.m.", 1)
+        original = STANDALONE_FIXTURE.read_bytes()
+        changed = original.replace("₹ 1,850".encode("utf-8"), "₹ 1,851".encode("utf-8"), 1)
+        self.assertNotEqual(changed, original)
+        prepare_database(self.db_path)
         second = ingest_screener_response(
             "LAURUSLABS",
-            "consolidated",
-            fixture_response(changed),
-            fixture_peer_response(),
+            "standalone",
+            fixture_standalone_response(changed),
+            fixture_standalone_peer_response(),
             db_path=self.db_path,
             snapshot_root=self.snapshots,
             export_root=self.exports,
@@ -1718,15 +1959,18 @@ class ScreenerPersistenceTests(unittest.TestCase):
             )
 
     def test_balance_imbalance_is_a_non_blocking_warning(self) -> None:
-        # Corrupt Total Liabilities Mar 2026 (10,511 -> 99,999); it is the first
-        # of the two balance-sheet occurrences, so Total Assets stays 10,511 and
-        # that period no longer balances.
-        corrupted = FIXTURE.read_bytes().replace(b"10,511", b"99,999", 1)
+        # Corrupt one standalone Total Liabilities cell; leave Total Assets intact.
+        soup = BeautifulSoup(STANDALONE_FIXTURE.read_bytes(), "html.parser")
+        section = soup.find(id="balance-sheet")
+        row = next(r for r in section.select("tr") if r.get_text(" ", strip=True).startswith("Total Liabilities"))
+        row.select("td")[-1].string = "99,999"
+        corrupted = str(soup).encode("utf-8")
+        prepare_database(self.db_path)
         result = ingest_screener_response(
             "LAURUSLABS",
-            "consolidated",
-            fixture_response(corrupted),
-            fixture_peer_response(),
+            "standalone",
+            fixture_standalone_response(corrupted),
+            fixture_standalone_peer_response(),
             db_path=self.db_path,
             snapshot_root=self.snapshots,
             export_root=self.exports,
@@ -1751,12 +1995,13 @@ class ScreenerPersistenceTests(unittest.TestCase):
     def test_shareholding_total_gap_is_a_non_blocking_warning(self) -> None:
         # Corrupt FIIs Sep 2023 (24.03% -> 54.03%); that period's categories no
         # longer total ~100, so the totals rule warns without blocking.
-        corrupted = FIXTURE.read_bytes().replace(b"24.03%", b"54.03%", 1)
+        corrupted = STANDALONE_FIXTURE.read_bytes().replace(b"24.03%", b"54.03%", 1)
+        prepare_database(self.db_path)
         result = ingest_screener_response(
             "LAURUSLABS",
-            "consolidated",
-            fixture_response(corrupted),
-            fixture_peer_response(),
+            "standalone",
+            fixture_standalone_response(corrupted),
+            fixture_standalone_peer_response(),
             db_path=self.db_path,
             snapshot_root=self.snapshots,
             export_root=self.exports,
@@ -1789,11 +2034,12 @@ class ScreenerPersistenceTests(unittest.TestCase):
 
     def test_identity_mismatch_is_not_accepted(self) -> None:
         with self.assertRaises(ValueError):
+            prepare_database(self.db_path)
             ingest_screener_response(
                 "RBA",
-                "consolidated",
-                fixture_response(),
-                fixture_peer_response(),
+                "standalone",
+                fixture_standalone_response(),
+                fixture_standalone_peer_response(),
                 db_path=self.db_path,
                 snapshot_root=self.snapshots,
                 export_root=self.exports,
@@ -1815,17 +2061,18 @@ class ScreenerPersistenceTests(unittest.TestCase):
             )
 
     def test_uncovered_manifest_component_is_not_accepted(self) -> None:
-        changed = FIXTURE.read_bytes().replace(
+        changed = STANDALONE_FIXTURE.read_bytes().replace(
             b"Company.showSchedule('Sales', 'quarters'",
             b"Company.showSchedule('Uncatalogued Revenue', 'quarters'",
             1,
         )
         with self.assertRaisesRegex(ValueError, "automatic acceptance rules"):
+            prepare_database(self.db_path)
             ingest_screener_response(
                 "LAURUSLABS",
-                "consolidated",
-                fixture_response(changed),
-                fixture_peer_response(),
+                "standalone",
+                fixture_standalone_response(changed),
+                fixture_standalone_peer_response(),
                 db_path=self.db_path,
                 snapshot_root=self.snapshots,
                 export_root=self.exports,
@@ -1844,17 +2091,18 @@ class ScreenerPersistenceTests(unittest.TestCase):
             )
 
     def test_peer_subject_mismatch_is_not_accepted(self) -> None:
-        changed = PEER_FIXTURE.read_bytes().replace(
+        changed = STANDALONE_PEER_FIXTURE.read_bytes().replace(
             b'data-row-company-id="1273603"',
             b'data-row-company-id="9999999"',
             1,
         )
         with self.assertRaises(ValueError):
+            prepare_database(self.db_path)
             ingest_screener_response(
                 "LAURUSLABS",
-                "consolidated",
-                fixture_response(),
-                fixture_peer_response(changed),
+                "standalone",
+                fixture_standalone_response(),
+                fixture_standalone_peer_response(changed),
                 db_path=self.db_path,
                 snapshot_root=self.snapshots,
                 export_root=self.exports,
@@ -1877,13 +2125,14 @@ class ScreenerPersistenceTests(unittest.TestCase):
     def test_unknown_concall_link_type_requires_manual_review(self) -> None:
         # Structural drift is retained as `concall_other`, reported by a focused
         # validation, and blocked from automatic acceptance.
-        changed = FIXTURE.read_bytes().replace(b">REC</a>", b">Slides</a>", 1)
+        changed = STANDALONE_FIXTURE.read_bytes().replace(b">REC</a>", b">Slides</a>", 1)
         with self.assertRaises(ValueError):
+            prepare_database(self.db_path)
             ingest_screener_response(
                 "LAURUSLABS",
-                "consolidated",
-                fixture_response(changed),
-                fixture_peer_response(),
+                "standalone",
+                fixture_standalone_response(changed),
+                fixture_standalone_peer_response(),
                 db_path=self.db_path,
                 snapshot_root=self.snapshots,
                 export_root=self.exports,
@@ -1904,17 +2153,18 @@ class ScreenerPersistenceTests(unittest.TestCase):
             )
 
     def test_pros_cons_without_generation_disclosure_are_not_accepted(self) -> None:
-        changed = FIXTURE.read_bytes().replace(
+        changed = STANDALONE_FIXTURE.read_bytes().replace(
             b"The pros and cons are machine generated.",
             b"The pros and cons are editorial content.",
             1,
         )
         with self.assertRaises(ValueError):
+            prepare_database(self.db_path)
             ingest_screener_response(
                 "LAURUSLABS",
-                "consolidated",
-                fixture_response(changed),
-                fixture_peer_response(),
+                "standalone",
+                fixture_standalone_response(changed),
+                fixture_standalone_peer_response(),
                 db_path=self.db_path,
                 snapshot_root=self.snapshots,
                 export_root=self.exports,
@@ -1926,13 +2176,13 @@ class ScreenerPersistenceTests(unittest.TestCase):
                 """SELECT severity, status, actual_value FROM validation_results
                    WHERE rule_code='pros_cons_source_generated'"""
             ).fetchone()
-            self.assertEqual(tuple(rule), ("error", "failed", "5"))
+            self.assertEqual(tuple(rule), ("error", "failed", "3"))
             preserved = conn.execute(
                 """SELECT display_text, is_source_generated
                    FROM company_text_observations
-                   WHERE text_type='pro'"""
+                   WHERE text_type='con'"""
             ).fetchone()
-            self.assertIn("19.0%", preserved["display_text"])
+            self.assertIn("19.0 times", preserved["display_text"])
             self.assertEqual(preserved["is_source_generated"], 0)
 
 

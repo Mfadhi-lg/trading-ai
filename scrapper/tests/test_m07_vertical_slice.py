@@ -45,7 +45,7 @@ class PPFASVerticalSliceM07Tests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             conn = connect(Path(temporary) / "scraper.sqlite")
             try:
-                init_db(conn)
+                init_db(conn, apply_migrations=True)
                 report = build_mf_coverage_report(
                     conn, publisher="ppfas", through_month="2026-06"
                 )

@@ -1,0 +1,37 @@
+{
+  "commit": "272a1da16ab56afee737e3e83efb3cce32b0f8f1",
+  "commit_count": 2,
+  "tree_matches_explicit_manifest": true,
+  "tracked_files": 725,
+  "reachable_blobs_scanned": 726,
+  "reachable_blob_bytes": 5904895,
+  "largest_reachable_blob_bytes": 104524,
+  "known_credential_or_private_key_matches": [],
+  "reachable_blob_pattern_candidates": [
+    {
+      "object": "02226de81eca5d90798f7ed7b760d9e1c7dd4b2f",
+      "path": "scrapper/tests/test_d02_document_downloader.py",
+      "line": 292,
+      "rule": "basic_auth_url"
+    },
+    {
+      "object": "ea6e23ab962cb90d193b41cfe68bec3a7243536c",
+      "path": "scrapper/tests/test_failed_download_ownership.py",
+      "line": 51,
+      "rule": "basic_auth_url"
+    },
+    {
+      "object": "38bb802fc45434fc57e5345f6bf4d4127f40d7b3",
+      "path": "scrapper/tests/test_shared_host_permits.py",
+      "line": 187,
+      "rule": "basic_auth_url"
+    }
+  ],
+  "from_commit_regressions_passed": true,
+  "from_commit_migration_lineage_passed": true,
+  "from_commit_host_test_returncode": 0,
+  "materialization": "git archive HEAD into temporary directory, no clone/fetch/remote",
+  "remote_names": [],
+  "status": "",
+  "fsck_output": ""
+}

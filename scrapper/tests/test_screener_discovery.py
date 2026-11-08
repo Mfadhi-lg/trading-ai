@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from scrapper.tests.database_fixtures import prepare_database
+
 import sqlite3
 import re
 import tempfile
@@ -13,6 +15,8 @@ from scrapper.db.screener_discovery_repo import claim_due_companies
 from scrapper.exports.screener_discovery_coverage import build_screener_discovery_coverage
 from scrapper.pipeline.screener_discovery import (
     discover_screener_results,
+    requeue_failed_screener_companies,
+    requeue_incomplete_metric_screener_companies,
     run_screener_company_worker,
 )
 from scrapper.sources.screener.company import parse_company_page
@@ -30,7 +34,7 @@ def screen_html(*, result_count: int = 3, page_count: int = 1) -> bytes:
         <tbody>
           <tr data-row-company-id="11"><td>1.</td><td><a href="/company/ALPHA/consolidated/"> Alpha Ltd </a></td><td>100</td><td>202606.00</td></tr>
           <tr data-row-company-id="12"><td>2.</td><td><a href="/company/500002/">BSE Only</a></td><td></td><td>202605</td></tr>
-          <tr data-row-company-id="13"><td>3.</td><td><a href="/company/GAMMA/">Gamma Ltd</a></td><td>42</td><td>202604.00</td></tr>
+          <tr data-row-company-id="13"><td>3.</td><td><a href="/company/GVT&D/">Gamma Ltd</a></td><td>42</td><td>202604.00</td></tr>
         </tbody>
       </table></div>
     </body></html>""".encode()
@@ -112,6 +116,7 @@ class DiscoveryPersistenceTests(unittest.TestCase):
             fixture = root / "screen.html"
             fixture.write_bytes(screen_html())
             db = root / "discovery.db"
+            prepare_database(db)
             discover_screener_results(
                 query_role="current_reporting_cycle", query="x", fixture=fixture,
                 db_path=db, snapshot_root=root / "snapshots",
@@ -141,6 +146,7 @@ class DiscoveryPersistenceTests(unittest.TestCase):
                 fetch_status="rejected",
             )
             with self.assertRaisesRegex(RuntimeError, "rejected before parsing"):
+                prepare_database(db)
                 discover_screener_results(
                     query_role="current_reporting_cycle",
                     query="x",
@@ -177,6 +183,7 @@ class DiscoveryPersistenceTests(unittest.TestCase):
             self.assertFalse(db.exists())
             self.assertFalse(snapshots.exists())
 
+            prepare_database(db)
             first = discover_screener_results(
                 query_role="current_reporting_cycle",
                 query="Last result date > 202605",
@@ -184,6 +191,7 @@ class DiscoveryPersistenceTests(unittest.TestCase):
                 db_path=db,
                 snapshot_root=snapshots,
             )
+            prepare_database(db)
             second = discover_screener_results(
                 query_role="current_reporting_cycle",
                 query="Last result date > 202605",
@@ -207,6 +215,7 @@ class DiscoveryPersistenceTests(unittest.TestCase):
             fixture = root / "screen.html"
             fixture.write_bytes(screen_html(result_count=1308, page_count=53))
             db = root / "discovery.db"
+            prepare_database(db)
             payload = discover_screener_results(
                 query_role="current_reporting_cycle",
                 query="Last result date > 202605",
@@ -237,6 +246,7 @@ class DiscoveryPersistenceTests(unittest.TestCase):
             fixture = root / "screen.html"
             fixture.write_bytes(screen_html())
             db = root / "discovery.db"
+            prepare_database(db)
             discover_screener_results(
                 query_role="current_reporting_cycle", query="x", fixture=fixture,
                 db_path=db, snapshot_root=root / "snapshots",
@@ -265,6 +275,310 @@ class DiscoveryPersistenceTests(unittest.TestCase):
             finally:
                 first.close()
                 second.close()
+
+    def _seeded_queue(self, root: Path) -> Path:
+        fixture = root / "screen.html"
+        fixture.write_bytes(screen_html())
+        db = root / "discovery.db"
+        prepare_database(db)
+        discover_screener_results(
+            query_role="current_reporting_cycle", query="x", fixture=fixture,
+            db_path=db, snapshot_root=root / "snapshots",
+        )
+        return db
+
+    @staticmethod
+    def _settle(db: Path, status: str, error_type: str = "ValueError") -> int:
+        conn = connect(db)
+        try:
+            with conn:
+                conn.execute(
+                    """UPDATE screener_company_queue SET status=?,
+                       attempt_count=1, next_attempt_at_utc=NULL,
+                       last_error_json=?""",
+                    (status, '{"error":{"type":"%s","message":"boom"}}' % error_type),
+                )
+            return int(
+                conn.execute(
+                    "SELECT COUNT(*) FROM screener_company_queue WHERE status=?",
+                    (status,),
+                ).fetchone()[0]
+            )
+        finally:
+            conn.close()
+
+    def test_terminal_failures_are_invisible_to_the_worker_until_requeued(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            db = self._seeded_queue(root)
+            settled = self._settle(db, "failed_terminal")
+            self.assertEqual(settled, 3)
+
+            stuck = run_screener_company_worker(
+                due=True, limit=5, dry_run=True, db_path=db,
+                now_utc=lambda: "2099-01-01T00:00:00+00:00",
+            )
+            self.assertEqual(stuck["summary"]["due_count"], 0)
+
+            prepare_database(db)
+            payload = requeue_failed_screener_companies(
+                db_path=db, now_utc=lambda: "2099-01-01T00:00:00+00:00"
+            )
+            self.assertEqual(payload["summary"]["requeued_count"], 3)
+            self.assertEqual(payload["summary"]["by_status"], {"failed_terminal": 3})
+            self.assertEqual(payload["summary"]["by_error_type"], {"ValueError": 3})
+
+            due = run_screener_company_worker(
+                due=True, limit=5, dry_run=True, db_path=db,
+                now_utc=lambda: "2099-01-01T00:00:00+00:00",
+            )
+            self.assertEqual(due["summary"]["due_count"], 3)
+
+    def test_requeue_preserves_attempt_history_and_records_an_event(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            db = self._seeded_queue(root)
+            self._settle(db, "failed_terminal")
+            prepare_database(db)
+            requeue_failed_screener_companies(
+                db_path=db, now_utc=lambda: "2099-01-01T00:00:00+00:00"
+            )
+            conn = connect(db)
+            try:
+                row = conn.execute(
+                    "SELECT * FROM screener_company_queue LIMIT 1"
+                ).fetchone()
+                self.assertEqual(row["status"], "pending")
+                self.assertEqual(row["attempt_count"], 1)
+                self.assertIn("boom", row["last_error_json"])
+                event = conn.execute(
+                    """SELECT * FROM screener_company_queue_events
+                       WHERE to_status='pending' AND from_status='failed_terminal'
+                       LIMIT 1"""
+                ).fetchone()
+                self.assertIn("operator_requeue", event["evidence_json"])
+            finally:
+                conn.close()
+
+    def test_requeue_is_bounded_by_status_path_and_limit(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            db = self._seeded_queue(root)
+            self._settle(db, "failed_retryable")
+
+            # The default status set leaves retryable failures alone.
+            prepare_database(db)
+            self.assertEqual(
+                requeue_failed_screener_companies(
+                    db_path=db, now_utc=lambda: "2099-01-01T00:00:00+00:00"
+                )["summary"]["requeued_count"],
+                0,
+            )
+            preview = requeue_failed_screener_companies(
+                statuses=("failed_retryable",), paths=("/company/ALPHA/",),
+                dry_run=True, db_path=db,
+                now_utc=lambda: "2099-01-01T00:00:00+00:00",
+            )
+            self.assertEqual(preview["summary"]["requeued_count"], 1)
+            conn = connect(db)
+            try:
+                self.assertEqual(
+                    conn.execute(
+                        "SELECT COUNT(*) FROM screener_company_queue WHERE status='pending'"
+                    ).fetchone()[0],
+                    0,
+                )
+            finally:
+                conn.close()
+
+            prepare_database(db)
+            limited = requeue_failed_screener_companies(
+                statuses=("failed_retryable",), limit=2, db_path=db,
+                now_utc=lambda: "2099-01-01T00:00:00+00:00",
+            )
+            self.assertEqual(limited["summary"]["requeued_count"], 2)
+
+    def test_requeue_refuses_statuses_that_are_not_settled_failures(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            db = self._seeded_queue(Path(directory))
+            for status in ("pending", "running", "accepted"):
+                with self.assertRaisesRegex(ValueError, "settled failures"):
+                    prepare_database(db)
+                    requeue_failed_screener_companies(
+                        statuses=(status,), db_path=db,
+                        now_utc=lambda: "2099-01-01T00:00:00+00:00",
+                    )
+
+    @staticmethod
+    def _accept_with_metrics(
+        db: Path, path: str, *, metric_count: int, fetched_quick_ratios: bool
+    ) -> None:
+        """Accept one queued company, faking the provenance a real run leaves."""
+        conn = connect(db)
+        try:
+            scope = conn.execute(
+                "SELECT reporting_scope FROM screener_company_queue WHERE company_path_normalized=?",
+                (path,),
+            ).fetchone()["reporting_scope"]
+            with conn:
+                run_id = conn.execute(
+                    """INSERT INTO scrape_runs
+                       (started_at_utc, code_version, config_json, status)
+                       VALUES ('2099-01-01T00:00:00+00:00', 't', '{}', 'ok')"""
+                ).lastrowid
+                blob_id = conn.execute(
+                    """INSERT INTO response_blobs
+                       (content_sha256, byte_size, local_path,
+                        first_observed_at_utc, created_at_utc)
+                       VALUES (?, 1, ?, '2099-01-01T00:00:00+00:00',
+                               '2099-01-01T00:00:00+00:00')""",
+                    (f"sha-{path}", f"/dev/null/{path}"),
+                ).lastrowid
+                kinds = ["company_page"]
+                if fetched_quick_ratios:
+                    kinds.append("quick_ratios")
+                for kind in kinds:
+                    conn.execute(
+                        """INSERT INTO fetch_observations
+                           (run_id, source, requested_url, final_url, fetched_at_utc,
+                            http_status, auth_mode, blob_id, fetch_status, resource_kind)
+                           VALUES (?, 'screener', 'u', 'u', '2099-01-01T00:00:00+00:00',
+                                   200, 'authenticated', ?, 'ok', ?)""",
+                        (run_id, blob_id, kind),
+                    )
+                parse_id = conn.execute(
+                    """INSERT INTO parse_artifacts
+                       (blob_id, parser_name, parser_version, manifest_version,
+                        parsed_at_utc, parse_status, validation_status)
+                       VALUES (?, 'p', '1', '1', '2099-01-01T00:00:00+00:00',
+                               'ok', 'passed')""",
+                    (blob_id,),
+                ).lastrowid
+                for position in range(metric_count):
+                    conn.execute(
+                        """INSERT INTO company_metric_observations
+                           (parse_id, reporting_scope, label_raw, position,
+                            display_value, first_observed_at_utc, available_at_utc,
+                            availability_basis)
+                           VALUES (?, ?, 'L', ?, 'v',
+                                   '2099-01-01T00:00:00+00:00',
+                                   '2099-01-01T00:00:00+00:00', 'fetch')""",
+                        (parse_id, scope, position),
+                    )
+                conn.execute(
+                    """INSERT INTO screener_company_collection_state
+                       (company_path_normalized, reporting_scope,
+                        latest_discovered_result_period, latest_accepted_parse_id,
+                        updated_at_utc)
+                       VALUES (?, ?, '2099-06', ?,
+                               '2099-01-01T00:00:00+00:00')
+                       ON CONFLICT(company_path_normalized, reporting_scope)
+                       DO UPDATE SET latest_accepted_parse_id=excluded.latest_accepted_parse_id""",
+                    (path, scope, parse_id),
+                )
+                conn.execute(
+                    """UPDATE screener_company_queue SET status='accepted',
+                       accepted_parse_id=?, next_attempt_at_utc=NULL
+                       WHERE company_path_normalized=?""",
+                    (parse_id, path),
+                )
+        finally:
+            conn.close()
+
+    def test_acceptances_without_a_ratio_panel_fetch_are_requeued(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            db = self._seeded_queue(Path(directory))
+            self._accept_with_metrics(
+                db, "/company/ALPHA/",
+                metric_count=9, fetched_quick_ratios=False,
+            )
+            self._accept_with_metrics(
+                db, "/company/500002/",
+                metric_count=26, fetched_quick_ratios=True,
+            )
+            # A company that was asked for the panel and had none is complete at
+            # nine metrics; refetching it would change nothing.
+            self._accept_with_metrics(
+                db, "/company/GVT&D/",
+                metric_count=9, fetched_quick_ratios=True,
+            )
+
+            stuck = run_screener_company_worker(
+                due=True, limit=5, dry_run=True, db_path=db,
+                now_utc=lambda: "2099-02-01T00:00:00+00:00",
+            )
+            self.assertEqual(stuck["summary"]["due_count"], 0)
+
+            prepare_database(db)
+            payload = requeue_incomplete_metric_screener_companies(
+                db_path=db, now_utc=lambda: "2099-02-01T00:00:00+00:00"
+            )
+            self.assertEqual(payload["summary"]["requeued_count"], 1)
+            self.assertEqual(payload["summary"]["by_metric_count"], {9: 1})
+            self.assertEqual(
+                payload["items"][0]["company_path_normalized"],
+                "/company/ALPHA/",
+            )
+
+            due = run_screener_company_worker(
+                due=True, limit=5, dry_run=True, db_path=db,
+                now_utc=lambda: "2099-02-01T00:00:00+00:00",
+            )
+            self.assertEqual(due["summary"]["due_count"], 1)
+
+    def test_metric_backfill_dry_run_and_path_limit_do_not_mutate(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            db = self._seeded_queue(Path(directory))
+            for path in (
+                "/company/ALPHA/", "/company/500002/", "/company/GVT&D/"
+            ):
+                self._accept_with_metrics(
+                    db, path, metric_count=9, fetched_quick_ratios=False
+                )
+
+            preview = requeue_incomplete_metric_screener_companies(
+                paths=("/company/500002/",), dry_run=True, db_path=db,
+                now_utc=lambda: "2099-02-01T00:00:00+00:00",
+            )
+            self.assertEqual(preview["summary"]["requeued_count"], 1)
+            conn = connect(db)
+            try:
+                self.assertEqual(
+                    conn.execute(
+                        "SELECT COUNT(*) FROM screener_company_queue WHERE status='pending'"
+                    ).fetchone()[0],
+                    0,
+                )
+            finally:
+                conn.close()
+
+            prepare_database(db)
+            limited = requeue_incomplete_metric_screener_companies(
+                limit=2, db_path=db, now_utc=lambda: "2099-02-01T00:00:00+00:00"
+            )
+            self.assertEqual(limited["summary"]["requeued_count"], 2)
+
+    def test_metric_backfill_records_the_gap_it_requeued_for(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            db = self._seeded_queue(Path(directory))
+            self._accept_with_metrics(
+                db, "/company/ALPHA/",
+                metric_count=9, fetched_quick_ratios=False,
+            )
+            prepare_database(db)
+            requeue_incomplete_metric_screener_companies(
+                db_path=db, now_utc=lambda: "2099-02-01T00:00:00+00:00"
+            )
+            conn = connect(db)
+            try:
+                event = conn.execute(
+                    """SELECT * FROM screener_company_queue_events
+                       WHERE from_status='accepted' AND to_status='pending'"""
+                ).fetchone()
+                self.assertIn("quick_ratios", event["evidence_json"])
+                self.assertIn("quick_ratios_backfill", event["evidence_json"])
+            finally:
+                conn.close()
 
     def test_bse_only_company_page_parses(self) -> None:
         fixture = Path(__file__).parent / "fixtures" / "screener" / "LAURUSLABS_consolidated.html"

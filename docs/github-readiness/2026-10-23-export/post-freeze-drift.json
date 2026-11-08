@@ -1,0 +1,26 @@
+{
+  "observed_at_utc": "2026-10-23T04:55:27Z",
+  "paths": [
+    {
+      "path": "ops/host/acquisition_lifecycle.py",
+      "export_source_snapshot_sha256": "b9893b15bc1ea8ec098001a95444ecd5d95decd4ffda4b554c0c01ce400101f2",
+      "observed_original_sha256": "67702868a0b5bfb6c45f6a5a6396ef62eae35bbd5a68e8235c393f611e6b4c35"
+    },
+    {
+      "path": "ops/host/acquisition_queries.py",
+      "export_source_snapshot_sha256": "9658b1086949d73665ea9dff7b4f4eaec6f16e05170663c7caf8d215cdc8e14a",
+      "observed_original_sha256": "0d5f16110deb6c9abbee1d0a6f7857f2cbe8ecbdfbae8b1c9d05e1ec7461f8db"
+    },
+    {
+      "path": "ops/host/acquisition_terminal.py",
+      "export_source_snapshot_sha256": "b28d1a519db760c95100f015a5fced5a75cbadbbea6aee9d6418e67e3cfbb479",
+      "observed_original_sha256": "e983d75cade2b9792fd6ec0fa90e6f2a09fac59f99228525af60a0abc40848c0"
+    },
+    {
+      "path": "ops/host/test_acquisition_terminal.py",
+      "export_source_snapshot_sha256": "8d5e40acdfd757f1ad89f3ad4f8cca5dd5e8547b239ff6ce927e45bf865b1fe3",
+      "observed_original_sha256": "6d7caff4ec6bf2d7228664693c63b7e0a6a628b7f5a590745a89730cf0bb5be8"
+    }
+  ],
+  "decision": "Candidate remains frozen at reviewed tip. Concurrent original edits are preserved and must be reconciled before any publication; no further automatic capture."
+}

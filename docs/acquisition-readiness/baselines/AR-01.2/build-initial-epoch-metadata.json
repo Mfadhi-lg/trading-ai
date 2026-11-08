@@ -1,0 +1,71 @@
+{
+  "buildx.build.provenance": {
+    "builder": {
+      "id": ""
+    },
+    "buildType": "https://mobyproject.org/buildkit@v1",
+    "materials": [
+      {
+        "uri": "pkg:docker/docker/buildkit-syft-scanner@stable-1?platform=linux%2Farm64",
+        "digest": {
+          "sha256": "ae4f3b554449e7e25548e7d8ccc029d17357348e30c6e3df01b92bc93654d6a9"
+        }
+      },
+      {
+        "uri": "pkg:docker/python@3.12.14-slim-trixie?digest=sha256:f77ac9e44ae96ef2c90b8053ea08c31f8be030f824196b0ae4db6d462c84e51f\u0026platform=linux%2Farm64",
+        "digest": {
+          "sha256": "f77ac9e44ae96ef2c90b8053ea08c31f8be030f824196b0ae4db6d462c84e51f"
+        }
+      }
+    ],
+    "invocation": {
+      "configSource": {
+        "entryPoint": "Dockerfile"
+      },
+      "parameters": {
+        "frontend": "dockerfile.v0",
+        "args": {
+          "build-arg:SOURCE_DATE_EPOCH": "1791257267",
+          "label:org.opencontainers.image.revision": "c3ddbbb9c298d07b8b46a362996251417282476a",
+          "label:org.opencontainers.image.version": "c28.1-ar012-20261007"
+        },
+        "locals": [
+          {
+            "name": "context"
+          },
+          {
+            "name": "dockerfile"
+          }
+        ],
+        "root": {
+          "configSource": {
+            "path": "Dockerfile"
+          },
+          "request": {
+            "args": {
+              "build-arg:SOURCE_DATE_EPOCH": "1791257267",
+              "label:org.opencontainers.image.revision": "c3ddbbb9c298d07b8b46a362996251417282476a",
+              "label:org.opencontainers.image.version": "c28.1-ar012-20261007"
+            }
+          }
+        },
+        "compatibilityVersion": 30
+      },
+      "environment": {
+        "dockerfileVersion": "1.27.0",
+        "platform": "linux/arm64"
+      }
+    }
+  },
+  "buildx.build.ref": "desktop-linux/desktop-linux/e4dyzqjpji5i0opvc2ncmqf8y",
+  "containerimage.descriptor": {
+    "mediaType": "application/vnd.oci.image.index.v1+json",
+    "digest": "sha256:4b18640dd428d3d60db160462b2cd5ff6338624656dcc84c85665978da624406",
+    "size": 857,
+    "annotations": {
+      "org.opencontainers.image.created": "2026-10-06T03:27:47Z"
+    }
+  },
+  "containerimage.digest": "sha256:4b18640dd428d3d60db160462b2cd5ff6338624656dcc84c85665978da624406",
+  "image.name": "docker.io/library/trading-ai-c281-release:ar012-20261007"
+}

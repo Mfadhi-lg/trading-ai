@@ -1,0 +1,195 @@
+{
+  "accepted_versions": [
+    {
+      "manifest_version": "1.4.1",
+      "parser_version": "1.1.2",
+      "period": "2026-06",
+      "scope": "standalone",
+      "sha256": "88c51f5403890f10ddb53ea393d79b8182fb69aa30bff9419659a4d2f7526827",
+      "source": "screener"
+    },
+    {
+      "manifest_version": "0.5.0",
+      "parser_version": "0.5.0",
+      "period": "2026-06",
+      "scope": "not_applicable",
+      "sha256": "ce65c6cbcc0dcc6ba372a5898ad39e78634aae44ef41687ad1ffe2c011a0c065",
+      "source": "trendlyne"
+    }
+  ],
+  "results": [
+    {
+      "action": "accepted",
+      "current": true,
+      "failure_rules": [],
+      "manifest_version": "1.4.1",
+      "normalized_counts": {
+        "company_metric_observations": 9,
+        "company_profile_links": 4,
+        "company_text_observations": 7,
+        "document_links": 168,
+        "financial_observations": 576,
+        "growth_observations": 16,
+        "quote_observations": 1,
+        "shareholding_observations": 115
+      },
+      "parse_status": "ok",
+      "parser_version": "1.1.2",
+      "result": "accepted",
+      "section_statuses": {
+        "balance_sheet": "ok",
+        "cash_flow": "ok",
+        "company_profile": "ok",
+        "document_links": "ok",
+        "growth": "ok",
+        "identity": "ok",
+        "profit_loss": "ok",
+        "pros_cons": "ok",
+        "quarterly_results": "ok",
+        "ratio_panel": "ok",
+        "ratios": "ok",
+        "shareholding_quarterly": "ok",
+        "shareholding_yearly": "ok"
+      },
+      "source": "screener",
+      "supplements": [
+        {
+          "component": "peer_table",
+          "normalized_peer_rows": 81,
+          "parser_version": "0.9.0",
+          "sha256": "00dd994322f0e8ecb3c2ee136d3b32088c6baca2dd613294e5a5e02c097603f5"
+        }
+      ],
+      "unknown_labels": [],
+      "validation_status": "passed",
+      "warning_rules": []
+    },
+    {
+      "action": "rejected",
+      "current": false,
+      "failure_rules": [
+        "known_document_link_types"
+      ],
+      "manifest_version": "1.4.1",
+      "normalized_counts": {
+        "company_metric_observations": 9,
+        "company_profile_links": 4,
+        "company_text_observations": 7,
+        "document_links": 168,
+        "financial_observations": 576,
+        "growth_observations": 16,
+        "quote_observations": 1,
+        "shareholding_observations": 115
+      },
+      "parse_status": "ok",
+      "parser_version": "1.1.2",
+      "result": "manual_review",
+      "section_statuses": {
+        "balance_sheet": "ok",
+        "cash_flow": "ok",
+        "company_profile": "ok",
+        "document_links": "ok",
+        "growth": "ok",
+        "identity": "ok",
+        "profit_loss": "ok",
+        "pros_cons": "ok",
+        "quarterly_results": "ok",
+        "ratio_panel": "ok",
+        "ratios": "ok",
+        "shareholding_quarterly": "ok",
+        "shareholding_yearly": "ok"
+      },
+      "source": "screener",
+      "supplements": [
+        {
+          "component": "peer_table",
+          "normalized_peer_rows": 81,
+          "parser_version": "0.9.0",
+          "sha256": "00dd994322f0e8ecb3c2ee136d3b32088c6baca2dd613294e5a5e02c097603f5"
+        }
+      ],
+      "unknown_labels": [
+        {
+          "category": "document_type",
+          "labels": [
+            "Slides"
+          ]
+        }
+      ],
+      "validation_status": "passed_with_warnings",
+      "warning_rules": []
+    },
+    {
+      "action": "accepted",
+      "current": true,
+      "failure_rules": [],
+      "manifest_version": "0.5.0",
+      "normalized_counts": {
+        "trendlyne_fund_observations": 189,
+        "trendlyne_fund_source_rows": 27,
+        "trendlyne_mf_page_summaries": 1,
+        "trendlyne_month_links": 91,
+        "trendlyne_monthly_pages": 1
+      },
+      "parse_status": "ok",
+      "parser_version": "0.5.0",
+      "result": "accepted",
+      "section_statuses": {
+        "trendlyne_fund_table": "ok",
+        "trendlyne_identity": "ok",
+        "trendlyne_month_history": "ok",
+        "trendlyne_monthly_summary": "ok",
+        "trendlyne_selected_month": "ok"
+      },
+      "source": "trendlyne",
+      "supplements": [],
+      "unknown_labels": [],
+      "validation_status": "passed_with_warnings",
+      "warning_rules": [
+        "trendlyne_headline_net_change_matches_computed"
+      ]
+    },
+    {
+      "action": "rejected",
+      "current": false,
+      "failure_rules": [
+        "trendlyne_identity_company_id"
+      ],
+      "manifest_version": "0.5.0",
+      "normalized_counts": {
+        "trendlyne_fund_observations": 189,
+        "trendlyne_fund_source_rows": 27,
+        "trendlyne_mf_page_summaries": 1,
+        "trendlyne_month_links": 91,
+        "trendlyne_monthly_pages": 1
+      },
+      "parse_status": "ok",
+      "parser_version": "0.5.0",
+      "result": "rejected",
+      "section_statuses": {
+        "trendlyne_fund_table": "ok",
+        "trendlyne_identity": "ok",
+        "trendlyne_month_history": "ok",
+        "trendlyne_monthly_summary": "ok",
+        "trendlyne_selected_month": "ok"
+      },
+      "source": "trendlyne",
+      "supplements": [],
+      "unknown_labels": [],
+      "validation_status": "failed",
+      "warning_rules": [
+        "trendlyne_headline_net_change_matches_computed"
+      ]
+    }
+  ],
+  "summary": {
+    "current_accepted_version_count": 2,
+    "decision_count": 4,
+    "decision_counts": {
+      "accepted": 2,
+      "manual_review": 1,
+      "rejected": 1
+    },
+    "parse_artifact_count": 5
+  }
+}

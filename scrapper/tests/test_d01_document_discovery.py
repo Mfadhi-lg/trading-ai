@@ -90,7 +90,7 @@ class DocumentDiscoveryD01Tests(unittest.TestCase):
     def test_primary_paths_and_screener_crosscheck_persist_idempotently(self) -> None:
         conn = connect(self.db_path)
         try:
-            init_db(conn)
+            init_db(conn, apply_migrations=True)
             first = persist_discovery_plan(
                 conn,
                 self.plan,
@@ -180,7 +180,7 @@ class DocumentDiscoveryD01Tests(unittest.TestCase):
     def test_content_rows_are_immutable_and_only_preferred_pointer_moves(self) -> None:
         conn = connect(self.db_path)
         try:
-            init_db(conn)
+            init_db(conn, apply_migrations=True)
             persisted = persist_discovery_plan(
                 conn,
                 self.plan,
@@ -259,14 +259,21 @@ class DocumentDiscoveryD01Tests(unittest.TestCase):
             ).fetchone()
             self.assertEqual(preferred["preferred_content_id"], content_two)
             self.assertEqual(preferred["transcript_preference_status"], "official_preferred")
-            with self.assertRaises(ValueError):
-                register_artifact_content(
-                    conn,
-                    artifact_id=presentation_id,
-                    blob_id=blob_one,
-                    media_type="application/pdf",
-                    is_official=True,
-                )
+            shared_content = register_artifact_content(
+                conn,
+                artifact_id=presentation_id,
+                blob_id=blob_one,
+                media_type="application/pdf",
+                is_official=True,
+            )
+            self.assertNotEqual(shared_content, content_one)
+            self.assertEqual(
+                conn.execute(
+                    "SELECT COUNT(*) FROM artifact_contents WHERE blob_id=?",
+                    (blob_one,),
+                ).fetchone()[0],
+                2,
+            )
             with self.assertRaises(sqlite3.IntegrityError):
                 conn.execute(
                     "UPDATE document_artifacts SET preferred_content_id=? WHERE artifact_id=?",

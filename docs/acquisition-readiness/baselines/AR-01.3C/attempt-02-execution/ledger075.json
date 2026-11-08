@@ -1,0 +1,306 @@
+[
+  {
+    "applied_at_utc": "2026-08-05T20:45:06.818961+00:00",
+    "version": "001_initial.sql"
+  },
+  {
+    "applied_at_utc": "2026-08-05T20:45:06.819763+00:00",
+    "version": "002_source_identifiers.sql"
+  },
+  {
+    "applied_at_utc": "2026-08-05T20:45:06.822324+00:00",
+    "version": "003_availability_acceptance_periods.sql"
+  },
+  {
+    "applied_at_utc": "2026-08-05T20:45:06.823179+00:00",
+    "version": "004_growth_observations.sql"
+  },
+  {
+    "applied_at_utc": "2026-08-05T20:45:06.826362+00:00",
+    "version": "005_financial_expandable_marker.sql"
+  },
+  {
+    "applied_at_utc": "2026-08-05T20:45:06.827213+00:00",
+    "version": "006_shareholding_observations.sql"
+  },
+  {
+    "applied_at_utc": "2026-08-05T20:45:06.828656+00:00",
+    "version": "007_document_links.sql"
+  },
+  {
+    "applied_at_utc": "2026-08-05T20:45:06.829881+00:00",
+    "version": "008_company_profile_text.sql"
+  },
+  {
+    "applied_at_utc": "2026-08-05T20:45:06.832656+00:00",
+    "version": "009_peer_table.sql"
+  },
+  {
+    "applied_at_utc": "2026-08-05T20:45:06.834140+00:00",
+    "version": "010_trendlyne_monthly_page.sql"
+  },
+  {
+    "applied_at_utc": "2026-08-05T20:45:06.836283+00:00",
+    "version": "011_trendlyne_fund_source_rows.sql"
+  },
+  {
+    "applied_at_utc": "2026-08-05T20:45:06.837843+00:00",
+    "version": "012_trendlyne_fund_observations.sql"
+  },
+  {
+    "applied_at_utc": "2026-08-05T20:45:06.839129+00:00",
+    "version": "013_trendlyne_mf_page_summaries.sql"
+  },
+  {
+    "applied_at_utc": "2026-08-05T20:45:06.842787+00:00",
+    "version": "014_trendlyne_month_history.sql"
+  },
+  {
+    "applied_at_utc": "2026-08-05T20:45:06.844133+00:00",
+    "version": "015_trendlyne_pilot_backfill.sql"
+  },
+  {
+    "applied_at_utc": "2026-08-05T20:45:06.851501+00:00",
+    "version": "016_mf_workbook_import_foundation.sql"
+  },
+  {
+    "applied_at_utc": "2026-08-05T20:45:06.858717+00:00",
+    "version": "017_mf_ppfas_source_cells.sql"
+  },
+  {
+    "applied_at_utc": "2026-08-05T20:45:06.865829+00:00",
+    "version": "018_mf_holdings_normalization.sql"
+  },
+  {
+    "applied_at_utc": "2026-08-05T20:45:06.876515+00:00",
+    "version": "019_mf_scheme_registry_acceptance.sql"
+  },
+  {
+    "applied_at_utc": "2026-08-05T20:45:06.880658+00:00",
+    "version": "020_mf_consecutive_month_changes.sql"
+  },
+  {
+    "applied_at_utc": "2026-08-05T20:45:06.887740+00:00",
+    "version": "021_mf_stock_monthly_features.sql"
+  },
+  {
+    "applied_at_utc": "2026-08-05T20:45:06.894843+00:00",
+    "version": "022_mfdata_crosscheck.sql"
+  },
+  {
+    "applied_at_utc": "2026-08-05T20:45:06.899681+00:00",
+    "version": "023_document_artifact_discovery.sql"
+  },
+  {
+    "applied_at_utc": "2026-08-05T20:45:06.903152+00:00",
+    "version": "024_artifact_downloads.sql"
+  },
+  {
+    "applied_at_utc": "2026-08-05T20:45:06.906893+00:00",
+    "version": "025_document_extraction.sql"
+  },
+  {
+    "applied_at_utc": "2026-08-05T20:45:06.919478+00:00",
+    "version": "026_credit_rating_normalization.sql"
+  },
+  {
+    "applied_at_utc": "2026-08-05T20:45:06.930302+00:00",
+    "version": "027_official_transcripts.sql"
+  },
+  {
+    "applied_at_utc": "2026-08-05T20:45:06.936716+00:00",
+    "version": "028_recording_audio_normalization.sql"
+  },
+  {
+    "applied_at_utc": "2026-08-05T20:45:06.945856+00:00",
+    "version": "029_machine_transcription.sql"
+  },
+  {
+    "applied_at_utc": "2026-08-05T20:45:06.951881+00:00",
+    "version": "030_artifact_reconciliation.sql"
+  },
+  {
+    "applied_at_utc": "2026-08-05T20:45:06.958491+00:00",
+    "version": "031_screener_result_discovery.sql"
+  },
+  {
+    "applied_at_utc": "2026-08-05T20:45:06.977815+00:00",
+    "version": "032_exchange_universe.sql"
+  },
+  {
+    "applied_at_utc": "2026-08-06T15:59:53.306442+00:00",
+    "version": "033_exchange_automation.sql"
+  },
+  {
+    "applied_at_utc": "2026-08-07T00:00:00+00:00",
+    "version": "034_schedule_publication.sql"
+  },
+  {
+    "applied_at_utc": "2026-08-11T06:58:22.932875+00:00",
+    "version": "035_company_period_queue.sql"
+  },
+  {
+    "applied_at_utc": "2026-08-11T07:00:07.387654+00:00",
+    "version": "036_document_followups.sql"
+  },
+  {
+    "applied_at_utc": "2026-08-11T07:08:34.277536+00:00",
+    "version": "037_disable_blind_document_followups.sql"
+  },
+  {
+    "applied_at_utc": "2026-08-13T09:15:12.365845+00:00",
+    "version": "038_monitor_query_indexes.sql"
+  },
+  {
+    "applied_at_utc": "2026-08-13T15:35:30.861887+00:00",
+    "version": "039_credit_rating_acquisition.sql"
+  },
+  {
+    "applied_at_utc": "2026-08-13T15:38:14.055494+00:00",
+    "version": "040_credit_rating_host_health.sql"
+  },
+  {
+    "applied_at_utc": "2026-08-13T18:54:27.460896+00:00",
+    "version": "041_credit_rating_host_policy.sql"
+  },
+  {
+    "applied_at_utc": "2026-08-14T06:40:15.201686+00:00",
+    "version": "042_document_download_queue.sql"
+  },
+  {
+    "applied_at_utc": "2026-08-15T05:55:17.438896+00:00",
+    "version": "043_generic_download_host_policy.sql"
+  },
+  {
+    "applied_at_utc": "2026-08-15T05:55:18.151919+00:00",
+    "version": "044_crisilratings_and_recording_safety.sql"
+  },
+  {
+    "applied_at_utc": "2026-08-16T08:09:53.918470+00:00",
+    "version": "045_document_download_recovery.sql"
+  },
+  {
+    "applied_at_utc": "2026-08-16T08:09:54.869897+00:00",
+    "version": "046_document_alternate_source_recovery.sql"
+  },
+  {
+    "applied_at_utc": "2026-08-16T11:43:51.239008+00:00",
+    "version": "047_generic_download_host_health.sql"
+  },
+  {
+    "applied_at_utc": "2026-08-16T12:37:50.756386+00:00",
+    "version": "048_exchange_retrieval_provenance.sql"
+  },
+  {
+    "applied_at_utc": "2026-08-16T13:01:22.100043+00:00",
+    "version": "049_document_acquisition_closure.sql"
+  },
+  {
+    "applied_at_utc": "2026-08-16T13:08:36.582416+00:00",
+    "version": "050_rating_agency_direct_provenance.sql"
+  },
+  {
+    "applied_at_utc": "2026-09-08T04:04:24.946146+00:00",
+    "version": "051_html_pdf_derivatives.sql"
+  },
+  {
+    "applied_at_utc": "2026-09-15T05:09:52.761412+00:00",
+    "version": "052_reporting_scope_ml_contract.sql"
+  },
+  {
+    "applied_at_utc": "2026-09-15T05:09:52.763444+00:00",
+    "version": "053_fix_financial_scope_integrity_audit.sql"
+  },
+  {
+    "applied_at_utc": "2026-09-15T05:09:52.766256+00:00",
+    "version": "054_standalone_financial_write_guard.sql"
+  },
+  {
+    "applied_at_utc": "2026-09-15T06:11:58.215342+00:00",
+    "version": "055_repair_circuit_deferred_downloads.sql"
+  },
+  {
+    "applied_at_utc": "2026-09-15T06:36:41.714730+00:00",
+    "version": "056_rearm_delayed_concall_refresh.sql"
+  },
+  {
+    "applied_at_utc": "2026-09-15T11:52:49.918616+00:00",
+    "version": "057_close_invalid_result_period_artifacts.sql"
+  },
+  {
+    "applied_at_utc": "2026-09-15T12:17:22.718755+00:00",
+    "version": "058_rebase_active_concall_refresh.sql"
+  },
+  {
+    "applied_at_utc": "2026-09-16T03:58:02.699798+00:00",
+    "version": "059_finalize_concall_retry_rebase.sql"
+  },
+  {
+    "applied_at_utc": "2026-09-16T04:19:08.363087+00:00",
+    "version": "060_rebase_all_overdue_concall_refresh.sql"
+  },
+  {
+    "applied_at_utc": "2026-09-16T04:44:05.911039+00:00",
+    "version": "061_limit_delayed_concall_refresh_by_market_cap.sql"
+  },
+  {
+    "applied_at_utc": "2026-09-28T12:50:48.999055+00:00",
+    "version": "062_collection_scope_monitor.sql"
+  },
+  {
+    "applied_at_utc": "2026-09-28T12:50:49.000508+00:00",
+    "version": "063_document_period_corrections.sql"
+  },
+  {
+    "applied_at_utc": "2026-09-29T04:10:38.002169+00:00",
+    "version": "064_exchange_filing_identity_collisions.sql"
+  },
+  {
+    "applied_at_utc": "2026-09-29T09:29:23.883230+00:00",
+    "version": "065_exchange_source_access.sql"
+  },
+  {
+    "applied_at_utc": "2026-10-01T07:56:56.131563+00:00",
+    "version": "065_operator_browser_rating_recovery.sql"
+  },
+  {
+    "applied_at_utc": "2026-10-01T09:24:47.785691+00:00",
+    "version": "066_browser_rating_recovery_backoff.sql"
+  },
+  {
+    "applied_at_utc": "2026-10-01T12:36:44.273882+00:00",
+    "version": "067_browser_rating_workers.sql"
+  },
+  {
+    "applied_at_utc": "2026-10-03T06:59:37.386528+00:00",
+    "version": "068_exchange_source_access_compatibility.sql"
+  },
+  {
+    "applied_at_utc": "2026-10-08T04:05:08.739632+00:00",
+    "version": "069_worker_claim_fencing.sql"
+  },
+  {
+    "applied_at_utc": "2026-10-08T04:05:08.741599+00:00",
+    "version": "070_document_extraction_claims.sql"
+  },
+  {
+    "applied_at_utc": "2026-10-08T04:05:08.746127+00:00",
+    "version": "071_shared_host_permits.sql"
+  },
+  {
+    "applied_at_utc": "2026-10-08T04:05:08.749161+00:00",
+    "version": "072_document_processing_work.sql"
+  },
+  {
+    "applied_at_utc": "2026-10-08T04:05:08.750777+00:00",
+    "version": "073_exchange_coordinator_tasks.sql"
+  },
+  {
+    "applied_at_utc": "2026-10-08T04:05:08.753971+00:00",
+    "version": "074_collection_scope_tasks.sql"
+  },
+  {
+    "applied_at_utc": "2026-10-08T04:05:08.755393+00:00",
+    "version": "075_periodic_dispatch.sql"
+  }
+]

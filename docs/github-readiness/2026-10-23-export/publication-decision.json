@@ -1,0 +1,30 @@
+{
+  "decision": "BLOCKED_PRIVATE_GITHUB_PUBLICATION",
+  "candidate_path": "/Users/mohamedfadhi/Fadhi/trading-ai/github-source-candidate-20261023",
+  "tip": "272a1da16ab56afee737e3e83efb3cce32b0f8f1",
+  "source_files": 725,
+  "source_bytes": 5873901,
+  "core_tests": {
+    "passed": 92,
+    "failed": 0,
+    "skipped": 0
+  },
+  "host_tests": {
+    "passed": 43,
+    "failed": 7,
+    "deselected": 10
+  },
+  "blockers": [
+    "Potentially active exposed historical CSRF token needs authorized owner remediation and prior remote exposure review",
+    "Ownership and third-party redistribution rights not cleared",
+    "Absent source-derived fixtures/control/reference/Focus inputs and optional dependency locks prevent full reproducibility",
+    "Host portability and wake-test fixture gaps remain",
+    "Four observed host/test paths changed concurrently after export freeze and require reconciliation"
+  ],
+  "original_head_unchanged": true,
+  "original_index_unchanged": true,
+  "production_changes_performed": false,
+  "credential_rotation_performed": false,
+  "remote_operations_performed": false,
+  "report_completed_at_utc": "2026-10-23T04:56:53Z"
+}

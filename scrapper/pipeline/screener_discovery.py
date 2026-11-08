@@ -21,6 +21,7 @@ from ..config import (
     SCREENER_BASE,
     SNAPSHOTS,
 )
+from ..core.log import get_logger, log_event
 from ..core.http import FetchResponse, ScreenerHostClient, fetch_screener_result_screen
 from ..db.database import connect, init_db
 from ..db.repo import finish_run, record_fetch, start_run, store_blob, utc_now
@@ -34,12 +35,18 @@ from ..db.screener_discovery_repo import (
     persist_screen,
     persist_rejected_screen,
     preview_due_companies,
+    preview_incomplete_metric_candidates,
+    preview_requeue_candidates,
     release_claims,
+    requeue_failed_companies,
+    requeue_incomplete_metric_companies,
     skip_if_already_accepted,
 )
 from ..sources.screener.result_screen import canonical_query, parse_result_screen
 from .screener_vertical import VerticalSliceResult, scrape_screener_company_path
 
+
+from ..workflows.screener import company_worker as _company_workflow
 
 DISCOVERY_SCHEMA_VERSION = "1.0.0"
 _ROLE_RE = re.compile(r"^[a-z][a-z0-9_]{1,63}$")
@@ -75,6 +82,7 @@ def discover_screener_results(
     snapshot_root: Path = SNAPSHOTS,
     now_utc: Callable[[], str] = utc_now,
     fetcher: Callable[[str], FetchResponse] = fetch_screener_result_screen,
+    shared_permits: bool = False,
 ) -> dict[str, Any]:
     """Parse an offline fixture or perform one permitted first-page fetch."""
     if not _ROLE_RE.fullmatch(query_role):
@@ -97,7 +105,21 @@ def discover_screener_results(
             fetch_status="ok",
         )
     else:
-        response = fetcher(requested_url)
+        if shared_permits:
+            if fetcher is not fetch_screener_result_screen:
+                raise ValueError('Shared discovery requires the canonical transport')
+            from ..operations.workers.screener_requests import SharedScreenerClient
+            client = None
+            connection = connect(db_path)
+            try:
+                client = SharedScreenerClient(connection,owner='screener-discovery-'+uuid.uuid4().hex)
+                response = client.fetch_result_screen(requested_url)
+            finally:
+                if client is not None:
+                    client.close()
+                connection.close()
+        else:
+            response = fetcher(requested_url)
     if dry_run:
         if response.fetch_status != "ok":
             raise RuntimeError(
@@ -231,35 +253,131 @@ def discover_screener_results(
         conn.close()
 
 
-def _safe_error(exc: Exception) -> dict[str, str]:
-    message = str(exc)
-    message = re.sub(
-        r"(?i)(sessionid|csrftoken|cookie)\s*[=:]\s*[^\s;,]+",
-        r"\1=<redacted>",
-        message,
-    )
-    return {"type": type(exc).__name__, "message": message[:2000]}
+def _safe_error(exc: Exception) -> dict[str, Any]:
+    return _company_workflow._safe_error(exc, re=re)
 
 
 def _failure_policy(exc: Exception, origin: str = "screener_screen") -> tuple[bool, bool]:
-    message = str(exc).lower()
-    stop_host = any(
-        marker in message
-        for marker in ("status=401", "status=403", "status=429", "captcha", "login", "access-denied")
-    )
-    terminal_markers = [
-        "screen result period is absent",
-        "reporting scope differs",
-        "identity",
-        "manifest",
-        "failed artifact",
-    ]
-    if origin == "exchange_filing":
-        # An exchange has published the filing but Screener may not have loaded
-        # the quarter yet. That lag is expected and must stay retryable.
-        terminal_markers.remove("screen result period is absent")
-    terminal = any(marker in message for marker in terminal_markers)
-    return not terminal, stop_host
+    return _company_workflow._failure_policy(exc, origin)
+
+
+def requeue_failed_screener_companies(
+    *,
+    statuses: tuple[str, ...] = ("failed_terminal",),
+    paths: tuple[str, ...] = (),
+    limit: int | None = None,
+    dry_run: bool = False,
+    reason: str = "operator_requeue",
+    db_path: Path = DB_PATH,
+    now_utc: Callable[[], str] = utc_now,
+) -> dict[str, Any]:
+    """Move settled failures back to `pending` after a parser or rule fix.
+
+    `failed_terminal` items are never picked up by the worker again on their
+    own, so a fix that makes them collectable needs an explicit requeue. The
+    report names every item and the error it last failed with.
+    """
+    checked_at = now_utc()
+    if dry_run:
+        items: tuple[dict[str, Any], ...] = ()
+        if db_path.exists():
+            readonly = sqlite3.connect(f"file:{db_path.resolve()}?mode=ro", uri=True)
+            readonly.row_factory = sqlite3.Row
+            try:
+                items = preview_requeue_candidates(
+                    readonly, statuses=statuses, paths=paths, limit=limit
+                )
+            finally:
+                readonly.close()
+    else:
+        conn = connect(db_path)
+        try:
+            init_db(conn)
+            items = requeue_failed_companies(
+                conn,
+                now_utc=checked_at,
+                statuses=statuses,
+                paths=paths,
+                limit=limit,
+                reason=reason,
+            )
+        finally:
+            conn.close()
+    return {
+        "schema_version": DISCOVERY_SCHEMA_VERSION,
+        "mode": "dry_run" if dry_run else "execute",
+        "checked_at_utc": checked_at,
+        "requested_statuses": list(statuses),
+        "summary": {
+            "requeued_count": len(items),
+            "by_status": dict(sorted(Counter(item["status"] for item in items).items())),
+            "by_error_type": dict(
+                sorted(
+                    Counter(
+                        str(item["last_error"].get("type") or "none") for item in items
+                    ).items()
+                )
+            ),
+        },
+        "items": list(items),
+    }
+
+
+def requeue_incomplete_metric_screener_companies(
+    *,
+    paths: tuple[str, ...] = (),
+    limit: int | None = None,
+    dry_run: bool = False,
+    reason: str = "quick_ratios_backfill",
+    db_path: Path = DB_PATH,
+    now_utc: Callable[[], str] = utc_now,
+) -> dict[str, Any]:
+    """Requeue acceptances whose run predates the custom ratio panel fetch.
+
+    Those companies hold only Screener's nine public ratios and the queue will
+    never revisit them on its own, because acceptance is keyed to a result
+    period that has not advanced. The report names every company and the metric
+    count its current acceptance carries.
+    """
+    checked_at = now_utc()
+    if dry_run:
+        items: tuple[dict[str, Any], ...] = ()
+        if db_path.exists():
+            readonly = sqlite3.connect(f"file:{db_path.resolve()}?mode=ro", uri=True)
+            readonly.row_factory = sqlite3.Row
+            try:
+                items = preview_incomplete_metric_candidates(
+                    readonly, paths=paths, limit=limit
+                )
+            finally:
+                readonly.close()
+    else:
+        conn = connect(db_path)
+        try:
+            init_db(conn)
+            items = requeue_incomplete_metric_companies(
+                conn, now_utc=checked_at, paths=paths, limit=limit, reason=reason
+            )
+        finally:
+            conn.close()
+    return {
+        "schema_version": DISCOVERY_SCHEMA_VERSION,
+        "mode": "dry_run" if dry_run else "execute",
+        "checked_at_utc": checked_at,
+        "missing_resource_kind": "quick_ratios",
+        "summary": {
+            "requeued_count": len(items),
+            "by_metric_count": dict(
+                sorted(Counter(int(item["metric_count"]) for item in items).items())
+            ),
+        },
+        "items": list(items),
+    }
+
+
+def shared_client_factory(*args, **kwargs):
+    from ..operations.workers.screener_requests import SharedScreenerClient
+    return SharedScreenerClient(*args, **kwargs)
 
 
 def run_screener_company_worker(
@@ -274,131 +392,6 @@ def run_screener_company_worker(
     now_utc: Callable[[], str] = utc_now,
     scrape: Callable[..., VerticalSliceResult] = scrape_screener_company_path,
     host_client: ScreenerHostClient | None = None,
+    shared_permits: bool = False,
 ) -> dict[str, Any]:
-    if not due:
-        raise ValueError("Screener company worker currently requires --due")
-    if limit < 1:
-        raise ValueError("limit must be positive")
-    checked_at = now_utc()
-    worker_id = worker_id or f"screener-worker-{uuid.uuid4().hex}"
-    if dry_run:
-        due_rows: tuple[ClaimedCompany, ...] = ()
-        if db_path.exists():
-            readonly = sqlite3.connect(
-                f"file:{db_path.resolve()}?mode=ro", uri=True
-            )
-            readonly.row_factory = sqlite3.Row
-            try:
-                due_rows = preview_due_companies(
-                    readonly, now_utc=checked_at, limit=limit
-                )
-            finally:
-                readonly.close()
-        return {
-            "schema_version": DISCOVERY_SCHEMA_VERSION,
-            "mode": "dry_run",
-            "worker_id": None,
-            "checked_at_utc": checked_at,
-            "summary": {
-                "due_count": len(due_rows),
-                "claimed_count": 0,
-                "outcome_counts": {},
-            },
-            "due": [row.to_dict() | {"claim_token": None} for row in due_rows],
-            "outcomes": [],
-        }
-    conn = connect(db_path)
-    claimed: tuple[ClaimedCompany, ...] = ()
-    completed: set[int] = set()
-    outcomes: list[dict[str, Any]] = []
-    try:
-        init_db(conn)
-        if scrape is scrape_screener_company_path and host_client is None:
-            host_client = ScreenerHostClient()
-        claimed = claim_due_companies(
-            conn, now_utc=checked_at, limit=limit, worker_id=worker_id
-        )
-        stop_host = False
-        for position, item in enumerate(claimed):
-            if stop_host:
-                break
-            started_at = now_utc()
-            if skip_if_already_accepted(
-                conn, item, worker_id=worker_id, now_utc=started_at
-            ):
-                completed.add(item.queue_item_id)
-                outcomes.append(
-                    {"queue_item_id": item.queue_item_id, "status": "skipped_already_accepted"}
-                )
-                continue
-            mark_running(conn, item, worker_id=worker_id, now_utc=started_at)
-            try:
-                result = scrape(
-                    item.company_path_normalized,
-                    item.reporting_scope,
-                    expected_result_period=item.result_period,
-                    db_path=db_path,
-                    snapshot_root=snapshot_root,
-                    export_root=export_root,
-                    **({"host_client": host_client} if host_client is not None else {}),
-                )
-                complete_company(
-                    conn,
-                    item,
-                    parse_id=result.parse_id,
-                    company_id=result.company_id,
-                    export_path=str(result.export_path.resolve()),
-                    worker_id=worker_id,
-                    now_utc=now_utc(),
-                )
-                completed.add(item.queue_item_id)
-                outcomes.append(
-                    {
-                        "queue_item_id": item.queue_item_id,
-                        "status": "accepted",
-                        "parse_id": result.parse_id,
-                        "company_id": result.company_id,
-                        "export_path": str(result.export_path.resolve()),
-                    }
-                )
-            except Exception as exc:
-                retryable, stop_host = _failure_policy(exc, item.origin)
-                error = _safe_error(exc)
-                fail_company(
-                    conn,
-                    item,
-                    worker_id=worker_id,
-                    now_utc=now_utc(),
-                    error=error,
-                    retryable=retryable,
-                    stop_host=stop_host,
-                )
-                completed.add(item.queue_item_id)
-                outcomes.append(
-                    {
-                        "queue_item_id": item.queue_item_id,
-                        "status": "failed_retryable" if retryable else "failed_terminal",
-                        "stop_host": stop_host,
-                        "error": error,
-                    }
-                )
-    finally:
-        remaining = tuple(item for item in claimed if item.queue_item_id not in completed)
-        if remaining:
-            release_claims(conn, remaining, worker_id=worker_id, now_utc=now_utc())
-        conn.close()
-    counts = Counter(item["status"] for item in outcomes)
-    return {
-        "schema_version": DISCOVERY_SCHEMA_VERSION,
-        "mode": "execute",
-        "worker_id": worker_id,
-        "checked_at_utc": checked_at,
-        "summary": {
-            "due_count": len(claimed),
-            "claimed_count": len(claimed),
-            "completed_count": len(outcomes),
-            "outcome_counts": dict(sorted(counts.items())),
-        },
-        "claimed": [item.to_dict() | {"claim_token": "<redacted>"} for item in claimed],
-        "outcomes": outcomes,
-    }
+    return _company_workflow.run_screener_company_worker(due=due, limit=limit, dry_run=dry_run, db_path=db_path, snapshot_root=snapshot_root, export_root=export_root, worker_id=worker_id, now_utc=now_utc, scrape=scrape, host_client=host_client, shared_permits=shared_permits, shared_client_factory=shared_client_factory, Any=Any, ClaimedCompany=ClaimedCompany, Counter=Counter, DISCOVERY_SCHEMA_VERSION=DISCOVERY_SCHEMA_VERSION, ScreenerHostClient=ScreenerHostClient, __name__=__name__, _failure_policy=_failure_policy, _safe_error=_safe_error, claim_due_companies=claim_due_companies, complete_company=complete_company, connect=connect, fail_company=fail_company, get_logger=get_logger, init_db=init_db, log_event=log_event, mark_running=mark_running, preview_due_companies=preview_due_companies, release_claims=release_claims, scrape_screener_company_path=scrape_screener_company_path, skip_if_already_accepted=skip_if_already_accepted, sqlite3=sqlite3, uuid=uuid)

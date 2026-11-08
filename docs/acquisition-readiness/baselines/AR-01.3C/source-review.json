@@ -1,0 +1,111 @@
+{
+  "source_commit": "c3ddbbb9c298d07b8b46a362996251417282476a",
+  "files": [
+    {
+      "path": "scrapper/db/document_work_claims.py",
+      "pinned_sha256": "ac8b1551acad095f5171954e988c0db31be71d169cf4ec7a3049489dd53c618e",
+      "workspace_matches_pinned": true
+    },
+    {
+      "path": "scrapper/db/documents/processing.py",
+      "pinned_sha256": "9b6f40a793024a797326b8a295aac79d931b8a8b0dede64bd17a9b78c12bcee2",
+      "workspace_matches_pinned": true
+    },
+    {
+      "path": "scrapper/db/database.py",
+      "pinned_sha256": "bdda272cee762a11876dcdd7f7da8a6ab6d55595b8069dc67c42b95ef7ecc3fb",
+      "workspace_matches_pinned": true
+    },
+    {
+      "path": "scrapper/pipeline/extract_document.py",
+      "pinned_sha256": "cbdbd531efebb642ab73c839c347997ffc88a45b5aa8a7b0945758154c7c71f8",
+      "workspace_matches_pinned": true
+    },
+    {
+      "path": "scrapper/operations/workers/document_processing.py",
+      "pinned_sha256": "9ef7457f998dd3d0a01984e7a7c2f961ab910323d31c9ad64ef1e1f5c9d5de2a",
+      "workspace_matches_pinned": true
+    },
+    {
+      "path": "scrapper/operations/workers/processing_campaign.py",
+      "pinned_sha256": "10cbb1b9eb61297a94e6bdeec22b26fd2880049d30861ec775a72064f9fddd3a",
+      "workspace_matches_pinned": true
+    },
+    {
+      "path": "scrapper/operations/workers/quarter_processing.py",
+      "pinned_sha256": "7bb6d534896ae26f4f994bba42c8f60148f8c8c1a852dda0f3d5884222ddb383",
+      "workspace_matches_pinned": true
+    },
+    {
+      "path": "scrapper/commands/processing_campaign.py",
+      "pinned_sha256": "6576b18885112f24bc8e92b2194485aa8bef6288dcd10b1d56fe16cd94848ac1",
+      "workspace_matches_pinned": true
+    },
+    {
+      "path": "scrapper/commands/quarter_processing_role.py",
+      "pinned_sha256": "46543c67d0db73d768e7d80e2aee13e2ed6c7b5aa910ba61b9d4b7a264aab4d3",
+      "workspace_matches_pinned": true
+    },
+    {
+      "path": "scrapper/commands/periodic_dispatch.py",
+      "pinned_sha256": "f54743fad0cefbef552b5340ff6ee997dc7e6fe39a36bc3a53035cd038eaa8b9",
+      "workspace_matches_pinned": true
+    },
+    {
+      "path": "scrapper/operations/coordinator/periodic.py",
+      "pinned_sha256": "62dcf8763bf92f17fb6e148cd258be329b182b182fca7eb6ec0696714fc63a53",
+      "workspace_matches_pinned": true
+    },
+    {
+      "path": "scrapper/operations/coordinator/exchange.py",
+      "pinned_sha256": "db3fae5b76fa0b605074e1f3c2cdb95080dbaa2fa31941e53560338fb93a181f",
+      "workspace_matches_pinned": true
+    },
+    {
+      "path": "scrapper/commands/collection_scope.py",
+      "pinned_sha256": "199af7d27542548215e99f42462a7b2600e6eb011e8ad220b6349c32a66372b3",
+      "workspace_matches_pinned": true
+    },
+    {
+      "path": "scrapper/db/host_permits.py",
+      "pinned_sha256": "9b76c48a39eb334d3a30e2c1bb1ae9c0abac91fc0af816b6370f48e5d962f1d3",
+      "workspace_matches_pinned": true
+    },
+    {
+      "path": "scrapper/operations/workers/roles.py",
+      "pinned_sha256": "6657edb3e805c7cb7d4ef62fed5f97a598541f4c88c9814b9ec3d90875a8ca27",
+      "workspace_matches_pinned": true
+    },
+    {
+      "path": "scrapper/cli_groups/registration.py",
+      "pinned_sha256": "82e8c68cb52cfa846486a82861dfb56daddb5529195de86ed16f17439576df94",
+      "workspace_matches_pinned": true
+    },
+    {
+      "path": "scrapper/cli_groups/documents.py",
+      "pinned_sha256": "c4c5faabf4c8682fe7a06bd0a06c752775f4c559b27451fc788488880676741a",
+      "workspace_matches_pinned": true
+    },
+    {
+      "path": "scrapper/cli_groups/exchange.py",
+      "pinned_sha256": "a1422cfec113dfca274f9c195eb3a5da672f11cc82d223fea7e54483d1e99c76",
+      "workspace_matches_pinned": true
+    },
+    {
+      "path": "scrapper/cli_groups/screener.py",
+      "pinned_sha256": "f42ac9ab799faa69719bb5c396f0426933c80371242ea6ce8a3ee69d32f05e4d",
+      "workspace_matches_pinned": true
+    },
+    {
+      "path": "scrapper/cli_groups/mutual_funds.py",
+      "pinned_sha256": "5b7bd11bc708a9b2c94c8bd6b2ad2ccb856415827a9b06f23ea8692e23ff70be",
+      "workspace_matches_pinned": true
+    },
+    {
+      "path": "scrapper/cli_groups/operations.py",
+      "pinned_sha256": "4da32fdcccf01aa28ef5822d3a46daec16f2365fa0f81c92527f40bb0a338503",
+      "workspace_matches_pinned": true
+    }
+  ],
+  "production_or_canary_execution": "none"
+}

@@ -1,0 +1,172 @@
+path,loc,functions,classes,largest_function,largest_function_loc,current_domain,cleanup_priority,recommended_action,target_direction,flags
+scrapper/__init__.py,3,0,0,,0,other,P3,AUDIT,,
+scrapper/cli.py,2103,3,0,main,1142,CLI/control plane,P0,SPLIT,scrapper/cli/*,VERY_LARGE_MODULE;VERY_LARGE_FUNCTION
+scrapper/commands/browser_rating_headed.py,194,4,1,main,151,operator browser rating recovery,P1,SPLIT+MOVE,scrapper/documents/recovery/browser_rating/* or ops/host/*,LARGE_FUNCTION;OPERATOR_RECOVERY
+scrapper/commands/browser_rating_host.py,99,4,0,stop,25,operator browser rating recovery,P1,SPLIT+MOVE,scrapper/documents/recovery/browser_rating/* or ops/host/*,OPERATOR_RECOVERY
+scrapper/commands/browser_rating_probe.py,61,2,0,main,48,operator browser rating recovery,P1,SPLIT+MOVE,scrapper/documents/recovery/browser_rating/* or ops/host/*,OPERATOR_RECOVERY
+scrapper/commands/browser_rating_progress.py,56,2,0,main,43,operator browser rating recovery,P1,SPLIT+MOVE,scrapper/documents/recovery/browser_rating/* or ops/host/*,OPERATOR_RECOVERY
+scrapper/commands/browser_rating_recovery.py,690,21,2,fetch_report,125,operator browser rating recovery,P1,SPLIT+MOVE,scrapper/documents/recovery/browser_rating/* or ops/host/*,LARGE_MODULE;OPERATOR_RECOVERY
+scrapper/commands/collection_scope.py,147,3,0,apply_observation,54,operator command,P2,THIN_COMMAND,scrapper/cli/<domain>.py or service module,
+scrapper/commands/diagnose_retryable_failures.py,307,6,0,diagnose,118,recovery diagnostics,P2,MOVE,scrapper/operations/recovery_reports.py,
+scrapper/commands/exchange_bulk_enqueue.py,181,2,0,run_bulk_enqueue,154,operator command,P2,THIN_COMMAND,scrapper/cli/<domain>.py or service module,LARGE_FUNCTION
+scrapper/commands/exchange_unaccepted_backfill.py,179,3,0,run_unaccepted_backfill,161,operator command,P2,THIN_COMMAND,scrapper/cli/<domain>.py or service module,LARGE_FUNCTION
+scrapper/commands/publish_document_store_capacity.py,89,2,0,main,28,operator command,P2,THIN_COMMAND,scrapper/cli/<domain>.py or service module,
+scrapper/commands/quarter_documents.py,293,6,0,build_inventory,181,quarter document readiness,P1,SPLIT+MOVE,scrapper/documents/readiness/* + thin CLI,LARGE_FUNCTION
+scrapper/commands/quarter_extract.py,81,2,0,main,34,operator command,P2,THIN_COMMAND,scrapper/cli/<domain>.py or service module,
+scrapper/commands/recover_quarter_document_links.py,97,2,0,main,39,saved-page document repair,P1,KEEP_BEHAVIOR+MOVE,scrapper/documents/recovery/saved_screener_page.py + thin CLI,
+scrapper/commands/screener_period_coverage.py,236,4,0,run_period_coverage,109,operator command,P2,THIN_COMMAND,scrapper/cli/<domain>.py or service module,
+scrapper/config.py,213,1,0,ensure_dirs,37,configuration,P1,KEEP+TIGHTEN,scrapper/config.py,
+scrapper/core/__init__.py,1,0,0,,0,core/shared,P2,KEEP_SMALL,scrapper/core/*,
+scrapper/core/access_policy.py,73,5,1,is_blocked_terms_target,11,core/shared,P2,KEEP_SMALL,scrapper/core/*,
+scrapper/core/collection_scope.py,56,5,1,scope_snapshot,21,core/shared,P2,KEEP_SMALL,scrapper/core/*,
+scrapper/core/http.py,665,26,2,fetch_exchange_recovery_surface,72,HTTP/source transport,P2,SPLIT,scrapper/core/http.py + source-specific clients,LARGE_MODULE
+scrapper/core/log.py,26,2,0,get_logger,9,core/shared,P2,KEEP_SMALL,scrapper/core/*,
+scrapper/core/nums.py,111,8,0,unit_for_ratio_line,21,core/shared,P2,KEEP_SMALL,scrapper/core/*,
+scrapper/core/reporting_scope.py,33,3,0,preferred_scope,6,core/shared,P2,KEEP_SMALL,scrapper/core/*,
+scrapper/db/__init__.py,1,0,0,,0,persistence,P2,CLASSIFY_THEN_SPLIT,scrapper/db/<domain>/*,
+scrapper/db/artifact_reconciliation_repo.py,667,14,1,ensure_discovered_artifact_expectations,105,persistence,P2,CLASSIFY_THEN_SPLIT,scrapper/db/<domain>/*,LARGE_MODULE
+scrapper/db/collection_scope_repo.py,173,6,0,bootstrap_scope,104,persistence,P2,CLASSIFY_THEN_SPLIT,scrapper/db/<domain>/*,
+scrapper/db/credit_rating_repo.py,459,7,1,persist_credit_rating,193,persistence,P2,CLASSIFY_THEN_SPLIT,scrapper/db/<domain>/*,LARGE_MODULE;LARGE_FUNCTION
+scrapper/db/database.py,64,3,0,init_db,19,database bootstrap/migrations,P0,SPLIT_SAFETY,scrapper/db/connection.py + explicit migration command,SAFETY_SIDE_EFFECT
+scrapper/db/document_artifact_repo.py,454,9,1,persist_discovery_plan,153,persistence,P2,CLASSIFY_THEN_SPLIT,scrapper/db/<domain>/*,LARGE_MODULE;LARGE_FUNCTION
+scrapper/db/document_download_queue_repo.py,579,13,0,claim_download_job,150,persistence,P2,CLASSIFY_THEN_SPLIT,scrapper/db/<domain>/*,LARGE_MODULE
+scrapper/db/document_download_repo.py,459,7,1,persist_download_result,199,persistence,P2,CLASSIFY_THEN_SPLIT,scrapper/db/<domain>/*,LARGE_MODULE;LARGE_FUNCTION
+scrapper/db/document_extraction_repo.py,383,6,1,persist_extraction,156,persistence,P2,CLASSIFY_THEN_SPLIT,scrapper/db/<domain>/*,LARGE_FUNCTION
+scrapper/db/document_recovery_repo.py,1415,20,0,attach_recovery_candidate,221,document recovery persistence,P1,SPLIT,"scrapper/db/documents/recovery/{targets,leases,attempts,candidates,reconciliation}.py",VERY_LARGE_MODULE;LARGE_FUNCTION
+scrapper/db/exchange_repo.py,1583,28,0,apply_security_master,283,exchange persistence,P1,SPLIT,"scrapper/db/exchange/{snapshots,schedule,securities,corporate_changes,result_filings}.py",VERY_LARGE_MODULE;LARGE_FUNCTION
+scrapper/db/html_document_rendering_repo.py,186,2,1,render_and_persist_html_pdf,119,persistence,P2,CLASSIFY_THEN_SPLIT,scrapper/db/<domain>/*,
+scrapper/db/machine_transcript_repo.py,383,6,0,persist_machine_transcript,195,persistence,P2,CLASSIFY_THEN_SPLIT,scrapper/db/<domain>/*,LARGE_FUNCTION
+scrapper/db/mf_change_repo.py,564,14,2,generate_scheme_month_changes,205,persistence,P2,CLASSIFY_THEN_SPLIT,scrapper/db/<domain>/*,LARGE_MODULE;LARGE_FUNCTION
+scrapper/db/mf_feature_metrics.py,101,4,0,aggregate_feature_rows,67,persistence,P2,CLASSIFY_THEN_SPLIT,scrapper/db/<domain>/*,
+scrapper/db/mf_feature_repo.py,415,8,1,generate_stock_month_features,164,persistence,P2,CLASSIFY_THEN_SPLIT,scrapper/db/<domain>/*,LARGE_MODULE;LARGE_FUNCTION
+scrapper/db/mf_workbook_repo.py,1205,16,4,persist_ppfas_holdings,283,persistence,P2,CLASSIFY_THEN_SPLIT,scrapper/db/<domain>/*,VERY_LARGE_MODULE;LARGE_FUNCTION
+scrapper/db/mfdata_repo.py,475,8,1,_crosscheck,215,persistence,P2,CLASSIFY_THEN_SPLIT,scrapper/db/<domain>/*,LARGE_MODULE;LARGE_FUNCTION
+scrapper/db/recording_repo.py,326,4,1,persist_recording_normalization,161,persistence,P2,CLASSIFY_THEN_SPLIT,scrapper/db/<domain>/*,LARGE_FUNCTION
+scrapper/db/repo.py,764,12,0,store_parsed_company,402,Screener/company persistence,P1,SPLIT,scrapper/db/screener/*,LARGE_MODULE;VERY_LARGE_FUNCTION
+scrapper/db/screener_discovery_repo.py,821,21,1,complete_company,96,persistence,P2,CLASSIFY_THEN_SPLIT,scrapper/db/<domain>/*,VERY_LARGE_MODULE
+scrapper/db/transcript_repo.py,348,5,1,persist_official_transcript,175,persistence,P2,CLASSIFY_THEN_SPLIT,scrapper/db/<domain>/*,LARGE_FUNCTION
+scrapper/db/trendlyne_repo.py,444,4,0,store_parsed_trendlyne_page,287,legacy Trendlyne,P3,FREEZE/AUDIT,scrapper/legacy/trendlyne/* if retained,LARGE_MODULE;LARGE_FUNCTION
+scrapper/documents/__init__.py,2,0,0,,0,document primitive,P2,KEEP_DOMAIN,scrapper/documents/<capability>/*,
+scrapper/documents/availability.py,156,9,2,next_after_result,34,document primitive,P2,KEEP_DOMAIN,scrapper/documents/<capability>/*,
+scrapper/documents/credit_rating.py,662,21,5,_normalize_table_actions,96,document primitive,P2,KEEP_DOMAIN,scrapper/documents/<capability>/*,LARGE_MODULE
+scrapper/documents/credit_rating_resolver.py,428,10,3,_browser_resolution,136,document primitive,P2,KEEP_DOMAIN,scrapper/documents/<capability>/*,LARGE_MODULE
+scrapper/documents/download_scope.py,347,4,1,register_download_scope,245,document primitive,P2,KEEP_DOMAIN,scrapper/documents/<capability>/*,LARGE_FUNCTION
+scrapper/documents/downloader.py,788,18,4,download_recording_to_store,215,document transport,P1,SPLIT,"scrapper/documents/download/{models,http,recording,media}.py",LARGE_MODULE;LARGE_FUNCTION
+scrapper/documents/extraction.py,137,10,3,to_dict,17,document primitive,P2,KEEP_DOMAIN,scrapper/documents/<capability>/*,
+scrapper/documents/html.py,115,2,0,extract_rating_html,84,document primitive,P2,KEEP_DOMAIN,scrapper/documents/<capability>/*,
+scrapper/documents/html_pdf.py,243,5,1,render_validated_html_to_pdf,108,document primitive,P2,KEEP_DOMAIN,scrapper/documents/<capability>/*,
+scrapper/documents/landing_page.py,33,1,0,issuer_pdf_link,27,document primitive,P2,KEEP_DOMAIN,scrapper/documents/<capability>/*,
+scrapper/documents/media.py,391,17,5,validate_normalized_audio,94,document primitive,P2,KEEP_DOMAIN,scrapper/documents/<capability>/*,
+scrapper/documents/ocr.py,58,4,2,extract_text,25,document primitive,P2,KEEP_DOMAIN,scrapper/documents/<capability>/*,
+scrapper/documents/pdf.py,246,8,0,_extract_pdf_plumber,62,document primitive,P2,KEEP_DOMAIN,scrapper/documents/<capability>/*,
+scrapper/documents/powerpoint.py,290,8,0,_pptx_slide_elements,68,document primitive,P2,KEEP_DOMAIN,scrapper/documents/<capability>/*,
+scrapper/documents/rating_evidence.py,103,2,1,classify_rating_evidence,70,document primitive,P2,KEEP_DOMAIN,scrapper/documents/<capability>/*,
+scrapper/documents/rating_identity.py,71,3,0,company_names,40,document primitive,P2,KEEP_DOMAIN,scrapper/documents/<capability>/*,
+scrapper/documents/recovery.py,197,10,7,__post_init__,15,document primitive,P2,KEEP_DOMAIN,scrapper/documents/<capability>/*,
+scrapper/documents/recovery_matching.py,283,7,1,match_candidate,136,document primitive,P2,KEEP_DOMAIN,scrapper/documents/<capability>/*,
+scrapper/documents/store.py,132,3,1,assert_document_store_ready,48,document primitive,P2,KEEP_DOMAIN,scrapper/documents/<capability>/*,
+scrapper/documents/transcript.py,444,13,5,parse_official_transcript,125,document primitive,P2,KEEP_DOMAIN,scrapper/documents/<capability>/*,LARGE_MODULE
+scrapper/documents/transcription.py,387,16,6,validate_machine_transcript,142,document primitive,P2,KEEP_DOMAIN,scrapper/documents/<capability>/*,
+scrapper/exports/__init__.py,1,0,0,,0,report/export,P3,KEEP/MOVE_LATER,scrapper/exports/*,
+scrapper/exports/artifact_coverage.py,200,4,0,build_artifact_coverage_report,145,report/export,P3,KEEP/MOVE_LATER,scrapper/exports/*,
+scrapper/exports/document_alternate_source_recovery.py,139,3,0,build_alternate_source_recovery_report,91,report/export,P3,KEEP/MOVE_LATER,scrapper/exports/*,
+scrapper/exports/document_quality_report.py,683,18,0,build_document_quality_report,194,report/export,P3,KEEP/MOVE_LATER,scrapper/exports/*,LARGE_MODULE;LARGE_FUNCTION
+scrapper/exports/document_storage_projection.py,239,4,0,build_document_storage_projection,162,report/export,P3,KEEP/MOVE_LATER,scrapper/exports/*,LARGE_FUNCTION
+scrapper/exports/exchange_reconciliation_report.py,243,7,0,build_exchange_reconciliation_report,121,report/export,P3,KEEP/MOVE_LATER,scrapper/exports/*,
+scrapper/exports/exchange_universe_coverage.py,191,3,0,build_exchange_universe_coverage,157,report/export,P3,KEEP/MOVE_LATER,scrapper/exports/*,LARGE_FUNCTION
+scrapper/exports/json_export.py,271,3,0,build_export,238,report/export,P3,KEEP/MOVE_LATER,scrapper/exports/*,LARGE_FUNCTION
+scrapper/exports/mf_coverage_report.py,408,9,0,_pair_coverage,99,report/export,P3,KEEP/MOVE_LATER,scrapper/exports/*,LARGE_MODULE
+scrapper/exports/mf_feature_json_export.py,170,2,0,build_mf_feature_export,144,report/export,P3,KEEP/MOVE_LATER,scrapper/exports/*,
+scrapper/exports/mf_workbook_json_export.py,362,2,0,build_mf_workbook_export,341,report/export,P3,KEEP/MOVE_LATER,scrapper/exports/*,VERY_LARGE_FUNCTION
+scrapper/exports/mfdata_crosscheck_json_export.py,169,2,0,build_mfdata_crosscheck_export,146,report/export,P3,KEEP/MOVE_LATER,scrapper/exports/*,
+scrapper/exports/quality_report.py,450,15,0,_trendlyne_pilot_reports,97,report/export,P3,KEEP/MOVE_LATER,scrapper/exports/*,LARGE_MODULE
+scrapper/exports/screener_discovery_coverage.py,146,2,0,build_screener_discovery_coverage,117,report/export,P3,KEEP/MOVE_LATER,scrapper/exports/*,
+scrapper/exports/trendlyne_json_export.py,160,3,0,build_trendlyne_export,117,legacy Trendlyne,P3,FREEZE/AUDIT,scrapper/legacy/trendlyne/* if retained,
+scrapper/governance/__init__.py,35,0,0,,0,research/governance,P3,MOVE_LATER,scrapper/research/governance/*,
+scrapper/governance/focus_p0.py,598,16,9,propose_archetype,100,research/governance,P3,MOVE_LATER,scrapper/research/governance/*,LARGE_MODULE
+scrapper/pipeline/__init__.py,1,0,0,,0,workflow/orchestration,P2,CLASSIFY_THEN_MOVE,scrapper/workflows/<domain>/*,
+scrapper/pipeline/accepted_document_downloads.py,264,5,0,_register_automatic_scope,81,workflow/orchestration,P2,CLASSIFY_THEN_MOVE,scrapper/workflows/<domain>/*,
+scrapper/pipeline/alternate_source_recovery.py,307,4,0,run_document_recovery_worker,85,alternate-source recovery,P1,KEEP_BEHAVIOR+MOVE,scrapper/documents/recovery/alternate_sources.py,
+scrapper/pipeline/audit_acquisition_scope.py,321,7,0,audit_scope,160,workflow/orchestration,P2,CLASSIFY_THEN_MOVE,scrapper/workflows/<domain>/*,LARGE_FUNCTION
+scrapper/pipeline/build_acquisition_p0.py,523,10,1,_load_candidates,184,workflow/orchestration,P2,CLASSIFY_THEN_MOVE,scrapper/workflows/<domain>/*,LARGE_MODULE;LARGE_FUNCTION
+scrapper/pipeline/build_final_acquisition_reports.py,434,10,0,integrity_and_storage,109,workflow/orchestration,P2,CLASSIFY_THEN_MOVE,scrapper/workflows/<domain>/*,LARGE_MODULE
+scrapper/pipeline/build_full_acquisition_scope.py,215,4,0,build_full_scope,132,workflow/orchestration,P2,CLASSIFY_THEN_MOVE,scrapper/workflows/<domain>/*,
+scrapper/pipeline/build_gate_evidence.py,195,4,0,restart_resume_gate,76,workflow/orchestration,P2,CLASSIFY_THEN_MOVE,scrapper/workflows/<domain>/*,
+scrapper/pipeline/build_p0_governance.py,1536,26,0,build_p0_governance,577,research/governance,P3,MOVE_LATER,scrapper/research/governance/*,VERY_LARGE_MODULE;VERY_LARGE_FUNCTION
+scrapper/pipeline/build_transcript_coverage.py,571,7,0,build_coverage,262,workflow/orchestration,P2,CLASSIFY_THEN_MOVE,scrapper/workflows/<domain>/*,LARGE_MODULE;LARGE_FUNCTION
+scrapper/pipeline/credit_rating_downloads.py,529,12,0,run_credit_rating_download_worker,105,workflow/orchestration,P2,CLASSIFY_THEN_MOVE,scrapper/workflows/<domain>/*,LARGE_MODULE
+scrapper/pipeline/crosscheck_mfdata.py,77,1,0,execute_mfdata_crosscheck,61,workflow/orchestration,P2,CLASSIFY_THEN_MOVE,scrapper/workflows/<domain>/*,
+scrapper/pipeline/discover_documents.py,45,1,0,discover_documents,32,workflow/orchestration,P2,CLASSIFY_THEN_MOVE,scrapper/workflows/<domain>/*,
+scrapper/pipeline/document_download_recovery.py,658,7,0,register_replacement_document_url,188,failed-download operator recovery,P1,KEEP_BEHAVIOR+MOVE,scrapper/documents/recovery/failed_download.py,LARGE_MODULE;LARGE_FUNCTION
+scrapper/pipeline/evaluate_document_acquisition_gate.py,439,11,0,evaluate,195,workflow/orchestration,P2,CLASSIFY_THEN_MOVE,scrapper/workflows/<domain>/*,LARGE_MODULE;LARGE_FUNCTION
+scrapper/pipeline/exchange_universe.py,653,15,1,_ingest,152,workflow/orchestration,P2,CLASSIFY_THEN_MOVE,scrapper/workflows/<domain>/*,LARGE_MODULE;LARGE_FUNCTION
+scrapper/pipeline/extract_document.py,223,4,0,extract_document,136,workflow/orchestration,P2,CLASSIFY_THEN_MOVE,scrapper/workflows/<domain>/*,
+scrapper/pipeline/fetch_documents.py,271,3,1,fetch_documents,155,workflow/orchestration,P2,CLASSIFY_THEN_MOVE,scrapper/workflows/<domain>/*,LARGE_FUNCTION
+scrapper/pipeline/finalize_acquisition_states.py,294,5,0,reconcile_scope,141,workflow/orchestration,P2,CLASSIFY_THEN_MOVE,scrapper/workflows/<domain>/*,
+scrapper/pipeline/import_mf.py,545,12,1,execute_import,175,workflow/orchestration,P2,CLASSIFY_THEN_MOVE,scrapper/workflows/<domain>/*,LARGE_MODULE;LARGE_FUNCTION
+scrapper/pipeline/ingest_official_transcript.py,179,4,0,ingest_official_transcript,101,workflow/orchestration,P2,CLASSIFY_THEN_MOVE,scrapper/workflows/<domain>/*,
+scrapper/pipeline/ml_contracts.py,110,1,2,build_screener_ml_features,80,research/features,P2,PRESERVE_REVIEW_WORK,scrapper/research/features/* or focus/*,
+scrapper/pipeline/normalize_credit_rating.py,182,4,0,normalize_credit_rating_document,91,workflow/orchestration,P2,CLASSIFY_THEN_MOVE,scrapper/workflows/<domain>/*,
+scrapper/pipeline/normalize_recording.py,274,5,0,normalize_recording,153,workflow/orchestration,P2,CLASSIFY_THEN_MOVE,scrapper/workflows/<domain>/*,LARGE_FUNCTION
+scrapper/pipeline/observability.py,39,1,0,operational_snapshot,31,workflow/orchestration,P2,CLASSIFY_THEN_MOVE,scrapper/workflows/<domain>/*,
+scrapper/pipeline/promote_document_links.py,427,8,0,promote_document_links,233,workflow/orchestration,P2,CLASSIFY_THEN_MOVE,scrapper/workflows/<domain>/*,LARGE_MODULE;LARGE_FUNCTION
+scrapper/pipeline/queue_document_downloads.py,70,1,0,queue_document_downloads,53,workflow/orchestration,P2,CLASSIFY_THEN_MOVE,scrapper/workflows/<domain>/*,
+scrapper/pipeline/reconcile_artifacts.py,541,12,4,reconcile_artifacts,219,late-document reconciliation,P1,KEEP_BEHAVIOR+MOVE,scrapper/workflows/documents/reconciliation.py,LARGE_MODULE;LARGE_FUNCTION
+scrapper/pipeline/reconcile_issuer_retrieval_provenance.py,166,4,0,reconcile_issuer_retrieval_provenance,103,workflow/orchestration,P2,CLASSIFY_THEN_MOVE,scrapper/workflows/<domain>/*,
+scrapper/pipeline/reconcile_promoted_artifacts.py,215,6,0,reconcile_promoted_artifacts,100,workflow/orchestration,P2,CLASSIFY_THEN_MOVE,scrapper/workflows/<domain>/*,
+scrapper/pipeline/render_html_documents.py,154,4,0,render_pending_html_documents,73,workflow/orchestration,P2,CLASSIFY_THEN_MOVE,scrapper/workflows/<domain>/*,
+scrapper/pipeline/result_artifacts.py,34,1,0,backfill_accepted_result_artifacts,21,workflow/orchestration,P2,CLASSIFY_THEN_MOVE,scrapper/workflows/<domain>/*,
+scrapper/pipeline/run_document_download_worker.py,640,13,0,run_document_download_worker,306,document worker orchestration,P1,SPLIT,scrapper/workflows/documents/download_worker.py + policy/post_success helpers,LARGE_MODULE;VERY_LARGE_FUNCTION
+scrapper/pipeline/run_scope_extraction.py,256,3,0,run_scope_extraction,164,workflow/orchestration,P2,CLASSIFY_THEN_MOVE,scrapper/workflows/<domain>/*,LARGE_FUNCTION
+scrapper/pipeline/scheduler.py,747,20,1,_serve,113,scheduler/coordinator,P1,SPLIT,scrapper/operations/coordinator/*,LARGE_MODULE
+scrapper/pipeline/screener_discovery.py,556,8,0,run_screener_company_worker,165,Screener discovery/work queue,P1,SPLIT+MOVE,scrapper/workflows/screener/discovery.py + worker.py,LARGE_MODULE;LARGE_FUNCTION
+scrapper/pipeline/screener_vertical.py,739,5,2,ingest_screener_response,297,Screener ingestion workflow,P1,SPLIT,scrapper/workflows/screener/ingest.py,LARGE_MODULE;LARGE_FUNCTION
+scrapper/pipeline/transcribe_recording.py,320,10,0,transcribe_recording,143,workflow/orchestration,P2,CLASSIFY_THEN_MOVE,scrapper/workflows/<domain>/*,
+scrapper/pipeline/trendlyne_pilot.py,483,10,3,run_trendlyne_pilot_batch,147,legacy Trendlyne,P3,FREEZE/AUDIT,scrapper/legacy/trendlyne/* if retained,LARGE_MODULE
+scrapper/pipeline/trendlyne_vertical.py,186,2,1,ingest_trendlyne_response,111,legacy Trendlyne,P3,FREEZE/AUDIT,scrapper/legacy/trendlyne/* if retained,
+scrapper/screener/__init__.py,1,0,0,,0,other,P3,AUDIT,,
+scrapper/screener/urls.py,6,1,0,company_url,2,other,P3,AUDIT,,
+scrapper/sources/__init__.py,1,0,0,,0,source adapter/parser,P2,KEEP_DOMAIN,scrapper/sources/<source>/*,
+scrapper/sources/amc_workbook/__init__.py,5,0,0,,0,source adapter/parser,P2,KEEP_DOMAIN,scrapper/sources/<source>/*,
+scrapper/sources/amc_workbook/adapters.py,102,3,1,get_workbook_adapter,50,source adapter/parser,P2,KEEP_DOMAIN,scrapper/sources/<source>/*,
+scrapper/sources/amc_workbook/detector.py,386,14,3,inspect_workbook,85,source adapter/parser,P2,KEEP_DOMAIN,scrapper/sources/<source>/*,
+scrapper/sources/amc_workbook/groww.py,319,9,0,parse_groww_workbook,108,source adapter/parser,P2,KEEP_DOMAIN,scrapper/sources/<source>/*,
+scrapper/sources/amc_workbook/motilal_oswal.py,215,8,0,parse_motilal_oswal_workbook,83,source adapter/parser,P2,KEEP_DOMAIN,scrapper/sources/<source>/*,
+scrapper/sources/amc_workbook/ppfas.py,682,20,6,parse_ppfas_workbook,206,source adapter/parser,P2,KEEP_DOMAIN,scrapper/sources/<source>/*,LARGE_MODULE;LARGE_FUNCTION
+scrapper/sources/amc_workbook/workbook.py,447,15,4,read_xls_workbook,75,source adapter/parser,P2,KEEP_DOMAIN,scrapper/sources/<source>/*,LARGE_MODULE
+scrapper/sources/documents/__init__.py,30,0,0,,0,source adapter/parser,P2,KEEP_DOMAIN,scrapper/sources/<source>/*,
+scrapper/sources/documents/bse_recovery.py,116,2,1,parse_response,68,source adapter/parser,P2,KEEP_DOMAIN,scrapper/sources/<source>/*,
+scrapper/sources/documents/debt_recovery.py,43,1,1,select,20,source adapter/parser,P2,KEEP_DOMAIN,scrapper/sources/<source>/*,
+scrapper/sources/documents/discovery.py,496,16,5,build_discovery_plan,107,source adapter/parser,P2,KEEP_DOMAIN,scrapper/sources/<source>/*,LARGE_MODULE
+scrapper/sources/documents/issuer_ir_recovery.py,67,1,1,parse_saved_page,47,source adapter/parser,P2,KEEP_DOMAIN,scrapper/sources/<source>/*,
+scrapper/sources/documents/nse_recovery.py,100,2,1,parse_response,55,source adapter/parser,P2,KEEP_DOMAIN,scrapper/sources/<source>/*,
+scrapper/sources/documents/recovery_common.py,159,7,2,parse_publication_time,24,source adapter/parser,P2,KEEP_DOMAIN,scrapper/sources/<source>/*,
+scrapper/sources/exchange/__init__.py,6,0,0,,0,source adapter/parser,P2,KEEP_DOMAIN,scrapper/sources/<source>/*,
+scrapper/sources/exchange/corporate_changes.py,129,4,2,parse_corporate_changes,49,source adapter/parser,P2,KEEP_DOMAIN,scrapper/sources/<source>/*,
+scrapper/sources/exchange/datasets.py,228,8,1,default_url_for,17,source adapter/parser,P2,KEEP_DOMAIN,scrapper/sources/<source>/*,
+scrapper/sources/exchange/result_filings.py,403,11,2,_parse_bse_integrated,69,source adapter/parser,P2,KEEP_DOMAIN,scrapper/sources/<source>/*,LARGE_MODULE
+scrapper/sources/exchange/security_master.py,515,15,3,_mii_record,90,source adapter/parser,P2,KEEP_DOMAIN,scrapper/sources/<source>/*,LARGE_MODULE
+scrapper/sources/exchange/snapshot_guard.py,387,14,6,evaluate_snapshot,164,source adapter/parser,P2,KEEP_DOMAIN,scrapper/sources/<source>/*,LARGE_FUNCTION
+scrapper/sources/exchange/tabular.py,411,17,5,read_json_records,55,source adapter/parser,P2,KEEP_DOMAIN,scrapper/sources/<source>/*,LARGE_MODULE
+scrapper/sources/mfdata/__init__.py,17,0,0,,0,source adapter/parser,P2,KEEP_DOMAIN,scrapper/sources/<source>/*,
+scrapper/sources/mfdata/adapter.py,247,8,3,parse_mfdata_holdings,113,source adapter/parser,P2,KEEP_DOMAIN,scrapper/sources/<source>/*,
+scrapper/sources/mfdata/client.py,18,1,0,holdings_url,8,source adapter/parser,P2,KEEP_DOMAIN,scrapper/sources/<source>/*,
+scrapper/sources/screener/__init__.py,4,0,0,,0,source adapter/parser,P2,KEEP_DOMAIN,scrapper/sources/<source>/*,
+scrapper/sources/screener/company.py,1577,33,11,_parse_company_profile,152,Screener parsing,P1,SPLIT,"scrapper/sources/screener/{models,identity,metrics,profile,statements,growth,shareholding,document_links}.py",VERY_LARGE_MODULE;LARGE_FUNCTION
+scrapper/sources/screener/manifest.py,259,7,0,audit_screener_fixture_coverage,120,source adapter/parser,P2,KEEP_DOMAIN,scrapper/sources/<source>/*,
+scrapper/sources/screener/peers.py,176,2,2,parse_peer_table,116,source adapter/parser,P2,KEEP_DOMAIN,scrapper/sources/<source>/*,
+scrapper/sources/screener/result_screen.py,339,11,3,parse_result_screen,179,source adapter/parser,P2,KEEP_DOMAIN,scrapper/sources/<source>/*,LARGE_FUNCTION
+scrapper/sources/screener/urls.py,41,5,0,quick_ratios_url,6,source adapter/parser,P2,KEEP_DOMAIN,scrapper/sources/<source>/*,
+scrapper/sources/trendlyne/__init__.py,2,0,0,,0,legacy Trendlyne,P3,FREEZE/AUDIT,scrapper/legacy/trendlyne/* if retained,
+scrapper/sources/trendlyne/manifest.py,44,1,0,load_trendlyne_manifest,28,legacy Trendlyne,P3,FREEZE/AUDIT,scrapper/legacy/trendlyne/* if retained,
+scrapper/sources/trendlyne/monthly_mf.py,708,15,7,parse_monthly_mf_page,128,legacy Trendlyne,P3,FREEZE/AUDIT,scrapper/legacy/trendlyne/* if retained,LARGE_MODULE
+scrapper/sources/trendlyne/urls.py,74,5,1,source_period_for_url,8,legacy Trendlyne,P3,FREEZE/AUDIT,scrapper/legacy/trendlyne/* if retained,
+scrapper/validation/__init__.py,1,0,0,,0,validation,P2,KEEP/SPLIT_IF_LARGE,scrapper/validation/*,
+scrapper/validation/screener.py,1077,9,0,validate_parse,693,Screener validation,P1,SPLIT,scrapper/validation/screener/*,VERY_LARGE_MODULE;VERY_LARGE_FUNCTION
+scrapper/validation/trendlyne.py,1004,6,0,validate_trendlyne_parse,833,legacy Trendlyne,P3,FREEZE/AUDIT,scrapper/legacy/trendlyne/* if retained,VERY_LARGE_MODULE;VERY_LARGE_FUNCTION
+scrapper/view/__init__.py,25,0,0,,0,UI/monitoring,P2,MOVE_AFTER_CORE,scrapper/view/*,
+scrapper/view/browser_rating_monitor.py,104,5,0,fetch_rating_data,32,operator browser rating recovery,P1,SPLIT+MOVE,scrapper/documents/recovery/browser_rating/* or ops/host/*,OPERATOR_RECOVERY
+scrapper/view/download_monitor.py,633,8,0,fetch_download_monitor_data,243,UI/monitoring,P2,MOVE_AFTER_CORE,scrapper/view/*,LARGE_MODULE;LARGE_FUNCTION
+scrapper/view/monitor.py,556,9,0,render_rich_monitor,179,UI/monitoring,P2,MOVE_AFTER_CORE,scrapper/view/*,LARGE_MODULE;LARGE_FUNCTION
+scrapper/view/render.py,787,23,0,company_document_links,122,UI/monitoring,P2,MOVE_AFTER_CORE,scrapper/view/*,LARGE_MODULE
+scrapper/view/shell.py,844,15,2,run_interactive_shell,197,operator UI,P0,REMOVE_SIDE_EFFECT,scrapper/view/shell.py + explicit seed/import workflow,VERY_LARGE_MODULE;LARGE_FUNCTION;SAFETY_SIDE_EFFECT

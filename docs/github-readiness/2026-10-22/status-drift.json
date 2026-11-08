@@ -1,0 +1,15 @@
+{
+  "removed_status_fields": [
+    "?? control-center/",
+    "?? ops/control_center/",
+    "?? ops/host/control_center_db.py"
+  ],
+  "added_status_fields": [
+    " M scraper-monitor",
+    "?? ops/host/acquisition_observations.py",
+    "?? ops/host/acquisition_queries.py",
+    "?? ops/host/acquisition_terminal.py",
+    "?? ops/host/test_acquisition_observations.py"
+  ],
+  "interpretation": "concurrent worktree drift observed; audit issued no mutation to these paths"
+}

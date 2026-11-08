@@ -1,0 +1,14 @@
+{
+  "after_fk": 10771,
+  "all_tables": 157,
+  "before_fk": 10771,
+  "changed_tables": [
+    "document_extraction_claims"
+  ],
+  "missing_fk_identities": 0,
+  "new_fk_identities": 0,
+  "other_claim_keys_changed": 0,
+  "schema_ledger_unchanged": true,
+  "status": "PASS",
+  "unchanged_other_tables": 156
+}

@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "reviewed_artifact_hashes_verified": 43,
+  "reviewed_checksum_index_sha256": "8c629df53e11e78c1ab5331a59f24e80e74df766e211bc30d5073018a9fad02e",
+  "accepted_package_preserved": true,
+  "source_compose_identities_runbook_unchanged": true,
+  "ar_01_2_status": "PREPARED",
+  "independent_review": "PASS",
+  "production_activation": "NONE",
+  "ar_01_3_authorized": false
+}

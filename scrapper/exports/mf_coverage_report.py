@@ -6,6 +6,8 @@ import json
 import sqlite3
 from pathlib import Path
 
+from .writers import write_json_payload
+
 
 SCHEMA_VERSION = "1.0.0"
 
@@ -402,7 +404,5 @@ def write_mf_coverage_report(
     )
     output = Path(output)
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(
-        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
-    )
+    write_json_payload(payload, output)
     return output

@@ -1,0 +1,5 @@
+{"at_utc": "2026-10-08T04:09:17Z", "stage": "quick_check_start"}
+{"at_utc": "2026-10-08T04:13:23Z", "stage": "quick_check_end", "result": ["ok"]}
+{"at_utc": "2026-10-08T04:13:23Z", "stage": "integrity_check_start"}
+{"at_utc": "2026-10-08T04:17:53Z", "stage": "integrity_check_end", "result": ["ok"]}
+{"at_utc": "2026-10-08T04:17:53Z", "stage": "foreign_key_check_start"}

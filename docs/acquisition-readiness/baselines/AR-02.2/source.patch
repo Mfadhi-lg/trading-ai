@@ -1,0 +1,15 @@
+--- /Users/mohamedfadhi/Fadhi/trading-ai/docs/acquisition-readiness/baselines/AR-02.2/schedule-before.py	2026-10-08 15:57:42
++++ /Users/mohamedfadhi/Fadhi/trading-ai/scrapper/workflows/exchange/schedule.py	2026-10-08 16:01:04
+@@ -415,6 +415,12 @@
+         "revisions": revisions,
+         "outstanding": outstanding,
+         "access_blocked_datasets": blocked,
++        "access_blocked_action": (
++            "Keep blocked datasets held; continue unaffected sources. Review official "
++            "access permission/configuration before a separately authorized, "
++            "evidence-backed source resume. BSE-only coverage remains unproven."
++            if blocked else None
++        ),
+         "retry_scheduled": bool(retryable) and not final,
+         "status": ("incomplete" if final and retryable else
+                    "access_blocked" if blocked else "ok"),

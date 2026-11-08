@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-22T18:43:47.671379+00:00",
+  "head": "0e6ee264931ba1a1e009e0785cf188f5dc9f37e8",
+  "status_unchanged_outside_audit_package": false,
+  "manifest_files": 516,
+  "manifest_mismatches": [],
+  "audit_changes": "new package files only; no staging, commit, source edits or production connection",
+  "completed_at_utc": "2026-10-22T19:00:53.574003+00:00",
+  "head_unchanged": true,
+  "offline_tests_passed": 126,
+  "source_scan_completed": true,
+  "concurrent_drift": "status-drift.json; left as found, no audit mutation or restoration"
+}

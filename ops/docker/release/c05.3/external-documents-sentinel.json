@@ -1,0 +1,6 @@
+{
+  "environment": "production",
+  "path": "/documents",
+  "release_id": "c05.3-release-20261003",
+  "roles": ["documents"]
+}

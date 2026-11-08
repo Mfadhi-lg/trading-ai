@@ -1,0 +1,22 @@
+{
+  "claim_type": "CLONE_REHEARSAL",
+  "baseline_violation_count": 10771,
+  "groups": [
+    {
+      "table": "exchange_screener_enqueues",
+      "referenced_table": "screener_company_queue",
+      "foreign_key_id": 0,
+      "rows": 5395
+    },
+    {
+      "table": "screener_company_queue_events",
+      "referenced_table": "screener_company_queue",
+      "foreign_key_id": 0,
+      "rows": 5376
+    }
+  ],
+  "treatment": "Preserve baseline row identities and count; reject any new violation. No parent fabrication, queue history deletion, or remediation in AR-01.1.",
+  "after_violation_count": 10771,
+  "new_violations": 0,
+  "exact_identity_comparison": "PASS"
+}

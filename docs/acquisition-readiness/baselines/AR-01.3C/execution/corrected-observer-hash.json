@@ -1,0 +1,4 @@
+{
+  "sha256": "7299b9a33e11032e6d8e1ff8ef780857d0e722f772452113be5f36ffa3816a6e",
+  "change": "Include verified sidecar state in comparable identity; no production/app/code-path change"
+}

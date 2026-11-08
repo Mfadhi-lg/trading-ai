@@ -1,0 +1,9 @@
+test_distinct_archived_identity_and_pending_migrations_are_explicit (scrapper.tests.test_migration_manifest.MigrationLedgerAuditTests.test_distinct_archived_identity_and_pending_migrations_are_explicit) ... ok
+test_unexpected_pending_set_fails_closed (scrapper.tests.test_migration_manifest.MigrationLedgerAuditTests.test_unexpected_pending_set_fails_closed) ... ok
+test_unknown_applied_identity_fails_closed (scrapper.tests.test_migration_manifest.MigrationLedgerAuditTests.test_unknown_applied_identity_fails_closed) ... ok
+test_host_browser_start_refuses_before_runtime_directory_creation (scrapper.tests.test_runtime_identity.RuntimeEntryPointTests.test_host_browser_start_refuses_before_runtime_directory_creation) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.038s
+
+OK

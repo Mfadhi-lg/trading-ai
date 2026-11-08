@@ -1,0 +1,11 @@
+{
+  "head_unchanged": true,
+  "original_index_unchanged": true,
+  "selected_original_source_drift": [
+    "ops/host/acquisition_lifecycle.py",
+    "ops/host/acquisition_queries.py",
+    "ops/host/acquisition_terminal.py",
+    "ops/host/test_acquisition_terminal.py"
+  ],
+  "scope": "No original tracked or production path intentionally written. Head/index and selected source hashes compared; live databases not opened, hashed or frozen."
+}

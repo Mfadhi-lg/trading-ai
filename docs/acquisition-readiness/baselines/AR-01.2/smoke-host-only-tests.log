@@ -1,0 +1,62 @@
+{"clone_id": "unavailable", "environment": "test", "event": "runtime_writable_target_check", "git_commit": "unavailable", "image_id": "unavailable", "release_id": "unavailable", "targets": {"db": "/fixture/scraper.db", "documents": "/fixture/documents", "extra": ["/fixture/files", "/fixture/snapshots", "/fixture/exports", "/fixture/campaigns", "/fixture/logs", "/fixture/browser-state", "/fixture/backups"], "store": "/fixture"}}
+{"worker_lifecycle": {"active_job": null, "completed": 0, "heartbeat_at_monotonic": 1025.279802091, "observer_error": null, "progress_at_monotonic": 1025.279786633, "state": "READY"}}
+{"worker_lifecycle": {"active_job": null, "completed": 0, "heartbeat_at_monotonic": 1025.28065305, "observer_error": null, "progress_at_monotonic": 1025.279786633, "state": "STOPPED"}}
+WARNING: The directory '/app/.cache/pip' or its parent directory is not owned or is not writable by the current user. The cache has been disabled. Check the permissions and owner of that directory. If executing pip with sudo, you should use sudo's -H flag.
+No broken requirements found.
+test_default_init_checks_without_creating_ledger_or_applying_sql (scrapper.tests.test_database_migration_controls.DatabaseMigrationControlTests.test_default_init_checks_without_creating_ledger_or_applying_sql) ... {"clone_id": "unavailable", "environment": "test", "event": "runtime_writable_target_check", "git_commit": "unavailable", "image_id": "unavailable", "release_id": "unavailable", "targets": {"db": "/tmp/tmpa8hjog76/service.sqlite", "documents": "/fixture/documents", "extra": ["/fixture/files", "/fixture/snapshots", "/fixture/exports", "/fixture/campaigns", "/fixture/logs", "/fixture/browser-state", "/fixture/backups"], "store": "/fixture"}}
+ok
+test_historical_a2_identity_is_accepted_by_full_filename (scrapper.tests.test_database_migration_controls.DatabaseMigrationControlTests.test_historical_a2_identity_is_accepted_by_full_filename) ... {"clone_id": "unavailable", "environment": "test", "event": "runtime_writable_target_check", "git_commit": "unavailable", "image_id": "unavailable", "release_id": "unavailable", "targets": {"db": "/tmp/tmpw8v19d0f/service.sqlite", "documents": "/fixture/documents", "extra": ["/fixture/files", "/fixture/snapshots", "/fixture/exports", "/fixture/campaigns", "/fixture/logs", "/fixture/browser-state", "/fixture/backups"], "store": "/fixture"}}
+ok
+test_only_explicit_apply_runs_newly_visible_migration (scrapper.tests.test_database_migration_controls.DatabaseMigrationControlTests.test_only_explicit_apply_runs_newly_visible_migration) ... {"clone_id": "unavailable", "environment": "test", "event": "runtime_writable_target_check", "git_commit": "unavailable", "image_id": "unavailable", "release_id": "unavailable", "targets": {"db": "/tmp/tmpzr8k65fd/service.sqlite", "documents": "/fixture/documents", "extra": ["/fixture/files", "/fixture/snapshots", "/fixture/exports", "/fixture/campaigns", "/fixture/logs", "/fixture/browser-state", "/fixture/backups"], "store": "/fixture"}}
+ok
+test_read_only_connection_cannot_write_or_create_missing_database (scrapper.tests.test_database_migration_controls.DatabaseMigrationControlTests.test_read_only_connection_cannot_write_or_create_missing_database) ... ok
+test_unknown_applied_identity_blocks_compatibility_and_migration (scrapper.tests.test_database_migration_controls.DatabaseMigrationControlTests.test_unknown_applied_identity_blocks_compatibility_and_migration) ... {"clone_id": "unavailable", "environment": "test", "event": "runtime_writable_target_check", "git_commit": "unavailable", "image_id": "unavailable", "release_id": "unavailable", "targets": {"db": "/tmp/tmpvvwp4pbr/service.sqlite", "documents": "/fixture/documents", "extra": ["/fixture/files", "/fixture/snapshots", "/fixture/exports", "/fixture/campaigns", "/fixture/logs", "/fixture/browser-state", "/fixture/backups"], "store": "/fixture"}}
+ok
+test_migration_manifest (unittest.loader._FailedTest.test_migration_manifest) ... ERROR
+test_cli_preserves_current_browser_and_scrape_defaults (scrapper.tests.test_c043_schema_compatibility.SchemaCompatibilityTests.test_cli_preserves_current_browser_and_scrape_defaults) ... ok
+test_existing_a2_evidence_and_browser_schema_survive_explicit_upgrade (scrapper.tests.test_c043_schema_compatibility.SchemaCompatibilityTests.test_existing_a2_evidence_and_browser_schema_survive_explicit_upgrade) ... ok
+test_fresh_schema_has_new_identity_and_never_fabricates_historical_065 (scrapper.tests.test_c043_schema_compatibility.SchemaCompatibilityTests.test_fresh_schema_has_new_identity_and_never_fabricates_historical_065) ... ok
+test_status_uses_read_only_connection_and_has_no_schema_write (scrapper.tests.test_c043_schema_compatibility.SchemaCompatibilityTests.test_status_uses_read_only_connection_and_has_no_schema_write) ... ok
+test_cli_help_is_inert_without_environment_identity (scrapper.tests.test_runtime_identity.RuntimeEntryPointTests.test_cli_help_is_inert_without_environment_identity) ... ok
+test_container_worker_entry_refuses_before_database_creation (scrapper.tests.test_runtime_identity.RuntimeEntryPointTests.test_container_worker_entry_refuses_before_database_creation) ... ok
+test_direct_cli_refuses_before_database_or_directory_creation (scrapper.tests.test_runtime_identity.RuntimeEntryPointTests.test_direct_cli_refuses_before_database_or_directory_creation) ... ok
+test_host_browser_start_refuses_before_runtime_directory_creation (scrapper.tests.test_runtime_identity.RuntimeEntryPointTests.test_host_browser_start_refuses_before_runtime_directory_creation) ... FAIL
+test_copied_production_marker_needs_destination_bound_clone_identity (scrapper.tests.test_runtime_identity.RuntimeIdentityTests.test_copied_production_marker_needs_destination_bound_clone_identity) ... {"clone_id": "restored-fixture-1", "environment": "test", "event": "runtime_writable_target_check", "git_commit": "unavailable", "image_id": "unavailable", "release_id": "unavailable", "targets": {"db": "/tmp/tmp3wa083zs/state/scraper.db", "documents": "/tmp/tmp3wa083zs/documents", "extra": [], "store": "/tmp/tmp3wa083zs/store"}}
+ok
+test_development_rejects_known_production_target (scrapper.tests.test_runtime_identity.RuntimeIdentityTests.test_development_rejects_known_production_target) ... ok
+test_environment_is_required_before_any_target_creation (scrapper.tests.test_runtime_identity.RuntimeIdentityTests.test_environment_is_required_before_any_target_creation) ... ok
+test_production_requires_exact_manifest_release_and_sentinels (scrapper.tests.test_runtime_identity.RuntimeIdentityTests.test_production_requires_exact_manifest_release_and_sentinels) ... {"clone_id": "unavailable", "environment": "production", "event": "runtime_writable_target_check", "git_commit": "abc123", "image_id": "sha256:123", "release_id": "release-20261002", "targets": {"db": "/tmp/tmp0xvh1741/state/scraper.db", "documents": "/tmp/tmp0xvh1741/documents", "extra": [], "store": "/tmp/tmp0xvh1741/store"}}
+ok
+test_test_environment_allows_isolated_targets_and_logs_public_identity (scrapper.tests.test_runtime_identity.RuntimeIdentityTests.test_test_environment_allows_isolated_targets_and_logs_public_identity) ... ok
+
+======================================================================
+ERROR: test_migration_manifest (unittest.loader._FailedTest.test_migration_manifest)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_migration_manifest
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/unittest/loader.py", line 137, in loadTestsFromName
+    module = __import__(module_name)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/app/scrapper/tests/test_migration_manifest.py", line 8, in <module>
+    from scripts.audit.check_migration_manifest import AuditError, inspect_database
+ModuleNotFoundError: No module named 'scripts'
+
+
+======================================================================
+FAIL: test_host_browser_start_refuses_before_runtime_directory_creation (scrapper.tests.test_runtime_identity.RuntimeEntryPointTests.test_host_browser_start_refuses_before_runtime_directory_creation)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/app/scrapper/tests/test_runtime_identity.py", line 156, in test_host_browser_start_refuses_before_runtime_directory_creation
+    self.assertIn("TRADING_AI_ENV", result.stdout + result.stderr)
+AssertionError: 'TRADING_AI_ENV' not found in 'Traceback (most recent call last):\n  File "<frozen runpy>", line 198, in _run_module_as_main\n  File "<frozen runpy>", line 88, in _run_code\n  File "/app/scrapper/commands/browser_rating_host.py", line 26, in <module>\n    from ops.host import browser_rating_lifecycle as _owner\nModuleNotFoundError: No module named \'ops\'\n'
+
+----------------------------------------------------------------------
+Ran 19 tests in 1.803s
+
+FAILED (failures=1, errors=1)
+Traceback (most recent call last):
+  File "/proof/smoke.py", line 33, in <module>
+    subprocess.run(['python', '-m', 'unittest',
+  File "/usr/local/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['python', '-m', 'unittest', 'scrapper.tests.test_database_migration_controls', 'scrapper.tests.test_migration_manifest', 'scrapper.tests.test_c043_schema_compatibility', 'scrapper.tests.test_runtime_identity', '-v']' returned non-zero exit status 1.

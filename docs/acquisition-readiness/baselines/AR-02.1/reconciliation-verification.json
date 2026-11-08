@@ -1,0 +1,40 @@
+{
+  "evidence_indices": [
+    {
+      "path": "docs/acquisition-readiness/baselines/AR-01.3A/SHA256SUMS",
+      "sha256": "1506c54ee28d57e4114cf8365963928f7c2d55f615e33ebc20d15f2f51332d8a",
+      "files_checked": 65,
+      "failures": []
+    },
+    {
+      "path": "docs/acquisition-readiness/baselines/AR-01.3B/SHA256SUMS",
+      "sha256": "9173cc2a72b7c0998b806c4f3c5319f82d8f015f483bf694afbd22920f003b06",
+      "files_checked": 111,
+      "failures": []
+    },
+    {
+      "path": "docs/acquisition-readiness/baselines/AR-01.3C/attempt-02-execution/SHA256SUMS",
+      "sha256": "fa9ed968c28bc667d4f48fdd02e6d25cecc9dcb84445f484197e52b288b71dc0",
+      "files_checked": 92,
+      "failures": []
+    }
+  ],
+  "unchanged_parser_and_guard_sources": [
+    {
+      "path": "scrapper/sources/exchange/result_filings.py",
+      "sha256": "c8b20a5d74e252c5f2d68dbcf2c2fca9337692bdfff9fd8cda6277c73691b302",
+      "matches_pinned_source": true
+    },
+    {
+      "path": "scrapper/sources/exchange/tabular.py",
+      "sha256": "613eab097a0d0b4e34eb31e7aa994eafb8e8a44ac54589f76f5d1387a8c498fa",
+      "matches_pinned_source": true
+    },
+    {
+      "path": "scrapper/sources/exchange/snapshot_guard.py",
+      "sha256": "4d98d703d964f166d0c7cd730eb708fe9be792c11e5d52eec33663916fcadb12",
+      "matches_pinned_source": true
+    }
+  ],
+  "note": "Checksum verification only; completed migration/restore/control canary procedures were not rerun."
+}

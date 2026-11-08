@@ -1,0 +1,40 @@
+path_group,classification,logical_bytes,file_entries,tracked_files,nonignored_untracked_files,dependency_or_uniqueness_evidence,proposed_disposition,recovery_location,execution_status
+scrapper,KEEP_SOURCE_MIXED,748209495,7487,643,91,"Canonical application, tests and migrations; store/environment classified below",Keep code; exclude private stores and environments from source export,NOT_VERIFIED,PLANNING_ONLY
+scrapper/store,KEEP_LOCAL_DATA,590982179,912,,,"Separate local DB, snapshots, exports and AMC inputs",Preserve; establish backup and consumer map,NOT_VERIFIED,PLANNING_ONLY
+scrapper/.venv,INVESTIGATE_ENVIRONMENT,127235142,4951,,,Local Python environment; runtime/rebuild dependency not established,Exclude from GitHub; verify reproducibility and interpreter consumers,NOT_VERIFIED,PLANNING_ONLY
+ops,KEEP_SOURCE_MIXED,3805426,327,61,153,"Host entrypoints, schedules, ownership guards, releases and historical material",Classify individual files before export or moves,NOT_VERIFIED,PLANNING_ONLY
+ops/activation,KEEP_ACTIVE_MIXED,2240051,194,,,Dispatcher and schedules mix with machine state/manifests/seals,Keep live paths; separate reusable source from deployment inputs,NOT_VERIFIED,PLANNING_ONLY
+ops/host,KEEP_SOURCE,1240771,65,,,Root launchers dispatch here,"Keep CLI, lifecycle and appropriate tests",NOT_VERIFIED,PLANNING_ONLY
+ops/docker,KEEP_RELEASE_MIXED,277400,55,,,Pinned release identity/configuration and build tooling,Keep required paths until guard dependency review,NOT_VERIFIED,PLANNING_ONLY
+resources,KEEP_REFERENCE_INPUT,397816,1,1,0,Exchange reference locator consumes the securities CSV,Keep; review sharing of metadata,NOT_VERIFIED,PLANNING_ONLY
+scripts,KEEP_SOURCE,74767,12,7,3,Credit research entrypoints and migration/release audits,Keep; review paid/live command boundaries and external evidence dependencies,NOT_VERIFIED,PLANNING_ONLY
+.github,KEEP_BUILD,1625,2,2,0,Offline and migration CI definitions,Keep; validate against fresh export,NOT_VERIFIED,PLANNING_ONLY
+docs,KEEP_DOCUMENTATION_MIXED,9623663176,2100,1895,174,Current guidance plus bulky retained archives and machine evidence,Keep concise current docs; classify evidence separately,NOT_VERIFIED,PLANNING_ONLY
+docs/cleanup,ARCHIVE_INVESTIGATION,9504211164,1176,,,Prior cleanup evidence dominates size; some migration tooling reads retained identities,Keep indexes/contracts; verify exact archive consumers before externalizing,NOT_VERIFIED,PLANNING_ONLY
+docs/acquisition-readiness,KEEP_ACTIVE_EVIDENCE_MIXED,55756715,764,,,NSE and other release guards read baselines and source manifests,Keep required guard paths; review historical remainder individually,NOT_VERIFIED,PLANNING_ONLY
+artifacts,CLASSIFY_MIXED,88022290085,137837,23440,3524,"Runtime inputs/state, acquisition evidence, research results, snapshots and environments",No recursive removal or blanket publication,NOT_VERIFIED,PLANNING_ONLY
+artifacts/acquisition-readiness,INVESTIGATE_BACKUPS_RELEASES,61184732601,58,,,Four large DB snapshots plus OCI and retained activation evidence,"Establish snapshot purpose, consumers and restore route before consolidation",NOT_VERIFIED,PLANNING_ONLY
+artifacts/document-acquisition,KEEP_EVIDENCE_INVESTIGATE,12131361398,23225,,,"Source-derived extraction and acquisition history, including tracked payloads",Exclude bulk payloads from source export; retain and map consumers,NOT_VERIFIED,PLANNING_ONLY
+artifacts/phase5,INVESTIGATE_RESEARCH_STORAGE,11961924669,103193,,,"Research fixtures/results, environments, checkpoints and model/parser assets",Separate unique evidence from reproducible downloads/environments,NOT_VERIFIED,PLANNING_ONLY
+artifacts/focus_ml,KEEP_ACTIVE_REFERENCE,961782,23,,,phase4_schedule.py reads FOCUS_LABEL_REGISTRY_v001.json,Preserve installed registry; move new quarterly membership authority to database with reviewed compatibility exports and controlled reader transition,NOT_VERIFIED,PLANNING_ONLY
+artifacts/automatic-acquisition,KEEP_RUNTIME_STATE,37228702,5777,,,Dispatcher STATE path contains receipts and admission accounting,Keep locally; exclude from source publication,NOT_VERIFIED,PLANNING_ONLY
+artifacts/operational-recovery,KEEP_RUNTIME_STATE,457980,12,,,acquisition_lifecycle.py owns lifecycle state here,Keep locally; exclude from source publication,NOT_VERIFIED,PLANNING_ONLY
+artifacts/bse-browser-results,KEEP_RUNTIME_STATE,256855,13,,,Dispatcher RECEIPTS path,Keep exact paths and ownership; exclude state from export,NOT_VERIFIED,PLANNING_ONLY
+artifacts/bse-production-ingestion-ownership-fixed-2026-10-09,KEEP_ACTIVE_EVIDENCE,306406,19,,,Dispatcher reads retained manifest,Preserve until identity dependency is explicitly migrated,NOT_VERIFIED,PLANNING_ONLY
+artifacts/credit-rating-intelligence-v1,KEEP_RESEARCH_EVIDENCE,58172996,852,,,"Prompts, source packets, paid responses, tests and research outcomes",Preserve originals; publish only reviewed source/synthetic fixtures,NOT_VERIFIED,PLANNING_ONLY
+artifacts/three-document-reality-check-v0.4,KEEP_RESEARCH_EVIDENCE,104804219,882,,,Frozen sources and experimental comparisons,Preserve; review fixture and licensing boundaries,NOT_VERIFIED,PLANNING_ONLY
+OLD,DECOUPLE_THEN_KEEP_HISTORICAL,1193511936,937,0,0,Owner confirms OLD/RESULTS/2026/Q4 is the 2025 Q4 list despite directory year; separate legacy Q1 files retain unconfirmed scope; current builder hardcodes paths,Import corrected 2025 Q4 source and owner-designated 2026 Q1 text into versioned database records; switch consumers; retain OLD originals,NOT_VERIFIED,PLANNING_ONLY
+experiments,KEEP_RESEARCH_MIXED,5693104,54,5,30,Financial/unified pilots plus historical blocked provider proposal,Keep reproducible research; review each experiment separately,NOT_VERIFIED,PLANNING_ONLY
+experiments/upstox_fundamentals_pilot,ARCHIVE_CANDIDATE,,,,,Historical blocked provider proposal; previous scope retired it,Preserve negative findings in verified archive,NOT_VERIFIED,PLANNING_ONLY
+github-source-candidate-20261023,ARCHIVE_CANDIDATE,7641010,744,0,0,Independent Git repository; 56 changed and six candidate-only payload files,Preserve files/history and comparison; prepare fresh export separately,NOT_VERIFIED,PLANNING_ONLY
+sample_files,KEEP_RESTRICTED_REFERENCE,8740512,14,0,0,Original sample documents; not proved disposable or shareable,Keep external to publication; inventory consumers and content rights,NOT_VERIFIED,PLANNING_ONLY
+sample_files-2,KEEP_RESTRICTED_REFERENCE,20393773,28,0,0,Research/Focus input manifests and sample documents,Preserve; document experiment dependencies,NOT_VERIFIED,PLANNING_ONLY
+sample_files-2.zip,ARCHIVE_CANDIDATE,18652381,1,0,0,Sample export; independent equivalence/recovery not established,Compare contents and verify durable copy before removal,NOT_VERIFIED,PLANNING_ONLY
+trading-ai-code-review-compact.zip,ARCHIVE_CANDIDATE,75191666,1,0,0,Dated selective source-review export; not a production backup,Verify retained copy and useful unique contents,NOT_VERIFIED,PLANNING_ONLY
+.pytest_cache,REGENERABLE_CANDIDATE,136598,5,0,0,Pytest metadata,Optional exact-path cleanup after review,NOT_VERIFIED,PLANNING_ONLY
+.DS_Store,REGENERABLE_CANDIDATE,10244,1,0,0,Root Finder metadata; nested paths require separate enumeration,Optional exact-path cleanup after review,NOT_VERIFIED,PLANNING_ONLY
+.env,KEEP_SECRET_LOCAL,190,1,0,0,Root ignored environment file; values not read,Preserve outside Git; do not include in archives for sharing,NOT_VERIFIED,PLANNING_ONLY
+.screener_csrf,KEEP_SECRET_LOCAL_HISTORY_REVIEW,32,1,0,0,Current file ignored; named path still appears in Git history,Preserve local use; resolve exposure follow-up separately,NOT_VERIFIED,PLANNING_ONLY
+.screener_session,KEEP_SECRET_LOCAL,33,1,0,0,Root ignored session file; values not read,Preserve outside Git; do not publish,NOT_VERIFIED,PLANNING_ONLY
+.scraper_shutdown_state,KEEP_RUNTIME_STATE,386,1,0,0,Lifecycle pause/resume state,Preserve exact path; exclude from export,NOT_VERIFIED,PLANNING_ONLY
+.git,KEEP_HISTORY_INDEX,4253684224,2419,0,0,"Original branch history, large objects and 828 staged changes",Preserve; do not reset or rewrite for export,NOT_VERIFIED,PLANNING_ONLY

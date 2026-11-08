@@ -1,0 +1,19 @@
+{
+  "config_change_scope": "only image digest and new candidate config-file paths",
+  "identities_authorized": false,
+  "independent_review": "REUSED_BASELINE_NO_NEW_REVIEW_REQUIRED",
+  "loaded_digest_matches_oci": true,
+  "production_activation": "NOT_STARTED",
+  "production_inventory_unchanged": true,
+  "roles": 21,
+  "status": "PASS",
+  "zero_default_services": true,
+  "packaged_tests": 139,
+  "packaged_test_modules": 6,
+  "packaged_source_files_verified": 645,
+  "packaged_source_extra_files": 0,
+  "network": "none",
+  "production_mounts": [],
+  "pip_check": "PASS",
+  "runtime_identity_fails_closed": true
+}

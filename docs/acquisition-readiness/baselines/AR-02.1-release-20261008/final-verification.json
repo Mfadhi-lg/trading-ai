@@ -1,0 +1,14 @@
+{
+  "archive_retained_in_workspace": "artifacts/acquisition-readiness/AR-02.1-release-20261008/release.oci.tar",
+  "git_diff_check": "PASS",
+  "independent_review": "PENDING_FOR_NEW_DIGEST",
+  "ledger_before_retained": true,
+  "new_payload_focused_tests": 8,
+  "offline_behavioral_proof_reused": true,
+  "operational_services_started": false,
+  "preexisting_byte_drift": [],
+  "preexisting_files_checked": 706,
+  "production_activation": "NOT_STARTED",
+  "production_data_access": false,
+  "status": "PASS"
+}

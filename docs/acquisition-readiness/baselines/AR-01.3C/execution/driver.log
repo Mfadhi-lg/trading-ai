@@ -1,0 +1,17 @@
+{"at_utc": "2026-10-08T06:56:04Z", "stage": "START_AR013C_ONLY"}
+{"at_utc": "2026-10-08T06:56:11Z", "stage": "initial-gate_start"}
+{"at_utc": "2026-10-08T06:56:11Z", "stage": "STOP_NO_RETRY_NO_RECOVERY", "error": "initial-gate failed; STOP without retry/recovery"}
+{"at_utc": "2026-10-08T07:02:52Z", "stage": "START_AR013C_ONLY"}
+{"at_utc": "2026-10-08T07:02:58Z", "stage": "initial-gate_start"}
+{"at_utc": "2026-10-08T07:03:05Z", "stage": "initial-gate_PASS"}
+{"at_utc": "2026-10-08T07:03:05Z", "stage": "seed-baseline_start"}
+{"at_utc": "2026-10-08T07:05:19Z", "stage": "seed-baseline_PASS"}
+{"at_utc": "2026-10-08T07:05:19Z", "stage": "before-fingerprints_start"}
+{"at_utc": "2026-10-08T07:08:39Z", "stage": "before-fingerprints_PASS"}
+{"at_utc": "2026-10-08T07:08:39Z", "stage": "pre-write-gate_start"}
+{"at_utc": "2026-10-08T07:08:50Z", "stage": "pre-write-gate_PASS"}
+{"at_utc": "2026-10-08T07:08:51Z", "stage": "CANARY_WRITE_START"}
+{"at_utc": "2026-10-08T07:08:51Z", "stage": "CANARY_WRITE_EXIT", "exit_code": 125}
+{"at_utc": "2026-10-08T07:08:51Z", "stage": "STOP_NO_RETRY_NO_RECOVERY", "error": "Canary stopped; preserve row/receipts, no retry or automatic release"}
+{"at_utc": "2026-10-08T07:08:51Z", "stage": "failure-readonly-state_start"}
+{"at_utc": "2026-10-08T07:09:02Z", "stage": "failure-readonly-state_PASS"}

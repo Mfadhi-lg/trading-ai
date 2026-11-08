@@ -1,0 +1,10 @@
+# Never commit credentials or licensed/raw API payloads.
+.env
+*.env
+*.token
+*.secret
+outputs/*
+!outputs/.gitkeep
+raw/*
+!raw/.gitkeep
+

@@ -1,0 +1,8 @@
+{
+  "id": "sha256:4d289faa67334bc870d4f2a6a181feecee777fd427eac209b9adef68ecab0238",
+  "labels": {
+    "org.opencontainers.image.revision": "c3ddbbb9c298d07b8b46a362996251417282476a",
+    "org.opencontainers.image.version": "c28.1-ar012-20261007"
+  },
+  "platform": "linux/arm64"
+}

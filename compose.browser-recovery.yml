@@ -1,0 +1,59 @@
+# Reusable finite operator-directed rating recovery. Explicit run selection required.
+# These jobs exit when the durable run is drained. They do not seed new links.
+services:
+  browser-rating-crisil:
+    extends:
+      file: compose.yml
+      service: document-download-worker
+    profiles: [browser-recovery]
+    entrypoint: [python, -m, scrapper.commands.browser_rating_recovery]
+    command: [--run-id, "${BROWSER_RATING_RUN_ID:?Select an explicitly reviewed browser run}", --apply, --operator-authorized, --host, www.crisil.com, --host, www.crisilratings.com, --throttle-seconds, "20"]
+    restart: "on-failure:3"
+    cpus: 0.6
+    mem_limit: 1536m
+    stop_grace_period: 180s
+
+  browser-rating-icra:
+    extends:
+      file: compose.yml
+      service: document-download-worker
+    profiles: [browser-recovery]
+    entrypoint: [python, -m, scrapper.commands.browser_rating_recovery]
+    command: [--run-id, "${BROWSER_RATING_RUN_ID:?Select an explicitly reviewed browser run}", --apply, --operator-authorized, --host, www.icra.in]
+    restart: "on-failure:3"
+    cpus: 0.6
+    mem_limit: 1536m
+    stop_grace_period: 180s
+
+  browser-rating-other:
+    extends:
+      file: compose.yml
+      service: document-download-worker
+    profiles: [browser-recovery]
+    entrypoint: [python, -m, scrapper.commands.browser_rating_recovery]
+    command: [--run-id, "${BROWSER_RATING_RUN_ID:?Select an explicitly reviewed browser run}", --apply, --operator-authorized, --host, bcrisp.in, --host, www.bcrisp.in, --host, www.acuite.in, --host, connect.acuite.in, --host, www.infomerics.com, --host, www.indiaratings.co.in, --host, www.brickworkratings.com, --host, www.careratings.com]
+    restart: "on-failure:3"
+    cpus: 0.6
+    mem_limit: 1536m
+    stop_grace_period: 180s
+
+  browser-rating-extract:
+    extends:
+      file: compose.yml
+      service: document-download-worker
+    profiles: [browser-recovery]
+    entrypoint: [python, -m, scrapper.commands.browser_rating_recovery]
+    command: [--run-id, "${BROWSER_RATING_RUN_ID:?Select an explicitly reviewed browser run}", --process, --follow, --operator-authorized]
+    restart: "on-failure:3"
+    cpus: 0.6
+    mem_limit: 1536m
+    stop_grace_period: 180s
+
+volumes:
+  scraper-data:
+
+configs:
+  runtime_identity_documents:
+    file: ./ops/docker/release/c05.3/runtime-identity-documents.json
+  runtime_store_sentinel:
+    file: ./ops/docker/release/c05.3/store-sentinel.json

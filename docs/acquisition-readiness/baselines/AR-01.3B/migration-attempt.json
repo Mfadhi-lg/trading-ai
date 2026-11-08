@@ -1,0 +1,7 @@
+{
+  "attempt": 1,
+  "authorized": "AR-01.3B user instruction",
+  "retry_forbidden": true,
+  "runtime_identity_sha256": "a9f83a2bde31c297fa5ff3b0f29bb12d150d4d4e28ce1af4b1a23d6308bdbc9d",
+  "source_baseline_sha256": "f237daa6f4696f75e2081e93d69a57be6f8d9c097769aaa169a819789c9e4811"
+}

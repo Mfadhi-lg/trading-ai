@@ -1,0 +1,56 @@
+{
+  "RepoDigests": [
+    "trading-ai-c053-release@sha256:44da7074157fd2a946c41d064a91ef3f729ebd31ab3bcdf2aa09233c5a794b6b"
+  ],
+  "container_Image": "sha256:44da7074157fd2a946c41d064a91ef3f729ebd31ab3bcdf2aa09233c5a794b6b",
+  "container_name": "/trading-ai-scheduler-1",
+  "docker_inspect_Id": "sha256:44da7074157fd2a946c41d064a91ef3f729ebd31ab3bcdf2aa09233c5a794b6b",
+  "interpretation": "Docker containerd reports OCI index as .Image/.Id; platform and config are separate digests",
+  "manifest_identity": {
+    "baseline_commit": "db7564a109f1cb34ee4e7d5ea3427716e14cb51e",
+    "compose_repository_digest": "trading-ai-c053-release@sha256:44da7074157fd2a946c41d064a91ef3f729ebd31ab3bcdf2aa09233c5a794b6b",
+    "config_digest": "sha256:c3f3d1cbbe3155106bb848d4feb4cf4f7db2efec4b1a69b0dfafaa44731c119b",
+    "oci_index_digest": "sha256:44da7074157fd2a946c41d064a91ef3f729ebd31ab3bcdf2aa09233c5a794b6b",
+    "platform_manifest_digest": "sha256:05cf18b61418ace4f5e490ad59e62feb77de43558788fd47ca594c17d60cba77",
+    "release_id": "c05.3-release-20261003",
+    "status": "reproduced_not_activated"
+  },
+  "mounts": [
+    {
+      "Destination": "/data",
+      "Driver": "local",
+      "Mode": "rw",
+      "Name": "trading-ai_scraper-data",
+      "Propagation": "",
+      "RW": true,
+      "Source": "/var/lib/docker/volumes/trading-ai_scraper-data/_data",
+      "Type": "volume"
+    },
+    {
+      "Destination": "/data/.trading_ai_runtime_identity.json",
+      "Mode": "",
+      "Propagation": "rprivate",
+      "RW": false,
+      "Source": "/private/tmp/trading-ai-cleanup-c050-20261002/dev/ops/docker/release/c05.3/store-sentinel.json",
+      "Type": "bind"
+    },
+    {
+      "Destination": "/data/snapshots/.trading_ai_runtime_identity.json",
+      "Mode": "",
+      "Propagation": "rprivate",
+      "RW": false,
+      "Source": "/private/tmp/trading-ai-cleanup-c050-20261002/dev/ops/docker/release/c05.3/core-documents-sentinel.json",
+      "Type": "bind"
+    },
+    {
+      "Destination": "/run/trading-ai/runtime-identity.json",
+      "Mode": "",
+      "Propagation": "rprivate",
+      "RW": false,
+      "Source": "/private/tmp/trading-ai-cleanup-c050-20261002/dev/ops/docker/release/c05.3/runtime-identity-core.json",
+      "Type": "bind"
+    }
+  ],
+  "rollback_compatibility": "C05.3 retained as evidence, never restart as acquisition rollback",
+  "state": "exited"
+}

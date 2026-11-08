@@ -45,7 +45,7 @@ class DocumentExtractionD03Tests(unittest.TestCase):
         self.db_path = self.root / "scraper.db"
         conn = connect(self.db_path)
         try:
-            init_db(conn)
+            init_db(conn, apply_migrations=True)
             company_id = int(
                 conn.execute(
                     "INSERT INTO companies(current_legal_name, status) VALUES ('Fixture Limited', 'active')"
@@ -66,10 +66,14 @@ class DocumentExtractionD03Tests(unittest.TestCase):
         self.temp.cleanup()
 
     def _content(
-        self, fixture_name: str, *, media_type: str, artifact_type: str
+        self,
+        fixture_name: str,
+        *,
+        media_type: str,
+        artifact_type: str,
+        body: bytes | None = None,
     ) -> tuple[int, int]:
-        source = FIXTURES / fixture_name
-        body = source.read_bytes()
+        body = body if body is not None else (FIXTURES / fixture_name).read_bytes()
         digest = hashlib.sha256(body).hexdigest()
         snapshot = self.root / digest / fixture_name
         snapshot.parent.mkdir(parents=True)
@@ -289,6 +293,114 @@ class DocumentExtractionD03Tests(unittest.TestCase):
             )
         finally:
             conn.close()
+
+    def test_credit_rating_html_extracts_visible_structure_without_ocr(self) -> None:
+        body = b"""<!doctype html><html><head><title>Fixture rating rationale</title>
+        <style>.hidden{display:none}</style><script>do_not_extract()</script></head><body>
+        <h1>CRISIL Rating Rationale</h1><p>Key Rating Drivers</p>
+        <table><tr><th>Facility</th><th>Rating</th></tr>
+        <tr><td>Term Loan</td><td>CRISIL A/Stable</td></tr></table>
+        <h2>Liquidity</h2><p>Adequate</p><h2>Rating Sensitivities</h2>
+        <p>Factors that could lead to an upgrade.</p></body></html>"""
+        artifact_id, content_id = self._content(
+            "rating.html",
+            body=body,
+            media_type="text/html",
+            artifact_type="credit_rating",
+        )
+        conn = connect(self.db_path)
+        try:
+            with conn:
+                blob_id = int(
+                    conn.execute(
+                        "SELECT blob_id FROM artifact_contents WHERE content_id=?",
+                        (content_id,),
+                    ).fetchone()[0]
+                )
+                page_id = int(
+                    conn.execute(
+                        """INSERT INTO artifact_discovery_pages
+                           (company_id,discovered_from_source,discovery_page_url,
+                            publisher_claim,blob_id,parser_name,parser_version,
+                            first_observed_at_utc)
+                           VALUES (?,'rating_agency','https://ratings.example/fixture',
+                                   'CRISIL',?,'fixture','1',?)""",
+                        (self.company_id, blob_id, OBSERVED),
+                    ).lastrowid
+                )
+                source_id = int(
+                    conn.execute(
+                        """INSERT INTO artifact_sources
+                           (artifact_id,discovery_page_id,discovered_from_source,
+                            discovery_page_url,document_url,publisher_claim,
+                            source_position,source_title_raw,
+                            classification_evidence_json,is_primary_source,
+                            first_observed_at_utc,last_checked_at_utc)
+                           VALUES (?,?,'rating_agency','https://ratings.example/fixture',
+                                   'https://ratings.example/fixture/rationale','CRISIL',
+                                   0,'Fixture rationale','{}',1,?,?)""",
+                        (artifact_id, page_id, OBSERVED, OBSERVED),
+                    ).lastrowid
+                )
+                attempt_id = int(
+                    conn.execute(
+                        """INSERT INTO artifact_download_attempts
+                           (artifact_id,requested_url,final_url,started_at_utc,
+                            fetched_at_utc,elapsed_ms,http_status,
+                            response_headers_json,redirect_chain_json,
+                            declared_media_type,detected_media_type,byte_size,
+                            content_sha256,blob_id,content_id,result_status,
+                            limits_json,error_json)
+                           SELECT artifact_id,'https://ratings.example/fixture/rationale',
+                                  'https://ratings.example/fixture/rationale',?,?,1,200,
+                                  '{}','[]','text/html','text/html',byte_size,
+                                  content_sha256,blob_id,content_id,'validated','{}','{}'
+                             FROM artifact_contents WHERE content_id=?""",
+                        (OBSERVED, OBSERVED, content_id),
+                    ).lastrowid
+                )
+                conn.execute(
+                    """INSERT INTO artifact_download_attempt_sources
+                       (download_attempt_id,artifact_source_id) VALUES (?,?)""",
+                    (attempt_id, source_id),
+                )
+        finally:
+            conn.close()
+        report = self._run(artifact_id, content_id, FakeOcr(), "rating-html")
+        extraction = report["extraction"]
+        self.assertEqual(extraction["extraction_status"], "ok")
+        self.assertEqual(extraction["page_or_slide_count"], 1)
+        self.assertEqual(extraction["native_page_count"], 1)
+        self.assertEqual(extraction["pages"][0]["page_kind"], "page")
+        self.assertTrue(extraction["pages"][0]["layout"]["logical_page"])
+        self.assertNotIn("do_not_extract", extraction["pages"][0]["selected_text"])
+        self.assertIn(
+            "table",
+            {element["element_kind"] for element in extraction["pages"][0]["elements"]},
+        )
+        conn = connect(self.db_path)
+        try:
+            self.assertEqual(
+                conn.execute(
+                    """SELECT content_class
+                       FROM artifact_source_evidence_classifications
+                       WHERE artifact_source_id=? AND content_id=?""",
+                    (source_id, content_id),
+                ).fetchone()[0],
+                "FULL_RATING_RATIONALE",
+            )
+        finally:
+            conn.close()
+
+    def test_non_rating_html_remains_outside_d03_policy(self) -> None:
+        artifact_id, content_id = self._content(
+            "transcript.html",
+            body=b"<html><body><p>Transcript text</p></body></html>",
+            media_type="text/html",
+            artifact_type="transcript",
+        )
+        with self.assertRaisesRegex(ValueError, "not extractable"):
+            self._run(artifact_id, content_id, FakeOcr(), "transcript-html")
 
     def test_three_fixture_page_level_projection_matches_golden(self) -> None:
         specs = (

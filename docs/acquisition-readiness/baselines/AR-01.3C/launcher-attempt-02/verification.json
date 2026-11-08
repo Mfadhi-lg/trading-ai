@@ -1,0 +1,22 @@
+{
+  "status": "PASS_OFFLINE_ONLY",
+  "at_utc": "2026-10-08T07:27:38.459669+00:00",
+  "offline_tests": 10,
+  "test_exit_code": 0,
+  "argument_count": 42,
+  "image_argument_zero_based": 39,
+  "application_suffix": [
+    "PINNED_IMAGE",
+    "-c",
+    "INTACT_REVIEWED_CODE"
+  ],
+  "stray_newline_arguments_before_image": 0,
+  "code_intact_sha256": "937352ea7d4a5fae5dbcaf879d9821f4b5ae3ebd5bb8d5c6acd7d238654ed992",
+  "failed_vector_delta": "Remove exactly 11 literal newline argument tokens; all actual options/values and code identical",
+  "prior_attempt_marker_unchanged": true,
+  "prior_evidence_hashes_verified": 75,
+  "application_py_files_preserved": 2539,
+  "docker_invocations": 0,
+  "production_access": false,
+  "canary_execution_authorized": false
+}

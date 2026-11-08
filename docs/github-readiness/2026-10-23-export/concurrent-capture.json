@@ -1,0 +1,18 @@
+{
+  "captured_at_utc": "2026-10-23T04:51:17Z",
+  "updates": [
+    {
+      "path": "ops/host/acquisition_lifecycle.py",
+      "initial_sha256": "28770df8c3ce949ef39db774a9f28a63620ef55d496d10f87348322673a10b28",
+      "captured_sha256": "b9893b15bc1ea8ec098001a95444ecd5d95decd4ffda4b554c0c01ce400101f2",
+      "bytes": 21837
+    },
+    {
+      "path": "ops/host/acquisition_queries.py",
+      "initial_sha256": "7b568f28a81e04e3bdb4deca8865524e5d131c92cc5f6f00b04458d381e9cebe",
+      "captured_sha256": "9658b1086949d73665ea9dff7b4f4eaec6f16e05170663c7caf8d215cdc8e14a",
+      "bytes": 9719
+    }
+  ],
+  "originals_modified_by_export": false
+}

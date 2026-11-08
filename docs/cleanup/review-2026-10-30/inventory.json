@@ -1,0 +1,1910 @@
+{
+  "observed_at": "2026-10-30T16:53:38.644004+00:00",
+  "head": "0e6ee264931ba1a1e009e0785cf188f5dc9f37e8",
+  "branch": "chore/root-hygiene-pr",
+  "status_counts": {
+    " M": 44,
+    "A ": 823,
+    "AM": 2,
+    "RM": 1,
+    "MM": 2,
+    "??": 132
+  },
+  "tracked_paths": 26066,
+  "untracked_paths": 3979,
+  "directory_totals": {
+    "scraper": {
+      "files": 1,
+      "bytes": 158,
+      "tracked": 1,
+      "untracked": 0,
+      "other": 0,
+      "symlinks": 0
+    },
+    ".screener_csrf": {
+      "files": 1,
+      "bytes": 32,
+      "tracked": 0,
+      "untracked": 0,
+      "other": 1,
+      "symlinks": 0
+    },
+    "sample_files-2.zip": {
+      "files": 1,
+      "bytes": 18652381,
+      "tracked": 0,
+      "untracked": 0,
+      "other": 1,
+      "symlinks": 0
+    },
+    ".DS_Store": {
+      "files": 1,
+      "bytes": 10244,
+      "tracked": 0,
+      "untracked": 0,
+      "other": 1,
+      "symlinks": 0
+    },
+    "Dockerfile": {
+      "files": 1,
+      "bytes": 1674,
+      "tracked": 1,
+      "untracked": 0,
+      "other": 0,
+      "symlinks": 0
+    },
+    "TRADING_AI_NORTH_STAR.md": {
+      "files": 1,
+      "bytes": 20357,
+      "tracked": 0,
+      "untracked": 1,
+      "other": 0,
+      "symlinks": 0
+    },
+    ".scraper_shutdown_state": {
+      "files": 1,
+      "bytes": 386,
+      "tracked": 0,
+      "untracked": 0,
+      "other": 1,
+      "symlinks": 0
+    },
+    "compose.browser-recovery.development.yml": {
+      "files": 1,
+      "bytes": 1081,
+      "tracked": 1,
+      "untracked": 0,
+      "other": 0,
+      "symlinks": 0
+    },
+    "README.md": {
+      "files": 1,
+      "bytes": 5897,
+      "tracked": 1,
+      "untracked": 0,
+      "other": 0,
+      "symlinks": 0
+    },
+    ".dockerignore": {
+      "files": 1,
+      "bytes": 430,
+      "tracked": 1,
+      "untracked": 0,
+      "other": 0,
+      "symlinks": 0
+    },
+    ".gitignore": {
+      "files": 1,
+      "bytes": 1404,
+      "tracked": 1,
+      "untracked": 0,
+      "other": 0,
+      "symlinks": 0
+    },
+    "trading-ai-code-review-compact.zip": {
+      "files": 1,
+      "bytes": 75191666,
+      "tracked": 0,
+      "untracked": 0,
+      "other": 1,
+      "symlinks": 0
+    },
+    ".env": {
+      "files": 1,
+      "bytes": 190,
+      "tracked": 0,
+      "untracked": 0,
+      "other": 1,
+      "symlinks": 0
+    },
+    "TRADING_AI_MASTER_ROADMAP_V4_2026-09-29.md": {
+      "files": 1,
+      "bytes": 37589,
+      "tracked": 1,
+      "untracked": 0,
+      "other": 0,
+      "symlinks": 0
+    },
+    "scraper-monitor": {
+      "files": 1,
+      "bytes": 156,
+      "tracked": 1,
+      "untracked": 0,
+      "other": 0,
+      "symlinks": 0
+    },
+    ".screener_session": {
+      "files": 1,
+      "bytes": 33,
+      "tracked": 0,
+      "untracked": 0,
+      "other": 1,
+      "symlinks": 0
+    },
+    "compose.development.yml": {
+      "files": 1,
+      "bytes": 4227,
+      "tracked": 1,
+      "untracked": 0,
+      "other": 0,
+      "symlinks": 0
+    },
+    "screener-token": {
+      "files": 1,
+      "bytes": 1425,
+      "tracked": 0,
+      "untracked": 1,
+      "other": 0,
+      "symlinks": 0
+    },
+    "SHARE_MANIFEST.md": {
+      "files": 1,
+      "bytes": 11007,
+      "tracked": 0,
+      "untracked": 1,
+      "other": 0,
+      "symlinks": 0
+    },
+    "compose.yml": {
+      "files": 1,
+      "bytes": 15513,
+      "tracked": 1,
+      "untracked": 0,
+      "other": 0,
+      "symlinks": 0
+    },
+    "TRADING_AI_CLEANUP_EXECUTION.md": {
+      "files": 1,
+      "bytes": 98185,
+      "tracked": 1,
+      "untracked": 0,
+      "other": 0,
+      "symlinks": 0
+    },
+    "compose.browser-recovery.yml": {
+      "files": 1,
+      "bytes": 2423,
+      "tracked": 1,
+      "untracked": 0,
+      "other": 0,
+      "symlinks": 0
+    },
+    "scrapper": {
+      "files": 7487,
+      "bytes": 748209495,
+      "tracked": 643,
+      "untracked": 91,
+      "other": 6753,
+      "symlinks": 4
+    },
+    "artifacts": {
+      "files": 137837,
+      "bytes": 88022290085,
+      "tracked": 23440,
+      "untracked": 3524,
+      "other": 110873,
+      "symlinks": 26
+    },
+    "sample_files-2": {
+      "files": 28,
+      "bytes": 20393773,
+      "tracked": 0,
+      "untracked": 0,
+      "other": 28,
+      "symlinks": 0
+    },
+    ".pytest_cache": {
+      "files": 5,
+      "bytes": 136598,
+      "tracked": 0,
+      "untracked": 0,
+      "other": 5,
+      "symlinks": 0
+    },
+    "experiments": {
+      "files": 54,
+      "bytes": 5693104,
+      "tracked": 5,
+      "untracked": 30,
+      "other": 19,
+      "symlinks": 0
+    },
+    "resources": {
+      "files": 1,
+      "bytes": 397816,
+      "tracked": 1,
+      "untracked": 0,
+      "other": 0,
+      "symlinks": 0
+    },
+    "OLD": {
+      "files": 937,
+      "bytes": 1193511936,
+      "tracked": 0,
+      "untracked": 0,
+      "other": 937,
+      "symlinks": 0
+    },
+    "docs": {
+      "files": 2100,
+      "bytes": 9623663176,
+      "tracked": 1895,
+      "untracked": 174,
+      "other": 31,
+      "symlinks": 0
+    },
+    "github-source-candidate-20261023": {
+      "files": 744,
+      "bytes": 7641010,
+      "tracked": 0,
+      "untracked": 0,
+      "other": 744,
+      "symlinks": 0
+    },
+    "scripts": {
+      "files": 12,
+      "bytes": 74767,
+      "tracked": 7,
+      "untracked": 3,
+      "other": 2,
+      "symlinks": 0
+    },
+    ".github": {
+      "files": 2,
+      "bytes": 1625,
+      "tracked": 2,
+      "untracked": 0,
+      "other": 0,
+      "symlinks": 0
+    },
+    "ops": {
+      "files": 327,
+      "bytes": 3805426,
+      "tracked": 61,
+      "untracked": 153,
+      "other": 113,
+      "symlinks": 0
+    },
+    ".git": {
+      "files": 2419,
+      "bytes": 4253684224,
+      "tracked": 0,
+      "untracked": 0,
+      "other": 2419,
+      "symlinks": 0
+    },
+    "sample_files": {
+      "files": 14,
+      "bytes": 8740512,
+      "tracked": 0,
+      "untracked": 0,
+      "other": 14,
+      "symlinks": 0
+    }
+  },
+  "largest_files": [
+    {
+      "path": "artifacts/acquisition-readiness/AR-01.3C/attempt-02-post-canary/scraper.db",
+      "bytes": 14602240000
+    },
+    {
+      "path": "artifacts/acquisition-readiness/AR-01.3B/post-migration/raw/scraper.db",
+      "bytes": 14602240000
+    },
+    {
+      "path": "artifacts/acquisition-readiness/AR-01.3/pre-migration-068/validation/scraper.db",
+      "bytes": 14602158080
+    },
+    {
+      "path": "artifacts/acquisition-readiness/AR-01.3/pre-migration-068/raw/scraper.db",
+      "bytes": 14602158080
+    },
+    {
+      "path": "artifacts/phase5/general-ai-experiment/checkpoint/model.safetensors",
+      "bytes": 3034300695
+    },
+    {
+      "path": ".git/objects/pack/pack-5ca10b970be5146d4bb84c7106656e75990b78a1.pack",
+      "bytes": 1521741304
+    },
+    {
+      "path": ".git/objects/pack/pack-363f1a616e7a4063c213c716db521fc8cf3d5917.pack",
+      "bytes": 1039326237
+    },
+    {
+      "path": "docs/cleanup/baselines/C20.3/harness.tar",
+      "bytes": 1038407680
+    },
+    {
+      "path": "docs/cleanup/baselines/C28.1/preintegration.patch",
+      "bytes": 921903296
+    },
+    {
+      "path": "artifacts/b2-discovery-2026-10-01/B2_EXISTING_BACKUP_EXPORT.jsonl",
+      "bytes": 854143584
+    },
+    {
+      "path": "artifacts/acquisition-readiness/AR-02-period-20261008/release.oci.tar",
+      "bytes": 693943808
+    },
+    {
+      "path": "artifacts/acquisition-readiness/AR-02-combined-20261008/release.oci.tar",
+      "bytes": 693940736
+    },
+    {
+      "path": "artifacts/acquisition-readiness/AR-02.1-release-20261008/release.oci.tar",
+      "bytes": 693938688
+    },
+    {
+      "path": "artifacts/acquisition-readiness/AR-01.3/release.oci.tar",
+      "bytes": 693936128
+    },
+    {
+      "path": "artifacts/phase5/document-parsing-v10/mineru-home/models/MinerU-4_models_onnx/MFR/pp_formulanet_plus_m/PP-FormulaNet_plus-M.onnx",
+      "bytes": 591263297
+    },
+    {
+      "path": "artifacts/phase5/document-parsing-v10/env-mineru/lib/python3.11/site-packages/torch/lib/libtorch_cpu.dylib",
+      "bytes": 386016816
+    },
+    {
+      "path": "artifacts/phase5/document-parsing-v10/env-docling/lib/python3.11/site-packages/torch/lib/libtorch_cpu.dylib",
+      "bytes": 386016816
+    },
+    {
+      "path": "docs/cleanup/baselines/C19.2/harness.tar",
+      "bytes": 307353600
+    },
+    {
+      "path": "docs/cleanup/baselines/C20.2/harness.tar",
+      "bytes": 256808960
+    },
+    {
+      "path": "docs/cleanup/baselines/C22.1/harness.tar",
+      "bytes": 252897280
+    },
+    {
+      "path": "docs/cleanup/baselines/C22.3/harness.tar",
+      "bytes": 234752000
+    },
+    {
+      "path": "artifacts/phase5/document-parsing-v10/mineru-home/models/MinerU-4_models_onnx/Layout/PP-DocLayoutV2/inference.onnx",
+      "bytes": 213963712
+    },
+    {
+      "path": "artifacts/phase5/document-parsing-v10/docling-models/docling-project--docling-models/model_artifacts/tableformer/accurate/tableformer_accurate.safetensors",
+      "bytes": 212758388
+    },
+    {
+      "path": "artifacts/phase5/generalization/v3/teleocr-runtime/rustup-home/toolchains/1.97.1-aarch64-apple-darwin/lib/librustc_driver-e03ed1db822dfa4c.dylib",
+      "bytes": 207258056
+    },
+    {
+      "path": "docs/cleanup/baselines/C23.4/harness.tar",
+      "bytes": 199014400
+    },
+    {
+      "path": "docs/cleanup/baselines/C23.2/harness.tar",
+      "bytes": 197795840
+    },
+    {
+      "path": "docs/cleanup/baselines/C23.3/harness.tar",
+      "bytes": 197580800
+    },
+    {
+      "path": "docs/cleanup/baselines/C23.1/harness.tar",
+      "bytes": 197355520
+    },
+    {
+      "path": "docs/cleanup/baselines/C18.5/harness.tar",
+      "bytes": 196147200
+    },
+    {
+      "path": "artifacts/phase5/general-ai-experiment/.venv/lib/python3.11/site-packages/mlx/lib/mlx.metallib",
+      "bytes": 190319536
+    },
+    {
+      "path": "docs/cleanup/baselines/C20.1/harness.tar",
+      "bytes": 181288960
+    },
+    {
+      "path": "docs/cleanup/baselines/C19.4/harness.tar",
+      "bytes": 181002240
+    },
+    {
+      "path": "docs/cleanup/baselines/C19.3/harness.tar",
+      "bytes": 180531200
+    },
+    {
+      "path": "artifacts/phase5/document-parsing-v10/docling-models/docling-project--docling-layout-heron/model.safetensors",
+      "bytes": 171658996
+    },
+    {
+      "path": "artifacts/phase5/document-parsing-v10/docling-models/docling-project--docling-layout-heron-onnx/model.onnx",
+      "bytes": 171220471
+    },
+    {
+      "path": "docs/cleanup/baselines/C12.5/harness.tar",
+      "bytes": 165068800
+    },
+    {
+      "path": "artifacts/phase5/document-parsing-v10/docling-models/docling-project--docling-models/model_artifacts/tableformer/fast/tableformer_fast.safetensors",
+      "bytes": 145453276
+    },
+    {
+      "path": "docs/cleanup/baselines/C18.2/harness.tar",
+      "bytes": 143226880
+    },
+    {
+      "path": "artifacts/a0-2026-09-29/artifact_coverage.json",
+      "bytes": 139803178
+    },
+    {
+      "path": "docs/cleanup/baselines/C21.1/harness.tar",
+      "bytes": 135649280
+    }
+  ],
+  "candidate_comparison": {
+    "identical": [
+      "scraper",
+      "Dockerfile",
+      ".dockerignore",
+      "scraper-monitor",
+      "screener-token",
+      "scrapper/requirements.test.txt",
+      "scrapper/runtime_capabilities.py",
+      "scrapper/requirements.txt",
+      "scrapper/runtime_identity.py",
+      "scrapper/__init__.py",
+      "scrapper/requirements.test.lock",
+      "scrapper/requirements.lock",
+      "scrapper/research/__init__.py",
+      "scrapper/research/bse_browser_results.py",
+      "scrapper/research/amfi_amc_source_inventory.json",
+      "scrapper/research/document_intelligence/temporal.py",
+      "scrapper/research/document_intelligence/transcripts.py",
+      "scrapper/research/document_intelligence/charts.py",
+      "scrapper/research/document_intelligence/disclosures.py",
+      "scrapper/research/document_intelligence/evaluation.py",
+      "scrapper/research/document_intelligence/research_features.py",
+      "scrapper/research/document_intelligence/structure_research.py",
+      "scrapper/research/document_intelligence/__init__.py",
+      "scrapper/research/document_intelligence/offline.py",
+      "scrapper/research/document_intelligence/native_layout.py",
+      "scrapper/research/document_intelligence/numbers.py",
+      "scrapper/research/document_intelligence/correction_evaluation.py",
+      "scrapper/research/document_intelligence/source_review.py",
+      "scrapper/research/document_intelligence/generalization_evaluation.py",
+      "scrapper/research/document_intelligence/context.py",
+      "scrapper/research/document_intelligence/claim_candidates.py",
+      "scrapper/research/document_intelligence/ratings.py",
+      "scrapper/research/document_intelligence/native_financial_tables.py",
+      "scrapper/research/document_intelligence/evidence.py",
+      "scrapper/research/document_intelligence/extract.py",
+      "scrapper/research/document_intelligence/schema.py",
+      "scrapper/research/general_ai_experiment/prepare_local.py",
+      "scrapper/research/general_ai_experiment/verification.py",
+      "scrapper/research/general_ai_experiment/results.py",
+      "scrapper/research/general_ai_experiment/classification.py",
+      "scrapper/research/general_ai_experiment/local.py",
+      "scrapper/research/general_ai_experiment/protocol.py",
+      "scrapper/research/general_ai_experiment/__init__.py",
+      "scrapper/research/general_ai_experiment/review.py",
+      "scrapper/research/general_ai_experiment/holdout_score.py",
+      "scrapper/research/general_ai_experiment/final_report.py",
+      "scrapper/research/features/documents.py",
+      "scrapper/research/features/__init__.py",
+      "scrapper/research/features/financial.py",
+      "scrapper/research/focus/build_p0_governance.py",
+      "scrapper/research/focus/__init__.py",
+      "scrapper/research/governance/__init__.py",
+      "scrapper/research/governance/focus_p0.py",
+      "scrapper/pipeline/run_document_download_worker.py",
+      "scrapper/pipeline/run_scope_extraction.py",
+      "scrapper/pipeline/import_mf.py",
+      "scrapper/pipeline/queue_document_downloads.py",
+      "scrapper/pipeline/trendlyne_vertical.py",
+      "scrapper/pipeline/reconcile_issuer_retrieval_provenance.py",
+      "scrapper/pipeline/finalize_acquisition_states.py",
+      "scrapper/pipeline/exchange_universe.py",
+      "scrapper/pipeline/normalize_recording.py",
+      "scrapper/pipeline/document_download_recovery.py",
+      "scrapper/pipeline/result_artifacts.py",
+      "scrapper/pipeline/reconcile_artifacts.py",
+      "scrapper/pipeline/crosscheck_mfdata.py",
+      "scrapper/pipeline/reconcile_promoted_artifacts.py",
+      "scrapper/pipeline/render_html_documents.py",
+      "scrapper/pipeline/build_p0_governance.py",
+      "scrapper/pipeline/trendlyne_pilot.py",
+      "scrapper/pipeline/__init__.py",
+      "scrapper/pipeline/observability.py",
+      "scrapper/pipeline/promote_document_links.py",
+      "scrapper/pipeline/transcribe_recording.py",
+      "scrapper/pipeline/ingest_official_transcript.py",
+      "scrapper/pipeline/build_full_acquisition_scope.py",
+      "scrapper/pipeline/build_final_acquisition_reports.py",
+      "scrapper/pipeline/fetch_documents.py",
+      "scrapper/pipeline/audit_acquisition_scope.py",
+      "scrapper/pipeline/extract_document.py",
+      "scrapper/pipeline/alternate_source_recovery.py",
+      "scrapper/pipeline/build_gate_evidence.py",
+      "scrapper/pipeline/ml_contracts.py",
+      "scrapper/pipeline/screener_discovery.py",
+      "scrapper/pipeline/build_transcript_coverage.py",
+      "scrapper/pipeline/discover_documents.py",
+      "scrapper/pipeline/scheduler.py",
+      "scrapper/pipeline/evaluate_document_acquisition_gate.py",
+      "scrapper/pipeline/normalize_credit_rating.py",
+      "scrapper/pipeline/screener_vertical.py",
+      "scrapper/cli_groups/registration.py",
+      "scrapper/cli_groups/dispatch.py",
+      "scrapper/cli_groups/documents.py",
+      "scrapper/cli_groups/screener.py",
+      "scrapper/cli_groups/exchange.py",
+      "scrapper/cli_groups/__init__.py",
+      "scrapper/cli_groups/operations.py",
+      "scrapper/cli_groups/mutual_funds.py",
+      "scrapper/core/log.py",
+      "scrapper/core/collection_scope.py",
+      "scrapper/core/host_policy.py",
+      "scrapper/core/__init__.py",
+      "scrapper/core/attempts.py",
+      "scrapper/core/http.py",
+      "scrapper/core/host_request_contracts.py",
+      "scrapper/core/nums.py",
+      "scrapper/core/reporting_scope.py",
+      "scrapper/screener/__init__.py",
+      "scrapper/tests/test_ar022_access_block.py",
+      "scrapper/tests/test_phase4_document_selection.py",
+      "scrapper/tests/test_d08_document_quality.py",
+      "scrapper/tests/test_phase5_focused_disclosures.py",
+      "scrapper/tests/test_saved_page_ownership.py",
+      "scrapper/tests/test_p03_trendlyne_pilot.py",
+      "scrapper/tests/test_da06_recovery_contracts.py",
+      "scrapper/tests/test_final_acquisition_gate.py",
+      "scrapper/tests/test_recovery_candidate_ownership.py",
+      "scrapper/tests/test_e05_reconciliation_report.py",
+      "scrapper/tests/test_m02_ppfas_workbook.py",
+      "scrapper/tests/test_m08_generalization.py",
+      "scrapper/tests/test_document_worker_ownership.py",
+      "scrapper/tests/test_collection_coordinator.py",
+      "scrapper/tests/test_phase5_generalization.py",
+      "scrapper/tests/test_screener_growth_shareholding.py",
+      "scrapper/tests/test_c043_schema_compatibility.py",
+      "scrapper/tests/test_quarter_document_ownership.py",
+      "scrapper/tests/test_financial_feature_ownership.py",
+      "scrapper/tests/test_document_processing_worker.py",
+      "scrapper/tests/test_d06_recording_normalization.py",
+      "scrapper/tests/test_recovery_report_ownership.py",
+      "scrapper/tests/test_phase5_evidence_preservation.py",
+      "scrapper/tests/test_document_persistence_ownership.py",
+      "scrapper/tests/test_phase5_accuracy_corrections.py",
+      "scrapper/tests/test_e06_scheduler.py",
+      "scrapper/tests/test_manual_cli_profile.py",
+      "scrapper/tests/test_phase5_claim_candidates.py",
+      "scrapper/tests/test_exchange_reference_import.py",
+      "scrapper/tests/test_e03_dataset_registry.py",
+      "scrapper/tests/test_phase5_structure_research.py",
+      "scrapper/tests/test_browser_host_requests.py",
+      "scrapper/tests/test_document_reconciliation_ownership.py",
+      "scrapper/tests/test_host_request_executors.py",
+      "scrapper/tests/test_d07_machine_transcription.py",
+      "scrapper/tests/test_e04_mii_universe.py",
+      "scrapper/tests/test_screener_models.py",
+      "scrapper/tests/test_exchange_securities.py",
+      "scrapper/tests/test_screener_identity_metrics.py",
+      "scrapper/tests/test_m09_mfdata_crosscheck.py",
+      "scrapper/tests/test_claim_fencing.py",
+      "scrapper/tests/test_browser_rating_host_ownership.py",
+      "scrapper/tests/test_browser_rating_host_config.py",
+      "scrapper/tests/test_scraper_browser_lifecycle.py",
+      "scrapper/tests/test_document_readiness_ownership.py",
+      "scrapper/tests/test_d01_document_discovery.py",
+      "scrapper/tests/test_processing_campaign.py",
+      "scrapper/tests/test_worker_lifecycle.py",
+      "scrapper/tests/test_document_discovery_ownership.py",
+      "scrapper/tests/test_cli_screener_group.py",
+      "scrapper/tests/test_bse_browser_integration.py",
+      "scrapper/tests/test_cli_operations_group.py",
+      "scrapper/tests/test_d04_credit_rating_normalization.py",
+      "scrapper/tests/test_e02_snapshot_guard.py",
+      "scrapper/tests/test_m07_vertical_slice.py",
+      "scrapper/tests/test_document_download_ownership.py",
+      "scrapper/tests/test_alternate_source_ownership.py",
+      "scrapper/tests/test_m05_month_changes.py",
+      "scrapper/tests/__init__.py",
+      "scrapper/tests/test_exchange_snapshots.py",
+      "scrapper/tests/test_generic_executor.py",
+      "scrapper/tests/test_recovery_target_ownership.py",
+      "scrapper/tests/test_screener_discovery.py",
+      "scrapper/tests/test_periodic_coordinator.py",
+      "scrapper/tests/test_document_acquisition_closure.py",
+      "scrapper/tests/test_screener_vertical.py",
+      "scrapper/tests/test_browser_rating_monitor.py",
+      "scrapper/tests/test_retry_role_health.py",
+      "scrapper/tests/test_runtime_paths.py",
+      "scrapper/tests/test_screener_acceptance_repo.py",
+      "scrapper/tests/test_da06_recovery_adapters.py",
+      "scrapper/tests/test_runtime_identity.py",
+      "scrapper/tests/test_phase5_document_intelligence.py",
+      "scrapper/tests/test_phase5_general_ai_experiment.py",
+      "scrapper/tests/test_collection_scope.py",
+      "scrapper/tests/test_migration_manifest.py",
+      "scrapper/tests/test_recovery_reconciliation_ownership.py",
+      "scrapper/tests/test_screener_observation_repo.py",
+      "scrapper/tests/test_bse_browser_results.py",
+      "scrapper/tests/test_ml_reporting_contract.py",
+      "scrapper/tests/test_e01_exchange_universe.py",
+      "scrapper/tests/test_d03_document_extraction.py",
+      "scrapper/tests/test_ar02_snapshot_dates.py",
+      "scrapper/tests/test_view.py",
+      "scrapper/tests/test_d09_artifact_reconciliation.py",
+      "scrapper/tests/test_acquisition_roles.py",
+      "scrapper/tests/test_failed_download_ownership.py",
+      "scrapper/tests/test_m04_scheme_acceptance.py",
+      "scrapper/tests/test_quarter_processing_role.py",
+      "scrapper/tests/test_screener_company_workflow.py",
+      "scrapper/tests/test_browser_rating_publisher_ownership.py",
+      "scrapper/tests/test_transcript_recording_fallback.py",
+      "scrapper/tests/test_browser_rating_recovery.py",
+      "scrapper/tests/test_reporting_periods.py",
+      "scrapper/tests/test_trendlyne_t01.py",
+      "scrapper/tests/test_runtime_capabilities.py",
+      "scrapper/tests/test_phase5_quality_evaluation.py",
+      "scrapper/tests/test_screener_validation_rules.py",
+      "scrapper/tests/test_browser_rating_ledger_ownership.py",
+      "scrapper/tests/test_rating_metadata_refresh_ownership.py",
+      "scrapper/tests/test_screener_workflow.py",
+      "scrapper/tests/test_exchange_coordinator.py",
+      "scrapper/tests/test_screener_host_requests.py",
+      "scrapper/tests/test_document_retry_ownership.py",
+      "scrapper/tests/test_cli_mutual_funds_group.py",
+      "scrapper/tests/test_issuer_retrieval_provenance.py",
+      "scrapper/tests/test_phase4_automatic_processing.py",
+      "scrapper/tests/test_exchange_filings.py",
+      "scrapper/tests/test_browser_rating_content_ownership.py",
+      "scrapper/tests/test_phase5_source_review.py",
+      "scrapper/tests/test_document_download_recovery.py",
+      "scrapper/tests/test_fg00_p0_governance.py",
+      "scrapper/tests/test_d02_document_store_guard.py",
+      "scrapper/tests/test_research_governance_ownership.py",
+      "scrapper/tests/test_screener_period_coverage.py",
+      "scrapper/tests/test_company_quarter_features.py",
+      "scrapper/tests/test_phase4_tls.py",
+      "scrapper/tests/test_recovery_attempt_ownership.py",
+      "scrapper/tests/test_phase5_native_attribution.py",
+      "scrapper/tests/test_database_migration_controls.py",
+      "scrapper/tests/test_cli_facade.py",
+      "scrapper/tests/test_d05_official_transcript.py",
+      "scrapper/tests/test_quarter_document_contract.py",
+      "scrapper/tests/test_reporting_trendlyne_ownership.py",
+      "scrapper/tests/test_m03_holdings_normalization.py",
+      "scrapper/tests/test_document_evidence_interface.py",
+      "scrapper/tests/test_cli_package.py",
+      "scrapper/tests/b1_feature_fixture.py",
+      "scrapper/tests/test_m01_import_mf.py",
+      "scrapper/tests/test_screener_profile_commentary.py",
+      "scrapper/tests/test_cli_exchange_group.py",
+      "scrapper/tests/test_mf_scheme_ownership.py",
+      "scrapper/tests/test_da06_d09_repair.py",
+      "scrapper/tests/test_p02_pilot.py",
+      "scrapper/tests/test_browser_rating_bridge_protocol.py",
+      "scrapper/tests/test_quality_report.py",
+      "scrapper/tests/test_html_pdf_rendering.py",
+      "scrapper/tests/test_exchange_schedule.py",
+      "scrapper/tests/test_exchange_workflow.py",
+      "scrapper/tests/test_long_job_ownership.py",
+      "scrapper/tests/test_m06_stock_features.py",
+      "scrapper/tests/test_mf_workflow_ownership.py",
+      "scrapper/tests/database_fixtures.py",
+      "scrapper/tests/test_da06_recovery_matching.py",
+      "scrapper/tests/test_mf_workbook_ownership.py",
+      "scrapper/tests/test_screener_statements.py",
+      "scrapper/tests/test_document_processing_work.py",
+      "scrapper/tests/test_cli_documents_group.py",
+      "scrapper/tests/fixtures/documents/generate_d03_fixtures.py",
+      "scrapper/workflows/__init__.py",
+      "scrapper/workflows/exchange/__init__.py",
+      "scrapper/workflows/exchange/universe.py",
+      "scrapper/workflows/exchange/reference_import.py",
+      "scrapper/workflows/exchange/schedule.py",
+      "scrapper/workflows/screener/ingest.py",
+      "scrapper/workflows/screener/__init__.py",
+      "scrapper/workflows/screener/company_worker.py",
+      "scrapper/workflows/mutual_funds/import_mf.py",
+      "scrapper/workflows/mutual_funds/trendlyne_vertical.py",
+      "scrapper/workflows/mutual_funds/crosscheck_mfdata.py",
+      "scrapper/workflows/mutual_funds/trendlyne_pilot.py",
+      "scrapper/workflows/mutual_funds/__init__.py",
+      "scrapper/workflows/documents/discovery.py",
+      "scrapper/workflows/documents/reconciliation.py",
+      "scrapper/workflows/documents/quarter.py",
+      "scrapper/workflows/documents/__init__.py",
+      "scrapper/workflows/documents/download_reconciliation.py",
+      "scrapper/cli/__init__.py",
+      "scrapper/cli/__main__.py",
+      "scrapper/operations/coordinator/periodic.py",
+      "scrapper/operations/coordinator/exchange.py",
+      "scrapper/operations/coordinator/collection.py",
+      "scrapper/operations/workers/generic_scopes.py",
+      "scrapper/operations/workers/processing_campaign.py",
+      "scrapper/operations/workers/host_requests.py",
+      "scrapper/operations/workers/screener_requests.py",
+      "scrapper/operations/workers/quarter_processing.py",
+      "scrapper/operations/workers/roles.py",
+      "scrapper/operations/workers/health.py",
+      "scrapper/operations/workers/renewal.py",
+      "scrapper/operations/workers/lifecycle.py",
+      "scrapper/operations/workers/browser_requests.py",
+      "scrapper/exports/json_export.py",
+      "scrapper/exports/exchange_reconciliation_report.py",
+      "scrapper/exports/coverage_analytics.py",
+      "scrapper/exports/document_recovery.py",
+      "scrapper/exports/quality_report.py",
+      "scrapper/exports/exchange_universe_coverage.py",
+      "scrapper/exports/mf_feature_json_export.py",
+      "scrapper/exports/mfdata_crosscheck_json_export.py",
+      "scrapper/exports/document_alternate_source_recovery.py",
+      "scrapper/exports/trendlyne_json_export.py",
+      "scrapper/exports/document_storage_projection.py",
+      "scrapper/exports/__init__.py",
+      "scrapper/exports/document_quality_report.py",
+      "scrapper/exports/writers.py",
+      "scrapper/exports/mf_coverage_report.py",
+      "scrapper/exports/mf_workbook_json_export.py",
+      "scrapper/exports/screener_discovery_coverage.py",
+      "scrapper/exports/retryable_failure_diagnosis.py",
+      "scrapper/exports/__main__.py",
+      "scrapper/exports/artifact_coverage.py",
+      "scrapper/view/monitor.py",
+      "scrapper/view/render.py",
+      "scrapper/view/shell.py",
+      "scrapper/view/__init__.py",
+      "scrapper/view/download_monitor.py",
+      "scrapper/view/browser_rating_monitor.py",
+      "scrapper/governance/__init__.py",
+      "scrapper/governance/focus_p0.py",
+      "scrapper/db/document_artifact_repo.py",
+      "scrapper/db/document_download_repo.py",
+      "scrapper/db/mf_change_repo.py",
+      "scrapper/db/exchange_repo.py",
+      "scrapper/db/html_document_rendering_repo.py",
+      "scrapper/db/trendlyne_repo.py",
+      "scrapper/db/mf_feature_repo.py",
+      "scrapper/db/machine_transcript_repo.py",
+      "scrapper/db/database.py",
+      "scrapper/db/screener_host_defer.py",
+      "scrapper/db/screener_discovery_repo.py",
+      "scrapper/db/document_work_claims.py",
+      "scrapper/db/__init__.py",
+      "scrapper/db/document_extraction_repo.py",
+      "scrapper/db/transcript_repo.py",
+      "scrapper/db/document_recovery_repo.py",
+      "scrapper/db/mf_feature_metrics.py",
+      "scrapper/db/browser_host_defer.py",
+      "scrapper/db/credit_rating_repo.py",
+      "scrapper/db/repo.py",
+      "scrapper/db/collection_scope_repo.py",
+      "scrapper/db/mfdata_repo.py",
+      "scrapper/db/host_request_defer.py",
+      "scrapper/db/artifact_reconciliation_repo.py",
+      "scrapper/db/mf_workbook_repo.py",
+      "scrapper/db/periodic_tasks.py",
+      "scrapper/db/recording_repo.py",
+      "scrapper/db/migrations/055_repair_circuit_deferred_downloads.sql",
+      "scrapper/db/migrations/030_artifact_reconciliation.sql",
+      "scrapper/db/migrations/066_browser_rating_recovery_backoff.sql",
+      "scrapper/db/migrations/044_crisilratings_and_recording_safety.sql",
+      "scrapper/db/migrations/047_generic_download_host_health.sql",
+      "scrapper/db/migrations/009_peer_table.sql",
+      "scrapper/db/migrations/051_html_pdf_derivatives.sql",
+      "scrapper/db/migrations/074_collection_scope_tasks.sql",
+      "scrapper/db/migrations/020_mf_consecutive_month_changes.sql",
+      "scrapper/db/migrations/043_generic_download_host_policy.sql",
+      "scrapper/db/migrations/059_finalize_concall_retry_rebase.sql",
+      "scrapper/db/migrations/058_rebase_active_concall_refresh.sql",
+      "scrapper/db/migrations/022_mfdata_crosscheck.sql",
+      "scrapper/db/migrations/035_company_period_queue.sql",
+      "scrapper/db/migrations/053_fix_financial_scope_integrity_audit.sql",
+      "scrapper/db/migrations/031_screener_result_discovery.sql",
+      "scrapper/db/migrations/012_trendlyne_fund_observations.sql",
+      "scrapper/db/migrations/069_worker_claim_fencing.sql",
+      "scrapper/db/migrations/025_document_extraction.sql",
+      "scrapper/db/migrations/029_machine_transcription.sql",
+      "scrapper/db/migrations/016_mf_workbook_import_foundation.sql",
+      "scrapper/db/migrations/046_document_alternate_source_recovery.sql",
+      "scrapper/db/migrations/045_document_download_recovery.sql",
+      "scrapper/db/migrations/067_browser_rating_workers.sql",
+      "scrapper/db/migrations/004_growth_observations.sql",
+      "scrapper/db/migrations/013_trendlyne_mf_page_summaries.sql",
+      "scrapper/db/migrations/014_trendlyne_month_history.sql",
+      "scrapper/db/migrations/018_mf_holdings_normalization.sql",
+      "scrapper/db/migrations/038_monitor_query_indexes.sql",
+      "scrapper/db/migrations/073_exchange_coordinator_tasks.sql",
+      "scrapper/db/migrations/027_official_transcripts.sql",
+      "scrapper/db/migrations/028_recording_audio_normalization.sql",
+      "scrapper/db/migrations/019_mf_scheme_registry_acceptance.sql",
+      "scrapper/db/migrations/021_mf_stock_monthly_features.sql",
+      "scrapper/db/migrations/065_operator_browser_rating_recovery.sql",
+      "scrapper/db/migrations/050_rating_agency_direct_provenance.sql",
+      "scrapper/db/migrations/032_exchange_universe.sql",
+      "scrapper/db/migrations/042_document_download_queue.sql",
+      "scrapper/db/migrations/005_financial_expandable_marker.sql",
+      "scrapper/db/migrations/071_shared_host_permits.sql",
+      "scrapper/db/migrations/068_exchange_source_access_compatibility.sql",
+      "scrapper/db/migrations/023_document_artifact_discovery.sql",
+      "scrapper/db/migrations/054_standalone_financial_write_guard.sql",
+      "scrapper/db/migrations/037_disable_blind_document_followups.sql",
+      "scrapper/db/migrations/056_rearm_delayed_concall_refresh.sql",
+      "scrapper/db/migrations/015_trendlyne_pilot_backfill.sql",
+      "scrapper/db/migrations/011_trendlyne_fund_source_rows.sql",
+      "scrapper/db/migrations/040_credit_rating_host_health.sql",
+      "scrapper/db/migrations/006_shareholding_observations.sql",
+      "scrapper/db/migrations/057_close_invalid_result_period_artifacts.sql",
+      "scrapper/db/migrations/024_artifact_downloads.sql",
+      "scrapper/db/migrations/017_mf_ppfas_source_cells.sql",
+      "scrapper/db/migrations/001_initial.sql",
+      "scrapper/db/migrations/061_limit_delayed_concall_refresh_by_market_cap.sql",
+      "scrapper/db/migrations/002_source_identifiers.sql",
+      "scrapper/db/migrations/048_exchange_retrieval_provenance.sql",
+      "scrapper/db/migrations/063_document_period_corrections.sql",
+      "scrapper/db/migrations/003_availability_acceptance_periods.sql",
+      "scrapper/db/migrations/052_reporting_scope_ml_contract.sql",
+      "scrapper/db/migrations/062_collection_scope_monitor.sql",
+      "scrapper/db/migrations/070_document_extraction_claims.sql",
+      "scrapper/db/migrations/026_credit_rating_normalization.sql",
+      "scrapper/db/migrations/008_company_profile_text.sql",
+      "scrapper/db/migrations/039_credit_rating_acquisition.sql",
+      "scrapper/db/migrations/072_document_processing_work.sql",
+      "scrapper/db/migrations/034_schedule_publication.sql",
+      "scrapper/db/migrations/060_rebase_all_overdue_concall_refresh.sql",
+      "scrapper/db/migrations/007_document_links.sql",
+      "scrapper/db/migrations/049_document_acquisition_closure.sql",
+      "scrapper/db/migrations/041_credit_rating_host_policy.sql",
+      "scrapper/db/migrations/075_periodic_dispatch.sql",
+      "scrapper/db/migrations/064_exchange_filing_identity_collisions.sql",
+      "scrapper/db/migrations/036_document_followups.sql",
+      "scrapper/db/migrations/033_exchange_automation.sql",
+      "scrapper/db/migrations/010_trendlyne_monthly_page.sql",
+      "scrapper/db/exchange/snapshots.py",
+      "scrapper/db/exchange/tasks.py",
+      "scrapper/db/exchange/__init__.py",
+      "scrapper/db/exchange/securities.py",
+      "scrapper/db/exchange/filings.py",
+      "scrapper/db/exchange/schedule.py",
+      "scrapper/db/screener/observations.py",
+      "scrapper/db/screener/acceptance.py",
+      "scrapper/db/screener/__init__.py",
+      "scrapper/db/screener/scope_tasks.py",
+      "scrapper/db/mutual_funds/changes.py",
+      "scrapper/db/mutual_funds/scheme_acceptance.py",
+      "scrapper/db/mutual_funds/__init__.py",
+      "scrapper/db/mutual_funds/features.py",
+      "scrapper/db/mutual_funds/workbook_inventory.py",
+      "scrapper/db/mutual_funds/holdings.py",
+      "scrapper/db/mutual_funds/feature_metrics.py",
+      "scrapper/db/documents/rendering.py",
+      "scrapper/db/documents/download.py",
+      "scrapper/db/documents/quarter.py",
+      "scrapper/db/documents/__init__.py",
+      "scrapper/db/documents/host_health.py",
+      "scrapper/db/documents/download_reporting.py",
+      "scrapper/db/documents/expectations.py",
+      "scrapper/db/documents/readiness.py",
+      "scrapper/db/documents/evidence.py",
+      "scrapper/db/documents/recovery/browser_rating_bridge.py",
+      "scrapper/db/documents/recovery/browser_rating.py",
+      "scrapper/db/documents/recovery/targets.py",
+      "scrapper/db/documents/recovery/failed_download.py",
+      "scrapper/db/documents/recovery/reconciliation.py",
+      "scrapper/db/documents/recovery/rating_metadata_refresh.py",
+      "scrapper/db/documents/recovery/__init__.py",
+      "scrapper/db/documents/recovery/browser_rating_content.py",
+      "scrapper/db/documents/recovery/attempts.py",
+      "scrapper/db/documents/recovery/reports.py",
+      "scrapper/db/documents/recovery/saved_screener_page.py",
+      "scrapper/db/documents/recovery/candidates.py",
+      "scrapper/db/documents/recovery/alternate_sources.py",
+      "scrapper/sources/__init__.py",
+      "scrapper/sources/exchange/snapshot_guard.py",
+      "scrapper/sources/exchange/reporting_periods.py",
+      "scrapper/sources/exchange/browser_results.py",
+      "scrapper/sources/exchange/transport.py",
+      "scrapper/sources/exchange/tabular.py",
+      "scrapper/sources/exchange/datasets.py",
+      "scrapper/sources/exchange/__init__.py",
+      "scrapper/sources/exchange/security_master.py",
+      "scrapper/sources/exchange/reference.py",
+      "scrapper/sources/exchange/corporate_changes.py",
+      "scrapper/sources/screener/metrics.py",
+      "scrapper/sources/screener/company.py",
+      "scrapper/sources/screener/parsing.py",
+      "scrapper/sources/screener/models.py",
+      "scrapper/sources/screener/shareholding.py",
+      "scrapper/sources/screener/manifest.py",
+      "scrapper/sources/screener/profile.py",
+      "scrapper/sources/screener/commentary.py",
+      "scrapper/sources/screener/peers.py",
+      "scrapper/sources/screener/__init__.py",
+      "scrapper/sources/screener/growth.py",
+      "scrapper/sources/screener/result_screen.py",
+      "scrapper/sources/screener/assembly.py",
+      "scrapper/sources/screener/statements.py",
+      "scrapper/sources/screener/urls.py",
+      "scrapper/sources/screener/identity.py",
+      "scrapper/sources/amc_workbook/detector.py",
+      "scrapper/sources/amc_workbook/workbook.py",
+      "scrapper/sources/amc_workbook/ppfas.py",
+      "scrapper/sources/amc_workbook/groww.py",
+      "scrapper/sources/amc_workbook/__init__.py",
+      "scrapper/sources/amc_workbook/motilal_oswal.py",
+      "scrapper/sources/amc_workbook/adapters.py",
+      "scrapper/sources/mfdata/adapter.py",
+      "scrapper/sources/mfdata/client.py",
+      "scrapper/sources/mfdata/__init__.py",
+      "scrapper/sources/documents/bse_recovery.py",
+      "scrapper/sources/documents/issuer_ir_recovery.py",
+      "scrapper/sources/documents/discovery.py",
+      "scrapper/sources/documents/__init__.py",
+      "scrapper/sources/documents/debt_recovery.py",
+      "scrapper/sources/documents/routine.py",
+      "scrapper/sources/documents/recovery_common.py",
+      "scrapper/sources/documents/nse_recovery.py",
+      "scrapper/sources/manifests/ppfas_m07_official_workbooks.json",
+      "scrapper/sources/manifests/trendlyne_monthly_mf.yml",
+      "scrapper/sources/manifests/m08_official_workbooks.json",
+      "scrapper/sources/manifests/amc_workbook_groww.yml",
+      "scrapper/sources/manifests/screener_company.yml",
+      "scrapper/sources/manifests/amc_workbook_motilal_oswal.yml",
+      "scrapper/sources/manifests/amc_workbook_ppfas.yml",
+      "scrapper/sources/trendlyne/manifest.py",
+      "scrapper/sources/trendlyne/__init__.py",
+      "scrapper/sources/trendlyne/monthly_mf.py",
+      "scrapper/sources/trendlyne/urls.py",
+      "scrapper/commands/quarter_documents.py",
+      "scrapper/commands/recover_quarter_document_links.py",
+      "scrapper/commands/processing_campaign.py",
+      "scrapper/commands/browser_rating_headed.py",
+      "scrapper/commands/screener_period_coverage.py",
+      "scrapper/commands/exchange_bulk_enqueue.py",
+      "scrapper/commands/browser_rating_progress.py",
+      "scrapper/commands/collection_scope.py",
+      "scrapper/commands/exchange_unaccepted_backfill.py",
+      "scrapper/commands/publish_document_store_capacity.py",
+      "scrapper/commands/browser_rating_host_config.py",
+      "scrapper/commands/browser_rating_host.py",
+      "scrapper/commands/automatic_document_processing.py",
+      "scrapper/commands/browser_rating_probe.py",
+      "scrapper/commands/browser_rating_recovery.py",
+      "scrapper/commands/quarter_processing_role.py",
+      "scrapper/commands/quarter_extract.py",
+      "scrapper/commands/diagnose_retryable_failures.py",
+      "scrapper/commands/periodic_dispatch.py",
+      "scrapper/documents/store.py",
+      "scrapper/documents/html_pdf.py",
+      "scrapper/documents/transcription.py",
+      "scrapper/documents/media.py",
+      "scrapper/documents/landing_page.py",
+      "scrapper/documents/downloader.py",
+      "scrapper/documents/transcript.py",
+      "scrapper/documents/revisions.py",
+      "scrapper/documents/html.py",
+      "scrapper/documents/recovery_matching.py",
+      "scrapper/documents/__init__.py",
+      "scrapper/documents/pdf.py",
+      "scrapper/documents/priority.py",
+      "scrapper/documents/late_publications.py",
+      "scrapper/documents/credit_rating_resolver.py",
+      "scrapper/documents/ocr.py",
+      "scrapper/documents/powerpoint.py",
+      "scrapper/documents/rating_identity.py",
+      "scrapper/documents/rating_evidence.py",
+      "scrapper/documents/extraction.py",
+      "scrapper/documents/rating_company_aliases.json",
+      "scrapper/documents/availability.py",
+      "scrapper/documents/credit_rating.py",
+      "scrapper/documents/download_scope.py",
+      "scrapper/documents/recovery/failed_download.py",
+      "scrapper/documents/recovery/diagnostics.py",
+      "scrapper/documents/recovery/rating_metadata_refresh.py",
+      "scrapper/documents/recovery/__init__.py",
+      "scrapper/documents/recovery/saved_screener_page.py",
+      "scrapper/documents/recovery/alternate_sources.py",
+      "scrapper/documents/recovery/browser_rating/persistence.py",
+      "scrapper/documents/recovery/browser_rating/protocol.py",
+      "scrapper/documents/recovery/browser_rating/bridge.py",
+      "scrapper/documents/recovery/browser_rating/ledger.py",
+      "scrapper/documents/recovery/browser_rating/__init__.py",
+      "scrapper/documents/recovery/browser_rating/host_permit_bridge.py",
+      "scrapper/documents/recovery/browser_rating/errors.py",
+      "scrapper/documents/recovery/browser_rating/processing.py",
+      "scrapper/documents/recovery/browser_rating/validation.py",
+      "scrapper/documents/discovery/promotion.py",
+      "scrapper/documents/discovery/__init__.py",
+      "scrapper/documents/download/media.py",
+      "scrapper/documents/download/isolated_http.py",
+      "scrapper/documents/download/recording.py",
+      "scrapper/documents/download/__init__.py",
+      "scrapper/documents/download/tls.py",
+      "scrapper/documents/download/contracts.py",
+      "scrapper/documents/download/derivatives.py",
+      "scrapper/documents/download/certificates/rapidssl-tls-rsa-ca-g1.pem",
+      "scrapper/documents/readiness/quarter.py",
+      "scrapper/documents/readiness/__init__.py",
+      "scrapper/documents/readiness/persisted.py",
+      "scrapper/documents/readiness/evidence.py",
+      "scrapper/domain/artifact_reconciliation.py",
+      "scrapper/domain/__init__.py",
+      "scrapper/validation/screener.py",
+      "scrapper/validation/__init__.py",
+      "scrapper/validation/trendlyne.py",
+      "scrapper/validation/screener_rules.py",
+      "docs/architecture/FUTURE_DOMAIN_CONTRACT.md",
+      "ops/host/install_lifecycle_gate.py",
+      "ops/host/browser_rating_runner.py",
+      "ops/host/lifecycle_config.py",
+      "ops/host/browser-requirements.lock",
+      "ops/host/browser_rating_lifecycle.py",
+      "ops/host/test_acquisition_lifecycle.py",
+      "ops/host/browser_host_requests.py",
+      "ops/activation/phase4_tls_verify.py",
+      "ops/activation/verify_unattended_acquisition.py",
+      "ops/activation/step3_detail_runtime.py",
+      "ops/activation/verify_phase4_unattended.py",
+      "ops/activation/phase4_attempt02_verify.py",
+      "ops/activation/screener_auth_check_runtime.py",
+      "ops/activation/step3_inspect.py",
+      "ops/activation/phase4_trial_observer.py",
+      "ops/activation/install_automatic_acquisition.py",
+      "ops/activation/bse_retained.py",
+      "ops/activation/phase4_inspect_runtime.py",
+      "ops/activation/test_stage_recovery.py",
+      "ops/activation/test_nse_results.py",
+      "ops/activation/phase4_trial_snapshot_runtime.py",
+      "ops/activation/phase4_tls_context_verify.py",
+      "ops/activation/bse_scheduled_runtime.py",
+      "ops/activation/test_phase4_unattended.py",
+      "ops/activation/step3_canary_state.py",
+      "ops/activation/step3_canary_source_runtime.py",
+      "ops/activation/phase4_canary_verify.py",
+      "ops/activation/phase4_tls_diagnose.py",
+      "ops/activation/test_financial_priority.py",
+      "ops/activation/phase4_attempt03_verify.py",
+      "ops/activation/prepare_phase4_routine.py",
+      "ops/activation/test_phase4_followup.py",
+      "ops/activation/test_sqlite_sidecar_guard.py",
+      "ops/activation/test_phase4_fingerprint.py",
+      "ops/activation/phase4_fingerprint_preflight_runtime.py",
+      "ops/activation/test_production_ownership.py",
+      "ops/activation/monitor_phase4_receipts.py",
+      "ops/activation/phase4_followup_snapshot_runtime.py",
+      "ops/activation/phase4_gap_inspect_runtime.py",
+      "ops/activation/step3_canary_state_runtime.py",
+      "ops/activation/step3_schedule.py",
+      "ops/activation/phase4_offline_lifecycle.py",
+      "ops/activation/phase4_trial_preflight.py",
+      "ops/activation/bse_retained_runtime.py",
+      "ops/activation/test_phase3_bse_periods.py",
+      "ops/activation/test_retained_screener_supplementals.py",
+      "ops/activation/test_phase3_cap_mapping.py",
+      "ops/activation/test_step3_financial.py",
+      "ops/activation/test_step3_schedule.py",
+      "ops/activation/step3_accepted_details_runtime.py",
+      "ops/activation/phase3_inspect.py",
+      "ops/activation/screener_auth_check.py",
+      "ops/activation/test_phase4_bounded_followup.py",
+      "ops/activation/phase3_inspect_runtime.py",
+      "ops/activation/phase4_documents_runtime.py",
+      "ops/activation/phase4_inspect.py",
+      "ops/activation/phase4_attempt02_verify_runtime.py",
+      "ops/activation/phase3_bse_reassess.py",
+      "ops/activation/production_ownership.py",
+      "ops/activation/step3_inspect_runtime.py",
+      "ops/activation/test_guard_bse_repair.py",
+      "ops/activation/phase4_routine_preflight_runtime.py",
+      "ops/activation/nse_results_runtime.py",
+      "ops/activation/phase4_attempt03_verify_runtime.py",
+      "ops/activation/test_phase4_retry_admission.py",
+      "ops/activation/phase4_canary_verify_runtime.py",
+      "ops/activation/sqlite_sidecar_guard.py",
+      "ops/activation/phase4_followup.py",
+      "ops/activation/phase4_retry_preflight_runtime.py"
+    ],
+    "different": [
+      "README.md",
+      ".gitignore",
+      "scrapper/config.py",
+      "scrapper/README.md",
+      "scrapper/research/general_ai_experiment/runner.py",
+      "scrapper/pipeline/accepted_document_downloads.py",
+      "scrapper/pipeline/build_acquisition_p0.py",
+      "scrapper/pipeline/credit_rating_downloads.py",
+      "scrapper/core/access_policy.py",
+      "scrapper/tests/test_da06_recovery_attachment.py",
+      "scrapper/tests/test_rating_worker_instances.py",
+      "scrapper/tests/test_da06_recovery_registry.py",
+      "scrapper/tests/test_document_download_queue.py",
+      "scrapper/tests/test_credit_rating_acquisition.py",
+      "scrapper/tests/test_d02_document_downloader.py",
+      "scrapper/tests/test_shared_host_permits.py",
+      "scrapper/tests/test_phase4_discovery_selection.py",
+      "scrapper/tests/test_phase4_routine.py",
+      "scrapper/tests/test_screener_document_links_assembly.py",
+      "scrapper/workflows/documents/download.py",
+      "scrapper/workflows/documents/screener_refresh.py",
+      "scrapper/operations/workers/document_processing.py",
+      "scrapper/operations/workers/automatic_documents.py",
+      "scrapper/operations/workers/rating.py",
+      "scrapper/db/document_download_queue_repo.py",
+      "scrapper/db/host_permits.py",
+      "scrapper/db/documents/due.py",
+      "scrapper/db/documents/processing.py",
+      "scrapper/sources/exchange/result_filings.py",
+      "scrapper/sources/screener/document_links.py",
+      "scrapper/sources/documents/browser_rating.py",
+      "scrapper/commands/automatic_documents.py",
+      "scrapper/documents/download/transport.py",
+      "scrapper/documents/download/retry.py",
+      "docs/cleanup/baselines/C22.3/migration-manifest.json",
+      "scripts/audit/check_migration_manifest.py",
+      "scripts/audit/test_migration_lineage.py",
+      "ops/host/test_acquisition_observations.py",
+      "ops/host/acquisition_lifecycle.py",
+      "ops/host/acquisition_queries.py",
+      "ops/host/test_acquisition_terminal.py",
+      "ops/host/scraper_lifecycle.sh",
+      "ops/host/run_acquisition_lifecycle.py",
+      "ops/host/acquisition_terminal.py",
+      "ops/host/acquisition_observations.py",
+      "ops/host/acquisition_db_status.py",
+      "ops/activation/step3_financial.py",
+      "ops/activation/step3_financial_runtime.py",
+      "ops/activation/test_phase4_routine_schedule.py",
+      "ops/activation/automatic_acquisition.py",
+      "ops/activation/nse_results.py",
+      "ops/activation/test_automatic_acquisition.py",
+      "ops/activation/financial_priority.py",
+      "ops/activation/phase4_schedule.py",
+      "ops/activation/phase4_routine_runtime.py",
+      "ops/activation/phase4_documents.py"
+    ],
+    "candidate_only": [
+      "compose.source-example.yml",
+      "config/local.env.example",
+      "docs/PUBLICATION_BOUNDARIES.md",
+      "docs/migration-history/065_exchange_source_access.sql",
+      "scripts/audit/run_source_regressions.py",
+      ".github/workflows/source-regressions.yml"
+    ]
+  },
+  "index_blobs_at_least_50MB": [
+    {
+      "path": "docs/cleanup/baselines/C20.3/harness.tar",
+      "bytes": 1038407680
+    },
+    {
+      "path": "docs/cleanup/baselines/C28.1/preintegration.patch",
+      "bytes": 921903296
+    },
+    {
+      "path": "artifacts/acquisition-readiness/AR-02-combined-20261008/release.oci.tar",
+      "bytes": 693940736
+    },
+    {
+      "path": "artifacts/acquisition-readiness/AR-02.1-release-20261008/release.oci.tar",
+      "bytes": 693938688
+    },
+    {
+      "path": "docs/cleanup/baselines/C19.2/harness.tar",
+      "bytes": 307353600
+    },
+    {
+      "path": "docs/cleanup/baselines/C20.2/harness.tar",
+      "bytes": 256808960
+    },
+    {
+      "path": "docs/cleanup/baselines/C22.1/harness.tar",
+      "bytes": 252897280
+    },
+    {
+      "path": "docs/cleanup/baselines/C22.3/harness.tar",
+      "bytes": 234752000
+    },
+    {
+      "path": "docs/cleanup/baselines/C23.4/harness.tar",
+      "bytes": 199014400
+    },
+    {
+      "path": "docs/cleanup/baselines/C23.2/harness.tar",
+      "bytes": 197795840
+    },
+    {
+      "path": "docs/cleanup/baselines/C23.3/harness.tar",
+      "bytes": 197580800
+    },
+    {
+      "path": "docs/cleanup/baselines/C23.1/harness.tar",
+      "bytes": 197355520
+    },
+    {
+      "path": "docs/cleanup/baselines/C18.5/harness.tar",
+      "bytes": 196147200
+    },
+    {
+      "path": "docs/cleanup/baselines/C20.1/harness.tar",
+      "bytes": 181288960
+    },
+    {
+      "path": "docs/cleanup/baselines/C19.4/harness.tar",
+      "bytes": 181002240
+    },
+    {
+      "path": "docs/cleanup/baselines/C19.3/harness.tar",
+      "bytes": 180531200
+    },
+    {
+      "path": "docs/cleanup/baselines/C12.5/harness.tar",
+      "bytes": 165068800
+    },
+    {
+      "path": "docs/cleanup/baselines/C18.2/harness.tar",
+      "bytes": 143226880
+    },
+    {
+      "path": "artifacts/a0-2026-09-29/artifact_coverage.json",
+      "bytes": 139803178
+    },
+    {
+      "path": "docs/cleanup/baselines/C21.1/harness.tar",
+      "bytes": 135649280
+    },
+    {
+      "path": "docs/cleanup/baselines/C19.1/harness.tar",
+      "bytes": 129812480
+    },
+    {
+      "path": "docs/cleanup/baselines/C17.5/harness.tar",
+      "bytes": 129628160
+    },
+    {
+      "path": "docs/cleanup/baselines/C12.4/harness.tar",
+      "bytes": 124897280
+    },
+    {
+      "path": "docs/cleanup/baselines/C11.3/harness.tar",
+      "bytes": 123371520
+    },
+    {
+      "path": "docs/cleanup/baselines/C11.4/harness.tar",
+      "bytes": 123351040
+    },
+    {
+      "path": "docs/cleanup/baselines/C11.5/harness.tar",
+      "bytes": 123351040
+    },
+    {
+      "path": "docs/cleanup/baselines/C11.6/harness.tar",
+      "bytes": 123340800
+    },
+    {
+      "path": "docs/cleanup/baselines/C13.1/harness.tar",
+      "bytes": 122081280
+    },
+    {
+      "path": "docs/cleanup/baselines/C21.2/harness.tar",
+      "bytes": 120688640
+    },
+    {
+      "path": "docs/cleanup/baselines/C21.3/harness.tar",
+      "bytes": 120688640
+    },
+    {
+      "path": "docs/cleanup/baselines/C12.3/harness.tar",
+      "bytes": 119715840
+    },
+    {
+      "path": "docs/cleanup/baselines/C12.1/harness.tar",
+      "bytes": 119705600
+    },
+    {
+      "path": "docs/cleanup/baselines/C12.2/harness.tar",
+      "bytes": 119685120
+    },
+    {
+      "path": "docs/cleanup/baselines/C15.2/harness.tar",
+      "bytes": 115240960
+    },
+    {
+      "path": "docs/cleanup/baselines/C18.4/harness.tar",
+      "bytes": 114513920
+    },
+    {
+      "path": "docs/cleanup/baselines/C18.3/harness.tar",
+      "bytes": 114063360
+    },
+    {
+      "path": "docs/cleanup/baselines/C18.1/harness.tar",
+      "bytes": 113950720
+    },
+    {
+      "path": "artifacts/document-acquisition/final-ops/d03-progress/extraction-payloads/document-acquisition-full-v1/artifact-27989-content-18738.json",
+      "bytes": 109206735
+    },
+    {
+      "path": "artifacts/document-acquisition/final-ops/d03-progress/extraction-payloads/document-acquisition-full-v1/artifact-26530-content-17563.json",
+      "bytes": 107445598
+    },
+    {
+      "path": "docs/cleanup/baselines/C17.4/harness.tar",
+      "bytes": 107243520
+    },
+    {
+      "path": "docs/cleanup/baselines/C13.5/harness.tar",
+      "bytes": 100925440
+    },
+    {
+      "path": "docs/cleanup/baselines/C13.4/harness.tar",
+      "bytes": 100915200
+    },
+    {
+      "path": "docs/cleanup/baselines/C24.2/harness.tar",
+      "bytes": 99696640
+    },
+    {
+      "path": "docs/cleanup/baselines/C24.4/harness.tar",
+      "bytes": 99696640
+    },
+    {
+      "path": "docs/cleanup/baselines/C24.3/harness.tar",
+      "bytes": 99614720
+    },
+    {
+      "path": "docs/cleanup/baselines/C17.3/harness.tar",
+      "bytes": 97607680
+    },
+    {
+      "path": "docs/cleanup/baselines/C17.1/harness.tar",
+      "bytes": 94320640
+    },
+    {
+      "path": "docs/cleanup/baselines/C17.2/harness.tar",
+      "bytes": 93347840
+    },
+    {
+      "path": "docs/cleanup/baselines/C16.3/harness.tar",
+      "bytes": 89169920
+    },
+    {
+      "path": "docs/cleanup/baselines/C16.2/harness.tar",
+      "bytes": 89159680
+    },
+    {
+      "path": "docs/cleanup/baselines/C16.4/harness.tar",
+      "bytes": 89149440
+    },
+    {
+      "path": "docs/cleanup/baselines/C23.5/revision/harness.tar",
+      "bytes": 88668160
+    },
+    {
+      "path": "docs/cleanup/baselines/C16.1/harness.tar",
+      "bytes": 81152000
+    },
+    {
+      "path": "artifacts/document-acquisition/final-ops/d03-progress/extraction-payloads/document-acquisition-full-v1/artifact-18259-content-10945.json",
+      "bytes": 80397453
+    },
+    {
+      "path": "artifacts/document-acquisition/final-ops/d03-progress/extraction-payloads/document-acquisition-full-v1/artifact-18260-content-10946.json",
+      "bytes": 79588798
+    },
+    {
+      "path": "docs/cleanup/baselines/C13.2/harness.tar",
+      "bytes": 77936640
+    },
+    {
+      "path": "docs/cleanup/baselines/C13.3/harness.tar",
+      "bytes": 77905920
+    },
+    {
+      "path": "artifacts/document-acquisition/final-ops/d03-progress/extraction-payloads/document-acquisition-full-v1/artifact-18264-content-10950.json",
+      "bytes": 72569747
+    },
+    {
+      "path": "docs/cleanup/baselines/C14.1/harness.tar",
+      "bytes": 71106560
+    },
+    {
+      "path": "docs/cleanup/baselines/C15.4/harness.tar",
+      "bytes": 71014400
+    },
+    {
+      "path": "docs/cleanup/baselines/C15.3/harness.tar",
+      "bytes": 71004160
+    },
+    {
+      "path": "docs/cleanup/baselines/C15.1/harness.tar",
+      "bytes": 60375040
+    },
+    {
+      "path": "docs/cleanup/baselines/C14.2/harness.tar",
+      "bytes": 58654720
+    },
+    {
+      "path": "docs/cleanup/baselines/C14.3/harness.tar",
+      "bytes": 58613760
+    },
+    {
+      "path": "docs/cleanup/baselines/C14.4/harness.tar",
+      "bytes": 56453120
+    },
+    {
+      "path": "artifacts/document-acquisition/final-ops/d03-progress/extraction-payloads/document-acquisition-full-v1/artifact-19442-content-11867.json",
+      "bytes": 54375092
+    }
+  ],
+  "stat_errors": [],
+  "limits": "Metadata walk; no DB connection, no symlink directory traversal, no archive contents or production document contents read. Logical sizes are not reclaimable physical space. other includes ignored files and Git metadata.",
+  "subdirectory_totals": {
+    "scrapper/requirements.test.txt": {
+      "files": 1,
+      "bytes": 205
+    },
+    "scrapper/runtime_capabilities.py": {
+      "files": 1,
+      "bytes": 6725
+    },
+    "scrapper/.DS_Store": {
+      "files": 1,
+      "bytes": 10244
+    },
+    "scrapper/config.py": {
+      "files": 1,
+      "bytes": 11664
+    },
+    "scrapper/requirements.txt": {
+      "files": 1,
+      "bytes": 286
+    },
+    "scrapper/runtime_identity.py": {
+      "files": 1,
+      "bytes": 6815
+    },
+    "scrapper/__init__.py": {
+      "files": 1,
+      "bytes": 83
+    },
+    "scrapper/README.md": {
+      "files": 1,
+      "bytes": 31558
+    },
+    "scrapper/EXECUTION.md": {
+      "files": 1,
+      "bytes": 82125
+    },
+    "scrapper/.gitignore": {
+      "files": 1,
+      "bytes": 37
+    },
+    "scrapper/SCRAPPER_2.0.md": {
+      "files": 1,
+      "bytes": 8399
+    },
+    "scrapper/PLAN.md": {
+      "files": 1,
+      "bytes": 58124
+    },
+    "scrapper/requirements.test.lock": {
+      "files": 1,
+      "bytes": 56518
+    },
+    "scrapper/requirements.lock": {
+      "files": 1,
+      "bytes": 55741
+    },
+    "scrapper/research": {
+      "files": 126,
+      "bytes": 1979186
+    },
+    "scrapper/pipeline": {
+      "files": 103,
+      "bytes": 1192137
+    },
+    "scrapper/cli_groups": {
+      "files": 24,
+      "bytes": 303151
+    },
+    "scrapper/core": {
+      "files": 29,
+      "bytes": 136509
+    },
+    "scrapper/screener": {
+      "files": 3,
+      "bytes": 910
+    },
+    "scrapper/tests": {
+      "files": 531,
+      "bytes": 18340184
+    },
+    "scrapper/workflows": {
+      "files": 48,
+      "bytes": 514134
+    },
+    "scrapper/__pycache__": {
+      "files": 10,
+      "bytes": 232255
+    },
+    "scrapper/cli": {
+      "files": 4,
+      "bytes": 31486
+    },
+    "scrapper/operations": {
+      "files": 37,
+      "bytes": 342446
+    },
+    "scrapper/exports": {
+      "files": 55,
+      "bytes": 577354
+    },
+    "scrapper/.venv": {
+      "files": 4951,
+      "bytes": 127235142
+    },
+    "scrapper/view": {
+      "files": 21,
+      "bytes": 479597
+    },
+    "scrapper/governance": {
+      "files": 6,
+      "bytes": 64004
+    },
+    "scrapper/db": {
+      "files": 256,
+      "bytes": 2395429
+    },
+    "scrapper/sources": {
+      "files": 159,
+      "bytes": 1415112
+    },
+    "scrapper/commands": {
+      "files": 35,
+      "bytes": 243755
+    },
+    "scrapper/documents": {
+      "files": 145,
+      "bytes": 1149876
+    },
+    "scrapper/domain": {
+      "files": 6,
+      "bytes": 17493
+    },
+    "scrapper/validation": {
+      "files": 12,
+      "bytes": 248632
+    },
+    "scrapper/store": {
+      "files": 912,
+      "bytes": 590982179
+    },
+    "artifacts/indigrid-540565.html": {
+      "files": 1,
+      "bytes": 183404
+    },
+    "artifacts/.DS_Store": {
+      "files": 1,
+      "bytes": 10244
+    },
+    "artifacts/crisil-icra-download-restrictions-inventory.md": {
+      "files": 1,
+      "bytes": 185174
+    },
+    "artifacts/june-2026-adhiraj-source-check.json": {
+      "files": 1,
+      "bytes": 805
+    },
+    "artifacts/june-2026-recovered-companies.json": {
+      "files": 1,
+      "bytes": 3725
+    },
+    "artifacts/june-2026-coverage-repair.json": {
+      "files": 1,
+      "bytes": 706829
+    },
+    "artifacts/indigrid-540565-accepted.json": {
+      "files": 1,
+      "bytes": 1087638
+    },
+    "artifacts/indigrid-540565.json": {
+      "files": 1,
+      "bytes": 43179
+    },
+    "artifacts/acquisition-readiness": {
+      "files": 58,
+      "bytes": 61184732601
+    },
+    "artifacts/bse-browser-investigation-2026-10-09": {
+      "files": 2,
+      "bytes": 28270
+    },
+    "artifacts/bse-production-ingestion-2026-10-09": {
+      "files": 17,
+      "bytes": 292416
+    },
+    "artifacts/three-document-reality-check-v0.4": {
+      "files": 882,
+      "bytes": 104804219
+    },
+    "artifacts/phase4": {
+      "files": 392,
+      "bytes": 8724584
+    },
+    "artifacts/step3-financial-readiness": {
+      "files": 45,
+      "bytes": 176871
+    },
+    "artifacts/phase3-completion": {
+      "files": 74,
+      "bytes": 200132
+    },
+    "artifacts/phase5": {
+      "files": 103193,
+      "bytes": 11961924669
+    },
+    "artifacts/rating-exception-recovery-20261001": {
+      "files": 23,
+      "bytes": 1606758
+    },
+    "artifacts/bse-wal-guard-fix-2026-10-09": {
+      "files": 7,
+      "bytes": 26614
+    },
+    "artifacts/b0-2026-09-30": {
+      "files": 7,
+      "bytes": 59012
+    },
+    "artifacts/b1-2026-10-01": {
+      "files": 8,
+      "bytes": 901468
+    },
+    "artifacts/acquisition-repair-20261024": {
+      "files": 71,
+      "bytes": 510686
+    },
+    "artifacts/rating-link-refresh-20261001": {
+      "files": 2,
+      "bytes": 191125
+    },
+    "artifacts/bse-visible-runner-verification-2026-10-09": {
+      "files": 7,
+      "bytes": 104618
+    },
+    "artifacts/b2-2026-10-01": {
+      "files": 16,
+      "bytes": 2067277
+    },
+    "artifacts/scraper-live-monitor-fix": {
+      "files": 7,
+      "bytes": 168299
+    },
+    "artifacts/step3-financial-canary-2026-10-09": {
+      "files": 10,
+      "bytes": 45674
+    },
+    "artifacts/b0-2026-09-29": {
+      "files": 14,
+      "bytes": 213662
+    },
+    "artifacts/unified-financial-pilot-v0.1": {
+      "files": 501,
+      "bytes": 46985954
+    },
+    "artifacts/a2-2026-09-29": {
+      "files": 12,
+      "bytes": 743499
+    },
+    "artifacts/acquisition-throughput-rollout-20261030": {
+      "files": 26,
+      "bytes": 11609985
+    },
+    "artifacts/operational-recovery": {
+      "files": 12,
+      "bytes": 457980
+    },
+    "artifacts/bse-browser-results": {
+      "files": 13,
+      "bytes": 256855
+    },
+    "artifacts/automatic-credit-rating-browser": {
+      "files": 24,
+      "bytes": 17421119
+    },
+    "artifacts/acquisition-recovery-20261026": {
+      "files": 185,
+      "bytes": 47480656
+    },
+    "artifacts/document-acquisition": {
+      "files": 23225,
+      "bytes": 12131361398
+    },
+    "artifacts/acquisition-phase3-recovery": {
+      "files": 63,
+      "bytes": 5017501
+    },
+    "artifacts/bse-production-ingestion-preflight-2026-10-09": {
+      "files": 2,
+      "bytes": 4786
+    },
+    "artifacts/acquisition-actual-download-recovery": {
+      "files": 247,
+      "bytes": 4553717
+    },
+    "artifacts/bse-ownership-fix-2026-10-09": {
+      "files": 6,
+      "bytes": 13445
+    },
+    "artifacts/screener-supplemental-access": {
+      "files": 14,
+      "bytes": 40997
+    },
+    "artifacts/coverage-audit-2026-10-01": {
+      "files": 34,
+      "bytes": 84005612
+    },
+    "artifacts/step3-financial-retry-2026-10-09": {
+      "files": 10,
+      "bytes": 114658
+    },
+    "artifacts/document-backlog-recovery-20261026": {
+      "files": 510,
+      "bytes": 1101650411
+    },
+    "artifacts/bse-production-ingestion-ownership-fixed-2026-10-09": {
+      "files": 19,
+      "bytes": 306406
+    },
+    "artifacts/bse-production-ingestion-wal-validated-2026-10-09": {
+      "files": 17,
+      "bytes": 339947
+    },
+    "artifacts/icra-download-test": {
+      "files": 1261,
+      "bytes": 153557856
+    },
+    "artifacts/bse-browser-integration-2026-10-09": {
+      "files": 6,
+      "bytes": 121444
+    },
+    "artifacts/automatic-acquisition": {
+      "files": 5777,
+      "bytes": 37228702
+    },
+    "artifacts/a0-2026-09-29": {
+      "files": 15,
+      "bytes": 151782603
+    },
+    "artifacts/acquisition-restart-20261022": {
+      "files": 94,
+      "bytes": 804963
+    },
+    "artifacts/b2-discovery-2026-10-01": {
+      "files": 45,
+      "bytes": 898288949
+    },
+    "artifacts/credit-rating-intelligence-v1": {
+      "files": 852,
+      "bytes": 58172996
+    },
+    "artifacts/step3-operational-activation": {
+      "files": 1,
+      "bytes": 5911
+    },
+    "artifacts/focus_ml": {
+      "files": 23,
+      "bytes": 961782
+    },
+    "docs/.DS_Store": {
+      "files": 1,
+      "bytes": 8196
+    },
+    "docs/STATUS.md": {
+      "files": 1,
+      "bytes": 10545
+    },
+    "docs/CLEANUP_AUDIT_2026-10-26.md": {
+      "files": 1,
+      "bytes": 86535
+    },
+    "docs/bse-browser-results-investigation.md": {
+      "files": 1,
+      "bytes": 8536
+    },
+    "docs/acquisition-readiness": {
+      "files": 764,
+      "bytes": 55756715
+    },
+    "docs/research": {
+      "files": 3,
+      "bytes": 19506
+    },
+    "docs/github-readiness": {
+      "files": 83,
+      "bytes": 29591858
+    },
+    "docs/audits": {
+      "files": 6,
+      "bytes": 31981165
+    },
+    "docs/phase5": {
+      "files": 7,
+      "bytes": 90801
+    },
+    "docs/operations": {
+      "files": 4,
+      "bytes": 42057
+    },
+    "docs/architecture": {
+      "files": 12,
+      "bytes": 1301919
+    },
+    "docs/cleanup": {
+      "files": 1176,
+      "bytes": 9504211164
+    },
+    "docs/current": {
+      "files": 3,
+      "bytes": 115221
+    },
+    "docs/document-intelligence": {
+      "files": 11,
+      "bytes": 222890
+    },
+    "docs/credit-rating-intelligence-v1": {
+      "files": 27,
+      "bytes": 216068
+    },
+    "ops/docker": {
+      "files": 55,
+      "bytes": 277400
+    },
+    "ops/host": {
+      "files": 65,
+      "bytes": 1240771
+    },
+    "ops/activation": {
+      "files": 194,
+      "bytes": 2240051
+    },
+    "ops/runbooks": {
+      "files": 9,
+      "bytes": 26836
+    },
+    "ops/benchmarks": {
+      "files": 2,
+      "bytes": 11758
+    },
+    "ops/campaigns": {
+      "files": 2,
+      "bytes": 8610
+    }
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "basis": "Existing audit decisions reused; no duplicate operational inventory retained",
+  "rules": 21,
+  "scope": "Every nonincluded path is excluded by default. The only exhaustive path list created here describes exported source bytes."
+}

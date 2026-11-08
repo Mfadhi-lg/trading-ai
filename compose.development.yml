@@ -1,0 +1,145 @@
+x-development-environment: &development-environment
+  TRADING_AI_ENV: development
+  TRADING_AI_RUNTIME_IDENTITY_FILE: ""
+  SCRAPER_STORE_PATH: /development-data
+  SCRAPER_DB_PATH: /development-data/scraper.db
+  SCRAPER_DOCUMENT_STORE_PATH: /development-documents
+  DOCUMENT_REQUIRE_SENTINEL: "0"
+  DOCUMENT_STORE_REQUIRE_CAPACITY_FILE: "0"
+  DOCUMENT_MIN_FREE_BYTES: "0"
+  DOCUMENT_MIN_FREE_PERCENT: "0"
+
+x-development-service: &development-service
+  image: trading-ai-c052-development:local
+  build:
+    context: .
+  environment:
+    <<: *development-environment
+  configs: !reset []
+
+services:
+  cli:
+    <<: *development-service
+    volumes: !override
+      - development-data:/development-data
+      - development-documents:/development-documents
+      - ./scrapper:/app/scrapper
+      - ./exchange-inbox:/inbox:ro
+
+  discovery:
+    <<: *development-service
+    volumes: !override
+      - development-data:/development-data
+      - development-documents:/development-documents
+      - ./scrapper:/app/scrapper
+
+  scheduler:
+    <<: *development-service
+    volumes: !override
+      - development-data:/development-data
+      - development-documents:/development-documents
+      - ./scrapper:/app/scrapper
+
+  market-cap-monitor:
+    <<: *development-service
+    volumes: !override
+      - development-data:/development-data
+      - development-documents:/development-documents
+      - ./scrapper:/app/scrapper
+
+  exchange-universe:
+    <<: *development-service
+    volumes: !override
+      - development-data:/development-data
+      - development-documents:/development-documents
+      - ./scrapper:/app/scrapper
+      - ./exchange-inbox:/inbox:ro
+
+  exchange-results:
+    <<: *development-service
+    volumes: !override
+      - development-data:/development-data
+      - development-documents:/development-documents
+      - ./scrapper:/app/scrapper
+      - ./exchange-inbox:/inbox:ro
+
+  exchange-reconciliation:
+    <<: *development-service
+    volumes: !override
+      - development-data:/development-data
+      - development-documents:/development-documents
+      - ./scrapper:/app/scrapper
+
+  worker:
+    <<: *development-service
+    volumes: !override
+      - development-data:/development-data
+      - development-documents:/development-documents
+      - ./scrapper:/app/scrapper
+
+  daemon:
+    <<: *development-service
+    volumes: !override
+      - development-data:/development-data
+      - development-documents:/development-documents
+      - ./scrapper:/app/scrapper
+
+  artifact-reconciler:
+    <<: *development-service
+    volumes: !override
+      - development-data:/development-data
+      - development-documents:/development-documents
+      - ./scrapper:/app/scrapper
+
+  document-download-worker:
+    <<: *development-service
+    volumes: !override
+      - development-data:/development-data
+      - development-documents:/development-documents
+      - ./scrapper:/app/scrapper
+
+  document-processing-worker:
+    <<: *development-service
+    volumes: !override
+      - development-data:/development-data
+      - development-documents:/development-documents
+      - ./scrapper:/app/scrapper
+
+  rating-recovery-discovery:
+    <<: *development-service
+    volumes: !override
+      - development-data:/development-data
+      - development-documents:/development-documents
+      - ./scrapper:/app/scrapper
+
+  rating-recovery-download:
+    <<: *development-service
+    volumes: !override
+      - development-data:/development-data
+      - development-documents:/development-documents
+      - ./scrapper:/app/scrapper
+
+  credit-rating-worker-care:
+    <<: *development-service
+    volumes: !override
+      - development-data:/development-data
+      - development-documents:/development-documents
+      - ./scrapper:/app/scrapper
+
+  credit-rating-worker-india-ratings:
+    <<: *development-service
+    volumes: !override
+      - development-data:/development-data
+      - development-documents:/development-documents
+      - ./scrapper:/app/scrapper
+
+  credit-rating-worker-other:
+    <<: *development-service
+    volumes: !override
+      - development-data:/development-data
+      - development-documents:/development-documents
+      - ./scrapper:/app/scrapper
+
+volumes:
+  development-data:
+  development-documents:

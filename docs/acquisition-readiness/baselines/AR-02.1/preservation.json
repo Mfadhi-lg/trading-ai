@@ -1,0 +1,5 @@
+{
+  "checked_paths": 107,
+  "result": "passed",
+  "comparison": "post source/test patch snapshot; all retained paths unchanged except permitted ledger and AR-02.1 evidence"
+}

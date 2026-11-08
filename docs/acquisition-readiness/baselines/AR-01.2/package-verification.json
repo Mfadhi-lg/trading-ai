@@ -1,0 +1,14 @@
+{
+  "ar_01_2_status": "PREPARED",
+  "ar_01_3_authorized": false,
+  "identities_write_locked": true,
+  "independent_human_review": "PASS",
+  "independent_review_record": "docs/acquisition-readiness/baselines/AR-01.2/independent-review.md",
+  "loaded_digest_matches_oci": true,
+  "migration_source_hashes_match": true,
+  "preexisting_changes_preserved": true,
+  "production_activation": "none",
+  "roles": 21,
+  "status": "PASS",
+  "zero_default_services": true
+}

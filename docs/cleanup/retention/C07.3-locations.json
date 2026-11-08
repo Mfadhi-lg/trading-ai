@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "status": "CURRENT_RETENTION_POLICY_WITH_FUTURE_DESTINATIONS_UNSELECTED",
+  "selected_chunk": "C07.3",
+  "relocation_executed": false,
+  "deletion_executed": false,
+  "locations": [
+    {
+      "location": "artifacts/",
+      "owner": "dated acquisition/research/campaign evidence",
+      "retention": "Indefinite in-place pending individually selected C26.4; mutation scripts frozen until C17/C18. No TTL or deletion authorization.",
+      "future_destination": "Operator-selected durable evidence root with exact-file manifest, verified copy and restore proof; no destination selected now."
+    },
+    {
+      "location": "docs/cleanup/baselines/",
+      "owner": "versioned cleanup evidence",
+      "retention": "Keep versioned small summaries/checksums and reconstruction references; historical reports unchanged."
+    },
+    {
+      "location": "OLD/, a2-review/, b1-review/, b2-review/",
+      "owner": "legacy/review source preservation",
+      "retention": "Keep in place; C03 archives and reproduction proof govern; removal only through selected C26.1/C26.2."
+    },
+    {
+      "location": "experiments/",
+      "owner": "exploratory provider/model work",
+      "retention": "Keep isolated and outside image; current Upstox pilot remains historical BLOCKED."
+    },
+    {
+      "location": "scrapper/store/ and exchange-inbox/",
+      "owner": "live financial/document inputs and immutable corpus",
+      "retention": "Keep current configured paths. Excluded from build, not relocated, hashed or inventoried as a consistent data snapshot here."
+    },
+    {
+      "location": ".env*, .screener_session, .screener_csrf, .scraper_shutdown_state",
+      "owner": "operator secrets/session/lifecycle state",
+      "retention": "Remain local outside image; no secret values or hashes published. Lifecycle state changes only through operator actions."
+    },
+    {
+      "location": "/private/tmp/trading-ai-cleanup-*/ and /private/tmp/trading-ai-c053-release-*.oci.tar",
+      "owner": "private snapshots, backups, clone/release configuration and OCI exports",
+      "retention": "Retain current locations, especially active C06 configuration. Temporary local storage is not durable/offsite retention. Operator must select and verify a durable copy before cleanup; no move now.",
+      "evidence_reference": "docs/cleanup/chunks/C06.md"
+    },
+    {
+      "location": "trading-ai-share*.zip",
+      "owner": "historic share exports",
+      "retention": "Already absent at baseline; do not restore, delete or untrack here. Future export retention requires explicit per-file selection."
+    }
+  ]
+}

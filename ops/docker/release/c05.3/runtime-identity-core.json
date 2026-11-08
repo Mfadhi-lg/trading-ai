@@ -1,0 +1,12 @@
+{
+  "authorized": true,
+  "environment": "production",
+  "git_commit": "db7564a109f1cb34ee4e7d5ea3427716e14cb51e",
+  "image_id": "sha256:05cf18b61418ace4f5e490ad59e62feb77de43558788fd47ca594c17d60cba77",
+  "release_id": "c05.3-release-20261003",
+  "targets": {
+    "db": "/data/scraper.db",
+    "documents": "/data/snapshots",
+    "store": "/data"
+  }
+}

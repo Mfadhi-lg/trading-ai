@@ -1,0 +1,23 @@
+{
+  "observed_at_utc": "2026-10-07T11:44:14.968002+00:00",
+  "status": "BLOCKED",
+  "claim_class": "READ_ONLY_PREFLIGHT",
+  "release_status": "AWAITING_INDEPENDENT_REVIEW",
+  "release_source_commit": "c3ddbbb9c298d07b8b46a362996251417282476a",
+  "image_reference": "trading-ai-c281-release@sha256:4d289faa67334bc870d4f2a6a181feecee777fd427eac209b9adef68ecab0238",
+  "archive_path": "/private/tmp/trading-ai-ar012-release.oci.tar",
+  "archive_sha256_expected": "69fc348408d5a0bd131cf3147e0f8ce4b3c635be96e8ea2582173dfba4b6520f",
+  "archive_sha256_actual": "69fc348408d5a0bd131cf3147e0f8ce4b3c635be96e8ea2582173dfba4b6520f",
+  "archive_hash_matches": true,
+  "source_manifest_hash_matches": false,
+  "ar012_evidence_record_exists": false,
+  "trading_ai_project_container_count": 15,
+  "running_trading_ai_project_containers": 0,
+  "production_activation": "none",
+  "fresh_production_schema_verified": false,
+  "host_writer_fencing_verified": false,
+  "fresh_snapshot_restore_verified": false,
+  "initial_capture_failure": "Python subprocess docker inventory denied by sandbox; approved direct docker ps succeeded; no mutation attempted",
+  "source_manifest_sha256_expected": "d820725a2a367f402e205b10f0f7c7b43a3a56736db63fa8b377b8d0c33cbc66",
+  "source_manifest_sha256_actual": "e6089d4dcf2e9261df7c6cca5d63e80e06c9491709e6e340a3ec7df1709eb9b7"
+}

@@ -1,0 +1,14 @@
+{
+  "scheduled_browser_access": true,
+  "collection": true,
+  "electronic_storage": true,
+  "project_reuse": true,
+  "schedule_timezone": "Asia/Kolkata",
+  "schedule_times": ["09:00", "18:00"],
+  "maximum_attempts_per_slot": 1,
+  "automatic_retries": false,
+  "evidence": "User attestation 2026-10-09: existing BSE written consent covers unattended visible-Chrome collection at 9 AM and 6 PM IST, including electronic storage and reuse in Trading AI.",
+  "confirmation": "Yes, the written consent covers this scheduled use",
+  "document_independently_inspected": false,
+  "api_holds_resume_authorized": false
+}

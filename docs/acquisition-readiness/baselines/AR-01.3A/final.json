@@ -1,0 +1,9 @@
+{
+  "error": "snapshot-validation failed; retain copies and do not retry or recover production",
+  "execution_agent": "CODEX",
+  "production_migrations": 0,
+  "production_writes": 0,
+  "recovery_authority": "USER",
+  "services_started": 0,
+  "status": "FAIL"
+}

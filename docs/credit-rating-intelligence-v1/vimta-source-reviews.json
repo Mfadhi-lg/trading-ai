@@ -1,0 +1,366 @@
+{
+  "source_sha256": "7ed9acaec3a58c63fa1bdc78a8c69dc30f84fb9bfbfc85d48d32189a19781156",
+  "authority": "Codex offline source review, 2026-10-23; not human certification",
+  "review_basis": "Original complete D03 pages and original PDF renderings; immutable candidate fields compared for value, metric label, units, periods, scope, attribution and qualifications. No reference match authorizes admission.",
+  "historical_ledger": {
+    "path": "artifacts/three-document-reality-check-v0.4/evidence-reconciliation-v0.6/reconciled-evidence-ledger.json",
+    "sha256": "1e2f90165567d68fdb0baeceed6ee78914b9d2ac1aadd23eb8fe7ae8372a5ad7"
+  },
+  "source_inventory": {
+    "path": "artifacts/three-document-reality-check-v0.4/sources.json",
+    "sha256": "2d90a995e7215fd4efb77df5becc1b5923e97b1ec24329e91856af82977833e6"
+  },
+  "claims": {
+    "gen-1792658158-X9nLGK5kW13FYVIKzDpZ:/disclosures/0": {
+      "candidate_sha256": "ecb2cfe9a2ba9fb16278c349de372f7e3e91f033f50b6238d26fd7671b0b6a5b",
+      "canonical_sha256": "91c1f3185e9354ffeb51a86a7f231871b0d7fb8456cabac76edc57f79684704d",
+      "decision": "SUPPORTED",
+      "reason": "Reviewed claim and all material fields match original local source; complete paragraph or reviewed visual/Q&A relationship retained.",
+      "support_pages": [
+        1
+      ],
+      "fields": [
+        "rating.facility",
+        "rating.current_rating",
+        "rating.action",
+        "rating.outlook",
+        "rating.facility_amount"
+      ]
+    },
+    "gen-1792658158-X9nLGK5kW13FYVIKzDpZ:/disclosures/1": {
+      "candidate_sha256": "16d9ceedcc73b8026f3f5fb94e1199c36b2a320f65e199f2fc6416b92af8a987",
+      "canonical_sha256": "91c1f3185e9354ffeb51a86a7f231871b0d7fb8456cabac76edc57f79684704d",
+      "decision": "SUPPORTED",
+      "reason": "Reviewed claim and all material fields match original local source; complete paragraph or reviewed visual/Q&A relationship retained.",
+      "support_pages": [
+        1
+      ],
+      "fields": [
+        "rating.facility",
+        "rating.current_rating",
+        "rating.action",
+        "rating.outlook",
+        "rating.facility_amount"
+      ]
+    },
+    "gen-1792658158-X9nLGK5kW13FYVIKzDpZ:/disclosures/2": {
+      "candidate_sha256": "32a09755f996fcf804ead3e8939acb3b8d0e67445eae680359b009d29cfacc74",
+      "canonical_sha256": "91c1f3185e9354ffeb51a86a7f231871b0d7fb8456cabac76edc57f79684704d",
+      "decision": "SUPPORTED",
+      "reason": "Reviewed claim and all material fields match original local source; complete paragraph or reviewed visual/Q&A relationship retained.",
+      "support_pages": [
+        1
+      ],
+      "fields": [
+        "rating.facility",
+        "rating.current_rating",
+        "rating.action",
+        "rating.facility_amount"
+      ]
+    },
+    "gen-1792658158-X9nLGK5kW13FYVIKzDpZ:/disclosures/3": {
+      "candidate_sha256": "7aa4966824a9a2f048d6a7f5ff0ecd847402a7e0fcd5d36a6079236b35f2e7ad",
+      "canonical_sha256": "91c1f3185e9354ffeb51a86a7f231871b0d7fb8456cabac76edc57f79684704d",
+      "decision": "SUPPORTED",
+      "reason": "Reviewed claim and all material fields match original local source; complete paragraph or reviewed visual/Q&A relationship retained.",
+      "support_pages": [
+        1
+      ],
+      "fields": [
+        "assessment.upgrade_sensitivities",
+        "assessment.material_conditions"
+      ]
+    },
+    "gen-1792658158-X9nLGK5kW13FYVIKzDpZ:/disclosures/4": {
+      "candidate_sha256": "1a915501d35776df82cd9d2387609ca271aa6763e1d306a2ae22db29fa21a10f",
+      "canonical_sha256": "91c1f3185e9354ffeb51a86a7f231871b0d7fb8456cabac76edc57f79684704d",
+      "decision": "SUPPORTED",
+      "reason": "Reviewed claim and all material fields match original local source; complete paragraph or reviewed visual/Q&A relationship retained.",
+      "support_pages": [
+        1
+      ],
+      "fields": [
+        "assessment.downgrade_sensitivities",
+        "assessment.material_conditions"
+      ]
+    },
+    "gen-1792658158-X9nLGK5kW13FYVIKzDpZ:/disclosures/5": {
+      "candidate_sha256": "fa3dbabf569a0c59623a4c7e0f8323224ebece49ea921fbea951127c8b8156be",
+      "canonical_sha256": "91c1f3185e9354ffeb51a86a7f231871b0d7fb8456cabac76edc57f79684704d",
+      "decision": "SUPPORTED",
+      "reason": "Reviewed claim and all material fields match original local source; complete paragraph or reviewed visual/Q&A relationship retained.",
+      "support_pages": [
+        1
+      ],
+      "fields": [
+        "assessment.downgrade_sensitivities",
+        "assessment.material_conditions"
+      ]
+    },
+    "gen-1792658158-X9nLGK5kW13FYVIKzDpZ:/disclosures/6": {
+      "candidate_sha256": "cb9de9d9a2226fcdac3cdc6d5cfab6ae226337deb778e740edfccef4a29a3606",
+      "canonical_sha256": "91c1f3185e9354ffeb51a86a7f231871b0d7fb8456cabac76edc57f79684704d",
+      "decision": "SUPPORTED",
+      "reason": "Reviewed claim and all material fields match original local source; complete paragraph or reviewed visual/Q&A relationship retained.",
+      "support_pages": [
+        1
+      ],
+      "fields": [
+        "assessment.downgrade_sensitivities",
+        "assessment.material_conditions"
+      ]
+    },
+    "gen-1792658158-X9nLGK5kW13FYVIKzDpZ:/disclosures/7": {
+      "candidate_sha256": "00239dc50bcbdc4a76c09c914706b17cb39eb1f0d5efaa92a9affd1eae00b524",
+      "canonical_sha256": "91c1f3185e9354ffeb51a86a7f231871b0d7fb8456cabac76edc57f79684704d",
+      "decision": "SUPPORTED",
+      "reason": "Reviewed claim and all material fields match original local source; complete paragraph or reviewed visual/Q&A relationship retained.",
+      "support_pages": [
+        1
+      ],
+      "fields": [
+        "assessment.accounting_approach"
+      ]
+    },
+    "gen-1792658158-X9nLGK5kW13FYVIKzDpZ:/disclosures/8": {
+      "candidate_sha256": "13a0847e459658749ec6d3dd44b07076febff55cb7ef7b77994b2eccdca1d529",
+      "canonical_sha256": "91c1f3185e9354ffeb51a86a7f231871b0d7fb8456cabac76edc57f79684704d",
+      "decision": "SUPPORTED",
+      "reason": "Reviewed claim and all material fields match original local source; complete paragraph or reviewed visual/Q&A relationship retained.",
+      "support_pages": [
+        1
+      ],
+      "fields": [
+        "assessment.agency_expectations"
+      ]
+    },
+    "gen-1792658158-X9nLGK5kW13FYVIKzDpZ:/disclosures/9": {
+      "candidate_sha256": "10827963bedafa6ce40033a27d45f8a8e5751a3768a93f6d7a43e80a74952c81",
+      "canonical_sha256": "91c1f3185e9354ffeb51a86a7f231871b0d7fb8456cabac76edc57f79684704d",
+      "decision": "SUPPORTED",
+      "reason": "Reviewed claim and all material fields match original local source; complete paragraph or reviewed visual/Q&A relationship retained.",
+      "support_pages": [
+        1
+      ],
+      "fields": [
+        "assessment.operational_strengths"
+      ]
+    },
+    "gen-1792658158-X9nLGK5kW13FYVIKzDpZ:/disclosures/10": {
+      "candidate_sha256": "e990430944c57ab54f3d9bee06f624e5a750bab6de8912d1787cb5865a8e683c",
+      "canonical_sha256": "91c1f3185e9354ffeb51a86a7f231871b0d7fb8456cabac76edc57f79684704d",
+      "decision": "WITHHELD",
+      "reason": "Standalone field and wording extend from Cherlapally to the separate Hyderabad laboratory statement; scope association unsupported.",
+      "support_pages": [
+        2
+      ],
+      "fields": [
+        "assessment.operational_strengths"
+      ]
+    },
+    "gen-1792658158-X9nLGK5kW13FYVIKzDpZ:/disclosures/11": {
+      "candidate_sha256": "a9492440ffcfaa20b3954291d016a719b0989c3f925a51aa76fd1dd280dff5ef",
+      "canonical_sha256": "91c1f3185e9354ffeb51a86a7f231871b0d7fb8456cabac76edc57f79684704d",
+      "decision": "SUPPORTED",
+      "reason": "Reviewed claim and all material fields match original local source; complete paragraph or reviewed visual/Q&A relationship retained.",
+      "support_pages": [
+        2
+      ],
+      "fields": [
+        "assessment.operational_strengths"
+      ]
+    },
+    "gen-1792658158-X9nLGK5kW13FYVIKzDpZ:/disclosures/12": {
+      "candidate_sha256": "8fb26f8817515aa84da0a87fdadce61b05f54d5bf9f55340bfbcbf9392a1555a",
+      "canonical_sha256": "91c1f3185e9354ffeb51a86a7f231871b0d7fb8456cabac76edc57f79684704d",
+      "decision": "SUPPORTED",
+      "reason": "Reviewed claim and all material fields match original local source; complete paragraph or reviewed visual/Q&A relationship retained.",
+      "support_pages": [
+        1
+      ],
+      "fields": [
+        "assessment.business_weaknesses"
+      ]
+    },
+    "gen-1792658158-X9nLGK5kW13FYVIKzDpZ:/disclosures/13": {
+      "candidate_sha256": "315ad327e269334d2e3a9382492cdd6fd8ed305b9556d7521a7b7885b58b828f",
+      "canonical_sha256": "91c1f3185e9354ffeb51a86a7f231871b0d7fb8456cabac76edc57f79684704d",
+      "decision": "SUPPORTED",
+      "reason": "Reviewed claim and all material fields match original local source; complete paragraph or reviewed visual/Q&A relationship retained.",
+      "support_pages": [
+        2
+      ],
+      "fields": [
+        "assessment.revenue_and_profitability"
+      ]
+    },
+    "gen-1792658158-X9nLGK5kW13FYVIKzDpZ:/disclosures/14": {
+      "candidate_sha256": "741ccfa1a7953a5877765d677daac0ff872d3b3408171a96d388f4f671441eb0",
+      "canonical_sha256": "91c1f3185e9354ffeb51a86a7f231871b0d7fb8456cabac76edc57f79684704d",
+      "decision": "SUPPORTED",
+      "reason": "Reviewed claim and all material fields match original local source; complete paragraph or reviewed visual/Q&A relationship retained.",
+      "support_pages": [
+        2
+      ],
+      "fields": [
+        "assessment.revenue_and_profitability"
+      ]
+    },
+    "gen-1792658158-X9nLGK5kW13FYVIKzDpZ:/disclosures/15": {
+      "candidate_sha256": "0ed5eb75427d710e892b1cc099579d9496ae4efa2d7fcb78f59690e6dfd61d19",
+      "canonical_sha256": "91c1f3185e9354ffeb51a86a7f231871b0d7fb8456cabac76edc57f79684704d",
+      "decision": "SUPPORTED",
+      "reason": "Reviewed claim and all material fields match original local source; complete paragraph or reviewed visual/Q&A relationship retained.",
+      "support_pages": [
+        2
+      ],
+      "fields": [
+        "assessment.revenue_and_profitability"
+      ]
+    },
+    "gen-1792658158-X9nLGK5kW13FYVIKzDpZ:/disclosures/16": {
+      "candidate_sha256": "9ec81cbbb8df2aded1b18134097fc25653bd2e8dcc9017f26414812f6b3560d3",
+      "canonical_sha256": "91c1f3185e9354ffeb51a86a7f231871b0d7fb8456cabac76edc57f79684704d",
+      "decision": "SUPPORTED",
+      "reason": "Reviewed claim and all material fields match original local source; complete paragraph or reviewed visual/Q&A relationship retained.",
+      "support_pages": [
+        2
+      ],
+      "fields": [
+        "assessment.debt_and_leverage"
+      ]
+    },
+    "gen-1792658158-X9nLGK5kW13FYVIKzDpZ:/disclosures/17": {
+      "candidate_sha256": "0a0ad163eb11798f614c79f0709b9f43fa7a435356781ea14a67fb3eaf30eb17",
+      "canonical_sha256": "91c1f3185e9354ffeb51a86a7f231871b0d7fb8456cabac76edc57f79684704d",
+      "decision": "WITHHELD",
+      "reason": "Agency expectation drops net-worth accumulation and no significant debt-funded capex bases; reported_fact collapses expectation and observation.",
+      "support_pages": [
+        2
+      ],
+      "fields": [
+        "assessment.debt_and_leverage",
+        "assessment.agency_expectations"
+      ]
+    },
+    "gen-1792658158-X9nLGK5kW13FYVIKzDpZ:/disclosures/18": {
+      "candidate_sha256": "6dae09c4a0521a7e5fc80c213da4491cf5b93243a671834db6b8ff4b757af780",
+      "canonical_sha256": "91c1f3185e9354ffeb51a86a7f231871b0d7fb8456cabac76edc57f79684704d",
+      "decision": "SUPPORTED",
+      "reason": "Reviewed claim and all material fields match original local source; complete paragraph or reviewed visual/Q&A relationship retained.",
+      "support_pages": [
+        2
+      ],
+      "fields": [
+        "assessment.interest_coverage_and_debt_protection"
+      ]
+    },
+    "gen-1792658158-X9nLGK5kW13FYVIKzDpZ:/disclosures/19": {
+      "candidate_sha256": "1177cdada6609693f8288d5921153e57dd0cf749fbdaf86327b0ae529b150531",
+      "canonical_sha256": "91c1f3185e9354ffeb51a86a7f231871b0d7fb8456cabac76edc57f79684704d",
+      "decision": "WITHHELD",
+      "reason": "TDGCA is source-defined only as an acronym here; expanded metric name is unsupported. A19 already preserves the exact label and value.",
+      "support_pages": [
+        2
+      ],
+      "fields": [
+        "assessment.interest_coverage_and_debt_protection"
+      ]
+    },
+    "gen-1792658158-X9nLGK5kW13FYVIKzDpZ:/disclosures/20": {
+      "candidate_sha256": "d0da08cbd145d4155f7e6810ed0114b6b00d0771faeb308609fef7f69928ec31",
+      "canonical_sha256": "91c1f3185e9354ffeb51a86a7f231871b0d7fb8456cabac76edc57f79684704d",
+      "decision": "NEEDS_REVIEW",
+      "reason": "Current/quick ratio accounting scope not established locally after the explicit standalone sentence. Strong liquidity assessment itself is supported, but this merged record is not eligible as a whole.",
+      "support_pages": [
+        2
+      ],
+      "fields": [
+        "liquidity.assessment"
+      ]
+    },
+    "gen-1792658158-X9nLGK5kW13FYVIKzDpZ:/disclosures/21": {
+      "candidate_sha256": "45eaccfbbbc692fbb4522fcb2acf06b031f22517d1505cfd77a1d5c75dd11236",
+      "canonical_sha256": "91c1f3185e9354ffeb51a86a7f231871b0d7fb8456cabac76edc57f79684704d",
+      "decision": "SUPPORTED",
+      "reason": "Reviewed claim and all material fields match original local source; complete paragraph or reviewed visual/Q&A relationship retained.",
+      "support_pages": [
+        2
+      ],
+      "fields": [
+        "liquidity.bank_limit_utilisation"
+      ]
+    },
+    "gen-1792658158-X9nLGK5kW13FYVIKzDpZ:/disclosures/22": {
+      "candidate_sha256": "f1ba99674f30a2d302d0d3c21a4bd8c1e6491b9f3ee23cd95a3656344f07cf2a",
+      "canonical_sha256": "91c1f3185e9354ffeb51a86a7f231871b0d7fb8456cabac76edc57f79684704d",
+      "decision": "SUPPORTED",
+      "reason": "Reviewed claim and all material fields match original local source; complete paragraph or reviewed visual/Q&A relationship retained.",
+      "support_pages": [
+        2
+      ],
+      "fields": [
+        "liquidity.cash_and_liquid_balances"
+      ]
+    },
+    "gen-1792658158-X9nLGK5kW13FYVIKzDpZ:/disclosures/23": {
+      "candidate_sha256": "c6c544e01eb7dae757c928357bb6ea262fe162bb282ad3958e0bbc7baf764d22",
+      "canonical_sha256": "91c1f3185e9354ffeb51a86a7f231871b0d7fb8456cabac76edc57f79684704d",
+      "decision": "NEEDS_REVIEW",
+      "reason": "Operating-cycle values and causal explanation match, but required financial accounting scope is not locally established; do not infer consolidated from deposits.",
+      "support_pages": [
+        2
+      ],
+      "fields": [
+        "assessment.working_capital_intensity"
+      ]
+    },
+    "gen-1792663626-VC4s04sK25POpQcI9q9h:/disclosures/4": {
+      "candidate_sha256": "3be6fa68d8c01181c769e1ae630bf1404dd9851d6f6a7549188e71670dc59b81",
+      "canonical_sha256": "91c1f3185e9354ffeb51a86a7f231871b0d7fb8456cabac76edc57f79684704d",
+      "decision": "SUPPORTED",
+      "reason": "V1 review of entire original claim against full supporting paragraph. Literal values, qualifiers and scope preserved. F05 accepted as undated, scope-unknown liquidity rationale, not as a dated consolidated cash balance; no narrowed benchmark replacement used.",
+      "support_pages": [
+        1
+      ],
+      "fields": [
+        "liquidity.explanations_and_constraints",
+        "liquidity.repayment_obligations",
+        "liquidity.bank_limit_utilisation",
+        "liquidity.cash_and_liquid_balances"
+      ]
+    },
+    "gen-1792663626-VC4s04sK25POpQcI9q9h:/disclosures/11": {
+      "candidate_sha256": "4e3fa32f97ba6f01761e9f7526615571033a4c8e992085d33d521ba19eb08037",
+      "canonical_sha256": "91c1f3185e9354ffeb51a86a7f231871b0d7fb8456cabac76edc57f79684704d",
+      "decision": "SUPPORTED",
+      "reason": "V1 review of entire original claim against full supporting paragraph. Literal values, qualifiers and scope preserved. F05 accepted as undated, scope-unknown liquidity rationale, not as a dated consolidated cash balance; no narrowed benchmark replacement used.",
+      "support_pages": [
+        2
+      ],
+      "fields": [
+        "assessment.operational_strengths"
+      ]
+    },
+    "gen-1792663626-VC4s04sK25POpQcI9q9h:/disclosures/12": {
+      "candidate_sha256": "34e76a2f94ba850179ad2737951ef52f4390f3270d95a36d199006ca4367c9bf",
+      "canonical_sha256": "91c1f3185e9354ffeb51a86a7f231871b0d7fb8456cabac76edc57f79684704d",
+      "decision": "SUPPORTED",
+      "reason": "V1 review of entire original claim against full supporting paragraph. Literal values, qualifiers and scope preserved. F05 accepted as undated, scope-unknown liquidity rationale, not as a dated consolidated cash balance; no narrowed benchmark replacement used.",
+      "support_pages": [
+        2
+      ],
+      "fields": [
+        "assessment.revenue_and_profitability",
+        "assessment.profitability_explanations",
+        "assessment.pricing_and_cost_pass_through"
+      ]
+    }
+  },
+  "omissions": [
+    "Replay covers source pages 1–2, not detailed weaknesses/forex and annexures on pages 3–5.",
+    "Revenue growth causes are present in source context but absent from accepted replay claims.",
+    "Cash accrual amount, working-capital cycle scope, full conditional capital-structure outlook, historical ratings/watch and detailed capex remain unresolved.",
+    "V0.6 narrowed F05 is not imported: original saved F05 is separately reviewed and retained verbatim with unknown period/scope."
+  ]
+}

@@ -1,0 +1,83 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.71kB done
+#1 DONE 0.0s
+
+#2 resolve image config for docker-image://docker.io/docker/buildkit-syft-scanner:stable-1
+#2 DONE 1.4s
+
+#3 [internal] load metadata for docker.io/library/python:3.12.14-slim-trixie@sha256:f77ac9e44ae96ef2c90b8053ea08c31f8be030f824196b0ae4db6d462c84e51f
+#3 DONE 0.0s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 472B done
+#4 DONE 0.0s
+
+#5 [ 1/10] FROM docker.io/library/python:3.12.14-slim-trixie@sha256:f77ac9e44ae96ef2c90b8053ea08c31f8be030f824196b0ae4db6d462c84e51f
+#5 resolve docker.io/library/python:3.12.14-slim-trixie@sha256:f77ac9e44ae96ef2c90b8053ea08c31f8be030f824196b0ae4db6d462c84e51f done
+#5 DONE 0.0s
+
+#6 [internal] load build context
+#6 transferring context: 13.93MB 0.1s done
+#6 DONE 0.1s
+
+#7 [ 6/10] RUN python -m playwright install --with-deps chromium     && rm -rf /var/lib/apt/lists/* /var/cache/fontconfig/*         /var/cache/ldconfig/aux-cache /var/log/apt/*         /var/log/alternatives.log /var/log/dpkg.log
+#7 CACHED
+
+#8 [ 3/10] WORKDIR /app
+#8 CACHED
+
+#9 [ 7/10] RUN apt-get update     && apt-get install --yes --no-install-recommends ffmpeg tesseract-ocr     && rm -rf /var/lib/apt/lists/* /var/cache/fontconfig/*         /var/cache/ldconfig/aux-cache /var/log/apt/*         /var/log/alternatives.log /var/log/dpkg.log
+#9 CACHED
+
+#10 [ 2/10] RUN groupadd --system scraper && useradd --system --gid scraper --home /app scraper
+#10 CACHED
+
+#11 [ 4/10] COPY scrapper/requirements.lock /app/requirements.lock
+#11 CACHED
+
+#12 [ 5/10] RUN test "$(python -c 'import platform; print(platform.python_version())')" = "3.12.14"     && python -m pip install --no-cache-dir --no-compile --require-hashes         --requirement /app/requirements.lock     && python -m pip check
+#12 CACHED
+
+#13 [ 8/10] RUN chmod -R a+rX /ms-playwright
+#13 CACHED
+
+#14 [ 9/10] COPY scrapper /app/scrapper
+#14 DONE 0.1s
+
+#15 [10/10] RUN mkdir -p /data && chown -R scraper:scraper /app /data
+#15 ...
+
+#16 docker-image://docker.io/docker/buildkit-syft-scanner:stable-1
+#16 resolve docker.io/docker/buildkit-syft-scanner:stable-1 0.3s done
+#16 DONE 0.3s
+
+#15 [10/10] RUN mkdir -p /data && chown -R scraper:scraper /app /data
+#15 DONE 0.5s
+
+#16 docker-image://docker.io/docker/buildkit-syft-scanner:stable-1
+#16 CACHED
+
+#17 [linux/arm64] generating sbom using docker.io/docker/buildkit-syft-scanner:stable-1
+#17 0.123 time="2026-10-08T11:45:40Z" level=info msg="starting syft scanner for buildkit v1.12.0"
+#17 DONE 5.1s
+
+#18 exporting to oci image format
+#18 exporting layers
+#18 exporting layers 0.2s done
+#18 rewriting layers with source-date-epoch 1791345462 (2026-10-07 03:57:42 +0000 UTC)
+#18 rewriting layers with source-date-epoch 1791345462 (2026-10-07 03:57:42 +0000 UTC) 16.8s done
+#18 exporting manifest sha256:c12eb5317a2393c0272d8fb3552ed24df3e9c77e954b2bcca94552b87c20d622 0.0s done
+#18 exporting config sha256:2c89cacd6a04b14021fc14ecc6614ff9d941ee4f8fcbf5c4c75c219753de048c done
+#18 exporting attestation manifest sha256:ab3082cd9f923643bc2de8dde1386073f035f90d4328b6c46d6e23ca8ec3950e
+#18 exporting attestation manifest sha256:ab3082cd9f923643bc2de8dde1386073f035f90d4328b6c46d6e23ca8ec3950e done
+#18 exporting manifest list sha256:4206ea61254ec1c490e5284d1aac0361c08b084c7e1186a86141a42c1a2c0b08 done
+#18 sending tarball
+#18 sending tarball 5.6s done
+#18 DONE 23.0s
+
+#19 resolving provenance for metadata file
+#19 DONE 0.0s
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/h2lbp718gxa6oqbo3tn7xtoby

@@ -1,0 +1,16 @@
+{"at_utc": "2026-10-07T18:23:22Z", "stage": "START_AR013A_ONLY"}
+{"at_utc": "2026-10-07T18:23:25Z", "stage": "source-snapshot_start"}
+{"at_utc": "2026-10-07T18:24:48Z", "stage": "source-snapshot_PASS", "sha256": "f237daa6f4696f75e2081e93d69a57be6f8d9c097769aaa169a819789c9e4811"}
+{"at_utc": "2026-10-07T18:25:02Z", "stage": "snapshot-validation_start"}
+{"at_utc": "2026-10-07T18:50:36Z", "stage": "STOP_NO_RETRY_NO_PRODUCTION_RESTORE", "error": "snapshot-validation failed; retain copies and do not retry or recover production"}
+{"at_utc": "2026-10-07T18:57:01Z", "stage": "seed-snapshot_start"}
+{"at_utc": "2026-10-07T18:59:11Z", "stage": "seed-snapshot_PASS"}
+{"at_utc": "2026-10-07T18:59:11Z", "stage": "snapshot-validation_start"}
+{"at_utc": "2026-10-07T19:09:52Z", "stage": "snapshot-validation_PASS"}
+{"at_utc": "2026-10-07T19:09:52Z", "stage": "seed-restored_start"}
+{"at_utc": "2026-10-07T19:12:26Z", "stage": "seed-restored_PASS"}
+{"at_utc": "2026-10-07T19:12:26Z", "stage": "restore-validation_start"}
+{"at_utc": "2026-10-07T19:23:51Z", "stage": "restore-validation_PASS"}
+{"at_utc": "2026-10-07T19:23:52Z", "stage": "source-final-verification_start"}
+{"at_utc": "2026-10-07T19:24:07Z", "stage": "source-final-verification_PASS", "sha256": "f237daa6f4696f75e2081e93d69a57be6f8d9c097769aaa169a819789c9e4811"}
+{"at_utc": "2026-10-07T19:24:07Z", "stage": "PASS_AR013A_NATIVE_PROOF", "tables": 149, "fk_count": 10771, "sha256": "f237daa6f4696f75e2081e93d69a57be6f8d9c097769aaa169a819789c9e4811"}

@@ -1,0 +1,9 @@
+{
+  "status": "PASS",
+  "input_sha256": "d773f4863e41266ca2cbbd76f1d542eb888878be1380e40114c34b4164fe4afc",
+  "output_sha256": "d773f4863e41266ca2cbbd76f1d542eb888878be1380e40114c34b4164fe4afc",
+  "bytes": 14602240000,
+  "inode": 1521048,
+  "mode": "0o444",
+  "production_mounts": []
+}

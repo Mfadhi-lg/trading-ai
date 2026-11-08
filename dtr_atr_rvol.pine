@@ -1,0 +1,78 @@
+//@version=4
+// © ssksubam
+// Relative Volume in Percentage (%) label
+
+study("DTR vs ATR", "DTR vs ATR", true, scale = scale.none)
+
+var string GP1 = "Input Data"
+atrLen = input(defval=14, title="ATR Length", type=input.integer, group = GP1)
+atrSmooth = input(title="Smoothing Type", type=input.string, defval="RMA", options=["EMA", "RMA", "SMA", "WMA"], group = GP1)
+vol_len = input(title="Relative Volume Length", defval=20, group = GP1)
+
+
+var string GP2 = "Display"
+txt_sizeopt = input(title="Text Size", defval="auto", inline = "10", options = ["auto", "tiny", "small", "normal", "large", "huge"], group = GP2)
+txt_size = (txt_sizeopt == "auto") ? size.auto : (txt_sizeopt == "tiny") ? size.tiny : (txt_sizeopt == "small") ? size.small : (txt_sizeopt == "normal") ? size.normal : (txt_sizeopt == "large") ? size.large : size.huge
+string  i_tableYpos = input("top", "Panel position", inline = "11", options = ["top", "middle", "bottom"], group = GP2)
+string  i_tableXpos = input("right", "", inline = "11", options = ["left", "center", "right"], group = GP2)
+show_header = input(true, title="Show Table Header", type=input.bool, inline = "12", group = GP2)
+color   header_color = input(#ba68c8, "", inline = "12", group = GP2)
+    
+var table dtrDisplay = table.new(i_tableYpos + "_" + i_tableXpos, 2, 2, border_width = 1, border_color=color.white)
+
+Round( _val, _decimals) => 
+    // Rounds _val to _decimals places.
+    _p = pow(10,_decimals)
+    round(abs(_val)*_p)/_p*sign(_val)
+
+format_text(str) =>
+    str + "\n"
+
+t = tickerid(syminfo.prefix, syminfo.ticker)
+
+f_AvgTrueRange() =>
+    float result = 0
+    if (atrSmooth == "EMA")
+        result := ema(tr, atrLen)
+    if (atrSmooth == "RMA")
+        result := rma(tr, atrLen)
+    if (atrSmooth == "SMA")
+        result := sma(tr, atrLen)
+    if (atrSmooth == "WMA")
+        result := wma(tr, atrLen)
+    result
+    
+timeFrame = timeframe.isweekly ? "W" : timeframe.ismonthly ? "M" : "D"
+
+avg_atr = security(t, timeFrame, f_AvgTrueRange(), lookahead = barmerge.lookahead_on)
+daily_atr = security(t, timeFrame, high) - security(t, timeFrame, low)
+dtrpct = round((daily_atr / avg_atr ) * 100)  
+
+today_vol = security(t, timeFrame, volume)
+yday_vol = security(t, timeFrame, volume[1])
+avg_vol = security(t, timeFrame, sma(yday_vol, vol_len))
+volpct = round((today_vol / avg_vol ) * 100) 
+
+final_atr = format_text(tostring(Round(daily_atr,2))  + " vs " + tostring(Round(avg_atr,2)) + " => " + tostring(dtrpct) +"%")
+final_rvol = format_text(tostring(volpct) +"%")
+
+color_atr = (dtrpct <= 70) ? color.new(color.green, 0) : ((dtrpct >= 90) ) ? color.new(color.red, 0) : color.new(color.orange, 5)
+
+if barstate.islast
+    // We only populate the table on the last bar.
+    if (show_header == true)
+        table.cell(dtrDisplay, 0, 0, timeFrame+"TR vs ATR", bgcolor = header_color, text_size=txt_size)
+        table.cell(dtrDisplay, 1, 0, "RVol", bgcolor = header_color, text_size=txt_size)
+        table.cell(dtrDisplay, 0, 1, final_atr, bgcolor=color_atr, text_size=txt_size)
+        table.cell(dtrDisplay, 1, 1, final_rvol, bgcolor=color_atr, text_size=txt_size)
+    else
+        table.cell(dtrDisplay, 0, 0, final_atr, bgcolor=color_atr, text_size=txt_size)
+        table.cell(dtrDisplay, 1, 0, final_rvol, bgcolor=color_atr, text_size=txt_size)
+
+showbarLine = input(false, title="Show Selected Bar RVol Line")
+bar_today_vol = volume
+bar_avg_vol = sma((volume[1]), vol_len)
+bar_volpct = round((bar_today_vol / bar_avg_vol ) * 100) 
+plot(bar_volpct, color=showbarLine ? color.red : na, linewidth=1, title="Each Bar RVol")
+
+   

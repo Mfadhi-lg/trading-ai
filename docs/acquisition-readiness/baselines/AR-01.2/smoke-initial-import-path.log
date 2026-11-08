@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/proof/smoke.py", line 17, in <module>
+    from scrapper.db.database import connect, apply_migrations, check_schema_compatibility
+ModuleNotFoundError: No module named 'scrapper'

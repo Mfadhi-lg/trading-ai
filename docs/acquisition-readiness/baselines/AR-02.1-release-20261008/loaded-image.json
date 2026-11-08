@@ -1,0 +1,15 @@
+{
+  "architecture": "arm64",
+  "id": "sha256:58060bbfeb8df338a3d3569c8f1489e0c1b784a1aa584f3b23a890e5dc5fe1ae",
+  "labels": {
+    "ai.trading.source.patch.sha256": "d3bb97915c57acac6ae769ab22d0e1088fa2d38f383a4bdf5d2172fb714b2ba5",
+    "ai.trading.source.projection.sha256": "1e773bd3c8282fe9eaad1e7a118d68c8395d564a5c2ed36b251de2d0cd8750f6",
+    "org.opencontainers.image.revision": "c3ddbbb9c298d07b8b46a362996251417282476a",
+    "org.opencontainers.image.version": "c28.1-ar021-20261008"
+  },
+  "os": "linux",
+  "repo_digests": [
+    "trading-ai-ar021-release@sha256:58060bbfeb8df338a3d3569c8f1489e0c1b784a1aa584f3b23a890e5dc5fe1ae"
+  ],
+  "user": "scraper"
+}

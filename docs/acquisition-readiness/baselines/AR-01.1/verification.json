@@ -1,0 +1,41 @@
+{
+  "checks": {
+    "after_integrity": [
+      "ok"
+    ],
+    "after_quick": [
+      "ok"
+    ],
+    "before_integrity": [
+      "ok"
+    ],
+    "before_quick": [
+      "ok"
+    ]
+  },
+  "claim_type": "CLONE_REHEARSAL",
+  "clone_after_sha256": "dbd56d55573cd30de037e85ae07842b654e943a7d20e7dd34c1b57b084504a13",
+  "foreign_key_violations_after": 10771,
+  "foreign_key_violations_before": 10771,
+  "new_ledger_rows": 7,
+  "new_table_counts": {
+    "acquisition_host_permits": 0,
+    "acquisition_host_state": 0,
+    "collection_scope_tasks": 0,
+    "document_extraction_claims": 0,
+    "document_processing_inbox": 0,
+    "document_processing_work": 0,
+    "exchange_coordinator_tasks": 0,
+    "periodic_dispatch_tasks": 0
+  },
+  "old_ledger_rows_preserved": 69,
+  "production_activation": "none",
+  "rollback_path": "/private/tmp/trading-ai-ar011-0coou77z/restored-068.db",
+  "rollback_schema_and_ledger": "exact baseline",
+  "rollback_sha256": "f237daa6f4696f75e2081e93d69a57be6f8d9c097769aaa169a819789c9e4811",
+  "row_digest_format": "length-prefixed pickle protocol 4 tuples in rowid/primary-key order",
+  "second_apply": "PASS; ledger unchanged",
+  "source_after_sha256": "f237daa6f4696f75e2081e93d69a57be6f8d9c097769aaa169a819789c9e4811",
+  "trigger_fixture": "PASS; rolled back",
+  "unchanged_table_count": 148
+}

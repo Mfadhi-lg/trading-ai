@@ -1,0 +1,371 @@
+{
+  "counting_unit": "logical runtime/worker role; BSE slots combined; host/bridge distinct; helpers and recovery commands separately inventoried",
+  "counts": {
+    "ACTIVE": 11,
+    "REPLACED": 3,
+    "MAINTENANCE": 20,
+    "UNKNOWN": 3
+  },
+  "workers": [
+    {
+      "name": "automatic-acquisition LaunchAgent",
+      "category": "ACTIVE",
+      "paths": [
+        "ops/activation/automatic_acquisition.py",
+        "ops/activation/install_automatic_acquisition.py"
+      ],
+      "purpose": "Single minute admission clock",
+      "evidence": "Installed plist and launchctl print: loaded, interval60, last exit0; hashes sealed"
+    },
+    {
+      "name": "nse-primary",
+      "category": "ACTIVE",
+      "paths": [
+        "ops/activation/nse_results.py",
+        "ops/activation/nse_results_runtime.py"
+      ],
+      "purpose": "Bounded official current and previous period filing intake",
+      "evidence": "Current dispatcher branches, step3/phase4 enabled config, retained activation and launchd receipts; observer finite"
+    },
+    {
+      "name": "bse-morning/evening",
+      "category": "ACTIVE",
+      "paths": [
+        "ops/activation/bse_scheduled_runtime.py",
+        "scrapper/research/bse_browser_results.py"
+      ],
+      "purpose": "Authorized visible browser intake with retained receipt budgets",
+      "evidence": "Current dispatcher branches, step3/phase4 enabled config, retained activation and launchd receipts; observer finite"
+    },
+    {
+      "name": "current-financial",
+      "category": "ACTIVE",
+      "paths": [
+        "ops/activation/step3_schedule.py",
+        "ops/activation/step3_financial_runtime.py",
+        "ops/activation/financial_priority.py"
+      ],
+      "purpose": "P1/P2/P3 bounded canonical company claims",
+      "evidence": "Current dispatcher branches, step3/phase4 enabled config, retained activation and launchd receipts; observer finite"
+    },
+    {
+      "name": "market-cap",
+      "category": "ACTIVE",
+      "paths": [
+        "ops/activation/step3_schedule.py",
+        "scrapper/commands/collection_scope.py"
+      ],
+      "purpose": "Up to40 due eligibility checks in admitted slots",
+      "evidence": "Current dispatcher branches, step3/phase4 enabled config, retained activation and launchd receipts; observer finite"
+    },
+    {
+      "name": "document-discovery",
+      "category": "ACTIVE",
+      "paths": [
+        "ops/activation/phase4_schedule.py",
+        "scrapper/operations/workers/automatic_documents.py"
+      ],
+      "purpose": "Bounded current and late expectation refresh",
+      "evidence": "Current dispatcher branches, step3/phase4 enabled config, retained activation and launchd receipts; observer finite"
+    },
+    {
+      "name": "document-download",
+      "category": "ACTIVE",
+      "paths": [
+        "ops/activation/phase4_schedule.py",
+        "scrapper/operations/workers/automatic_documents.py"
+      ],
+      "purpose": "Exact selected generic canonical queue jobs",
+      "evidence": "Current dispatcher branches, step3/phase4 enabled config, retained activation and launchd receipts; observer finite"
+    },
+    {
+      "name": "document-processing",
+      "category": "ACTIVE",
+      "paths": [
+        "ops/activation/phase4_schedule.py",
+        "scrapper/operations/workers/document_processing.py"
+      ],
+      "purpose": "Versioned quarter-independent inbox processing",
+      "evidence": "Current dispatcher branches, step3/phase4 enabled config, retained activation and launchd receipts; observer finite"
+    },
+    {
+      "name": "document-patrol",
+      "category": "ACTIVE",
+      "paths": [
+        "ops/activation/phase4_schedule.py",
+        "scrapper/documents/revisions.py"
+      ],
+      "purpose": "Bounded same-URL revision admission",
+      "evidence": "Current dispatcher branches, step3/phase4 enabled config, retained activation and launchd receipts; observer finite"
+    },
+    {
+      "name": "document-rating",
+      "category": "ACTIVE",
+      "paths": [
+        "ops/activation/phase4_schedule.py",
+        "scrapper/operations/workers/automatic_documents.py"
+      ],
+      "purpose": "Bounded eligible dedicated rating queue/resolver",
+      "evidence": "Current dispatcher branches, step3/phase4 enabled config, retained activation and launchd receipts; observer finite"
+    },
+    {
+      "name": "finite trial observer",
+      "category": "ACTIVE",
+      "paths": [
+        "ops/activation/phase4_trial_observer.py",
+        "ops/activation/monitor_phase4_receipts.py"
+      ],
+      "purpose": "Trial resource/receipt observation; not another writer",
+      "evidence": "Current dispatcher branches, step3/phase4 enabled config, retained activation and launchd receipts; observer finite"
+    },
+    {
+      "name": "daemon",
+      "category": "REPLACED",
+      "paths": [
+        "compose.yml",
+        "compose.development.yml"
+      ],
+      "purpose": "Continuous broad due company loop",
+      "evidence": "step3_schedule.execute_once FINANCIAL -> financial_priority.select -> run_screener_company_worker; same underlying owner; normal scheduling replaced, broad historical commands retained; start/state references need cleanup"
+    },
+    {
+      "name": "market-cap-monitor",
+      "category": "REPLACED",
+      "paths": [
+        "compose.yml",
+        "compose.development.yml"
+      ],
+      "purpose": "Continuous hourly eligibility loop",
+      "evidence": "step3_schedule.execute_once CAP -> collection_scope.monitor; same underlying owner; normal scheduling replaced, broad historical commands retained; start/state references need cleanup"
+    },
+    {
+      "name": "june-extraction-worker retained shell container",
+      "category": "REPLACED",
+      "paths": [
+        "scrapper/commands/quarter_extract.py",
+        "scrapper/commands/quarter_processing_role.py",
+        "scrapper/operations/workers/quarter_processing.py"
+      ],
+      "purpose": "Old June60-second extraction shell loop",
+      "evidence": "docker inspect confirms quarter_extract period2026-06-30 limit10; quarter role reuses pending_contents and extract_document through versioned resumable campaigns; retained originals/commands are not deletions"
+    },
+    {
+      "name": "scheduler",
+      "category": "MAINTENANCE",
+      "paths": [
+        "scrapper/operations/coordinator/exchange.py",
+        "scrapper/pipeline/scheduler.py"
+      ],
+      "purpose": "Full dataset retry ladder, missed-day recovery, weekly reconciliation not provided by acquisition-only clock",
+      "evidence": "Public CLI/module command, tests or recovery runbook dependencies; no automatic activation is authorized"
+    },
+    {
+      "name": "cli",
+      "category": "MAINTENANCE",
+      "paths": [
+        "scrapper/cli/__init__.py",
+        "scrapper/cli_groups/dispatch.py"
+      ],
+      "purpose": "Canonical manual/recovery command dispatch",
+      "evidence": "Public CLI/module command, tests or recovery runbook dependencies; no automatic activation is authorized"
+    },
+    {
+      "name": "discovery",
+      "category": "MAINTENANCE",
+      "paths": [
+        "scrapper/pipeline/screener_discovery.py"
+      ],
+      "purpose": "Legacy Screener query discovery/requeue; exact query and session config",
+      "evidence": "Public CLI/module command, tests or recovery runbook dependencies; no automatic activation is authorized"
+    },
+    {
+      "name": "exchange-universe",
+      "category": "MAINTENANCE",
+      "paths": [
+        "scrapper/workflows/exchange/universe.py"
+      ],
+      "purpose": "Public registry or manual inbox security master ingestion",
+      "evidence": "Public CLI/module command, tests or recovery runbook dependencies; no automatic activation is authorized"
+    },
+    {
+      "name": "exchange-results",
+      "category": "MAINTENANCE",
+      "paths": [
+        "scrapper/workflows/exchange/universe.py"
+      ],
+      "purpose": "Explicit historical period/inbox financial filing import",
+      "evidence": "Public CLI/module command, tests or recovery runbook dependencies; no automatic activation is authorized"
+    },
+    {
+      "name": "exchange-reconciliation",
+      "category": "MAINTENANCE",
+      "paths": [
+        "scrapper/exports/exchange_reconciliation_report.py"
+      ],
+      "purpose": "Identity conflict and dataset reconciliation",
+      "evidence": "Public CLI/module command, tests or recovery runbook dependencies; no automatic activation is authorized"
+    },
+    {
+      "name": "worker",
+      "category": "MAINTENANCE",
+      "paths": [
+        "scrapper/workflows/screener/company_worker.py"
+      ],
+      "purpose": "Manual due/company recovery; legacy service retains worker throttle defaults",
+      "evidence": "Public CLI/module command, tests or recovery runbook dependencies; no automatic activation is authorized"
+    },
+    {
+      "name": "artifact-reconciler",
+      "category": "MAINTENANCE",
+      "paths": [
+        "scrapper/workflows/documents/reconciliation.py",
+        "scrapper/pipeline/result_artifacts.py"
+      ],
+      "purpose": "All-history expectations backfill and broader delayed reconciliation",
+      "evidence": "Public CLI/module command, tests or recovery runbook dependencies; no automatic activation is authorized"
+    },
+    {
+      "name": "document-download-worker",
+      "category": "MAINTENANCE",
+      "paths": [
+        "scrapper/operations/workers/roles.py",
+        "scrapper/pipeline/accepted_document_downloads.py"
+      ],
+      "purpose": "Accepted-history scope seeding and fenced scoped queue consumption; browser overlays extend service",
+      "evidence": "Public CLI/module command, tests or recovery runbook dependencies; no automatic activation is authorized"
+    },
+    {
+      "name": "document-processing-worker",
+      "category": "MAINTENANCE",
+      "paths": [
+        "scrapper/commands/quarter_processing_role.py",
+        "scrapper/operations/workers/quarter_processing.py"
+      ],
+      "purpose": "Quarter-scoped resumable persistent campaign owner",
+      "evidence": "Public CLI/module command, tests or recovery runbook dependencies; no automatic activation is authorized"
+    },
+    {
+      "name": "rating-recovery-discovery",
+      "category": "MAINTENANCE",
+      "paths": [
+        "scrapper/documents/recovery/alternate_sources.py"
+      ],
+      "purpose": "Build/rotate official-source recovery targets for blocked publisher reports",
+      "evidence": "Public CLI/module command, tests or recovery runbook dependencies; no automatic activation is authorized"
+    },
+    {
+      "name": "rating-recovery-download",
+      "category": "MAINTENANCE",
+      "paths": [
+        "scrapper/operations/workers/roles.py"
+      ],
+      "purpose": "Consume explicit da06-rating-recovery generic queue scope",
+      "evidence": "Public CLI/module command, tests or recovery runbook dependencies; no automatic activation is authorized"
+    },
+    {
+      "name": "credit-rating-worker-care",
+      "category": "MAINTENANCE",
+      "paths": [
+        "scrapper/operations/workers/rating.py",
+        "scrapper/pipeline/credit_rating_downloads.py"
+      ],
+      "purpose": "CARE host partition; shared permits and resolver",
+      "evidence": "Public CLI/module command, tests or recovery runbook dependencies; no automatic activation is authorized"
+    },
+    {
+      "name": "credit-rating-worker-india-ratings",
+      "category": "MAINTENANCE",
+      "paths": [
+        "scrapper/operations/workers/rating.py",
+        "scrapper/pipeline/credit_rating_downloads.py"
+      ],
+      "purpose": "India Ratings host partition; shared permits and resolver",
+      "evidence": "Public CLI/module command, tests or recovery runbook dependencies; no automatic activation is authorized"
+    },
+    {
+      "name": "credit-rating-worker-other",
+      "category": "MAINTENANCE",
+      "paths": [
+        "scrapper/operations/workers/rating.py",
+        "scrapper/pipeline/credit_rating_downloads.py"
+      ],
+      "purpose": "Other permitted host partition; excludes blocked publishers",
+      "evidence": "Public CLI/module command, tests or recovery runbook dependencies; no automatic activation is authorized"
+    },
+    {
+      "name": "browser-rating-crisil",
+      "category": "MAINTENANCE",
+      "paths": [
+        "scrapper/commands/browser_rating_recovery.py"
+      ],
+      "purpose": "Explicit reviewed finite operator-authorized recovery; no automatic source authorization",
+      "evidence": "Public CLI/module command, tests or recovery runbook dependencies; no automatic activation is authorized"
+    },
+    {
+      "name": "browser-rating-icra Docker bridge",
+      "category": "MAINTENANCE",
+      "paths": [
+        "scrapper/commands/browser_rating_recovery.py"
+      ],
+      "purpose": "Explicit reviewed ICRA recovery bridge; retained protocol",
+      "evidence": "Public CLI/module command, tests or recovery runbook dependencies; no automatic activation is authorized"
+    },
+    {
+      "name": "browser-rating-other",
+      "category": "MAINTENANCE",
+      "paths": [
+        "scrapper/commands/browser_rating_recovery.py"
+      ],
+      "purpose": "Finite operator-reviewed publisher-specific browser recovery",
+      "evidence": "Public CLI/module command, tests or recovery runbook dependencies; no automatic activation is authorized"
+    },
+    {
+      "name": "browser-rating-extract",
+      "category": "MAINTENANCE",
+      "paths": [
+        "scrapper/commands/browser_rating_recovery.py"
+      ],
+      "purpose": "Explicit browser run derivative repair/processing follow",
+      "evidence": "Public CLI/module command, tests or recovery runbook dependencies; no automatic activation is authorized"
+    },
+    {
+      "name": "ICRA host browser owner",
+      "category": "MAINTENANCE",
+      "paths": [
+        "ops/host/browser_rating_lifecycle.py",
+        "ops/host/browser_rating_runner.py",
+        "scrapper/commands/browser_rating_host.py"
+      ],
+      "purpose": "Headed host browser with PID identity, bridge and safe drain",
+      "evidence": "Public CLI/module command, tests or recovery runbook dependencies; no automatic activation is authorized"
+    },
+    {
+      "name": "collection coordinator candidate",
+      "category": "UNKNOWN",
+      "paths": [
+        "scrapper/operations/coordinator/collection.py"
+      ],
+      "purpose": "Alternative durable cap scheduler/executor",
+      "evidence": "CLI scheduler and tests remain; production adapter bypasses its priority gate; no equivalent retirement proof"
+    },
+    {
+      "name": "periodic dispatch candidate",
+      "category": "UNKNOWN",
+      "paths": [
+        "scrapper/commands/periodic_dispatch.py",
+        "scrapper/operations/coordinator/periodic.py"
+      ],
+      "purpose": "Alternate delayed/recovery/housekeeping timer",
+      "evidence": "Explicit offline candidate; changes grouping and durable cursors, not replaced by Phase4 historical_limit0"
+    },
+    {
+      "name": "document-capacity LaunchAgent",
+      "category": "UNKNOWN",
+      "paths": [
+        "scrapper/commands/publish_document_store_capacity.py"
+      ],
+      "purpose": "Keep physical device capacity fresh for legacy workers",
+      "evidence": "Loaded KeepAlive job repeatedly exits1 for absent runtime identity; current bounded adapter publishes same capacity independently; recovery capacity dependency remains"
+    }
+  ]
+}

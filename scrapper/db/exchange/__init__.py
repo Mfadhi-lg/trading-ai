@@ -1,0 +1,1 @@
+"""Grouped exchange persistence owners."""

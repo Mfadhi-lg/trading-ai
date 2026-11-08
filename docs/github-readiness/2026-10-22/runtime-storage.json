@@ -1,0 +1,37 @@
+{
+  "scope": "metadata-only observations during audit; no production database opened",
+  "docker_ps": "15 retained Trading AI containers stopped at observation; no running transient Trading AI container observed in that listing",
+  "legacy_image": "sha256:44da7074157fd2a946c41d064a91ef3f729ebd31ab3bcdf2aa09233c5a794b6b",
+  "inspected_containers": [
+    "trading-ai-scheduler-1",
+    "trading-ai-document-download-worker-1",
+    "trading-ai-june-extraction-worker-1"
+  ],
+  "production_volume": {
+    "name": "trading-ai_scraper-data",
+    "destination": "/data",
+    "mountpoint": "/var/lib/docker/volumes/trading-ai_scraper-data/_data"
+  },
+  "proof_volumes": [
+    "trading-ai-ar013a-restore-proof-20261007",
+    "trading-ai-ar013a-snapshot-validation-20261007",
+    "trading-ai-ar013b-post-migration-verification-20261008",
+    "trading-ai-ar013c-attempt02-post-fingerprint-20261008",
+    "trading-ai-ar013c-baseline-fingerprint-20261008"
+  ],
+  "external_documents": {
+    "host": "/Volumes/My Passport/passport/trading-ai",
+    "container": "/documents",
+    "VolumeUUID": "60E1204B-CB98-48C4-9398-1D2FBAC9B44A",
+    "filesystem": "APFS",
+    "APFSContainerFree": 375164751872
+  },
+  "legacy_configs": "retained stopped containers bind /private/tmp/trading-ai-cleanup-c050-20261002/dev/ops/docker/release/c05.3/ identities; do not clean without durable retention",
+  "commands": [
+    "docker ps -a --format selected name/status/image",
+    "docker inspect selected name/image/mounts",
+    "docker volume ls --filter name=trading-ai",
+    "diskutil info -plist /Volumes/My Passport"
+  ],
+  "permission_note": "sandbox Docker/diskutil reads failed initially; retried with approved read-only metadata permissions"
+}

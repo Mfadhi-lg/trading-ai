@@ -1,0 +1,22 @@
+name: Migration lineage
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  migration-lineage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check frozen migration filenames and checksums
+        run: python scripts/audit/check_migration_manifest.py
+      - name: Check disposable ledger expectations
+        run: python -m unittest scrapper.tests.test_migration_manifest -v
+      - name: Check explicit migration and read-only connection controls
+        run: python -m unittest scrapper.tests.test_database_migration_controls -v
+      - name: Check rejected migration source and archive drift
+        run: python -m unittest discover -s scripts/audit -p test_migration_lineage.py -v

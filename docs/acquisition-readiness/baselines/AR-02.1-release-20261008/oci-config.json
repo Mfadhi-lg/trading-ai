@@ -1,0 +1,214 @@
+{
+  "architecture": "arm64",
+  "config": {
+    "ArgsEscaped": true,
+    "Cmd": [
+      "--help"
+    ],
+    "Entrypoint": [
+      "python",
+      "-m",
+      "scrapper.cli"
+    ],
+    "Env": [
+      "PATH=/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+      "LANG=C.UTF-8",
+      "GPG_KEY=7169605F62C751356D054A26A821E680E5FA6305",
+      "PYTHON_VERSION=3.12.14",
+      "PYTHON_SHA256=5c8462af5790baf43a321a1559dbe0db06d1be4300fb85fb53c40060668e548a",
+      "PYTHONDONTWRITEBYTECODE=1",
+      "PYTHONUNBUFFERED=1",
+      "SCRAPER_STORE_PATH=/data",
+      "SCRAPER_DB_PATH=/data/scraper.db",
+      "SCREENER_SESSION_FILE=/run/secrets/screener_session",
+      "PLAYWRIGHT_BROWSERS_PATH=/ms-playwright"
+    ],
+    "Healthcheck": {
+      "Interval": 30000000000,
+      "Retries": 3,
+      "Test": [
+        "CMD",
+        "python",
+        "-c",
+        "from scrapper.config import DB_PATH; import sqlite3; c=sqlite3.connect(DB_PATH); c.execute('SELECT 1'); c.close()"
+      ],
+      "Timeout": 5000000000
+    },
+    "Labels": {
+      "ai.trading.source.patch.sha256": "d3bb97915c57acac6ae769ab22d0e1088fa2d38f383a4bdf5d2172fb714b2ba5",
+      "ai.trading.source.projection.sha256": "1e773bd3c8282fe9eaad1e7a118d68c8395d564a5c2ed36b251de2d0cd8750f6",
+      "org.opencontainers.image.revision": "c3ddbbb9c298d07b8b46a362996251417282476a",
+      "org.opencontainers.image.version": "c28.1-ar021-20261008"
+    },
+    "User": "scraper",
+    "Volumes": {
+      "/data": {}
+    },
+    "WorkingDir": "/app"
+  },
+  "created": "2026-10-07T03:57:42Z",
+  "history": [
+    {
+      "comment": "debuerreotype 0.17",
+      "created": "2026-09-18T00:00:00Z",
+      "created_by": "# debian.sh --arch 'arm64' out/ 'trixie' '@1789689600'"
+    },
+    {
+      "comment": "buildkit.dockerfile.v0",
+      "created": "2026-09-19T01:02:39.685965344Z",
+      "created_by": "ENV PATH=/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+      "empty_layer": true
+    },
+    {
+      "comment": "buildkit.dockerfile.v0",
+      "created": "2026-09-19T01:02:39.685965344Z",
+      "created_by": "ENV LANG=C.UTF-8",
+      "empty_layer": true
+    },
+    {
+      "comment": "buildkit.dockerfile.v0",
+      "created": "2026-09-19T01:02:39.685965344Z",
+      "created_by": "RUN /bin/sh -c set -eux; \tapt-get update; \tapt-get install -y --no-install-recommends \t\tca-certificates \t\tnetbase \t\ttzdata \t; \tapt-get dist-clean # buildkit"
+    },
+    {
+      "comment": "buildkit.dockerfile.v0",
+      "created": "2026-09-19T01:02:39.685965344Z",
+      "created_by": "ENV GPG_KEY=7169605F62C751356D054A26A821E680E5FA6305",
+      "empty_layer": true
+    },
+    {
+      "comment": "buildkit.dockerfile.v0",
+      "created": "2026-09-19T01:02:39.685965344Z",
+      "created_by": "ENV PYTHON_VERSION=3.12.14",
+      "empty_layer": true
+    },
+    {
+      "comment": "buildkit.dockerfile.v0",
+      "created": "2026-09-19T01:02:39.685965344Z",
+      "created_by": "ENV PYTHON_SHA256=5c8462af5790baf43a321a1559dbe0db06d1be4300fb85fb53c40060668e548a",
+      "empty_layer": true
+    },
+    {
+      "comment": "buildkit.dockerfile.v0",
+      "created": "2026-09-19T01:14:09.777334954Z",
+      "created_by": "RUN /bin/sh -c set -eux; \t\tsavedAptMark=\"$(apt-mark showmanual)\"; \tapt-get update; \tapt-get install -y --no-install-recommends \t\tdpkg-dev \t\tg++ \t\tgcc \t\tgnupg \t\tlibbluetooth-dev \t\tlibbz2-dev \t\tlibc6-dev \t\tlibdb-dev \t\tlibffi-dev \t\tlibgdbm-dev \t\tliblzma-dev \t\tlibncursesw5-dev \t\tlibreadline-dev \t\tlibsqlite3-dev \t\tlibssl-dev \t\tmake \t\ttk-dev \t\tuuid-dev \t\twget \t\txz-utils \t\tzlib1g-dev \t; \t\twget -O python.tar.xz \"https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz\"; \techo \"$PYTHON_SHA256 *python.tar.xz\" | sha256sum -c -; \twget -O python.tar.xz.asc \"https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz.asc\"; \tGNUPGHOME=\"$(mktemp -d)\"; export GNUPGHOME; \tgpg --batch --keyserver hkps://keys.openpgp.org --recv-keys \"$GPG_KEY\"; \tgpg --batch --verify python.tar.xz.asc python.tar.xz; \tgpgconf --kill all; \trm -rf \"$GNUPGHOME\" python.tar.xz.asc; \tmkdir -p /usr/src/python; \ttar --extract --directory /usr/src/python --strip-components=1 --file python.tar.xz; \trm python.tar.xz; \t\tcd /usr/src/python; \tgnuArch=\"$(dpkg-architecture --query DEB_BUILD_GNU_TYPE)\"; \t./configure \t\t--build=\"$gnuArch\" \t\t--enable-loadable-sqlite-extensions \t\t--enable-optimizations \t\t--enable-option-checking=fatal \t\t--enable-shared \t\t$(test \"${gnuArch%%-*}\" != 'riscv64' && echo '--with-lto') \t\t--with-ensurepip \t; \tnproc=\"$(nproc)\"; \tEXTRA_CFLAGS=\"$(dpkg-buildflags --get CFLAGS)\"; \tLDFLAGS=\"$(dpkg-buildflags --get LDFLAGS)\"; \tLDFLAGS=\"${LDFLAGS:-} -Wl,--strip-all\"; \tarch=\"$(dpkg --print-architecture)\"; arch=\"${arch##*-}\"; \tcase \"$arch\" in \t\tamd64|arm64) \t\t\tEXTRA_CFLAGS=\"${EXTRA_CFLAGS:-} -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer\"; \t\t\t;; \t\ti386) \t\t\t;; \t\t*) \t\t\tEXTRA_CFLAGS=\"${EXTRA_CFLAGS:-} -fno-omit-frame-pointer\"; \t\t\t;; \tesac; \tmake -j \"$nproc\" \t\t\"EXTRA_CFLAGS=${EXTRA_CFLAGS:-}\" \t\t\"LDFLAGS=${LDFLAGS:-}\" \t; \trm python; \tmake -j \"$nproc\" \t\t\"EXTRA_CFLAGS=${EXTRA_CFLAGS:-}\" \t\t\"LDFLAGS=${LDFLAGS:-} -Wl,-rpath='\\$\\$ORIGIN/../lib'\" \t\tpython \t; \tmake install; \t\tcd /; \trm -rf /usr/src/python; \t\tfind /usr/local -depth \t\t\\( \t\t\t\\( -type d -a \\( -name test -o -name tests -o -name idle_test \\) \\) \t\t\t-o \\( -type f -a \\( -name '*.pyc' -o -name '*.pyo' -o -name 'libpython*.a' \\) \\) \t\t\\) -exec rm -rf '{}' + \t; \t\tldconfig; \t\tapt-mark auto '.*' > /dev/null; \tapt-mark manual $savedAptMark; \tfind /usr/local -type f -executable -not \\( -name '*tkinter*' \\) -exec ldd '{}' ';' \t\t| awk '/=>/ { so = $(NF-1); if (index(so, \"/usr/local/\") == 1) { next }; gsub(\"^/(usr/)?\", \"\", so); printf \"*%s\\n\", so }' \t\t| sort -u \t\t| xargs -rt dpkg-query --search \t\t| awk 'sub(\":$\", \"\", $1) { print $1 }' \t\t| sort -u \t\t| xargs -r apt-mark manual \t; \tapt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \tapt-get dist-clean; \t\texport PYTHONDONTWRITEBYTECODE=1; \tpython3 --version; \tpip3 --version # buildkit"
+    },
+    {
+      "comment": "buildkit.dockerfile.v0",
+      "created": "2026-09-19T01:14:09.882652707Z",
+      "created_by": "RUN /bin/sh -c set -eux; \tfor src in idle3 pip3 pydoc3 python3 python3-config; do \t\tdst=\"$(echo \"$src\" | tr -d 3)\"; \t\t[ -s \"/usr/local/bin/$src\" ]; \t\t[ ! -e \"/usr/local/bin/$dst\" ]; \t\tln -svT \"$src\" \"/usr/local/bin/$dst\"; \tdone # buildkit"
+    },
+    {
+      "comment": "buildkit.dockerfile.v0",
+      "created": "2026-09-19T01:14:09.882652707Z",
+      "created_by": "CMD [\"python3\"]",
+      "empty_layer": true
+    },
+    {
+      "comment": "buildkit.dockerfile.v0",
+      "created": "2026-10-07T03:57:42Z",
+      "created_by": "ARG EXPECTED_PYTHON_VERSION=3.12.14",
+      "empty_layer": true
+    },
+    {
+      "comment": "buildkit.dockerfile.v0",
+      "created": "2026-10-07T03:57:42Z",
+      "created_by": "ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 SCRAPER_STORE_PATH=/data SCRAPER_DB_PATH=/data/scraper.db SCREENER_SESSION_FILE=/run/secrets/screener_session PLAYWRIGHT_BROWSERS_PATH=/ms-playwright",
+      "empty_layer": true
+    },
+    {
+      "comment": "buildkit.dockerfile.v0",
+      "created": "2026-10-07T03:57:42Z",
+      "created_by": "RUN |1 EXPECTED_PYTHON_VERSION=3.12.14 /bin/sh -c groupadd --system scraper && useradd --system --gid scraper --home /app scraper # buildkit"
+    },
+    {
+      "comment": "buildkit.dockerfile.v0",
+      "created": "2026-10-07T03:57:42Z",
+      "created_by": "WORKDIR /app"
+    },
+    {
+      "comment": "buildkit.dockerfile.v0",
+      "created": "2026-10-07T03:57:42Z",
+      "created_by": "COPY scrapper/requirements.lock /app/requirements.lock # buildkit"
+    },
+    {
+      "comment": "buildkit.dockerfile.v0",
+      "created": "2026-10-07T03:57:42Z",
+      "created_by": "RUN |1 EXPECTED_PYTHON_VERSION=3.12.14 /bin/sh -c test \"$(python -c 'import platform; print(platform.python_version())')\" = \"$EXPECTED_PYTHON_VERSION\"     && python -m pip install --no-cache-dir --no-compile --require-hashes         --requirement /app/requirements.lock     && python -m pip check # buildkit"
+    },
+    {
+      "comment": "buildkit.dockerfile.v0",
+      "created": "2026-10-07T03:57:42Z",
+      "created_by": "RUN |1 EXPECTED_PYTHON_VERSION=3.12.14 /bin/sh -c python -m playwright install --with-deps chromium     && rm -rf /var/lib/apt/lists/* /var/cache/fontconfig/*         /var/cache/ldconfig/aux-cache /var/log/apt/*         /var/log/alternatives.log /var/log/dpkg.log # buildkit"
+    },
+    {
+      "comment": "buildkit.dockerfile.v0",
+      "created": "2026-10-07T03:57:42Z",
+      "created_by": "RUN |1 EXPECTED_PYTHON_VERSION=3.12.14 /bin/sh -c apt-get update     && apt-get install --yes --no-install-recommends ffmpeg tesseract-ocr     && rm -rf /var/lib/apt/lists/* /var/cache/fontconfig/*         /var/cache/ldconfig/aux-cache /var/log/apt/*         /var/log/alternatives.log /var/log/dpkg.log # buildkit"
+    },
+    {
+      "comment": "buildkit.dockerfile.v0",
+      "created": "2026-10-07T03:57:42Z",
+      "created_by": "RUN |1 EXPECTED_PYTHON_VERSION=3.12.14 /bin/sh -c chmod -R a+rX /ms-playwright # buildkit"
+    },
+    {
+      "comment": "buildkit.dockerfile.v0",
+      "created": "2026-10-07T03:57:42Z",
+      "created_by": "COPY scrapper /app/scrapper # buildkit"
+    },
+    {
+      "comment": "buildkit.dockerfile.v0",
+      "created": "2026-10-07T03:57:42Z",
+      "created_by": "RUN |1 EXPECTED_PYTHON_VERSION=3.12.14 /bin/sh -c mkdir -p /data && chown -R scraper:scraper /app /data # buildkit"
+    },
+    {
+      "comment": "buildkit.dockerfile.v0",
+      "created": "2026-10-07T03:57:42Z",
+      "created_by": "USER scraper",
+      "empty_layer": true
+    },
+    {
+      "comment": "buildkit.dockerfile.v0",
+      "created": "2026-10-07T03:57:42Z",
+      "created_by": "VOLUME [/data]",
+      "empty_layer": true
+    },
+    {
+      "comment": "buildkit.dockerfile.v0",
+      "created": "2026-10-07T03:57:42Z",
+      "created_by": "HEALTHCHECK {Test:[CMD python -c from scrapper.config import DB_PATH; import sqlite3; c=sqlite3.connect(DB_PATH); c.execute('SELECT 1'); c.close()] Interval:30s Timeout:5s StartPeriod:0s StartInterval:0s Retries:3}",
+      "empty_layer": true
+    },
+    {
+      "comment": "buildkit.dockerfile.v0",
+      "created": "2026-10-07T03:57:42Z",
+      "created_by": "ENTRYPOINT [\"python\" \"-m\" \"scrapper.cli\"]",
+      "empty_layer": true
+    },
+    {
+      "comment": "buildkit.dockerfile.v0",
+      "created": "2026-10-07T03:57:42Z",
+      "created_by": "CMD [\"--help\"]",
+      "empty_layer": true
+    }
+  ],
+  "os": "linux",
+  "rootfs": {
+    "diff_ids": [
+      "sha256:8227a1264c7ff2f8bd125b585e62c1cec77dd2099c985c33e08d34292d06144f",
+      "sha256:77e3d8b6f2ffedf0e56807fd677c6ebb630288d92163c762271391b3f9100826",
+      "sha256:bb98c47a575f471443d45d5e96aab7c0e646879bf372ba771288b008362ffc52",
+      "sha256:d9a454691b8952308fa3b779dac6aabd4faab3cd0f9d1fdf56820cbeb6637fbd",
+      "sha256:93b4291a6763a4f7e8d92cd9626abafa3a3e110aa7677b78b1988562995b7eb4",
+      "sha256:02bca982397c337b5026dca2ad31150917959c9ecca762c76bf0f13bc53350ae",
+      "sha256:b5f983983e3037b087b7c2208c5775858ccc45a0a3fe1ebbd952206fafceaea4",
+      "sha256:100a5979804b767057fab536c62feea2744ad5ac6100a6c1f8e39eb72e4e1e07",
+      "sha256:1aed989b0d95420e8d56c0e17d600f0e130c06406c27eb6fd806b6f979f6834b",
+      "sha256:40b0ba2ee98e8d58e00a0571b1e682e229327c7ffed7b8490ce5c291e0c2f388",
+      "sha256:0053289aa339a3682707aeefaa3cea3c4eaae32580f848e7de6f1323bc609d29",
+      "sha256:cbe4f9ef6bb2599557c8623ec39f426e23ad42bfb586e02b10f767ca0213954b",
+      "sha256:0db6ebc1c5326b472e5c4f3dca55bf1f15520f5962d1bb88601cab16a74d176b"
+    ],
+    "type": "layers"
+  }
+}

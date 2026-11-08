@@ -8,11 +8,57 @@ from datetime import datetime, timezone
 from decimal import Decimal
 from pathlib import Path
 
-from ..sources.screener.manifest import audit_screener_fixture_coverage
+from bs4 import BeautifulSoup
+
+from ..sources.screener.manifest import audit_screener_fixture_coverage, shareholding_unavailable
+
+
+from .screener_rules import (
+    peer_fragment_rules,
+    identity_rules,
+    financial_rules,
+    growth_rules,
+    shareholding_rules,
+    profile_rules,
+    document_rules,
+    metric_review_rules,
+    peer_supplement_rules,
+)
+
+
+from ..db.screener import acceptance as _acceptance
 
 
 def _utc_now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
+
+
+def _source_has_shareholding_warning(content: bytes) -> bool:
+    """True when the saved response carries the shareholding classification note.
+
+    Screener writes this footnote to explain FII/DII movements across the
+    Sep-2022 XBRL change, so a company whose table has no institutional
+    categories never gets one. Mirroring the parser's own selector keeps this a
+    capture check: it fires when the source has the note and the parse lost it,
+    and stays quiet when the source has none to give.
+    """
+    section = BeautifulSoup(content, "html.parser").select_one("section#shareholding")
+    return bool(section and section.select_one("p.sub.small"))
+
+
+def _source_lists_annual_report(content: bytes) -> bool:
+    """True when the saved response actually lists at least one annual report.
+
+    Screener renders the Annual reports box for every company but leaves it
+    empty until the first report is filed, so a company a few quarters past
+    listing has none. Reading the source list keeps the capture requirement
+    honest: it still fires when the source has reports and the parse dropped
+    them, and stays quiet when the company genuinely has none.
+    """
+    box = BeautifulSoup(content, "html.parser").select_one(
+        "section#documents div.annual-reports"
+    )
+    return bool(box and box.select("ul.list-links > li"))
 
 
 def _balance_sheet_imbalances(
@@ -148,19 +194,20 @@ def validate_peer_parse(
         and "/company/" in (subject[0]["peer_source_url"] or "")
         and int(subject[0]["metric_count"]) > 0
     )
-    rules = [
-        ("peer_table_present", "error", source_cell_count > 0 and company_count > 0,
-         "source_cells>0,companies>0", f"source_cells={source_cell_count},companies={company_count}"),
-        ("peer_table_not_placeholder", "error", placeholder_count == 0,
-         "0", str(placeholder_count)),
-        ("peer_table_numeric_cells", "error", observation_count > 0 and numeric_failures == 0,
-         "observations>0,untyped=0", f"observations={observation_count},untyped={numeric_failures}"),
-        ("peer_table_subject_match", "error", subject_ok,
-         f"{expected_source_company_id}:{expected_symbol}",
-         f"matches={len(subject)}"),
-        ("known_peer_metrics", "manual_review", unknown_metrics is None,
-         "none", unknown_metrics),
-    ]
+    rules = (
+        peer_fragment_rules(
+            company_count=company_count,
+            expected_source_company_id=expected_source_company_id,
+            expected_symbol=expected_symbol,
+            numeric_failures=numeric_failures,
+            observation_count=observation_count,
+            placeholder_count=placeholder_count,
+            source_cell_count=source_cell_count,
+            subject=subject,
+            subject_ok=subject_ok,
+            unknown_metrics=unknown_metrics,
+        )
+    )
     created = _utc_now()
     with conn:
         for code, severity, passed, expected, actual in rules:
@@ -196,11 +243,25 @@ def validate_parse(
            WHERE pa.parse_id=?""",
         (parse_id,),
     ).fetchone()
+    content = Path(blob["local_path"]).read_bytes() if blob is not None else None
     manifest_errors = (
-        audit_screener_fixture_coverage(Path(blob["local_path"]).read_bytes())
-        if blob is not None
+        audit_screener_fixture_coverage(content)
+        if content is not None
         else ["parse artifact has no response blob"]
     )
+    # Without a response to read, keep the stricter requirement: a missing blob
+    # is already a blocking failure and must not silently relax another rule.
+    source_lists_annual_report = (
+        _source_lists_annual_report(content) if content is not None else True
+    )
+    source_has_shareholding_warning = (
+        _source_has_shareholding_warning(content) if content is not None else True
+    )
+    source_soup = BeautifulSoup(content, "html.parser") if content is not None else None
+    unavailable_frequencies = {
+        frequency for frequency in ("quarterly", "yearly")
+        if source_soup is not None and shareholding_unavailable(source_soup, frequency)
+    }
     actual_identifiers = {
         str(row["normalized_display_text"])
         for row in conn.execute(
@@ -340,6 +401,12 @@ def validate_parse(
              AND sf.field_role='classification_warning'""",
         (parse_id,),
     ).fetchone()["n"]
+    # The note is only owed when the source actually carries it. A company whose
+    # table has no institutional categories never gets one, and rejecting it for
+    # an absence the source itself declares would discard complete data.
+    shareholding_warning_captured = (
+        shareholding_warning_present > 0 or not source_has_shareholding_warning
+    )
     shareholding_total_anomalies, shareholding_total_detail = _shareholding_total_anomalies(
         conn, parse_id, "quarterly"
     )
@@ -393,10 +460,11 @@ def validate_parse(
             (parse_id,),
         )
     }
-    required_profile_links = {"website", "about_source"}
-    profile_links_present = (
-        required_profile_links <= link_types and bool({"bse", "nse"} & link_types)
-    )
+    # Website and about-source anchors are captured when present but are not
+    # required; only an exchange identifier is, because identity resolves
+    # through it. See _parse_company_profile.
+    required_profile_links = {"bse|nse"}
+    profile_links_present = bool({"bse", "nse"} & link_types)
     analysis_headings = {
         str(row["normalized_display_text"])
         for row in conn.execute(
@@ -457,7 +525,10 @@ def validate_parse(
     # be absent when Screener has no corresponding artifact for the company. When
     # present, every link is retained and checked by the known-type rule below. Do
     # not manufacture an unavailable row for an absent list.
-    required_document_families = {"announcement", "annual_report"}
+    #
+    # Annual reports are not mandatory (waived) because not all companies
+    # have them published or available.
+    required_document_families = {"announcement"}
     required_document_families_present = (
         required_document_families <= document_families
     )
@@ -516,291 +587,83 @@ def validate_parse(
         and peer_link["validation_status"] in {"passed", "passed_with_warnings"}
     )
 
-    rules = [
-        (
-            "screener_manifest_coverage",
-            "error",
-            not manifest_errors,
-            "no uncovered source components",
-            "; ".join(manifest_errors) if manifest_errors else "none",
-        ),
-        (
-            "identity_symbol",
-            "error",
-            expected_symbol in actual_identifiers,
-            expected_symbol,
-            ",".join(sorted(actual_identifiers)) or None,
-        ),
-        (
-            "reporting_scope",
-            "error",
-            scope is not None and scope[0] == expected_scope,
-            expected_scope,
-            scope[0] if scope else None,
-        ),
-        ("ratio_panel_present", "error", metric_count > 0, ">0", str(metric_count)),
-        (
-            "quarterly_table_present",
-            "error",
-            financial_count > 0,
-            ">0",
-            str(financial_count),
-        ),
-        (
-            "quarterly_numeric_cells",
-            "error",
-            numeric_failures == 0,
-            "0",
-            str(numeric_failures),
-        ),
-        ("profit_loss_table_present", "error", pnl_count > 0, ">0", str(pnl_count)),
-        (
-            "pnl_annual_ttm_no_collision",
-            "error",
-            pnl_period_collisions == 0,
-            "0",
-            str(pnl_period_collisions),
-        ),
-        (
-            "balance_sheet_table_present",
-            "error",
-            balance_count > 0,
-            ">0",
-            str(balance_count),
-        ),
-        (
-            "balance_assets_equal_liabilities",
-            "warning",
-            balance_imbalance_count == 0,
-            "0",
-            balance_imbalance_detail if balance_imbalance_detail else str(balance_imbalance_count),
-        ),
-        (
-            "cash_flow_table_present",
-            "error",
-            cash_count > 0,
-            ">0",
-            str(cash_count),
-        ),
-        (
-            "annual_ratios_table_present",
-            "error",
-            ratios_count > 0,
-            ">0",
-            str(ratios_count),
-        ),
-        (
-            "annual_ratios_numeric_cells",
-            "error",
-            ratios_untyped == 0,
-            "0",
-            str(ratios_untyped),
-        ),
-        (
-            "annual_ratios_separate_from_panel",
-            "error",
-            ratios_panel_collisions == 0,
-            "0",
-            str(ratios_panel_collisions),
-        ),
-        ("growth_blocks_present", "error", growth_count > 0, ">0", str(growth_count)),
-        (
-            "growth_numeric_cells",
-            "error",
-            growth_untyped == 0,
-            "0",
-            str(growth_untyped),
-        ),
-        (
-            "growth_unavailable_not_zero",
-            "error",
-            growth_missing_as_value == 0,
-            "0",
-            str(growth_missing_as_value),
-        ),
-        (
-            "quarterly_shareholding_table_present",
-            "error",
-            shareholding_count > 0,
-            ">0",
-            str(shareholding_count),
-        ),
-        (
-            "quarterly_shareholding_numeric_cells",
-            "error",
-            shareholding_untyped == 0,
-            "0",
-            str(shareholding_untyped),
-        ),
-        (
-            "shareholding_no_cross_regime",
-            "error",
-            shareholding_bad_regime == 0,
-            "0",
-            str(shareholding_bad_regime),
-        ),
-        (
-            "shareholding_classification_warning_present",
-            "error",
-            shareholding_warning_present > 0,
-            ">0",
-            str(shareholding_warning_present),
-        ),
-        (
-            "quarterly_shareholding_totals_100",
-            "warning",
-            shareholding_total_anomalies == 0,
-            "0",
-            shareholding_total_detail
-            if shareholding_total_detail
-            else str(shareholding_total_anomalies),
-        ),
-        (
-            "yearly_shareholding_table_present",
-            "error",
-            yearly_count > 0,
-            ">0",
-            str(yearly_count),
-        ),
-        (
-            "yearly_shareholding_numeric_cells",
-            "error",
-            yearly_untyped == 0,
-            "0",
-            str(yearly_untyped),
-        ),
-        (
-            "yearly_shareholding_no_cross_regime",
-            "error",
-            yearly_bad_regime == 0,
-            "0",
-            str(yearly_bad_regime),
-        ),
-        (
-            "yearly_shareholding_totals_100",
-            "warning",
-            yearly_total_anomalies == 0,
-            "0",
-            yearly_total_detail
-            if yearly_total_detail
-            else str(yearly_total_anomalies),
-        ),
-        (
-            "company_about_text_present",
-            "error",
-            about_text_present,
-            "company_description=1,about=1",
-            ",".join(f"{key}={value}" for key, value in sorted(text_types.items())),
-        ),
-        (
-            "company_profile_links_present",
-            "error",
-            profile_links_present,
-            ",".join(sorted(required_profile_links)),
-            ",".join(sorted(link_types)),
-        ),
-        (
-            "pros_cons_text_present",
-            "error",
-            pros_cons_present,
-            "headings=Pros,Cons;commentary>0",
-            (
-                f"headings={','.join(sorted(analysis_headings))};"
-                f"pro={text_types.get('pro', 0)},con={text_types.get('con', 0)}"
-            ),
-        ),
-        (
-            "pros_cons_source_generated",
-            "error",
-            commentary_not_marked_generated == 0 and pros_cons_present,
-            "0",
-            str(commentary_not_marked_generated),
-        ),
-        (
-            "document_links_present",
-            "error",
-            document_count > 0,
-            ">0",
-            str(document_count),
-        ),
-        (
-            "document_link_source_fields_match",
-            "error",
-            document_source_count == document_count,
-            str(document_count),
-            str(document_source_count),
-        ),
-        (
-            "document_link_positions_contiguous",
-            "error",
-            document_positions_contiguous,
-            f"0..{document_count - 1}" if document_count else "non-empty",
-            (
-                f"{document_stats['min_position']}..{document_stats['max_position']}"
-                if document_count
-                else "empty"
-            ),
-        ),
-        (
-            "document_link_availability_consistent",
-            "error",
-            document_availability_mismatches == 0,
-            "0",
-            str(document_availability_mismatches),
-        ),
-        (
-            "document_link_required_families_present",
-            "error",
-            required_document_families_present,
-            ",".join(sorted(required_document_families)),
-            ",".join(sorted(document_families)),
-        ),
-        (
-            "known_document_link_types",
-            "manual_review",
-            not unknown_document_types,
-            "none",
-            ",".join(unknown_document_types) if unknown_document_types else None,
-        ),
-        (
-            "known_ratio_labels",
-            "manual_review",
-            unknown_metrics is None,
-            "none",
-            unknown_metrics,
-        ),
-        (
-            "peer_table_supplement_present",
-            "error",
-            peer_supplement_ok and peer_observation_count > 0,
-            "linked validated supplemental parse with observations",
-            (
-                f"parse_id={peer_parse_id},observations={peer_observation_count},"
-                f"status={peer_link['validation_status'] if peer_link else 'missing'}"
-            ),
-        ),
-        (
-            "peer_table_not_placeholder",
-            "error",
-            peer_placeholder_count == 0 and peer_observation_count > 0,
-            "placeholder=0,observations>0",
-            f"placeholder={peer_placeholder_count},observations={peer_observation_count}",
-        ),
-        (
-            "peer_table_numeric_cells",
-            "error",
-            peer_observation_count > 0 and peer_untyped == 0,
-            "observations>0,untyped=0",
-            f"observations={peer_observation_count},untyped={peer_untyped}",
-        ),
-        (
-            "peer_table_subject_match",
-            "error",
-            peer_subject_count == 1,
-            "1",
-            str(peer_subject_count),
-        ),
-    ]
+    rules = (
+        identity_rules(
+            actual_identifiers=actual_identifiers,
+            expected_scope=expected_scope,
+            expected_symbol=expected_symbol,
+            manifest_errors=manifest_errors,
+            scope=scope,
+        )
+        + financial_rules(
+            balance_count=balance_count,
+            balance_imbalance_count=balance_imbalance_count,
+            balance_imbalance_detail=balance_imbalance_detail,
+            cash_count=cash_count,
+            financial_count=financial_count,
+            metric_count=metric_count,
+            numeric_failures=numeric_failures,
+            pnl_count=pnl_count,
+            pnl_period_collisions=pnl_period_collisions,
+            ratios_count=ratios_count,
+            ratios_panel_collisions=ratios_panel_collisions,
+            ratios_untyped=ratios_untyped,
+        )
+        + growth_rules(
+            growth_count=growth_count,
+            growth_missing_as_value=growth_missing_as_value,
+            growth_untyped=growth_untyped,
+        )
+        + shareholding_rules(
+            shareholding_bad_regime=shareholding_bad_regime,
+            shareholding_count=shareholding_count,
+            shareholding_total_anomalies=shareholding_total_anomalies,
+            shareholding_total_detail=shareholding_total_detail,
+            shareholding_untyped=shareholding_untyped,
+            shareholding_warning_captured=shareholding_warning_captured,
+            shareholding_warning_present=shareholding_warning_present,
+            source_has_shareholding_warning=source_has_shareholding_warning,
+            unavailable_frequencies=unavailable_frequencies,
+            yearly_bad_regime=yearly_bad_regime,
+            yearly_count=yearly_count,
+            yearly_total_anomalies=yearly_total_anomalies,
+            yearly_total_detail=yearly_total_detail,
+            yearly_untyped=yearly_untyped,
+        )
+        + profile_rules(
+            about_text_present=about_text_present,
+            analysis_headings=analysis_headings,
+            commentary_not_marked_generated=commentary_not_marked_generated,
+            link_types=link_types,
+            profile_links_present=profile_links_present,
+            pros_cons_present=pros_cons_present,
+            required_profile_links=required_profile_links,
+            text_types=text_types,
+        )
+        + document_rules(
+            document_availability_mismatches=document_availability_mismatches,
+            document_count=document_count,
+            document_families=document_families,
+            document_positions_contiguous=document_positions_contiguous,
+            document_source_count=document_source_count,
+            document_stats=document_stats,
+            required_document_families=required_document_families,
+            required_document_families_present=required_document_families_present,
+            unknown_document_types=unknown_document_types,
+        )
+        + metric_review_rules(
+            unknown_metrics=unknown_metrics,
+        )
+        + peer_supplement_rules(
+            peer_link=peer_link,
+            peer_observation_count=peer_observation_count,
+            peer_parse_id=peer_parse_id,
+            peer_placeholder_count=peer_placeholder_count,
+            peer_subject_count=peer_subject_count,
+            peer_supplement_ok=peer_supplement_ok,
+            peer_untyped=peer_untyped,
+        )
+    )
     created = _utc_now()
     with conn:
         for code, severity, passed, expected, actual in rules:
@@ -845,6 +708,10 @@ def validate_parse(
     return status
 
 
+def sync_screener_quarter_state(conn, company_id: int, scope: str) -> None:
+    return _acceptance.sync_screener_quarter_state(conn, company_id, scope, _utc_now=_utc_now)
+
+
 def accept_parse(
     conn: sqlite3.Connection,
     company_id: int,
@@ -853,132 +720,4 @@ def accept_parse(
     scope: str,
     resolved_source_period: str = "not_applicable",
 ) -> None:
-    artifact = conn.execute(
-        "SELECT parse_status, validation_status FROM parse_artifacts WHERE parse_id=?",
-        (parse_id,),
-    ).fetchone()
-    blocking_rules = [
-        str(row["rule_code"])
-        for row in conn.execute(
-            """SELECT rule_code FROM validation_results
-               WHERE parse_id=? AND status='failed'
-                 AND severity IN ('error', 'manual_review')
-               ORDER BY rule_code""",
-            (parse_id,),
-        ).fetchall()
-    ]
-    blocking = len(blocking_rules)
-    actual_scope = conn.execute(
-        """SELECT reporting_scope FROM quote_observations
-           WHERE parse_id=?""",
-        (parse_id,),
-    ).fetchone()
-    scope_matches = actual_scope is not None and actual_scope["reporting_scope"] == scope
-    is_blocked = (
-        artifact is None
-        or artifact["parse_status"] != "ok"
-        or artifact["validation_status"] not in {"passed", "passed_with_warnings"}
-        or blocking
-        or not scope_matches
-    )
-    now = _utc_now()
-    if is_blocked:
-        reason = {
-            "parse_status": artifact["parse_status"] if artifact else "missing",
-            "validation_status": artifact["validation_status"] if artifact else "missing",
-            "blocking_validation_count": int(blocking),
-            "blocking_rule_codes": blocking_rules,
-            "requested_reporting_scope": scope,
-            "actual_reporting_scope": (
-                actual_scope["reporting_scope"] if actual_scope is not None else None
-            ),
-        }
-        if artifact is not None:
-            with conn:
-                conn.execute(
-                    """INSERT INTO acceptance_events
-                       (company_id, source, reporting_scope,
-                        resolved_source_period, parse_id, action,
-                        accepted_at_utc, accepted_by, acceptance_mode,
-                        reason_json)
-                       VALUES (?, ?, ?, ?, ?, 'rejected', ?, 'system',
-                               'automatic', ?)""",
-                    (
-                        company_id,
-                        source,
-                        scope,
-                        resolved_source_period,
-                        parse_id,
-                        now,
-                        json.dumps(reason, sort_keys=True),
-                    ),
-                )
-        # The blocking rule codes travel in the message because the queue's
-        # retryable/terminal policy classifies failures from the message alone;
-        # a generic message would make every blocking rule look retryable.
-        detail = ", ".join(blocking_rules) if blocking_rules else "none"
-        raise ValueError(
-            "Parse artifact does not satisfy automatic acceptance rules "
-            f"(parse_status={reason['parse_status']}, "
-            f"validation_status={reason['validation_status']}, "
-            f"requested_scope={scope}, actual_scope={reason['actual_reporting_scope']}, "
-            f"blocking_rules=[{detail}])"
-        )
-
-    current = conn.execute(
-        """SELECT parse_id FROM accepted_page_versions
-           WHERE company_id=? AND source=? AND reporting_scope=?
-             AND resolved_source_period=?""",
-        (company_id, source, scope, resolved_source_period),
-    ).fetchone()
-    current_parse_id = int(current["parse_id"]) if current else None
-    if current_parse_id == parse_id:
-        return
-
-    with conn:
-        if current_parse_id is not None:
-            conn.execute(
-                """INSERT INTO acceptance_events
-                   (company_id, source, reporting_scope, resolved_source_period,
-                    parse_id, action, accepted_at_utc, accepted_by,
-                    acceptance_mode, reason_json)
-                   VALUES (?, ?, ?, ?, ?, 'superseded', ?, 'system',
-                           'automatic', ?)""",
-                (
-                    company_id,
-                    source,
-                    scope,
-                    resolved_source_period,
-                    current_parse_id,
-                    now,
-                    json.dumps({"superseded_by_parse_id": parse_id}, sort_keys=True),
-                ),
-            )
-        conn.execute(
-            """INSERT INTO acceptance_events
-               (company_id, source, reporting_scope, resolved_source_period,
-                parse_id, action, accepted_at_utc, accepted_by,
-                acceptance_mode, reason_json)
-               VALUES (?, ?, ?, ?, ?, 'accepted', ?, 'system', 'automatic', ?)""",
-            (
-                company_id,
-                source,
-                scope,
-                resolved_source_period,
-                parse_id,
-                now,
-                json.dumps({"previous_parse_id": current_parse_id}, sort_keys=True),
-            ),
-        )
-        conn.execute(
-            """INSERT INTO accepted_page_versions
-               (company_id, source, reporting_scope, resolved_source_period, parse_id,
-                accepted_at_utc, accepted_by, acceptance_mode)
-               VALUES (?, ?, ?, ?, ?, ?, 'system', 'automatic')
-               ON CONFLICT(company_id, source, reporting_scope, resolved_source_period)
-               DO UPDATE SET parse_id=excluded.parse_id,
-                             accepted_at_utc=excluded.accepted_at_utc,
-                             accepted_by=excluded.accepted_by,
-                             acceptance_mode=excluded.acceptance_mode""",
-            (company_id, source, scope, resolved_source_period, parse_id, now),
-        )
+    return _acceptance.accept_parse(conn, company_id, parse_id, source, scope, resolved_source_period, _utc_now=_utc_now, sync_screener_quarter_state=sync_screener_quarter_state)

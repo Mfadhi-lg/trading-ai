@@ -1,0 +1,443 @@
+diff --git a/scrapper/workflows/exchange/universe.py b/scrapper/workflows/exchange/universe.py
+index ccaad353..1c24ce3f 100644
+--- a/scrapper/workflows/exchange/universe.py
++++ b/scrapper/workflows/exchange/universe.py
+@@ -11,6 +11,7 @@ from __future__ import annotations
+ 
+ import hashlib
+ import sqlite3
++from datetime import datetime
+ from pathlib import Path
+ from typing import Any, Callable
+ 
+@@ -79,6 +80,7 @@ from ...sources.exchange.snapshot_guard import (
+     override,
+ )
+ from ...sources.exchange.tabular import (
++    IST,
+     decompress_source,
+     effective_date_or_today,
+     is_json_payload,
+@@ -256,8 +258,15 @@ def _evaluate(
+     baseline = latest_passed_snapshot(
+         conn, dataset, before_snapshot_id=exclude_snapshot_id
+     )
++    # Scheduled effective dates use the exchange's IST calendar. Comparing them
++    # to the UTC date falsely rejects the first 5.5 hours of an exchange day.
++    # Keep the actual observation instant; never use the requested date as today.
++    observed = datetime.fromisoformat(observed_at_utc)
++    if observed.tzinfo is None:
++        raise ValueError("snapshot observation must include a timezone")
+     verdict = evaluate_snapshot(
+-        metrics, baseline, thresholds, today=observed_at_utc[:10]
++        metrics, baseline, thresholds,
++        today=observed.astimezone(IST).date().isoformat(),
+     )
+     return override(verdict) if override_validation else verdict
+ 
+diff --git a/scrapper/tests/test_ar02_snapshot_dates.py b/scrapper/tests/test_ar02_snapshot_dates.py
+new file mode 100644
+index 00000000..7f2fe7f7
+--- /dev/null
++++ b/scrapper/tests/test_ar02_snapshot_dates.py
+@@ -0,0 +1,83 @@
++"""Offline AR-02.1 regression cases with the real parser and snapshot store."""
++import hashlib
++
++from scrapper.pipeline.exchange_universe import discover_exchange_results
++from scrapper.tests.database_fixtures import prepare_database
++from scrapper.tests.test_e02_snapshot_guard import AutomationCase
++
++
++HEADER = (
++    "SYMBOL,COMPANY NAME,INDUSTRY,RELATING TO,PERIOD ENDED,AUDITED,"
++    "CUMULATIVE,CONSOLIDATED,BROADCAST DATE/TIME\n"
++)
++VALID = (HEADER +
++    "ALPHA,Alpha Industries Limited,Capital Goods,Quarterly,30-JUN-2026,"
++    "Un-Audited,Non-cumulative,Consolidated,01-Oct-2026 18:30:00\n"
++).encode()
++
++
++class ExchangeObservationDateTests(AutomationCase):
++    def discover(self, body, observed, effective):
++        prepare_database(self.db)
++        return discover_exchange_results(
++            dataset="nse_financial_results",
++            url="https://nsearchives.nseindia.com/content/equities/results.csv",
++            effective_date=effective, db_path=self.db,
++            snapshot_root=self.snapshots, now_utc=lambda: observed,
++            fetcher=self.fetched(body),
++        )
++
++    def codes(self, payload):
++        return {item["code"] for item in payload["validation"]["findings"]}
++
++    def test_sparse_valid_result_passes_after_ist_midnight(self):
++        payload = self.discover(VALID, "2026-10-03T18:44:56+00:00", "2026-10-04")
++        self.assertEqual(payload["validation"]["status"], "passed")
++        self.assertEqual(payload["validation"]["metrics"]["accepted_row_count"], 1)
++        self.assertEqual(payload["validation"]["thresholds"]["row_floor"], 1)
++
++    def test_next_day_remains_future_before_ist_midnight(self):
++        payload = self.discover(VALID, "2026-10-03T18:29:59+00:00", "2026-10-04")
++        self.assertIn("future_effective_date", self.codes(payload))
++        self.assertEqual(self.rows("SELECT * FROM exchange_result_watermarks"), [])
++        self.assertEqual(self.rows("SELECT * FROM screener_company_queue"), [])
++
++    def test_exact_ist_midnight_passes(self):
++        payload = self.discover(VALID, "2026-10-03T18:30:00+00:00", "2026-10-04")
++        self.assertEqual(payload["validation"]["status"], "passed")
++
++    def test_future_day_remains_rejected_after_ist_midnight(self):
++        payload = self.discover(VALID, "2026-10-03T18:44:56+00:00", "2026-10-05")
++        self.assertIn("future_effective_date", self.codes(payload))
++
++    def test_header_only_remains_held_and_bytes_retained(self):
++        body = HEADER.encode()
++        payload = self.discover(body, "2026-10-03T18:44:56+00:00", "2026-10-04")
++        self.assertEqual(self.codes(payload), {"row_count_floor"})
++        self.assertEqual(self.rows("SELECT * FROM exchange_result_watermarks"), [])
++        self.assertEqual(self.rows("SELECT * FROM screener_company_queue"), [])
++        blobs = self.rows("SELECT * FROM response_blobs")
++        self.assertEqual(blobs[0]["content_sha256"], hashlib.sha256(body).hexdigest())
++        from pathlib import Path
++        self.assertEqual(Path(blobs[0]["local_path"]).read_bytes(), body)
++
++    def test_malformed_row_remains_rejected(self):
++        with self.assertRaisesRegex(ValueError, "cells; expected"):
++            self.discover(
++                (HEADER + "ALPHA,broken\n").encode(),
++                "2026-10-03T18:44:56+00:00", "2026-10-04",
++            )
++        self.assertEqual(self.rows("SELECT * FROM exchange_result_watermarks"), [])
++        self.assertEqual(self.rows("SELECT * FROM screener_company_queue"), [])
++
++    def test_invalid_period_remains_guard_rejected(self):
++        payload = self.discover(
++            VALID.replace(b"30-JUN-2026", b"not-a-date"),
++            "2026-10-03T18:44:56+00:00", "2026-10-04",
++        )
++        self.assertIn("row_count_floor", self.codes(payload))
++        self.assertIn("rejected_row_rate", self.codes(payload))
++
++    def test_naive_observation_fails_closed(self):
++        with self.assertRaisesRegex(ValueError, "must include a timezone"):
++            self.discover(VALID, "2026-10-03T18:44:56", "2026-10-04")
+--- a/scrapper/workflows/exchange/schedule.py
++++ b/scrapper/workflows/exchange/schedule.py
+@@ -415,6 +415,12 @@
+         "revisions": revisions,
+         "outstanding": outstanding,
+         "access_blocked_datasets": blocked,
++        "access_blocked_action": (
++            "Keep blocked datasets held; continue unaffected sources. Review official "
++            "access permission/configuration before a separately authorized, "
++            "evidence-backed source resume. BSE-only coverage remains unproven."
++            if blocked else None
++        ),
+         "retry_scheduled": bool(retryable) and not final,
+         "status": ("incomplete" if final and retryable else
+                    "access_blocked" if blocked else "ok"),
+--- /dev/null
++++ b/scrapper/tests/test_ar022_access_block.py
+@@ -0,0 +1,60 @@
++"""AR-02.2 mixed-source acceptance and operator guidance, entirely offline."""
++from types import SimpleNamespace
++from unittest.mock import patch
++
++from scrapper.db.database import connect
++from scrapper.db.exchange import tasks
++from scrapper.operations.coordinator import exchange as coordinator
++from scrapper.tests.database_fixtures import prepare_database
++from scrapper.tests.test_e06_scheduler import SchedulerCase, REJECTED, RESULT_FEED
++from scrapper.workflows.exchange import schedule
++
++
++class MixedSourceAccessTests(SchedulerCase):
++    def test_bse_block_alert_does_not_prevent_nse_result_acceptance_or_retry_bse(self):
++        prepare_database(self.db)
++        calls = []
++        bse = self.fetcher(REJECTED)
++        nse = self.fetcher(RESULT_FEED)
++        def fetch(url, exchange):
++            calls.append(exchange)
++            return (bse if exchange == 'BSE' else nse)(url, exchange)
++        def run(**kw):
++            return schedule.run_attempt(**kw,
++                datasets=('bse_financial_results', 'nse_financial_results'))
++        api = SimpleNamespace(run_attempt=run, alert=lambda payload: None)
++        clock = lambda: '2026-08-06T14:00:00+00:00'
++        def dispatch(day, attempt):
++            conn = connect(self.db)
++            try:
++                tasks.enqueue(conn, kind='attempt', scheduled_for=day,
++                              attempt=attempt, priority=0, now=clock())
++            finally:
++                conn.close()
++            coordinator.run_pending(db_path=self.db, snapshot_root=self.snapshots,
++                now_utc=clock, fetcher=fetch, workflow=api, limit=1)
++        with patch.object(api, 'alert') as alert:
++            dispatch('2026-08-06', 1)
++            payload = alert.call_args.args[0]
++            self.assertEqual(payload['status'], 'access_blocked')
++            self.assertEqual(payload['access_blocked_datasets'], ['bse_financial_results'])
++            self.assertIn('BSE-only coverage remains unproven', payload['access_blocked_action'])
++            self.assertEqual(self.outcomes(payload)['nse_financial_results'], 'published_changed')
++            self.assertFalse(payload['retry_scheduled'])
++            self.assertTrue(self.rows('SELECT * FROM exchange_result_filings'))
++            self.assertEqual(calls.count('BSE'), 1)
++            self.assertGreaterEqual(calls.count('NSE'), 1)
++            before = self.rows('SELECT * FROM exchange_source_access_events')
++            # A later rung and a new day use the persisted hold; NSE is still fetched.
++            dispatch('2026-08-06', 2)
++            dispatch('2026-08-07', 1)
++            self.assertEqual(calls.count('BSE'), 1)
++            self.assertGreaterEqual(calls.count('NSE'), 2)
++            self.assertEqual(self.rows('SELECT * FROM exchange_source_access_events'), before)
++            self.assertEqual(alert.call_count, 3)
++
++    def test_unblocked_result_has_no_block_operator_action(self):
++        payload = self.attempt(2, RESULT_FEED,
++                               datasets=('nse_financial_results',))
++        self.assertEqual(payload['status'], 'ok')
++        self.assertIsNone(payload['access_blocked_action'])
+--- /dev/null
++++ b/scrapper/sources/exchange/reporting_periods.py
+@@ -0,0 +1,47 @@
++"""Date-driven query priorities; source metadata remains the filing authority."""
++from datetime import date, datetime, timedelta
++import re
++from zoneinfo import ZoneInfo
++
++IST = ZoneInfo('Asia/Kolkata')
++
++
++def current_result_period(scheduled_for: str, *, date=date, timedelta=timedelta) -> str:
++    """Latest completed Indian quarter, prioritised during its publication season.
++
++    Q1 June: July/August; Q2 September: October/November;
++    Q3 December: January/February; Q4 March: April/May. Keep polling in
++    the remaining month too, because publication dates are not acceptance rules.
++    """
++    day = date.fromisoformat(scheduled_for)
++    start = ((day.month - 1) // 3) * 3 + 1
++    end = date(day.year, start, 1) - timedelta(days=1)
++    return end.strftime('%Y-%m')
++
++
++def previous_result_period(period: str) -> str:
++    if not re.fullmatch(r'\d{4}-(03|06|09|12)', period):
++        raise ValueError('Reporting period must be YYYY-MM with a quarter-end month')
++    year, month = map(int, period.split('-'))
++    months = year * 12 + month - 1 - 3
++    return f'{months // 12:04d}-{months % 12 + 1:02d}'
++
++
++def priority_result_periods(*, now: datetime | None = None,
++                            scheduled_for: str | None = None,
++                            override: str | None = None) -> tuple[str, ...]:
++    """Primary plus daily late/revision sweep; explicit recovery selects one query.
++
++    scheduled_for is an IST scheduler ledger day, including bounded catch-up.
++    These periods select requests, never assign or restrict source filing periods.
++    """
++    if override is not None:
++        previous_result_period(override)  # Validate before any access.
++        return (override,)
++    if scheduled_for is None:
++        moment = now if now is not None else datetime.now(IST)
++        if moment.tzinfo is None:
++            raise ValueError('An aware datetime is required')
++        scheduled_for = moment.astimezone(IST).date().isoformat()
++    primary = current_result_period(scheduled_for)
++    return primary, previous_result_period(primary)
+--- a/scrapper/sources/exchange/result_filings.py
++++ b/scrapper/sources/exchange/result_filings.py
+@@ -376,7 +376,9 @@
+         except SourceRowError as exc:
+             rejected.append(RejectedRow(row.row_position, exc.reason_code, exc.detail, row.cells))
+             continue
+-        if result_period is not None and filing.result_period != result_period:
++        # NSE query period is a priority, not an acceptance filter. Late and
++        # revised filings retain their actual source period and broadcast time.
++        if exchange != "NSE" and result_period is not None and filing.result_period != result_period:
+             excluded += 1
+             continue
+         previous = seen.get(filing.filing_key)
+--- a/scrapper/workflows/exchange/schedule.py
++++ b/scrapper/workflows/exchange/schedule.py
+@@ -65,6 +65,9 @@
+     default_url_for,
+ )
+ from ...sources.exchange.tabular import IST
++from ...sources.exchange.reporting_periods import (
++    current_result_period, previous_result_period, priority_result_periods,
++)
+ from ...workflows.exchange.universe import (
+     DatasetNotPublished,
+     ExchangeSourceAccessBlocked,
+@@ -143,32 +146,6 @@
+     """
+     moment = datetime.fromisoformat(now_utc_value).astimezone(IST)
+     return moment.date().isoformat()
+-
+-
+-def current_result_period(scheduled_for: str, *, date=date, timedelta=timedelta) -> str:
+-    """The most recent reporting period companies can be filing results for.
+-
+-    Results for a quarter are published during the following one, so the period
+-    to collect is the quarter that has ended, never the one in progress.
+-    """
+-    day = date.fromisoformat(scheduled_for)
+-    quarter_start_month = ((day.month - 1) // 3) * 3 + 1
+-    previous_quarter_end = date(day.year, quarter_start_month, 1) - timedelta(days=1)
+-    return f"{previous_quarter_end.year:04d}-{previous_quarter_end.month:02d}"
+-
+-
+-def previous_result_period(result_period: str) -> str:
+-    """The quarter before a given one.
+-
+-    A period-addressed feed stops being fetched the moment the next quarter
+-    opens, but filings for it do not stop arriving: companies report late, and
+-    they correct and restate what they already filed. The watermark is keyed by
+-    period and broadcast time precisely so a revised filing supersedes the one it
+-    replaces — which only helps if something still asks for the old period.
+-    """
+-    year, month = (int(part) for part in result_period.split("-", 1))
+-    months = year * 12 + (month - 1) - 3
+-    return f"{months // 12:04d}-{months % 12 + 1:02d}"
+ 
+ 
+ def _run_one(dataset: str, *, scheduled_for: str, result_period: str, db_path: Path, snapshot_root: Path, now_utc: Callable[[], str], fetcher: Callable[[str, str], FetchResponse], thresholds: Callable[[str], GuardThresholds] | None, Any=Any, DatasetNotPublished=DatasetNotPublished, ExchangeSourceAccessBlocked=ExchangeSourceAccessBlocked, RESULT_FILING=RESULT_FILING, connect=connect, dataset_config=dataset_config, default_url_for=default_url_for, discover_exchange_results=discover_exchange_results, init_db=init_db, refresh_exchange_universe=refresh_exchange_universe, snapshot_content_is_new=snapshot_content_is_new) -> dict[str, Any]:
+@@ -329,7 +306,8 @@
+     """Run one rung of the ladder over every dataset not already refreshed."""
+     started = now_utc()
+     scheduled_for = scheduled_for or ist_day(started)
+-    period = result_period or current_result_period(scheduled_for)
++    priorities = priority_result_periods(scheduled_for=scheduled_for, override=result_period)
++    period = priorities[0]
+     wanted = tuple(datasets) if datasets is not None else scheduled_datasets()
+     final = attempt >= FINAL_ATTEMPT
+ 
+@@ -367,8 +345,8 @@
+ 
+     newly_blocked = {item["dataset"] for item in results
+                      if item["outcome"] == "source_access_blocked"}
+-    revision_period = previous_result_period(period)
+-    revisions = _sweep_revisions(
++    revision_period = priorities[1] if len(priorities) > 1 else None
++    revisions = [] if revision_period is None else _sweep_revisions(
+         tuple(dataset for dataset in wanted
+               if dataset not in holds and dataset not in newly_blocked),
+         scheduled_for=scheduled_for, attempt=attempt, result_period=revision_period,
+--- /dev/null
++++ b/scrapper/tests/test_reporting_periods.py
+@@ -0,0 +1,35 @@
++"""Calendar priorities are query hints, never source-period assignments."""
++from datetime import datetime, timezone
++import unittest
++
++from scrapper.sources.exchange.reporting_periods import priority_result_periods
++
++
++class ReportingPeriodTests(unittest.TestCase):
++    def test_quarter_boundaries_and_publication_months(self):
++        for day, period in (
++            ('2026-03-31', '2025-12'), ('2026-04-01', '2026-03'),
++            ('2026-05-31', '2026-03'), ('2026-06-30', '2026-03'),
++            ('2026-07-01', '2026-06'), ('2026-08-31', '2026-06'),
++            ('2026-09-30', '2026-06'), ('2026-10-01', '2026-09'),
++            ('2026-11-30', '2026-09'), ('2026-12-31', '2026-09'),
++            ('2027-01-01', '2026-12'), ('2027-02-28', '2026-12'),
++        ):
++            with self.subTest(day=day):
++                self.assertEqual(priority_result_periods(scheduled_for=day)[0], period)
++
++    def test_ist_year_change_before_utc_midnight(self):
++        before = datetime(2026, 12, 31, 18, 29, tzinfo=timezone.utc)
++        after = datetime(2026, 12, 31, 18, 30, tzinfo=timezone.utc)
++        self.assertEqual(priority_result_periods(now=before), ('2026-09', '2026-06'))
++        self.assertEqual(priority_result_periods(now=after), ('2026-12', '2026-09'))
++
++    def test_override_is_a_single_valid_quarter(self):
++        self.assertEqual(priority_result_periods(override='2024-03'), ('2024-03',))
++        for invalid in ('2026-08', '2026-9', '', 'September'):
++            with self.subTest(invalid=invalid), self.assertRaises(ValueError):
++                priority_result_periods(override=invalid)
++
++    def test_naive_clock_is_rejected(self):
++        with self.assertRaises(ValueError):
++            priority_result_periods(now=datetime(2026, 10, 1))
+--- a/scrapper/tests/test_e01_exchange_universe.py
++++ b/scrapper/tests/test_e01_exchange_universe.py
+@@ -596,6 +596,35 @@
+ 
+ 
+ class ResultDiscoveryTests(ExchangeCase):
++    def test_priority_query_retains_delayed_earlier_filings_and_revisions(self):
++        self.build_universe()
++        late = (
++            "ALPHA,Alpha Industries Limited,Capital Goods,Quarterly,31-MAR-2026,"
++            "Audited,Non-cumulative,Consolidated,05-Oct-2026 18:30:00"
++        )
++        current = late.replace('31-MAR-2026', '30-SEP-2026')
++        first = self.discover('nse_financial_results', nse_results((late, current)),
++                              '2026-10-06', result_period='2026-09')
++        self.assertEqual(first['result_periods'], ['2026-03', '2026-09'])
++        self.assertEqual(first['excluded_row_count'], 0)
++        revision = late.replace('05-Oct-2026', '07-Oct-2026')
++        second = self.discover('nse_financial_results', nse_results((revision,)),
++                               '2026-10-08', result_period='2026-09')
++        self.assertEqual(second['result_periods'], ['2026-03'])
++        rows = self.rows('SELECT result_period, period_end_date, broadcast_at_utc '
++                         'FROM exchange_result_filings ORDER BY broadcast_at_utc, result_period')
++        self.assertEqual(len(rows), 3)
++        self.assertEqual([r['result_period'] for r in rows], ['2026-03', '2026-09', '2026-03'])
++        self.assertEqual(rows[-1]['period_end_date'], '2026-03-31')
++        self.assertEqual(rows[-1]['broadcast_at_utc'], '2026-10-07T13:00:00+00:00')
++        self.discover('nse_financial_results', nse_results((revision,)),
++                      '2026-10-08', result_period='2026-09')
++        self.assertEqual(len(self.rows('SELECT * FROM exchange_result_filings')), 3)
++        malformed = nse_results((late.replace('31-MAR-2026', ''),))
++        parsed = parse_result_filings(malformed, 'nse_financial_results', result_period='2026-09')
++        self.assertEqual(parsed.accepted_row_count, 0)
++        self.assertEqual(parsed.rejected_row_count, 1)
++
+     def test_same_period_new_filing_is_reviewed_and_equal_timestamp_collision_kept(self) -> None:
+         self.build_universe()
+         first_row = (
+--- a/scrapper/tests/test_e06_scheduler.py
++++ b/scrapper/tests/test_e06_scheduler.py
+@@ -595,6 +595,31 @@
+         self.assertEqual(len(self.issued), 2)
+         self.assertIn("30-Jun-2026", self.issued[0])
+         self.assertIn("31-Mar-2026", self.issued[1])
++
++    def test_explicit_period_override_limits_the_query_to_that_quarter(self):
++        prepare_database(self.db)
++        payload = run_attempt(attempt=1, datasets=('nse_financial_results',),
++                              result_period='2026-03', db_path=self.db,
++                              snapshot_root=self.snapshots, now_utc=self.now,
++                              fetcher=self.fetcher(RESULT_FEED), thresholds=self.thresholds)
++        self.assertEqual(payload['result_period'], '2026-03')
++        self.assertIsNone(payload['revision_period'])
++        self.assertEqual(payload['revisions'], [])
++        self.assertEqual(len(self.issued), 1)
++        self.assertIn('31-Mar-2026', self.issued[0])
++
++    def test_scheduler_shares_priorities_and_accepts_delayed_source_period(self):
++        from scrapper.sources.exchange.reporting_periods import priority_result_periods
++        delayed = nse_results((
++            "ALPHA,Alpha Industries Limited,Capital Goods,Quarterly,31-MAR-2026,"
++            "Audited,Non-cumulative,Consolidated,05-Aug-2026 18:30:00",
++        ))
++        payload = self.attempt(1, delayed, datasets=('nse_financial_results',))
++        self.assertEqual((payload['result_period'], payload['revision_period']),
++                         priority_result_periods(scheduled_for=self.today))
++        rows = self.rows('SELECT result_period FROM exchange_result_filings')
++        self.assertEqual([row['result_period'] for row in rows], ['2026-03'])
++        self.assertEqual(payload['datasets'][0]['outcome'], 'published_changed')
+ 
+     def test_the_sweep_runs_on_one_rung_a_day_not_every_rung(self) -> None:
+         first = self.attempt(1, RESULT_FEED, datasets=("nse_financial_results",))

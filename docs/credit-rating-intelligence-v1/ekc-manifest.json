@@ -1,0 +1,38 @@
+{
+  "company_identifier": "EKC",
+  "context": {
+    "document_id": "EKC-credit_rating",
+    "company_name": "Everest Kanto Cylinder Limited",
+    "symbol": "EKC",
+    "document_type": "credit_rating",
+    "content_sha256": "b0f06214a0b40f2327eb17e18b0ee88fc3f63436bd8430b9c455733781650a05",
+    "report_date": "2024-09-26",
+    "publication_date": null,
+    "filing_date": null,
+    "provenance": {
+      "source_inventory": {
+        "path": "artifacts/three-document-reality-check-v0.4/evidence-reconciliation-v0.6/ekc-source-inventory.json",
+        "sha256": "4395cf88626fcd951b256329281d9de838b78669ff6e56a54e18c8df4cedb542"
+      },
+      "metadata_basis": "existing repository inventory; report date confirmed on PDF cover"
+    }
+  },
+  "pdf": {
+    "path": "/Volumes/My Passport/passport/trading-ai/artifact_content/b0/b0f06214a0b40f2327eb17e18b0ee88fc3f63436bd8430b9c455733781650a05.pdf",
+    "sha256": "b0f06214a0b40f2327eb17e18b0ee88fc3f63436bd8430b9c455733781650a05"
+  },
+  "canonical": {
+    "path": "artifacts/unified-financial-pilot-v0.1/offline-development/EKC/credit_rating.canonical.json",
+    "sha256": "ea421cf63480a2eda41a4df7dbb8382506e59bd81c182483e67dbd7d3024b159"
+  },
+  "reviews": {
+    "path": "docs/credit-rating-intelligence-v1/ekc-source-reviews.json",
+    "sha256": "b45a3dfc1a6baabbc04c4606a19a3ac4421c9653d08a084282745ca0de84c8e6"
+  },
+  "responses": [
+    {
+      "path": "artifacts/three-document-reality-check-v0.4/ekc-generalization-v0.7/ekc-execution/responses/test-A/response.raw.json",
+      "sha256": "fbaff519b89180d22f6ed97c0e53d34596341348ceb675de72b8bb5d0a614104"
+    }
+  ]
+}

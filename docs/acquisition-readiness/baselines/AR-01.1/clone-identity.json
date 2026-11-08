@@ -1,0 +1,18 @@
+{
+  "clone": "/private/tmp/trading-ai-ar011-0coou77z/rehearsal.db",
+  "clone_before_sha256": "f237daa6f4696f75e2081e93d69a57be6f8d9c097769aaa169a819789c9e4811",
+  "production_access": "none",
+  "source": "/private/tmp/trading-ai-audit-2026-10-07/scraper.db",
+  "source_bytes": 14602158080,
+  "source_sha256": "f237daa6f4696f75e2081e93d69a57be6f8d9c097769aaa169a819789c9e4811",
+  "source_sidecars": {
+    "-shm": {
+      "bytes": 32768,
+      "exists": true
+    },
+    "-wal": {
+      "bytes": 0,
+      "exists": true
+    }
+  }
+}

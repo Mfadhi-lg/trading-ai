@@ -1,0 +1,11 @@
+{
+  "prototype_tests": 35,
+  "canonical_tests": 21,
+  "replay_identical": true,
+  "report_sha256_before": "bc15a05cf4c5987b5e8783f1064c48360dc748aabfe93ebf81776953770cb548",
+  "report_sha256_after": "bc15a05cf4c5987b5e8783f1064c48360dc748aabfe93ebf81776953770cb548",
+  "source_cell_checks": 2304,
+  "source_cell_failures": 0,
+  "original_html_verified": 0,
+  "acceptance": "ACCEPT_BOUNDED_RESEARCH_ONLY; INDEPENDENT_ORIGINAL_CERTIFICATION_NOT_ACCEPTED"
+}

@@ -1,0 +1,1488 @@
+{
+  "configs": {
+    "runtime_core_documents_sentinel": {
+      "name": "trading-ai_runtime_core_documents_sentinel",
+      "file": "/Users/mohamedfadhi/Fadhi/trading-ai/ops/docker/release/c28.1/core-documents-sentinel.json"
+    },
+    "runtime_identity_core": {
+      "name": "trading-ai_runtime_identity_core",
+      "file": "/Users/mohamedfadhi/Fadhi/trading-ai/ops/docker/release/c28.1/runtime-identity-core.json"
+    },
+    "runtime_identity_documents": {
+      "name": "trading-ai_runtime_identity_documents",
+      "file": "/Users/mohamedfadhi/Fadhi/trading-ai/ops/docker/release/c28.1/runtime-identity-documents.json"
+    },
+    "runtime_store_sentinel": {
+      "name": "trading-ai_runtime_store_sentinel",
+      "file": "/Users/mohamedfadhi/Fadhi/trading-ai/ops/docker/release/c28.1/store-sentinel.json"
+    }
+  },
+  "name": "trading-ai",
+  "networks": {
+    "default": {
+      "name": "trading-ai_default",
+      "ipam": {}
+    }
+  },
+  "secrets": {
+    "screener_session": {
+      "name": "trading-ai_screener_session",
+      "file": "/run/operator-provided/screener_session"
+    }
+  },
+  "services": {
+    "artifact-reconciler": {
+      "profiles": [
+        "authorized-artifact-reconciler"
+      ],
+      "cpus": 0.5,
+      "command": [
+        "# Allow the scheduler to finish its bounded missed-day catch-up first.\nsleep 30\npython -m scrapper.cli backfill-result-artifacts\nwhile true; do\n  # 50 prioritized PPT/transcript expectations are normally 25\n  # company/result groups. This keeps\n  # the source-refresh batch comfortably inside the 15-minute leases.\n  python -m scrapper.cli reconcile-artifacts --due --limit 50\n  sleep 300\ndone\n"
+      ],
+      "configs": [
+        {
+          "source": "runtime_identity_core",
+          "target": "/run/trading-ai/runtime-identity.json"
+        },
+        {
+          "source": "runtime_store_sentinel",
+          "target": "/data/.trading_ai_runtime_identity.json"
+        },
+        {
+          "source": "runtime_core_documents_sentinel",
+          "target": "/data/snapshots/.trading_ai_runtime_identity.json"
+        }
+      ],
+      "entrypoint": [
+        "/bin/sh",
+        "-c"
+      ],
+      "environment": {
+        "SCRAPER_DB_PATH": "/data/scraper.db",
+        "SCRAPER_STORE_PATH": "/data",
+        "SCREENER_SESSION_FILE": "/run/secrets/screener_session",
+        "SCREENER_THROTTLE_JITTER": "1.5",
+        "SCREENER_THROTTLE_SECONDS": "4",
+        "TRADING_AI_ENV": "production",
+        "TRADING_AI_RUNTIME_IDENTITY_FILE": "/run/trading-ai/runtime-identity.json"
+      },
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "python",
+          "-c",
+          "import sqlite3; c=sqlite3.connect('file:/data/scraper.db?mode=ro',uri=True); c.execute('PRAGMA query_only=ON'); c.execute('SELECT 1'); c.close()"
+        ],
+        "timeout": "5s",
+        "interval": "30s",
+        "retries": 3
+      },
+      "image": "trading-ai-c281-release@sha256:4d289faa67334bc870d4f2a6a181feecee777fd427eac209b9adef68ecab0238",
+      "mem_limit": "1610612736",
+      "networks": {
+        "default": null
+      },
+      "restart": "no",
+      "secrets": [
+        {
+          "source": "screener_session",
+          "target": "/run/secrets/screener_session"
+        }
+      ],
+      "stop_grace_period": "3m0s",
+      "volumes": [
+        {
+          "type": "volume",
+          "source": "scraper-data",
+          "target": "/data",
+          "volume": {}
+        }
+      ]
+    },
+    "browser-rating-crisil": {
+      "profiles": [
+        "authorized-browser-rating-crisil"
+      ],
+      "cpus": 0.6,
+      "command": [
+        "--run-id",
+        "REQUIRES_SEPARATE_AUTHORIZATION",
+        "--apply",
+        "--operator-authorized",
+        "--host",
+        "www.crisil.com",
+        "--host",
+        "www.crisilratings.com",
+        "--throttle-seconds",
+        "20"
+      ],
+      "configs": [
+        {
+          "source": "runtime_identity_documents",
+          "target": "/run/trading-ai/runtime-identity.json"
+        },
+        {
+          "source": "runtime_store_sentinel",
+          "target": "/data/.trading_ai_runtime_identity.json"
+        }
+      ],
+      "entrypoint": [
+        "python",
+        "-m",
+        "scrapper.commands.browser_rating_recovery"
+      ],
+      "environment": {
+        "DOCUMENT_MIN_FREE_BYTES": "107374182400",
+        "DOCUMENT_MIN_FREE_PERCENT": "15",
+        "DOCUMENT_REQUIRE_SENTINEL": "1",
+        "DOCUMENT_STORE_REQUIRE_CAPACITY_FILE": "1",
+        "SCRAPER_DB_PATH": "/data/scraper.db",
+        "SCRAPER_DOCUMENT_STORE_PATH": "/documents",
+        "SCRAPER_STORE_PATH": "/data",
+        "TRADING_AI_ENV": "production",
+        "TRADING_AI_RUNTIME_IDENTITY_FILE": "/run/trading-ai/runtime-identity.json"
+      },
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "python",
+          "-c",
+          "import sqlite3; c=sqlite3.connect('file:/data/scraper.db?mode=ro',uri=True); c.execute('PRAGMA query_only=ON'); c.execute('SELECT 1'); c.close()"
+        ],
+        "timeout": "5s",
+        "interval": "30s",
+        "retries": 3
+      },
+      "image": "trading-ai-c281-release@sha256:4d289faa67334bc870d4f2a6a181feecee777fd427eac209b9adef68ecab0238",
+      "mem_limit": "1610612736",
+      "networks": {
+        "default": null
+      },
+      "restart": "no",
+      "stop_grace_period": "3m0s",
+      "volumes": [
+        {
+          "type": "volume",
+          "source": "scraper-data",
+          "target": "/data",
+          "volume": {}
+        },
+        {
+          "type": "bind",
+          "source": "/Volumes/My Passport/passport/trading-ai",
+          "target": "/documents",
+          "bind": {}
+        }
+      ]
+    },
+    "browser-rating-extract": {
+      "profiles": [
+        "authorized-browser-rating-extract"
+      ],
+      "cpus": 0.6,
+      "command": [
+        "--run-id",
+        "REQUIRES_SEPARATE_AUTHORIZATION",
+        "--process",
+        "--follow",
+        "--operator-authorized"
+      ],
+      "configs": [
+        {
+          "source": "runtime_identity_documents",
+          "target": "/run/trading-ai/runtime-identity.json"
+        },
+        {
+          "source": "runtime_store_sentinel",
+          "target": "/data/.trading_ai_runtime_identity.json"
+        }
+      ],
+      "entrypoint": [
+        "python",
+        "-m",
+        "scrapper.commands.browser_rating_recovery"
+      ],
+      "environment": {
+        "DOCUMENT_MIN_FREE_BYTES": "107374182400",
+        "DOCUMENT_MIN_FREE_PERCENT": "15",
+        "DOCUMENT_REQUIRE_SENTINEL": "1",
+        "DOCUMENT_STORE_REQUIRE_CAPACITY_FILE": "1",
+        "SCRAPER_DB_PATH": "/data/scraper.db",
+        "SCRAPER_DOCUMENT_STORE_PATH": "/documents",
+        "SCRAPER_STORE_PATH": "/data",
+        "TRADING_AI_ENV": "production",
+        "TRADING_AI_RUNTIME_IDENTITY_FILE": "/run/trading-ai/runtime-identity.json"
+      },
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "python",
+          "-c",
+          "import sqlite3; c=sqlite3.connect('file:/data/scraper.db?mode=ro',uri=True); c.execute('PRAGMA query_only=ON'); c.execute('SELECT 1'); c.close()"
+        ],
+        "timeout": "5s",
+        "interval": "30s",
+        "retries": 3
+      },
+      "image": "trading-ai-c281-release@sha256:4d289faa67334bc870d4f2a6a181feecee777fd427eac209b9adef68ecab0238",
+      "mem_limit": "1610612736",
+      "networks": {
+        "default": null
+      },
+      "restart": "no",
+      "stop_grace_period": "3m0s",
+      "volumes": [
+        {
+          "type": "volume",
+          "source": "scraper-data",
+          "target": "/data",
+          "volume": {}
+        },
+        {
+          "type": "bind",
+          "source": "/Volumes/My Passport/passport/trading-ai",
+          "target": "/documents",
+          "bind": {}
+        }
+      ]
+    },
+    "browser-rating-icra": {
+      "profiles": [
+        "authorized-browser-rating-icra"
+      ],
+      "cpus": 0.6,
+      "command": [
+        "--run-id",
+        "REQUIRES_SEPARATE_AUTHORIZATION",
+        "--apply",
+        "--operator-authorized",
+        "--host",
+        "www.icra.in"
+      ],
+      "configs": [
+        {
+          "source": "runtime_identity_documents",
+          "target": "/run/trading-ai/runtime-identity.json"
+        },
+        {
+          "source": "runtime_store_sentinel",
+          "target": "/data/.trading_ai_runtime_identity.json"
+        }
+      ],
+      "entrypoint": [
+        "python",
+        "-m",
+        "scrapper.commands.browser_rating_recovery"
+      ],
+      "environment": {
+        "DOCUMENT_MIN_FREE_BYTES": "107374182400",
+        "DOCUMENT_MIN_FREE_PERCENT": "15",
+        "DOCUMENT_REQUIRE_SENTINEL": "1",
+        "DOCUMENT_STORE_REQUIRE_CAPACITY_FILE": "1",
+        "SCRAPER_DB_PATH": "/data/scraper.db",
+        "SCRAPER_DOCUMENT_STORE_PATH": "/documents",
+        "SCRAPER_STORE_PATH": "/data",
+        "TRADING_AI_ENV": "production",
+        "TRADING_AI_RUNTIME_IDENTITY_FILE": "/run/trading-ai/runtime-identity.json"
+      },
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "python",
+          "-c",
+          "import sqlite3; c=sqlite3.connect('file:/data/scraper.db?mode=ro',uri=True); c.execute('PRAGMA query_only=ON'); c.execute('SELECT 1'); c.close()"
+        ],
+        "timeout": "5s",
+        "interval": "30s",
+        "retries": 3
+      },
+      "image": "trading-ai-c281-release@sha256:4d289faa67334bc870d4f2a6a181feecee777fd427eac209b9adef68ecab0238",
+      "mem_limit": "1610612736",
+      "networks": {
+        "default": null
+      },
+      "restart": "no",
+      "stop_grace_period": "3m0s",
+      "volumes": [
+        {
+          "type": "volume",
+          "source": "scraper-data",
+          "target": "/data",
+          "volume": {}
+        },
+        {
+          "type": "bind",
+          "source": "/Volumes/My Passport/passport/trading-ai",
+          "target": "/documents",
+          "bind": {}
+        }
+      ]
+    },
+    "browser-rating-other": {
+      "profiles": [
+        "authorized-browser-rating-other"
+      ],
+      "cpus": 0.6,
+      "command": [
+        "--run-id",
+        "REQUIRES_SEPARATE_AUTHORIZATION",
+        "--apply",
+        "--operator-authorized",
+        "--host",
+        "bcrisp.in",
+        "--host",
+        "www.bcrisp.in",
+        "--host",
+        "www.acuite.in",
+        "--host",
+        "connect.acuite.in",
+        "--host",
+        "www.infomerics.com",
+        "--host",
+        "www.indiaratings.co.in",
+        "--host",
+        "www.brickworkratings.com",
+        "--host",
+        "www.careratings.com"
+      ],
+      "configs": [
+        {
+          "source": "runtime_identity_documents",
+          "target": "/run/trading-ai/runtime-identity.json"
+        },
+        {
+          "source": "runtime_store_sentinel",
+          "target": "/data/.trading_ai_runtime_identity.json"
+        }
+      ],
+      "entrypoint": [
+        "python",
+        "-m",
+        "scrapper.commands.browser_rating_recovery"
+      ],
+      "environment": {
+        "DOCUMENT_MIN_FREE_BYTES": "107374182400",
+        "DOCUMENT_MIN_FREE_PERCENT": "15",
+        "DOCUMENT_REQUIRE_SENTINEL": "1",
+        "DOCUMENT_STORE_REQUIRE_CAPACITY_FILE": "1",
+        "SCRAPER_DB_PATH": "/data/scraper.db",
+        "SCRAPER_DOCUMENT_STORE_PATH": "/documents",
+        "SCRAPER_STORE_PATH": "/data",
+        "TRADING_AI_ENV": "production",
+        "TRADING_AI_RUNTIME_IDENTITY_FILE": "/run/trading-ai/runtime-identity.json"
+      },
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "python",
+          "-c",
+          "import sqlite3; c=sqlite3.connect('file:/data/scraper.db?mode=ro',uri=True); c.execute('PRAGMA query_only=ON'); c.execute('SELECT 1'); c.close()"
+        ],
+        "timeout": "5s",
+        "interval": "30s",
+        "retries": 3
+      },
+      "image": "trading-ai-c281-release@sha256:4d289faa67334bc870d4f2a6a181feecee777fd427eac209b9adef68ecab0238",
+      "mem_limit": "1610612736",
+      "networks": {
+        "default": null
+      },
+      "restart": "no",
+      "stop_grace_period": "3m0s",
+      "volumes": [
+        {
+          "type": "volume",
+          "source": "scraper-data",
+          "target": "/data",
+          "volume": {}
+        },
+        {
+          "type": "bind",
+          "source": "/Volumes/My Passport/passport/trading-ai",
+          "target": "/documents",
+          "bind": {}
+        }
+      ]
+    },
+    "cli": {
+      "profiles": [
+        "authorized-cli"
+      ],
+      "cpus": 0.5,
+      "command": [
+        "--help"
+      ],
+      "configs": [
+        {
+          "source": "runtime_identity_core",
+          "target": "/run/trading-ai/runtime-identity.json"
+        },
+        {
+          "source": "runtime_store_sentinel",
+          "target": "/data/.trading_ai_runtime_identity.json"
+        },
+        {
+          "source": "runtime_core_documents_sentinel",
+          "target": "/data/snapshots/.trading_ai_runtime_identity.json"
+        }
+      ],
+      "entrypoint": null,
+      "environment": {
+        "SCRAPER_DB_PATH": "/data/scraper.db",
+        "SCRAPER_STORE_PATH": "/data",
+        "SCREENER_SESSION_FILE": "/run/secrets/screener_session",
+        "TRADING_AI_ENV": "production",
+        "TRADING_AI_RUNTIME_IDENTITY_FILE": "/run/trading-ai/runtime-identity.json"
+      },
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "python",
+          "-c",
+          "import sqlite3; c=sqlite3.connect('file:/data/scraper.db?mode=ro',uri=True); c.execute('PRAGMA query_only=ON'); c.execute('SELECT 1'); c.close()"
+        ],
+        "timeout": "5s",
+        "interval": "30s",
+        "retries": 3
+      },
+      "image": "trading-ai-c281-release@sha256:4d289faa67334bc870d4f2a6a181feecee777fd427eac209b9adef68ecab0238",
+      "mem_limit": "1610612736",
+      "networks": {
+        "default": null
+      },
+      "restart": "no",
+      "secrets": [
+        {
+          "source": "screener_session",
+          "target": "/run/secrets/screener_session"
+        }
+      ],
+      "stop_grace_period": "3m0s",
+      "volumes": [
+        {
+          "type": "volume",
+          "source": "scraper-data",
+          "target": "/data",
+          "volume": {}
+        },
+        {
+          "type": "bind",
+          "source": "/Users/mohamedfadhi/Fadhi/trading-ai/exchange-inbox",
+          "target": "/inbox",
+          "read_only": true,
+          "bind": {}
+        }
+      ]
+    },
+    "credit-rating-worker-care": {
+      "profiles": [
+        "authorized-credit-rating-worker-care"
+      ],
+      "cpus": 0.5,
+      "command": [
+        "run-acquisition-role",
+        "--role",
+        "credit-rating-worker-care"
+      ],
+      "configs": [
+        {
+          "source": "runtime_identity_documents",
+          "target": "/run/trading-ai/runtime-identity.json"
+        },
+        {
+          "source": "runtime_store_sentinel",
+          "target": "/data/.trading_ai_runtime_identity.json"
+        }
+      ],
+      "entrypoint": null,
+      "environment": {
+        "DOCUMENT_MIN_FREE_BYTES": "107374182400",
+        "DOCUMENT_MIN_FREE_PERCENT": "15",
+        "DOCUMENT_REQUIRE_SENTINEL": "1",
+        "DOCUMENT_STORE_REQUIRE_CAPACITY_FILE": "1",
+        "SCRAPER_DB_PATH": "/data/scraper.db",
+        "SCRAPER_DOCUMENT_STORE_PATH": "/documents",
+        "SCRAPER_STORE_PATH": "/data",
+        "TRADING_AI_ENV": "production",
+        "TRADING_AI_RUNTIME_IDENTITY_FILE": "/run/trading-ai/runtime-identity.json"
+      },
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "python",
+          "-c",
+          "import sqlite3; c=sqlite3.connect('file:/data/scraper.db?mode=ro',uri=True); c.execute('PRAGMA query_only=ON'); c.execute('SELECT 1'); c.close()"
+        ],
+        "timeout": "5s",
+        "interval": "30s",
+        "retries": 3
+      },
+      "image": "trading-ai-c281-release@sha256:4d289faa67334bc870d4f2a6a181feecee777fd427eac209b9adef68ecab0238",
+      "mem_limit": "1610612736",
+      "networks": {
+        "default": null
+      },
+      "restart": "no",
+      "stop_grace_period": "3m0s",
+      "volumes": [
+        {
+          "type": "volume",
+          "source": "scraper-data",
+          "target": "/data",
+          "volume": {}
+        },
+        {
+          "type": "bind",
+          "source": "/Volumes/My Passport/passport/trading-ai",
+          "target": "/documents",
+          "bind": {}
+        }
+      ]
+    },
+    "credit-rating-worker-india-ratings": {
+      "profiles": [
+        "authorized-credit-rating-worker-india-ratings"
+      ],
+      "cpus": 0.5,
+      "command": [
+        "run-acquisition-role",
+        "--role",
+        "credit-rating-worker-india-ratings"
+      ],
+      "configs": [
+        {
+          "source": "runtime_identity_documents",
+          "target": "/run/trading-ai/runtime-identity.json"
+        },
+        {
+          "source": "runtime_store_sentinel",
+          "target": "/data/.trading_ai_runtime_identity.json"
+        }
+      ],
+      "entrypoint": null,
+      "environment": {
+        "DOCUMENT_MIN_FREE_BYTES": "107374182400",
+        "DOCUMENT_MIN_FREE_PERCENT": "15",
+        "DOCUMENT_REQUIRE_SENTINEL": "1",
+        "DOCUMENT_STORE_REQUIRE_CAPACITY_FILE": "1",
+        "SCRAPER_DB_PATH": "/data/scraper.db",
+        "SCRAPER_DOCUMENT_STORE_PATH": "/documents",
+        "SCRAPER_STORE_PATH": "/data",
+        "TRADING_AI_ENV": "production",
+        "TRADING_AI_RUNTIME_IDENTITY_FILE": "/run/trading-ai/runtime-identity.json"
+      },
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "python",
+          "-c",
+          "import sqlite3; c=sqlite3.connect('file:/data/scraper.db?mode=ro',uri=True); c.execute('PRAGMA query_only=ON'); c.execute('SELECT 1'); c.close()"
+        ],
+        "timeout": "5s",
+        "interval": "30s",
+        "retries": 3
+      },
+      "image": "trading-ai-c281-release@sha256:4d289faa67334bc870d4f2a6a181feecee777fd427eac209b9adef68ecab0238",
+      "mem_limit": "1610612736",
+      "networks": {
+        "default": null
+      },
+      "restart": "no",
+      "stop_grace_period": "3m0s",
+      "volumes": [
+        {
+          "type": "volume",
+          "source": "scraper-data",
+          "target": "/data",
+          "volume": {}
+        },
+        {
+          "type": "bind",
+          "source": "/Volumes/My Passport/passport/trading-ai",
+          "target": "/documents",
+          "bind": {}
+        }
+      ]
+    },
+    "credit-rating-worker-other": {
+      "profiles": [
+        "authorized-credit-rating-worker-other"
+      ],
+      "cpus": 0.5,
+      "command": [
+        "run-acquisition-role",
+        "--role",
+        "credit-rating-worker-other"
+      ],
+      "configs": [
+        {
+          "source": "runtime_identity_documents",
+          "target": "/run/trading-ai/runtime-identity.json"
+        },
+        {
+          "source": "runtime_store_sentinel",
+          "target": "/data/.trading_ai_runtime_identity.json"
+        }
+      ],
+      "entrypoint": null,
+      "environment": {
+        "DOCUMENT_MIN_FREE_BYTES": "107374182400",
+        "DOCUMENT_MIN_FREE_PERCENT": "15",
+        "DOCUMENT_REQUIRE_SENTINEL": "1",
+        "DOCUMENT_STORE_REQUIRE_CAPACITY_FILE": "1",
+        "SCRAPER_DB_PATH": "/data/scraper.db",
+        "SCRAPER_DOCUMENT_STORE_PATH": "/documents",
+        "SCRAPER_STORE_PATH": "/data",
+        "TRADING_AI_ENV": "production",
+        "TRADING_AI_RUNTIME_IDENTITY_FILE": "/run/trading-ai/runtime-identity.json"
+      },
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "python",
+          "-c",
+          "import sqlite3; c=sqlite3.connect('file:/data/scraper.db?mode=ro',uri=True); c.execute('PRAGMA query_only=ON'); c.execute('SELECT 1'); c.close()"
+        ],
+        "timeout": "5s",
+        "interval": "30s",
+        "retries": 3
+      },
+      "image": "trading-ai-c281-release@sha256:4d289faa67334bc870d4f2a6a181feecee777fd427eac209b9adef68ecab0238",
+      "mem_limit": "1610612736",
+      "networks": {
+        "default": null
+      },
+      "restart": "no",
+      "stop_grace_period": "3m0s",
+      "volumes": [
+        {
+          "type": "volume",
+          "source": "scraper-data",
+          "target": "/data",
+          "volume": {}
+        },
+        {
+          "type": "bind",
+          "source": "/Volumes/My Passport/passport/trading-ai",
+          "target": "/documents",
+          "bind": {}
+        }
+      ]
+    },
+    "daemon": {
+      "profiles": [
+        "authorized-daemon"
+      ],
+      "cpus": 0.5,
+      "command": [
+        "echo \"Starting continuous scraper daemon...\"\nwhile true; do\n  python -m scrapper.cli screener-company-worker --due --limit 10\n  sleep 10\ndone\n"
+      ],
+      "configs": [
+        {
+          "source": "runtime_identity_core",
+          "target": "/run/trading-ai/runtime-identity.json"
+        },
+        {
+          "source": "runtime_store_sentinel",
+          "target": "/data/.trading_ai_runtime_identity.json"
+        },
+        {
+          "source": "runtime_core_documents_sentinel",
+          "target": "/data/snapshots/.trading_ai_runtime_identity.json"
+        }
+      ],
+      "entrypoint": [
+        "/bin/sh",
+        "-c"
+      ],
+      "environment": {
+        "SCRAPER_DB_PATH": "/data/scraper.db",
+        "SCRAPER_STORE_PATH": "/data",
+        "SCREENER_SESSION_FILE": "/run/secrets/screener_session",
+        "SCREENER_THROTTLE_JITTER": "1.5",
+        "SCREENER_THROTTLE_SECONDS": "4",
+        "TRADING_AI_ENV": "production",
+        "TRADING_AI_RUNTIME_IDENTITY_FILE": "/run/trading-ai/runtime-identity.json"
+      },
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "python",
+          "-c",
+          "import sqlite3; c=sqlite3.connect('file:/data/scraper.db?mode=ro',uri=True); c.execute('PRAGMA query_only=ON'); c.execute('SELECT 1'); c.close()"
+        ],
+        "timeout": "5s",
+        "interval": "30s",
+        "retries": 3
+      },
+      "image": "trading-ai-c281-release@sha256:4d289faa67334bc870d4f2a6a181feecee777fd427eac209b9adef68ecab0238",
+      "mem_limit": "1610612736",
+      "networks": {
+        "default": null
+      },
+      "restart": "no",
+      "secrets": [
+        {
+          "source": "screener_session",
+          "target": "/run/secrets/screener_session"
+        }
+      ],
+      "stop_grace_period": "3m0s",
+      "volumes": [
+        {
+          "type": "volume",
+          "source": "scraper-data",
+          "target": "/data",
+          "volume": {}
+        }
+      ]
+    },
+    "discovery": {
+      "profiles": [
+        "authorized-discovery"
+      ],
+      "cpus": 0.5,
+      "command": [
+        "screener-discover-results",
+        "--query-role",
+        "current_reporting_cycle",
+        "--query",
+        "Last result date \u003e 202605"
+      ],
+      "configs": [
+        {
+          "source": "runtime_identity_core",
+          "target": "/run/trading-ai/runtime-identity.json"
+        },
+        {
+          "source": "runtime_store_sentinel",
+          "target": "/data/.trading_ai_runtime_identity.json"
+        },
+        {
+          "source": "runtime_core_documents_sentinel",
+          "target": "/data/snapshots/.trading_ai_runtime_identity.json"
+        }
+      ],
+      "entrypoint": null,
+      "environment": {
+        "SCRAPER_DB_PATH": "/data/scraper.db",
+        "SCRAPER_STORE_PATH": "/data",
+        "SCREENER_SESSION_FILE": "/run/secrets/screener_session",
+        "TRADING_AI_ENV": "production",
+        "TRADING_AI_RUNTIME_IDENTITY_FILE": "/run/trading-ai/runtime-identity.json"
+      },
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "python",
+          "-c",
+          "import sqlite3; c=sqlite3.connect('file:/data/scraper.db?mode=ro',uri=True); c.execute('PRAGMA query_only=ON'); c.execute('SELECT 1'); c.close()"
+        ],
+        "timeout": "5s",
+        "interval": "30s",
+        "retries": 3
+      },
+      "image": "trading-ai-c281-release@sha256:4d289faa67334bc870d4f2a6a181feecee777fd427eac209b9adef68ecab0238",
+      "mem_limit": "1610612736",
+      "networks": {
+        "default": null
+      },
+      "restart": "no",
+      "secrets": [
+        {
+          "source": "screener_session",
+          "target": "/run/secrets/screener_session"
+        }
+      ],
+      "stop_grace_period": "3m0s",
+      "volumes": [
+        {
+          "type": "volume",
+          "source": "scraper-data",
+          "target": "/data",
+          "volume": {}
+        }
+      ]
+    },
+    "document-download-worker": {
+      "profiles": [
+        "authorized-document-download-worker"
+      ],
+      "cpus": 0.5,
+      "command": [
+        "run-acquisition-role",
+        "--role",
+        "document-download-worker"
+      ],
+      "configs": [
+        {
+          "source": "runtime_identity_documents",
+          "target": "/run/trading-ai/runtime-identity.json"
+        },
+        {
+          "source": "runtime_store_sentinel",
+          "target": "/data/.trading_ai_runtime_identity.json"
+        }
+      ],
+      "entrypoint": null,
+      "environment": {
+        "DOCUMENT_MIN_FREE_BYTES": "107374182400",
+        "DOCUMENT_MIN_FREE_PERCENT": "15",
+        "DOCUMENT_REQUIRE_SENTINEL": "1",
+        "DOCUMENT_STORE_REQUIRE_CAPACITY_FILE": "1",
+        "SCRAPER_DB_PATH": "/data/scraper.db",
+        "SCRAPER_DOCUMENT_STORE_PATH": "/documents",
+        "SCRAPER_STORE_PATH": "/data",
+        "TRADING_AI_ENV": "production",
+        "TRADING_AI_RUNTIME_IDENTITY_FILE": "/run/trading-ai/runtime-identity.json"
+      },
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "python",
+          "-c",
+          "import sqlite3; c=sqlite3.connect('file:/data/scraper.db?mode=ro',uri=True); c.execute('PRAGMA query_only=ON'); c.execute('SELECT 1'); c.close()"
+        ],
+        "timeout": "5s",
+        "interval": "30s",
+        "retries": 3
+      },
+      "image": "trading-ai-c281-release@sha256:4d289faa67334bc870d4f2a6a181feecee777fd427eac209b9adef68ecab0238",
+      "mem_limit": "1610612736",
+      "networks": {
+        "default": null
+      },
+      "restart": "no",
+      "stop_grace_period": "3m0s",
+      "volumes": [
+        {
+          "type": "volume",
+          "source": "scraper-data",
+          "target": "/data",
+          "volume": {}
+        },
+        {
+          "type": "bind",
+          "source": "/Volumes/My Passport/passport/trading-ai",
+          "target": "/documents",
+          "bind": {}
+        }
+      ]
+    },
+    "document-processing-worker": {
+      "profiles": [
+        "authorized-document-processing-worker"
+      ],
+      "cpus": 0.5,
+      "command": [
+        "--period",
+        "2026-06-30",
+        "--apply",
+        "--limit",
+        "10"
+      ],
+      "configs": [
+        {
+          "source": "runtime_identity_documents",
+          "target": "/run/trading-ai/runtime-identity.json"
+        },
+        {
+          "source": "runtime_store_sentinel",
+          "target": "/data/.trading_ai_runtime_identity.json"
+        }
+      ],
+      "entrypoint": [
+        "python",
+        "-m",
+        "scrapper.commands.quarter_processing_role"
+      ],
+      "environment": {
+        "SCRAPER_DB_PATH": "/data/scraper.db",
+        "SCRAPER_DOCUMENT_STORE_PATH": "/documents",
+        "SCRAPER_STORE_PATH": "/data",
+        "TRADING_AI_ENV": "production",
+        "TRADING_AI_RUNTIME_IDENTITY_FILE": "/run/trading-ai/runtime-identity.json"
+      },
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "python",
+          "-c",
+          "import sqlite3; c=sqlite3.connect('file:/data/scraper.db?mode=ro',uri=True); c.execute('PRAGMA query_only=ON'); c.execute('SELECT 1'); c.close()"
+        ],
+        "timeout": "5s",
+        "interval": "30s",
+        "retries": 3
+      },
+      "image": "trading-ai-c281-release@sha256:4d289faa67334bc870d4f2a6a181feecee777fd427eac209b9adef68ecab0238",
+      "mem_limit": "1610612736",
+      "networks": {
+        "default": null
+      },
+      "restart": "no",
+      "stop_grace_period": "3m0s",
+      "volumes": [
+        {
+          "type": "volume",
+          "source": "scraper-data",
+          "target": "/data",
+          "volume": {}
+        },
+        {
+          "type": "bind",
+          "source": "/Volumes/My Passport/passport/trading-ai",
+          "target": "/documents",
+          "read_only": true,
+          "bind": {}
+        }
+      ]
+    },
+    "exchange-reconciliation": {
+      "profiles": [
+        "authorized-exchange-reconciliation"
+      ],
+      "cpus": 0.5,
+      "command": [
+        "exchange-reconciliation-report"
+      ],
+      "configs": [
+        {
+          "source": "runtime_identity_core",
+          "target": "/run/trading-ai/runtime-identity.json"
+        },
+        {
+          "source": "runtime_store_sentinel",
+          "target": "/data/.trading_ai_runtime_identity.json"
+        },
+        {
+          "source": "runtime_core_documents_sentinel",
+          "target": "/data/snapshots/.trading_ai_runtime_identity.json"
+        }
+      ],
+      "entrypoint": null,
+      "environment": {
+        "SCRAPER_DB_PATH": "/data/scraper.db",
+        "SCRAPER_STORE_PATH": "/data",
+        "TRADING_AI_ENV": "production",
+        "TRADING_AI_RUNTIME_IDENTITY_FILE": "/run/trading-ai/runtime-identity.json"
+      },
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "python",
+          "-c",
+          "import sqlite3; c=sqlite3.connect('file:/data/scraper.db?mode=ro',uri=True); c.execute('PRAGMA query_only=ON'); c.execute('SELECT 1'); c.close()"
+        ],
+        "timeout": "5s",
+        "interval": "30s",
+        "retries": 3
+      },
+      "image": "trading-ai-c281-release@sha256:4d289faa67334bc870d4f2a6a181feecee777fd427eac209b9adef68ecab0238",
+      "mem_limit": "1610612736",
+      "networks": {
+        "default": null
+      },
+      "restart": "no",
+      "stop_grace_period": "3m0s",
+      "volumes": [
+        {
+          "type": "volume",
+          "source": "scraper-data",
+          "target": "/data",
+          "volume": {}
+        }
+      ]
+    },
+    "exchange-results": {
+      "profiles": [
+        "authorized-exchange-results"
+      ],
+      "cpus": 0.5,
+      "command": [
+        "exchange-discover-results",
+        "--dataset",
+        "nse_financial_results",
+        "--result-period",
+        "2026-06"
+      ],
+      "configs": [
+        {
+          "source": "runtime_identity_core",
+          "target": "/run/trading-ai/runtime-identity.json"
+        },
+        {
+          "source": "runtime_store_sentinel",
+          "target": "/data/.trading_ai_runtime_identity.json"
+        },
+        {
+          "source": "runtime_core_documents_sentinel",
+          "target": "/data/snapshots/.trading_ai_runtime_identity.json"
+        }
+      ],
+      "entrypoint": null,
+      "environment": {
+        "SCRAPER_DB_PATH": "/data/scraper.db",
+        "SCRAPER_STORE_PATH": "/data",
+        "TRADING_AI_ENV": "production",
+        "TRADING_AI_RUNTIME_IDENTITY_FILE": "/run/trading-ai/runtime-identity.json"
+      },
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "python",
+          "-c",
+          "import sqlite3; c=sqlite3.connect('file:/data/scraper.db?mode=ro',uri=True); c.execute('PRAGMA query_only=ON'); c.execute('SELECT 1'); c.close()"
+        ],
+        "timeout": "5s",
+        "interval": "30s",
+        "retries": 3
+      },
+      "image": "trading-ai-c281-release@sha256:4d289faa67334bc870d4f2a6a181feecee777fd427eac209b9adef68ecab0238",
+      "mem_limit": "1610612736",
+      "networks": {
+        "default": null
+      },
+      "restart": "no",
+      "stop_grace_period": "3m0s",
+      "volumes": [
+        {
+          "type": "volume",
+          "source": "scraper-data",
+          "target": "/data",
+          "volume": {}
+        },
+        {
+          "type": "bind",
+          "source": "/Users/mohamedfadhi/Fadhi/trading-ai/exchange-inbox",
+          "target": "/inbox",
+          "read_only": true,
+          "bind": {}
+        }
+      ]
+    },
+    "exchange-universe": {
+      "profiles": [
+        "authorized-exchange-universe"
+      ],
+      "cpus": 0.5,
+      "command": [
+        "exchange-refresh-universe",
+        "--dataset",
+        "nse_equity_master"
+      ],
+      "configs": [
+        {
+          "source": "runtime_identity_core",
+          "target": "/run/trading-ai/runtime-identity.json"
+        },
+        {
+          "source": "runtime_store_sentinel",
+          "target": "/data/.trading_ai_runtime_identity.json"
+        },
+        {
+          "source": "runtime_core_documents_sentinel",
+          "target": "/data/snapshots/.trading_ai_runtime_identity.json"
+        }
+      ],
+      "entrypoint": null,
+      "environment": {
+        "SCRAPER_DB_PATH": "/data/scraper.db",
+        "SCRAPER_STORE_PATH": "/data",
+        "TRADING_AI_ENV": "production",
+        "TRADING_AI_RUNTIME_IDENTITY_FILE": "/run/trading-ai/runtime-identity.json"
+      },
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "python",
+          "-c",
+          "import sqlite3; c=sqlite3.connect('file:/data/scraper.db?mode=ro',uri=True); c.execute('PRAGMA query_only=ON'); c.execute('SELECT 1'); c.close()"
+        ],
+        "timeout": "5s",
+        "interval": "30s",
+        "retries": 3
+      },
+      "image": "trading-ai-c281-release@sha256:4d289faa67334bc870d4f2a6a181feecee777fd427eac209b9adef68ecab0238",
+      "mem_limit": "1610612736",
+      "networks": {
+        "default": null
+      },
+      "restart": "no",
+      "stop_grace_period": "3m0s",
+      "volumes": [
+        {
+          "type": "volume",
+          "source": "scraper-data",
+          "target": "/data",
+          "volume": {}
+        },
+        {
+          "type": "bind",
+          "source": "/Users/mohamedfadhi/Fadhi/trading-ai/exchange-inbox",
+          "target": "/inbox",
+          "read_only": true,
+          "bind": {}
+        }
+      ]
+    },
+    "market-cap-monitor": {
+      "profiles": [
+        "authorized-market-cap-monitor"
+      ],
+      "cpus": 0.5,
+      "command": [
+        "while true; do\n  python -m scrapper.commands.collection_scope --monitor --apply --limit 40\n  sleep 3600\ndone\n"
+      ],
+      "configs": [
+        {
+          "source": "runtime_identity_core",
+          "target": "/run/trading-ai/runtime-identity.json"
+        },
+        {
+          "source": "runtime_store_sentinel",
+          "target": "/data/.trading_ai_runtime_identity.json"
+        },
+        {
+          "source": "runtime_core_documents_sentinel",
+          "target": "/data/snapshots/.trading_ai_runtime_identity.json"
+        }
+      ],
+      "entrypoint": [
+        "/bin/sh",
+        "-c"
+      ],
+      "environment": {
+        "SCRAPER_DB_PATH": "/data/scraper.db",
+        "SCRAPER_STORE_PATH": "/data",
+        "SCREENER_SESSION_FILE": "/run/secrets/screener_session",
+        "SCREENER_THROTTLE_JITTER": "1.5",
+        "SCREENER_THROTTLE_SECONDS": "4",
+        "TRADING_AI_ENV": "production",
+        "TRADING_AI_RUNTIME_IDENTITY_FILE": "/run/trading-ai/runtime-identity.json"
+      },
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "python",
+          "-c",
+          "import sqlite3; c=sqlite3.connect('file:/data/scraper.db?mode=ro',uri=True); c.execute('PRAGMA query_only=ON'); c.execute('SELECT 1'); c.close()"
+        ],
+        "timeout": "5s",
+        "interval": "30s",
+        "retries": 3
+      },
+      "image": "trading-ai-c281-release@sha256:4d289faa67334bc870d4f2a6a181feecee777fd427eac209b9adef68ecab0238",
+      "mem_limit": "1610612736",
+      "networks": {
+        "default": null
+      },
+      "restart": "no",
+      "secrets": [
+        {
+          "source": "screener_session",
+          "target": "/run/secrets/screener_session"
+        }
+      ],
+      "stop_grace_period": "3m0s",
+      "volumes": [
+        {
+          "type": "volume",
+          "source": "scraper-data",
+          "target": "/data",
+          "volume": {}
+        }
+      ]
+    },
+    "rating-recovery-discovery": {
+      "profiles": [
+        "authorized-rating-recovery-discovery"
+      ],
+      "cpus": 0.5,
+      "command": [
+        "python -m scrapper.cli build-document-recovery-targets\nwhile true; do\n  out=$$(python -m scrapper.cli run-document-recovery-worker \\\n    --source bse --source nse --source issuer-ir \\\n    --limit 50 --throttle-seconds 2)\n  echo \"$$out\"\n  case \"$$out\" in\n    *'\"processed_target_source_count\": 0'*) sleep 120 ;;\n    *) sleep 3 ;;\n  esac\ndone\n"
+      ],
+      "configs": [
+        {
+          "source": "runtime_identity_documents",
+          "target": "/run/trading-ai/runtime-identity.json"
+        },
+        {
+          "source": "runtime_store_sentinel",
+          "target": "/data/.trading_ai_runtime_identity.json"
+        }
+      ],
+      "entrypoint": [
+        "/bin/sh",
+        "-c"
+      ],
+      "environment": {
+        "DOCUMENT_MIN_FREE_BYTES": "107374182400",
+        "DOCUMENT_MIN_FREE_PERCENT": "15",
+        "DOCUMENT_REQUIRE_SENTINEL": "1",
+        "DOCUMENT_STORE_REQUIRE_CAPACITY_FILE": "1",
+        "SCRAPER_DB_PATH": "/data/scraper.db",
+        "SCRAPER_DOCUMENT_STORE_PATH": "/documents",
+        "SCRAPER_STORE_PATH": "/data",
+        "TRADING_AI_ENV": "production",
+        "TRADING_AI_RUNTIME_IDENTITY_FILE": "/run/trading-ai/runtime-identity.json"
+      },
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "python",
+          "-c",
+          "import sqlite3; c=sqlite3.connect('file:/data/scraper.db?mode=ro',uri=True); c.execute('PRAGMA query_only=ON'); c.execute('SELECT 1'); c.close()"
+        ],
+        "timeout": "5s",
+        "interval": "30s",
+        "retries": 3
+      },
+      "image": "trading-ai-c281-release@sha256:4d289faa67334bc870d4f2a6a181feecee777fd427eac209b9adef68ecab0238",
+      "mem_limit": "1610612736",
+      "networks": {
+        "default": null
+      },
+      "restart": "no",
+      "stop_grace_period": "3m0s",
+      "volumes": [
+        {
+          "type": "volume",
+          "source": "scraper-data",
+          "target": "/data",
+          "volume": {}
+        },
+        {
+          "type": "bind",
+          "source": "/Volumes/My Passport/passport/trading-ai",
+          "target": "/documents",
+          "bind": {}
+        }
+      ]
+    },
+    "rating-recovery-download": {
+      "profiles": [
+        "authorized-rating-recovery-download"
+      ],
+      "cpus": 0.6,
+      "command": [
+        "run-acquisition-role",
+        "--role",
+        "rating-recovery-download"
+      ],
+      "configs": [
+        {
+          "source": "runtime_identity_documents",
+          "target": "/run/trading-ai/runtime-identity.json"
+        },
+        {
+          "source": "runtime_store_sentinel",
+          "target": "/data/.trading_ai_runtime_identity.json"
+        }
+      ],
+      "entrypoint": null,
+      "environment": {
+        "DOCUMENT_MIN_FREE_BYTES": "107374182400",
+        "DOCUMENT_MIN_FREE_PERCENT": "15",
+        "DOCUMENT_REQUIRE_SENTINEL": "1",
+        "DOCUMENT_STORE_REQUIRE_CAPACITY_FILE": "1",
+        "SCRAPER_DB_PATH": "/data/scraper.db",
+        "SCRAPER_DOCUMENT_STORE_PATH": "/documents",
+        "SCRAPER_STORE_PATH": "/data",
+        "TRADING_AI_ENV": "production",
+        "TRADING_AI_RUNTIME_IDENTITY_FILE": "/run/trading-ai/runtime-identity.json"
+      },
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "python",
+          "-c",
+          "import sqlite3; c=sqlite3.connect('file:/data/scraper.db?mode=ro',uri=True); c.execute('PRAGMA query_only=ON'); c.execute('SELECT 1'); c.close()"
+        ],
+        "timeout": "5s",
+        "interval": "30s",
+        "retries": 3
+      },
+      "image": "trading-ai-c281-release@sha256:4d289faa67334bc870d4f2a6a181feecee777fd427eac209b9adef68ecab0238",
+      "mem_limit": "1610612736",
+      "networks": {
+        "default": null
+      },
+      "restart": "no",
+      "stop_grace_period": "3m0s",
+      "volumes": [
+        {
+          "type": "volume",
+          "source": "scraper-data",
+          "target": "/data",
+          "volume": {}
+        },
+        {
+          "type": "bind",
+          "source": "/Volumes/My Passport/passport/trading-ai",
+          "target": "/documents",
+          "bind": {}
+        }
+      ]
+    },
+    "scheduler": {
+      "profiles": [
+        "authorized-scheduler"
+      ],
+      "cpus": 0.5,
+      "command": [
+        "exchange-scheduler"
+      ],
+      "configs": [
+        {
+          "source": "runtime_identity_core",
+          "target": "/run/trading-ai/runtime-identity.json"
+        },
+        {
+          "source": "runtime_store_sentinel",
+          "target": "/data/.trading_ai_runtime_identity.json"
+        },
+        {
+          "source": "runtime_core_documents_sentinel",
+          "target": "/data/snapshots/.trading_ai_runtime_identity.json"
+        }
+      ],
+      "entrypoint": null,
+      "environment": {
+        "SCRAPER_DB_PATH": "/data/scraper.db",
+        "SCRAPER_STORE_PATH": "/data",
+        "TRADING_AI_ENV": "production",
+        "TRADING_AI_RUNTIME_IDENTITY_FILE": "/run/trading-ai/runtime-identity.json"
+      },
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "python",
+          "-c",
+          "import sqlite3; c=sqlite3.connect('file:/data/scraper.db?mode=ro',uri=True); c.execute('PRAGMA query_only=ON'); c.execute('SELECT 1'); c.close()"
+        ],
+        "timeout": "5s",
+        "interval": "30s",
+        "retries": 3
+      },
+      "image": "trading-ai-c281-release@sha256:4d289faa67334bc870d4f2a6a181feecee777fd427eac209b9adef68ecab0238",
+      "mem_limit": "1610612736",
+      "networks": {
+        "default": null
+      },
+      "restart": "no",
+      "stop_grace_period": "3m0s",
+      "volumes": [
+        {
+          "type": "volume",
+          "source": "scraper-data",
+          "target": "/data",
+          "volume": {}
+        }
+      ]
+    },
+    "worker": {
+      "profiles": [
+        "authorized-worker"
+      ],
+      "cpus": 0.5,
+      "command": [
+        "screener-company-worker",
+        "--due",
+        "--limit",
+        "5"
+      ],
+      "configs": [
+        {
+          "source": "runtime_identity_core",
+          "target": "/run/trading-ai/runtime-identity.json"
+        },
+        {
+          "source": "runtime_store_sentinel",
+          "target": "/data/.trading_ai_runtime_identity.json"
+        },
+        {
+          "source": "runtime_core_documents_sentinel",
+          "target": "/data/snapshots/.trading_ai_runtime_identity.json"
+        }
+      ],
+      "entrypoint": null,
+      "environment": {
+        "SCRAPER_DB_PATH": "/data/scraper.db",
+        "SCRAPER_STORE_PATH": "/data",
+        "SCREENER_SESSION_FILE": "/run/secrets/screener_session",
+        "SCREENER_THROTTLE_JITTER": "1.5",
+        "SCREENER_THROTTLE_SECONDS": "4",
+        "SCREENER_WORKER_LIMIT": "5",
+        "TRADING_AI_ENV": "production",
+        "TRADING_AI_RUNTIME_IDENTITY_FILE": "/run/trading-ai/runtime-identity.json"
+      },
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "python",
+          "-c",
+          "import sqlite3; c=sqlite3.connect('file:/data/scraper.db?mode=ro',uri=True); c.execute('PRAGMA query_only=ON'); c.execute('SELECT 1'); c.close()"
+        ],
+        "timeout": "5s",
+        "interval": "30s",
+        "retries": 3
+      },
+      "image": "trading-ai-c281-release@sha256:4d289faa67334bc870d4f2a6a181feecee777fd427eac209b9adef68ecab0238",
+      "mem_limit": "1610612736",
+      "networks": {
+        "default": null
+      },
+      "restart": "no",
+      "secrets": [
+        {
+          "source": "screener_session",
+          "target": "/run/secrets/screener_session"
+        }
+      ],
+      "stop_grace_period": "3m0s",
+      "volumes": [
+        {
+          "type": "volume",
+          "source": "scraper-data",
+          "target": "/data",
+          "volume": {}
+        }
+      ]
+    }
+  },
+  "volumes": {
+    "scraper-data": {
+      "name": "trading-ai_scraper-data",
+      "external": true
+    }
+  },
+  "x-core-runtime-configs": [
+    {
+      "source": "runtime_identity_core",
+      "target": "/run/trading-ai/runtime-identity.json"
+    },
+    {
+      "source": "runtime_store_sentinel",
+      "target": "/data/.trading_ai_runtime_identity.json"
+    },
+    {
+      "source": "runtime_core_documents_sentinel",
+      "target": "/data/snapshots/.trading_ai_runtime_identity.json"
+    }
+  ],
+  "x-document-runtime-configs": [
+    {
+      "source": "runtime_identity_documents",
+      "target": "/run/trading-ai/runtime-identity.json"
+    },
+    {
+      "source": "runtime_store_sentinel",
+      "target": "/data/.trading_ai_runtime_identity.json"
+    }
+  ],
+  "x-production-environment": {
+    "TRADING_AI_ENV": "production",
+    "TRADING_AI_RUNTIME_IDENTITY_FILE": "/run/trading-ai/runtime-identity.json"
+  },
+  "x-runtime-image": "trading-ai-c053-release@sha256:44da7074157fd2a946c41d064a91ef3f729ebd31ab3bcdf2aa09233c5a794b6b"
+}

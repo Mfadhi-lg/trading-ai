@@ -1,0 +1,8 @@
+{
+  "at_utc": "2026-10-07T12:53:30.611178+00:00",
+  "archive": "/Users/mohamedfadhi/Fadhi/trading-ai/artifacts/acquisition-readiness/AR-01.3/release.oci.tar",
+  "archive_sha256": "69fc348408d5a0bd131cf3147e0f8ce4b3c635be96e8ea2582173dfba4b6520f",
+  "source_manifest_sha256": "e6089d4dcf2e9261df7c6cca5d63e80e06c9491709e6e340a3ec7df1709eb9b7",
+  "review_status": "PREPARED",
+  "production_activation": "none"
+}

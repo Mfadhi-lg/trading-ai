@@ -1,0 +1,209 @@
+{
+  "version": 1,
+  "baseline_head": "db7564a109f1cb34ee4e7d5ea3427716e14cb51e",
+  "scope": "All present artifact files, including ignored files and symlinks. No artifact relocation or deletion. Absent tracked paths remain absent.",
+  "serialization": "inventory_sha256 hashes UTF-8 json.dumps(sorted per-file records, sort_keys=True, separators=(comma,colon)); rows sorted by path. Symlink SHA256 hashes link text, not target bytes.",
+  "private_inventory": "/private/tmp/trading-ai-cleanup-c073-20261003/artifact-files.json",
+  "groups": [
+    {
+      "location": "artifacts/.DS_Store",
+      "files": 1,
+      "bytes": 10244,
+      "tracked_files": 0,
+      "inventory_sha256": "04454c5828136a98fe56dd72f43de0d05ca7ac641101a94a1b22bf6557fec3fc",
+      "disposition": "HISTORICAL_EVIDENCE",
+      "retain_at": "artifacts/.DS_Store",
+      "deletion_allowed": false
+    },
+    {
+      "location": "artifacts/a0-2026-09-29",
+      "files": 15,
+      "bytes": 151782603,
+      "tracked_files": 15,
+      "inventory_sha256": "2516af5d734513f318ceb94df23ddc57d3814d51523e8ebd8d152a0159760ec9",
+      "disposition": "HISTORICAL_EVIDENCE",
+      "retain_at": "artifacts/a0-2026-09-29",
+      "deletion_allowed": false
+    },
+    {
+      "location": "artifacts/a2-2026-09-29",
+      "files": 12,
+      "bytes": 743499,
+      "tracked_files": 12,
+      "inventory_sha256": "d3552c06664e3ffdee5c14938c8a3fe334bf78819eff166561a7de69203c7af2",
+      "disposition": "HISTORICAL_EVIDENCE",
+      "retain_at": "artifacts/a2-2026-09-29",
+      "deletion_allowed": false
+    },
+    {
+      "location": "artifacts/b0-2026-09-29",
+      "files": 14,
+      "bytes": 213662,
+      "tracked_files": 14,
+      "inventory_sha256": "3dc0812c30c82103ccd763035b853ae1c4f2a09606f51a1bea81117160ed52f9",
+      "disposition": "HISTORICAL_EVIDENCE",
+      "retain_at": "artifacts/b0-2026-09-29",
+      "deletion_allowed": false
+    },
+    {
+      "location": "artifacts/b0-2026-09-30",
+      "files": 7,
+      "bytes": 59012,
+      "tracked_files": 7,
+      "inventory_sha256": "c705c80ff62919b470cfd185010dcfe9e914dc17ee2fd48d97a11351bc7a34a9",
+      "disposition": "HISTORICAL_EVIDENCE",
+      "retain_at": "artifacts/b0-2026-09-30",
+      "deletion_allowed": false
+    },
+    {
+      "location": "artifacts/b1-2026-10-01",
+      "files": 8,
+      "bytes": 901468,
+      "tracked_files": 7,
+      "inventory_sha256": "183049583548c1f0f69c46b6b1a92f8585417bae71ea82ac606fee034544eec9",
+      "disposition": "HISTORICAL_EVIDENCE",
+      "retain_at": "artifacts/b1-2026-10-01",
+      "deletion_allowed": false
+    },
+    {
+      "location": "artifacts/b2-2026-10-01",
+      "files": 15,
+      "bytes": 2059081,
+      "tracked_files": 15,
+      "inventory_sha256": "4b0e17a8783bdfeffe9e8962094cdea74b01044f75419036de7c47aa5d77fae4",
+      "disposition": "HISTORICAL_EVIDENCE",
+      "retain_at": "artifacts/b2-2026-10-01",
+      "deletion_allowed": false
+    },
+    {
+      "location": "artifacts/b2-discovery-2026-10-01",
+      "files": 45,
+      "bytes": 898288949,
+      "tracked_files": 43,
+      "inventory_sha256": "d0daed010c6cf5173c3667089d05fa53d624ea3770ef5ae65f441667559fd5a7",
+      "disposition": "HISTORICAL_EVIDENCE",
+      "retain_at": "artifacts/b2-discovery-2026-10-01",
+      "deletion_allowed": false
+    },
+    {
+      "location": "artifacts/coverage-audit-2026-10-01",
+      "files": 34,
+      "bytes": 84005612,
+      "tracked_files": 33,
+      "inventory_sha256": "5c1757ae59a58cce2d8ad7cdbd1ff6bd6552d48b3914e32ec80d33460483ab34",
+      "disposition": "HISTORICAL_EVIDENCE",
+      "retain_at": "artifacts/coverage-audit-2026-10-01",
+      "deletion_allowed": false
+    },
+    {
+      "location": "artifacts/document-acquisition",
+      "files": 23225,
+      "bytes": 12131361398,
+      "tracked_files": 23224,
+      "inventory_sha256": "7c041ada123e5e429a617de760dad87a98d987c66e4b902f4cf35da2a73bef10",
+      "disposition": "HISTORICAL_EVIDENCE",
+      "retain_at": "artifacts/document-acquisition",
+      "deletion_allowed": false
+    },
+    {
+      "location": "artifacts/focus_ml",
+      "files": 23,
+      "bytes": 961782,
+      "tracked_files": 23,
+      "inventory_sha256": "a19f9eb4ab89f0b3e7adb33fc66fd8cc5ee791608655077c39a9d81fbc52939b",
+      "disposition": "HISTORICAL_EVIDENCE",
+      "retain_at": "artifacts/focus_ml",
+      "deletion_allowed": false
+    },
+    {
+      "location": "artifacts/icra-download-test",
+      "files": 1261,
+      "bytes": 153557856,
+      "tracked_files": 14,
+      "inventory_sha256": "923c88bbc19ed77cade36c5450c9a30c63bf987578cfefe9cee2a5e93553d267",
+      "disposition": "LOCAL_RECOVERY_OUTPUT_AND_ENVIRONMENT",
+      "retain_at": "artifacts/icra-download-test",
+      "deletion_allowed": false
+    },
+    {
+      "location": "artifacts/indigrid-540565-accepted.json",
+      "files": 1,
+      "bytes": 1087638,
+      "tracked_files": 1,
+      "inventory_sha256": "c0fb494151d969a74bf3ec0341a17b2d86cedfeb9667a85a129a9604fecb2df7",
+      "disposition": "HISTORICAL_EVIDENCE",
+      "retain_at": "artifacts/indigrid-540565-accepted.json",
+      "deletion_allowed": false
+    },
+    {
+      "location": "artifacts/indigrid-540565.html",
+      "files": 1,
+      "bytes": 183404,
+      "tracked_files": 1,
+      "inventory_sha256": "6a80bcaa2046538b53f8c774a1b3d695b50c309a7b3af76544b9f2bb95bb4196",
+      "disposition": "HISTORICAL_EVIDENCE",
+      "retain_at": "artifacts/indigrid-540565.html",
+      "deletion_allowed": false
+    },
+    {
+      "location": "artifacts/indigrid-540565.json",
+      "files": 1,
+      "bytes": 43179,
+      "tracked_files": 1,
+      "inventory_sha256": "01de266c8eccf2eec5611aba7a19999128d9313fb89adda967c90fd0183356a4",
+      "disposition": "HISTORICAL_EVIDENCE",
+      "retain_at": "artifacts/indigrid-540565.json",
+      "deletion_allowed": false
+    },
+    {
+      "location": "artifacts/june-2026-adhiraj-source-check.json",
+      "files": 1,
+      "bytes": 805,
+      "tracked_files": 1,
+      "inventory_sha256": "73d7e80f680810cccf25402945dc830acc1a38f20b6d109ecb9c90a8dd1dfd08",
+      "disposition": "HISTORICAL_EVIDENCE",
+      "retain_at": "artifacts/june-2026-adhiraj-source-check.json",
+      "deletion_allowed": false
+    },
+    {
+      "location": "artifacts/june-2026-coverage-repair.json",
+      "files": 1,
+      "bytes": 706829,
+      "tracked_files": 1,
+      "inventory_sha256": "e1250f195e58336024196a0a85406e06baa596d298dbe73fa224fe2e154fd1f0",
+      "disposition": "HISTORICAL_EVIDENCE",
+      "retain_at": "artifacts/june-2026-coverage-repair.json",
+      "deletion_allowed": false
+    },
+    {
+      "location": "artifacts/june-2026-recovered-companies.json",
+      "files": 1,
+      "bytes": 3725,
+      "tracked_files": 1,
+      "inventory_sha256": "250c97e52829d7efa81bd2520f3b2a6ab9611587a44278e3b658a4efaddbd43b",
+      "disposition": "HISTORICAL_EVIDENCE",
+      "retain_at": "artifacts/june-2026-recovered-companies.json",
+      "deletion_allowed": false
+    },
+    {
+      "location": "artifacts/rating-exception-recovery-20261001",
+      "files": 23,
+      "bytes": 1606758,
+      "tracked_files": 0,
+      "inventory_sha256": "52f5e7951d568111a2c965ff3e07e2d1dccc0104dedef700b1373ae219474e05",
+      "disposition": "HISTORICAL_EVIDENCE",
+      "retain_at": "artifacts/rating-exception-recovery-20261001",
+      "deletion_allowed": false
+    },
+    {
+      "location": "artifacts/rating-link-refresh-20261001",
+      "files": 2,
+      "bytes": 197956,
+      "tracked_files": 0,
+      "inventory_sha256": "7c4081e319d39fe06a9e6a388d58e0140ea8e3ddcc0931c4c8c6188afb7b755a",
+      "disposition": "HISTORICAL_EVIDENCE",
+      "retain_at": "artifacts/rating-link-refresh-20261001",
+      "deletion_allowed": false
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "dependency_lock_and_dockerfile_unchanged": true,
+  "new_layer_digests": [
+    "sha256:b5196a3c0fafb91206935d7d54df2e388fd772f2dad98b53dfc264f4879b278a",
+    "sha256:70eff240b8ca9d6e053704be4494f8bb92fd1b9b40b7bb0a0092472bcbaf47ab"
+  ],
+  "new_sbom_retained": true,
+  "no_byte_identical_dependency_layers_claimed": true,
+  "previous_image": "trading-ai-c281-release@sha256:4d289faa67334bc870d4f2a6a181feecee777fd427eac209b9adef68ecab0238",
+  "unchanged_layer_digests": [
+    "sha256:bd36565c0fdebaf0f3af5c3b4ce610ca085ced32e9e9da850d95912f5f18f47b",
+    "sha256:c84bebac337e749a4bb38e590f1994648dedbc4a1d04db88b978cb18a5359a7b",
+    "sha256:d122ce05d52358f34d63025713fdaf36bd7f684c4861ef9715450970c8599024",
+    "sha256:8fab80907cc75b43464f59a38c5548ae9199a01202b80a0474fb5e81c33950b4",
+    "sha256:8b23192f082d179a42eefae9f7fc5d2567ea7c54747d6463f335d8af5d7d09ec",
+    "sha256:1a08861d5fb738f5011ee98e1be0bc8aabacfb95af180ddb92e5542ba4f0a33f",
+    "sha256:b3a945bd632826fda9a067a836ca4b14aa29ee7844201135af4b82a47c550ca5",
+    "sha256:357854c8db52a8d254eb072cbbeb4db88c5856e11bbba183c1a5c61637ae5ee8",
+    "sha256:08693baefe3196fb563064df34bb8506eced75f867067c18828a9442f3a2b579",
+    "sha256:1af4034d1b20ba82d6672603e2385ef89dfd567bb6600448d88f241ab274b338",
+    "sha256:9504570d45b233afaf705107c7ebd5e0410ad78e78716b4735d84d6934a8d30a"
+  ]
+}
