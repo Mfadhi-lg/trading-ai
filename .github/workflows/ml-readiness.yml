@@ -8,8 +8,10 @@ on:
 jobs:
   offline-contract:
     runs-on: ubuntu-latest
+    # init-db and the offline test suite must use isolated test targets.
     env:
       PYTHONDONTWRITEBYTECODE: "1"
+      TRADING_AI_ENV: test
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
