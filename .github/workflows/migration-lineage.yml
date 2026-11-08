@@ -7,26 +7,31 @@ on:
 jobs:
   migration-lineage:
     runs-on: ubuntu-latest
-    # Keep every application write target inside this disposable CI job root.
+    # Migration-control tests must never inherit a developer/production identity.
     env:
       TRADING_AI_ENV: test
-      TRADING_AI_TEST_ROOT: ${{ runner.temp }}/trading-ai-test
-      SCRAPER_STORE_PATH: ${{ runner.temp }}/trading-ai-test/store
-      SCRAPER_FILES_PATH: ${{ runner.temp }}/trading-ai-test/store/files
-      SCRAPER_SNAPSHOTS_PATH: ${{ runner.temp }}/trading-ai-test/store/snapshots
-      SCRAPER_EXPORTS_PATH: ${{ runner.temp }}/trading-ai-test/store/exports
-      SCRAPER_DB_PATH: ${{ runner.temp }}/trading-ai-test/state/scraper.db
-      SCRAPER_CAMPAIGNS_PATH: ${{ runner.temp }}/trading-ai-test/store/campaigns
-      SCRAPER_LOGS_PATH: ${{ runner.temp }}/trading-ai-test/store/logs
-      SCRAPER_BROWSER_STATE_PATH: ${{ runner.temp }}/trading-ai-test/store/browser-state
-      SCRAPER_BACKUPS_PATH: ${{ runner.temp }}/trading-ai-test/store/backups
     steps:
       - uses: actions/checkout@v4
+      - name: Configure isolated CI data roots
+        shell: bash
+        run: |
+          test_root="$RUNNER_TEMP/trading-ai-test"
+          mkdir -p "$test_root"
+          {
+            echo "TRADING_AI_TEST_ROOT=$test_root"
+            echo "SCRAPER_STORE_PATH=$test_root/store"
+            echo "SCRAPER_FILES_PATH=$test_root/store/files"
+            echo "SCRAPER_SNAPSHOTS_PATH=$test_root/store/snapshots"
+            echo "SCRAPER_EXPORTS_PATH=$test_root/store/exports"
+            echo "SCRAPER_DB_PATH=$test_root/state/scraper.db"
+            echo "SCRAPER_CAMPAIGNS_PATH=$test_root/store/campaigns"
+            echo "SCRAPER_LOGS_PATH=$test_root/store/logs"
+            echo "SCRAPER_BROWSER_STATE_PATH=$test_root/store/browser-state"
+            echo "SCRAPER_BACKUPS_PATH=$test_root/store/backups"
+          } >> "$GITHUB_ENV"
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Prepare isolated CI data roots
-        run: mkdir -p "$TRADING_AI_TEST_ROOT"
       - name: Check frozen migration filenames and checksums
         run: python scripts/audit/check_migration_manifest.py
       - name: Check disposable ledger expectations
