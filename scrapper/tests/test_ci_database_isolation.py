@@ -33,7 +33,7 @@ class CiDatabaseIsolationTests(unittest.TestCase):
                 )
                 for key in ISOLATED_PATH_KEYS:
                     self.assertIn(
-                        f"{key}: ${{ runner.temp }}/trading-ai-test/",
+                        f"{key}: ${{{{ runner.temp }}}}/trading-ai-test/",
                         content,
                     )
 
