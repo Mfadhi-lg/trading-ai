@@ -45,7 +45,7 @@ class CiDatabaseIsolationTests(unittest.TestCase):
         self.assertIn('os.environ.get("SCRAPER_DOCUMENT_STORE_PATH", str(SNAPSHOTS))', config)
         for workflow in WORKFLOWS:
             content = workflow.read_text(encoding="utf-8")
-            self.assertIn("SCRAPER_SNAPSHOTS_PATH:", content)
+            self.assertIn('echo "SCRAPER_SNAPSHOTS_PATH=$test_root/', content)
             self.assertNotIn("SCRAPER_DOCUMENT_STORE_PATH:", content)
 
 
