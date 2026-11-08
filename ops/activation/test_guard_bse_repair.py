@@ -16,6 +16,22 @@ from scrapper.core.http import FetchResponse
 NOW='2026-10-13T04:00:00+00:00';EPOCH='2026-10-12T06:28:31+00:00'
 CLASSIFICATIONS='artifact_source_evidence_classifications'
 
+class DownloadRecoveryGuardTests(unittest.TestCase):
+    def test_replacement_url_retains_append_only_audit_under_production_guard(self):
+        from scrapper.tests.test_document_download_recovery import DocumentDownloadRecoveryTests
+        fixture = DocumentDownloadRecoveryTests()
+        fixture.setUp()
+        self.addCleanup(fixture.tearDown)
+        fixture.conn.set_authorizer(runtime.routine_authorizer)
+        fixture.test_replacement_url_preserves_old_source_and_queues_new_job()
+        for sql in ('DELETE FROM document_download_recovery_actions',
+                    'UPDATE document_download_recovery_actions SET reason_code=reason_code',
+                    "UPDATE accepted_page_versions SET accepted_by='untrusted'",
+                    'CREATE TABLE unauthorized(x)'):
+            with self.subTest(sql=sql), self.assertRaises(sqlite3.DatabaseError):
+                fixture.conn.execute(sql)
+
+
 class GuardTests(unittest.TestCase):
     def setUp(self):
         self.f=credit_fixtures.CreditRatingAcquisitionTests();self.f.setUp();self.addCleanup(self.f.tearDown)

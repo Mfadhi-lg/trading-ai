@@ -1,5 +1,5 @@
 """A supervised processing consumer alongside the existing bounded downloader."""
-from contextlib import nullcontext
+from contextlib import contextmanager, nullcontext
 from datetime import datetime, timezone
 import json
 import os
@@ -8,6 +8,21 @@ import signal
 import subprocess
 import sys
 import time
+
+
+@contextmanager
+def processing_deadline(seconds=430):
+    """Bound processing without leaving an alarm armed during interpreter exit."""
+    from acquisition_failures import ExecutionDeadline
+    def deadline(*_):
+        raise ExecutionDeadline('Processing companion deadline exceeded')
+    previous = signal.signal(signal.SIGALRM, deadline)
+    signal.alarm(seconds)
+    try:
+        yield
+    finally:
+        signal.alarm(0)
+        signal.signal(signal.SIGALRM, previous)
 
 
 def consume_queue(run_one, producer_done, *, limit, wait=time.sleep, clock=time.monotonic, timeout=420):
@@ -165,7 +180,6 @@ def main():
     from scrapper.documents.ocr import TesseractOcr
     from scrapper.operations.workers.document_processing import run_automatic_processing
     from phase4_routine_runtime import routine_authorizer
-    from acquisition_failures import ExecutionDeadline
     db = Path('/data/scraper.db')
     def guarded(path):
         if Path(path) != db:
@@ -173,10 +187,6 @@ def main():
         conn = connect(path)
         conn.set_authorizer(routine_authorizer)
         return conn
-    def deadline(*_):
-        raise ExecutionDeadline('Processing companion deadline exceeded')
-    signal.signal(signal.SIGALRM, deadline)
-    signal.alarm(430)
     output = Path(os.environ['DOCUMENT_PIPELINE_OUTPUT'])
     started = datetime.now(timezone.utc).isoformat()
     engine = TesseractOcr()
@@ -188,7 +198,8 @@ def main():
             print(json.dumps({'stage': 'processing_queue_item', 'at': datetime.now(timezone.utc).isoformat(),
                               'selected': result['selected'], 'outcomes': result['outcomes']}), flush=True)
         return result
-    result = consume_queue(run_one, (output/'download-finished').exists, limit=config['limit'])
+    with processing_deadline():
+        result = consume_queue(run_one, (output/'download-finished').exists, limit=config['limit'])
     record = {'stage': 'document_stage_outcome', 'document_stage': 'DOCUMENT_PROCESSING',
               'companion': True, 'started_at_utc': started, 'finished_at_utc': datetime.now(timezone.utc).isoformat(),
               'result': result}
