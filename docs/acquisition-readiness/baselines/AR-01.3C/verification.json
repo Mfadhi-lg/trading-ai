@@ -1,0 +1,15 @@
+{
+  "status": "PASS_STATIC_REVIEW_ONLY",
+  "roles_covered": 21,
+  "top_level_parser_commands_covered": 59,
+  "standalone_modules_covered": 18,
+  "proposed_python_invocation_parsed_not_executed": true,
+  "maximum_normal_row_mutations": 2,
+  "selected_row_primary_key": "AR-01.3C/control-ownership/2026-10-08/v1",
+  "real_acquisition_processing_work_items": 0,
+  "production_access": "none",
+  "containers_started": 0,
+  "network_requests": 0,
+  "canary_executed": false,
+  "application_py_files_preserved": 2539
+}

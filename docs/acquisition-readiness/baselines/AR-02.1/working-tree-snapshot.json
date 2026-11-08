@@ -1,0 +1,557 @@
+{
+  "timing": "after offline application/test patch, before ledger update; initial status captured in session tool output",
+  "head": "0e6ee264931ba1a1e009e0785cf188f5dc9f37e8",
+  "tree": "06771d6dfe15385975173b882cac387bf4859ef7",
+  "entries": [
+    {
+      "status": " D",
+      "path": "docs/current/TRADING_AI_MASTER_RESEARCH_AND_DOCUMENT_INTELLIGENCE_PLAN.md",
+      "sha256": null
+    },
+    {
+      "status": " M",
+      "path": "scrapper/workflows/exchange/universe.py",
+      "sha256": "d54bd5bbf5e01e885169e62745b3dd3777b42fa7948af7c3befe3868e16e5b6f"
+    },
+    {
+      "status": "??",
+      "path": "docs/acquisition-readiness/baselines/AR-00/SHA256SUMS",
+      "sha256": "99771e48fa07bdb37ec7e5ac6ce55f748374d0295a219c18cd22452ecb0b6998"
+    },
+    {
+      "status": "??",
+      "path": "docs/acquisition-readiness/baselines/AR-00/evidence-index.json",
+      "sha256": "db25f7ecd798a4e595eaa822daaef59f97fe0dbaa9096ce0da46f008defffe76"
+    },
+    {
+      "status": "??",
+      "path": "docs/acquisition-readiness/baselines/AR-00/working-tree-before.json",
+      "sha256": "9fc454042b930f08fbf8963f7e162bdef527dc862e584291ab0617b1d40072e9"
+    },
+    {
+      "status": "??",
+      "path": "docs/acquisition-readiness/baselines/AR-01.1/SHA256SUMS",
+      "sha256": "8bf8b586a17b76586555cdde0c4cd184845638d7fc88e9b5b9044e7776cb3bed"
+    },
+    {
+      "status": "??",
+      "path": "docs/acquisition-readiness/baselines/AR-01.1/clone-identity.json",
+      "sha256": "33028da5ad8db0cb9c06372815fd4a319ccbc985a54fd27dbb125f46d554e6cc"
+    },
+    {
+      "status": "??",
+      "path": "docs/acquisition-readiness/baselines/AR-01.1/foreign-key-summary.json",
+      "sha256": "15abc59a04aa9954b6b6dd6fec30b38aa2e623e46ed7ab7bc99eee7c6505c4ba"
+    },
+    {
+      "status": "??",
+      "path": "docs/acquisition-readiness/baselines/AR-01.1/foreign-keys-after.json",
+      "sha256": "1fceda6d40df5500070b240fc16568347178e8c4bb812f563f6db6212075ea73"
+    },
+    {
+      "status": "??",
+      "path": "docs/acquisition-readiness/baselines/AR-01.1/foreign-keys-before.json",
+      "sha256": "1fceda6d40df5500070b240fc16568347178e8c4bb812f563f6db6212075ea73"
+    },
+    {
+      "status": "??",
+      "path": "docs/acquisition-readiness/baselines/AR-01.1/lineage-audit.json",
+      "sha256": "5b4b05e74acadbc7f1d59e95e930dd941afd111e4a04524093ca391714744c99"
+    },
+    {
+      "status": "??",
+      "path": "docs/acquisition-readiness/baselines/AR-01.1/migration-checksums.json",
+      "sha256": "6e5ba67dc3e536afb72b7f1a13250810c90766ab9541d689ea0bca74d1b1e1fd"
+    },
+    {
+      "status": "??",
+      "path": "docs/acquisition-readiness/baselines/AR-01.1/migration-effect-manifest.json",
+      "sha256": "0a538eca7ef69897467888207a8d64dc993b132c66c4007d2c552460209f72cb"
+    },
+    {
+      "status": "??",
+      "path": "docs/acquisition-readiness/baselines/AR-01.1/preservation.json",
+      "sha256": "279159dfc3a118c701ccc29bd58f04ab12b0c43a2bf56d3b5b7b570233d867e2"
+    },
+    {
+      "status": "??",
+      "path": "docs/acquisition-readiness/baselines/AR-01.1/recovery-fixture.json",
+      "sha256": "482fedb515d216259c196ffd84ef1dc763b616ddd31f8e080dc6088466587b32"
+    },
+    {
+      "status": "??",
+      "path": "docs/acquisition-readiness/baselines/AR-01.1/recovery_fixture.py",
+      "sha256": "7eb07578cce7c77bf555e4989db506b9f72f4a70b47e6626d14c5d75304b37fd"
+    },
+    {
+      "status": "??",
+      "path": "docs/acquisition-readiness/baselines/AR-01.1/rehearsal.log",
+      "sha256": "934fefaf7dbce44acd8718cc3045a3466eaeec3fde795c2fde90714be59d8102"
+    },
+    {
+      "status": "??",
+      "path": "docs/acquisition-readiness/baselines/AR-01.1/rehearse.py",
+      "sha256": "590d2043cfd9510becb26e1cb9fa8620e097d28de2950ffc647ae32d97f10db2"
+    },
+    {
+      "status": "??",
+      "path": "docs/acquisition-readiness/baselines/AR-01.1/row-verification.json",
+      "sha256": "282569171ebee46e0966f935eeb89c8023ab3467ef40366b1ef7b99e900e6f84"
+    },
+    {
+      "status": "??",
+      "path": "docs/acquisition-readiness/baselines/AR-01.1/rows-after.json",
+      "sha256": "21c0be4ab61531a2432c2cb4cd69a5dfa77b0d1eb40d79af7af30bdf7297d610"
+    },
+    {
+      "status": "??",
+      "path": "docs/acquisition-readiness/baselines/AR-01.1/rows-before.json",
+      "sha256": "78e049f9cecc99e6c9c94e61e739a32ad03281c367a5d376f1a1a560051af3eb"
+    },
+    {
+      "status": "??",
+      "path": "docs/acquisition-readiness/baselines/AR-01.1/schema-after.json",
+      "sha256": "6bac5d1451f1e45fc68dd4788b762688cd8d5d18bdd7cf1d8efba3f80f1f56ca"
+    },
+    {
+      "status": "??",
+      "path": "docs/acquisition-readiness/baselines/AR-01.1/schema-before.json",
+      "sha256": "58847506ea23ff1494b093ce57f8a28892c0c406ca4bc66f3ac93f57912c1bc0"
+    },
+    {
+      "status": "??",
+      "path": "docs/acquisition-readiness/baselines/AR-01.1/schema-verification.json",
+      "sha256": "37369583e93f07ede19d9a3d99b4157f4a212e0479d7ed21fbbe030487a07293"
+    },
+    {
+      "status": "??",
+      "path": "docs/acquisition-readiness/baselines/AR-01.1/source-identity.json",
+      "sha256": "213ac44666c23d09296f193c0ee9389303c72803794a9240694627226be3286a"
+    },
+    {
+      "status": "??",
+      "path": "docs/acquisition-readiness/baselines/AR-01.1/tests.log",
+      "sha256": "fa27208cb9f684b4f0745c9986982868a732096dac39bfb733eaaa066d2c7642"
+    },
+    {
+      "status": "??",
+      "path": "docs/acquisition-readiness/baselines/AR-01.1/verification.json",
+      "sha256": "5929b48fe43a8fa274e58b771d5b6b24dd3320409037787369310e9b9529ff99"
+    },
+    {
+      "status": "??",
+      "path": "docs/acquisition-readiness/baselines/AR-01.1/verify_manifest.py",
+      "sha256": "9e691b7fbf3781efc464fc8c2af8ccd1386268cbe7daf9ec098752694a20f570"
+    },
+    {
+      "status": "??",
+      "path": "docs/acquisition-readiness/baselines/AR-01.1/working-tree-before.json",
+      "sha256": "1308395788595fe39bcea88a66edd53085aede58b210befa06a2ad170007212b"
+    },
+    {
+      "status": "??",
+      "path": "docs/acquisition-readiness/baselines/AR-02.1/stored-evidence.json",
+      "sha256": "954bfcf00be41fa1e15eb0193fc633a502c69f043a4739531f8100b9f0f2bbb7"
+    },
+    {
+      "status": "??",
+      "path": "docs/acquisition-readiness/baselines/AR-02.1/tests.log",
+      "sha256": "4e257a6160c9e5c39516607783803e289c96d0ca7cde0031f16d8e428efa6c16"
+    },
+    {
+      "status": "??",
+      "path": "docs/acquisition-readiness/chunks/AR-00.md",
+      "sha256": "0a0a9dc4459eb87a0eb906552d80fe84ac1e8bd8a889aa700791ed85c8cf4f37"
+    },
+    {
+      "status": "??",
+      "path": "docs/acquisition-readiness/chunks/AR-01.1.md",
+      "sha256": "9304ac1a074f33e936f997bc2c7ead9c2723ff4be55560c022d8669f088653c7"
+    },
+    {
+      "status": "??",
+      "path": "docs/audits/TRADING_AI_ACQUISITION_BLACKBOX_AUDIT_2026-10-07.md",
+      "sha256": "e648d7b26c762df4a48bed5d0ee60edc769ab791223c6a002135f5aa8d05c2d3"
+    },
+    {
+      "status": "??",
+      "path": "docs/audits/acquisition-blackbox/company_scope.csv",
+      "sha256": "c348c1e7697727f5be3bd291d43563c6bd2f9a7a660f7ecab7d40b66b3e01622"
+    },
+    {
+      "status": "??",
+      "path": "docs/audits/acquisition-blackbox/document_coverage.csv",
+      "sha256": "ec5b43fc38785e0a5b3275d617dd0db53e1f7b295585f1d6af70c1fd11b5b13c"
+    },
+    {
+      "status": "??",
+      "path": "docs/audits/acquisition-blackbox/failure_ledger.csv",
+      "sha256": "fc8c9f4f8ebe127f2decf672db87ca33d970eb7e266e3eb09cfe209118839d6a"
+    },
+    {
+      "status": "??",
+      "path": "docs/audits/acquisition-blackbox/rating_coverage.csv",
+      "sha256": "0d4c8bd637990b014dcc3282779f0a3953b3b9983bfe60d3e9ef724724676e69"
+    },
+    {
+      "status": "??",
+      "path": "docs/audits/acquisition-blackbox/runtime_roles.csv",
+      "sha256": "3f08f88ba60ac4080eccd23c759b63c3d4b0bc8f1924fecc19e75a9820410fb0"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C11.1/harness.tar",
+      "sha256": "18f81048fbcb781a92b96d797ff9f32fe62c27ca773b4492b20e6e208015ac65"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C11.2/harness.tar",
+      "sha256": "00e2f45ce9449db7d55b6411fbb44c11a41f7a56c60eb6a7a9222fdeb9e7b680"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C11.3/harness.tar",
+      "sha256": "610da2736428f9c31ca8752418b3f9fb1cbada5d8377298fd2b48f80b238b22f"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C11.4/harness.tar",
+      "sha256": "3f06a3491807cc7a8e452ce1fc51ecb032fa35093a82a3196336fb183835275d"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C11.5/harness.tar",
+      "sha256": "9f3bf3a6f02ae74cefa21ef2405a09173660e600adc1a24b9a16594165580436"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C11.6/harness.tar",
+      "sha256": "df8d789340f33f38e1a054af8016f7e4e67e48d5ac433d1f56ea88cb11f6554c"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C12.1/harness.tar",
+      "sha256": "ced91888311c3f9dc1cc14b18bafbef9da0e00ef899f4ef6e62450496024a98f"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C12.2/harness.tar",
+      "sha256": "8d9ffaf9191c16445589d7070ae737d0a9bf5086f03b82ea481104fdadaadf55"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C12.3/harness.tar",
+      "sha256": "1d928c2e2e452687dbe59f75b16f5c432c5bbeb68aa32a083147cf18dc29d0e6"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C12.4/harness.tar",
+      "sha256": "5fb6222ebbf62b3a5b319417caf5a1988ccde87e5b39ca25ac4c857e2f1b4330"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C12.5/harness.tar",
+      "sha256": "d8da3d1599df8dbcab3c60c114412a20d4c96ecf53d23e65156b56ec0a5fa914"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C13.1/harness.tar",
+      "sha256": "9c87d71de4795519770100b1d157d1f707aaab60421178c465c4a9271c70cde1"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C13.2/harness.tar",
+      "sha256": "1d0d08a6c6cc5399c4ce73bb075ab18c261d1559608aa8b66186daec2816cef2"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C13.3/harness.tar",
+      "sha256": "c50f0f065c35a4dfc15aa340889d8c7021afa9deb212d1153904ea2005ac41fd"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C13.4/harness.tar",
+      "sha256": "85e8c4b670a8f0d24c3e0e0fda11e376f172c5e5de8057476563fb981aea78c2"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C13.5/harness.tar",
+      "sha256": "5af4895b5b68791dbf5ebb0dec12975917ec4d7df3dfdead88315987110cac94"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C14.1/harness.tar",
+      "sha256": "dfd18dacce0ac95a7b11135f1f671121fe904fc99600d10c36a96664ff477a6a"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C14.2/harness.tar",
+      "sha256": "bd732b49ddffc8979e602298e6d7850bacf939d70dd0bf95cf3097a2d564c88d"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C14.3/harness.tar",
+      "sha256": "1c02f00589bd6720f434d6795d3156307793d2e89ddc1217330961f47b4494cc"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C14.4/harness.tar",
+      "sha256": "4d94122a342333fe8ce10e881112df860e447890763da5f1431c5abd41f786bd"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C15.1/harness.tar",
+      "sha256": "ed4d955d0e3955318dcde5b7205fbc6d32dc8d5ee247c7dc40b02b22e7f868f3"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C15.2/harness.tar",
+      "sha256": "af64175591ba5b4ecf6cce781fd490231244dab60dc03eddd261f1a45410e27d"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C15.3/harness.tar",
+      "sha256": "a41f81503cb298b96079bd8396dc3443848b2b9b987cb82c0c24d661fd480004"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C15.4/harness.tar",
+      "sha256": "d91c182b8b710a294488bff99c3eaea414628863ec42daffc8e0fb275249b1a3"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C16.1/harness.tar",
+      "sha256": "c5c6dad8de93ad21bd676a391346910f09305a6e88db27baeaf7cb0ee78cd3c5"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C16.2/harness.tar",
+      "sha256": "9d2283f50dc7868e676a89e30c246070e83b5299a621bcb8f24dba63c8bca5c1"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C16.3/harness.tar",
+      "sha256": "7ec2462a370805656f104aa72061471596cb9543b893cf30fb0677e75abf7f55"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C16.4/harness.tar",
+      "sha256": "870e80b593455eb9a474913ba773a9ec0859f3672a1c567555315900f2f600b6"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C17.1/harness.tar",
+      "sha256": "4aef89022b9d4b204184f1847450d5b8e46bd733b1c077ecdc80eae24cb5140e"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C17.2/harness.tar",
+      "sha256": "6901623db500ab42fc064c845452b36dca0899c0106027f87b4e52bc86ea1b54"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C17.3/harness.tar",
+      "sha256": "f233f2dda240859f01fd865a0604e6b5796ecfbd49cf245813303b5442a5c5f1"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C17.4/harness.tar",
+      "sha256": "fc1371e955c696a54da67851168583cd6c3b53c9d47f9df9fb2c3504a42cc630"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C17.5/harness.tar",
+      "sha256": "ea9894756fe41a64dddb6e9fcaff021539253e77aaeadf6af799a7b7d65c462e"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C18.1/harness.tar",
+      "sha256": "c41bb23c049d6483eec5958faccfbea370df873d1aabed337553812bd203ae47"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C18.2/harness.tar",
+      "sha256": "9ec353ef7c6acbadffbe2a8a59a3f8b25664cf1f362069010e96594cda0262a9"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C18.3/harness.tar",
+      "sha256": "d6d3c870134de9a8d88efcbf29a3d3b88007ebdae553849d021acedf23a96b2a"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C18.4/harness.tar",
+      "sha256": "44e44309eced762e10b2a3b5ba778df4c1c041dbc67d55fcc23c8d52ca6cdc6d"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C18.5/harness.tar",
+      "sha256": "efa7b099dbeee97c6e3eaeef15a406413c28cc71ad913c6a82b3a596896bbf6d"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C19.1/harness.tar",
+      "sha256": "87845f4279170ab2e316192024f7b30874d46e40e04f4d7eec6506920daf1d50"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C19.2/harness.tar",
+      "sha256": "410a3b222c0deb1335c32b4965216d30105266a83460a588cdbdcd8b2aa15432"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C19.3/harness.tar",
+      "sha256": "4581d4668ccb511f19db02e78808d56744afd247fae8257acd31a13e923e1a13"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C19.4/harness.tar",
+      "sha256": "92db1b11546bc3b3dfadf41caba82c08f7793486032b987c549c56307982d01b"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C20.1/harness.tar",
+      "sha256": "5302f0b799f5fd76f28b3e2464b779213310e666c10049c83f376513543a22e9"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C20.2/harness.tar",
+      "sha256": "b12c476e63a50715cb3b957cad31d9a3037812216b98407ffb020be3993458c2"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C20.3/harness.tar",
+      "sha256": "50d1cbc45a4588869f46ff7e4c76939936e342ee394a66f761a84e35bb960566"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C20.4/harness.tar",
+      "sha256": "61bcc55a23a22bec475a0a04763a932269cd93ca87b5736c6dcc0f999b1c2641"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C21.1/harness.tar",
+      "sha256": "3d1e86ba9399b8f96cc0ea3ed0a200788197a849deb07922d0b0de26f22264ee"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C21.2/harness.tar",
+      "sha256": "aae74cf8f95adc53f6116affcba1db50b7d6f1aac412466ab04ffdf8ff40b968"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C21.3/harness.tar",
+      "sha256": "de590e6dc57e0929e3599bdad8492f59924b5c23d052fb1fec3a020b9dfca154"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C22.1/harness.tar",
+      "sha256": "fedb9ecdfe8c7d8cd4bee0c4144d8c6d6fe7bf2e18e8d7d5351b2d5c034ba08f"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C22.2/harness.tar",
+      "sha256": "26e8f5e8aa04445855196576b3e0c87497c4c3f774c31ddaca3c5cfc279ceba1"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C22.3/harness.tar",
+      "sha256": "f038cd16d1458d5c206e6216114e216ae699c644f3281301231aa121a425912a"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C23.1/harness.tar",
+      "sha256": "0a1bf61f036d0dd4f83b0b258f6e86ecae73bb86243fba7e772cebb377deaa4d"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C23.2/harness.tar",
+      "sha256": "61efe71ad1b14cfdddf3581227822dd3288d0ac05f11e74f170ac847c8c9eb98"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C23.3/harness.tar",
+      "sha256": "72f6afe0cfc934c462ccffbf2378e2ff45bc678dc3e032f262d6af1c20cffa30"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C23.4/harness.tar",
+      "sha256": "a05449d311307bce84941a666ec07c4fa62b569edfdd108daed5437f2d15e597"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C23.5/harness.tar",
+      "sha256": "544c64ef62f967443d6250576bfa052a505d9ddf4c4f74ccc5ba9de2aa56d26f"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C23.5/revision/harness.tar",
+      "sha256": "a4e4a90ae6960faa9283712db5a4376d420454577e8f081d5e815f38973a2684"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C24.1/harness.tar",
+      "sha256": "04275990c34e488bb2d0c74dce928c6297c75f056bb4c6b8957368083c357bc4"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C24.2/harness.tar",
+      "sha256": "419b22afacadf9b7de5798525292f9f081a6f75c6d730a94022c1e9f962fd8d6"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C24.3/harness.tar",
+      "sha256": "7ab3ed61c1abe917ac8af6777d5e279ca7bafde8fdc0f5b6eb8c7e4e39019cb0"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C24.4/harness.tar",
+      "sha256": "24e87f8db478b816749dbfd31c9edfda9b14bf15fbf288b32cf8c5c874cccd50"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C25.1/harness.tar",
+      "sha256": "50991a2e08477a2c7361533b8310ba31088854feec2c22ac567808d6356f6ca8"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C25.2/harness.tar",
+      "sha256": "13b6a3dc6521a47490cafd7f2d686d5aa2b31f3c2336ef41b8676aae6e2292e3"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C25.3/harness.tar",
+      "sha256": "d9ac9c80a1cadf5af874ad7e042de98ec67ed8f7117b7141401f76897779f2a2"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C25.4/harness.tar",
+      "sha256": "2a6e80ef7467e749cbb4775131020a7e0b10a5a5dbf430c58468744c6802666e"
+    },
+    {
+      "status": "??",
+      "path": "docs/cleanup/baselines/C28.1/preintegration.patch",
+      "sha256": "44fef54ce77a9167729a0879bfdc6d182560846fc0aa61218190211a59e3be37"
+    },
+    {
+      "status": "??",
+      "path": "docs/current/TRADING_AI_ACQUISITION_READINESS_EXECUTION.md",
+      "sha256": "ad5cb5d22a47d738177ce0765040a54eaabb1efe4778199bba323f24b440861b"
+    },
+    {
+      "status": "??",
+      "path": "docs/current/TRADING_AI_MASTER_RESEARCH_AND_DOCUMENT_INTELLIGENCE_PLAN_AUDIT_UPDATED.md",
+      "sha256": "d9af78b755144dc2619d94c52a7b6d72a93a86980778ec4fb891fd3f5ab431c4"
+    },
+    {
+      "status": "??",
+      "path": "docs/current/phases.md",
+      "sha256": "145daac01261ea9a3ed0409ed44d2f66e599ac71a800afbf7745b5d704f86563"
+    },
+    {
+      "status": "??",
+      "path": "scrapper/tests/test_ar02_snapshot_dates.py",
+      "sha256": "45d40c41dfc5cebb7d418fae759b3e8826952dc36d58fb88a6dc68eadc0354f5"
+    }
+  ]
+}

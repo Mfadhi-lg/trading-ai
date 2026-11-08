@@ -1,0 +1,17 @@
+[
+  {
+    "index": "docs/acquisition-readiness/baselines/AR-01.3A/SHA256SUMS",
+    "index_sha256": "1506c54ee28d57e4114cf8365963928f7c2d55f615e33ebc20d15f2f51332d8a",
+    "files_verified": 65
+  },
+  {
+    "index": "docs/acquisition-readiness/baselines/AR-01.3B/SHA256SUMS",
+    "index_sha256": "9173cc2a72b7c0998b806c4f3c5319f82d8f015f483bf694afbd22920f003b06",
+    "files_verified": 111
+  },
+  {
+    "index": "docs/acquisition-readiness/baselines/AR-01.3C/attempt-02-execution/SHA256SUMS",
+    "index_sha256": "fa9ed968c28bc667d4f48fdd02e6d25cecc9dcb84445f484197e52b288b71dc0",
+    "files_verified": 92
+  }
+]

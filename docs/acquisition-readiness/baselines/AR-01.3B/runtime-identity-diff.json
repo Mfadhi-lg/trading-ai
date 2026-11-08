@@ -1,0 +1,12 @@
+{
+  "change": {
+    "authorized": {
+      "before": false,
+      "after": true
+    }
+  },
+  "scope": "one explicitly authorized AR-01.3B migration container only",
+  "original_identity_sha256": "b9cbb4aa22016b31bad9d99b80908f35927f1eb0df9ae5dc91f465dc024f3c77",
+  "activation_only_identity_sha256": "a9f83a2bde31c297fa5ff3b0f29bb12d150d4d4e28ce1af4b1a23d6308bdbc9d",
+  "accepted_package_modified": false
+}

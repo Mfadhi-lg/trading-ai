@@ -1,0 +1,29 @@
+{
+  "returncode": 0,
+  "modules": [
+    "scrapper.tests.test_screener_acceptance_repo",
+    "scrapper.tests.test_screener_observation_repo",
+    "scrapper.tests.test_screener_statements",
+    "scrapper.tests.test_reporting_periods",
+    "scrapper.tests.test_document_persistence_ownership",
+    "scrapper.tests.test_d02_document_store_guard",
+    "scrapper.tests.test_document_download_ownership",
+    "scrapper.tests.test_document_reconciliation_ownership",
+    "scrapper.tests.test_document_readiness_ownership",
+    "scrapper.tests.test_migration_manifest",
+    "scrapper.tests.test_database_migration_controls",
+    "scrapper.tests.test_runtime_paths",
+    "scrapper.tests.test_shared_host_permits",
+    "scripts.audit.test_migration_lineage"
+  ],
+  "python": "3.13.13 (main, May 10 2026, 19:20:37) [Clang 22.1.3 ]",
+  "source": "isolated export; original repository absent from PYTHONPATH",
+  "network": "denied in runner and Python subprocesses via sitecustomize",
+  "sqlite": "memory or dedicated temporary fixture root only",
+  "production_files_modified": false,
+  "tests": 92,
+  "failures": 0,
+  "errors": 0,
+  "skips": 0,
+  "successful": true
+}

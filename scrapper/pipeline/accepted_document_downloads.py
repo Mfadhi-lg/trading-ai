@@ -265,13 +265,13 @@ def enqueue_documents_for_all_accepted_parses(
     }
 
 
-def enqueue_discovered_documents(conn, *, epoch, now, limit=2, historical_limit=0):
+def enqueue_discovered_documents(conn, *, epoch, now, limit=2, historical_limit=0, historical_fallback=False):
     """Repair bounded primary/IR discoveries lacking any canonical URL job.
 
     No manifest, new identity, terminal requeue, rating or recording acquisition.
     A URL already queued in another scope is reused, rather than duplicated.
     """
-    from ..documents.priority import bounded_lanes, current_period
+    from ..documents.priority import bounded_lanes, current_period, download_lanes
     bounded_lanes([],limit=limit,historical_limit=historical_limit,epoch=epoch,now=now)
     common='''SELECT DISTINCT a.artifact_id,a.company_id,a.first_observed_at_utc,a.period_end
         FROM document_artifacts a JOIN artifact_sources s USING(artifact_id)
@@ -282,15 +282,21 @@ def enqueue_discovered_documents(conn, *, epoch, now, limit=2, historical_limit=
           AND EXISTS (SELECT 1 FROM screener_collection_scope sc
               WHERE sc.company_id=a.company_id AND sc.eligibility='eligible')'''
     rows=[]
-    for predicate,args,budget in (
+    lanes = ((
+        ('a.period_end=?',(current_period(now),),limit),
+        ('a.first_observed_at_utc>=? AND (a.period_end IS NULL OR a.period_end<>?)',(epoch,current_period(now)),limit),
+        ('a.first_observed_at_utc<? AND (a.period_end IS NULL OR a.period_end<>?)',(epoch,current_period(now)),limit),
+    ) if historical_fallback else (
         ('a.first_observed_at_utc>=? AND a.period_end=?',(epoch,current_period(now)),limit),
         ('a.first_observed_at_utc>=? AND (a.period_end IS NULL OR a.period_end<>?)',(epoch,current_period(now)),limit),
         ('a.first_observed_at_utc<?',(epoch,),historical_limit),
-    ):
+    ))
+    for predicate,args,budget in lanes:
         if budget:
             rows.extend(dict(r) for r in conn.execute(common+' AND '+predicate+
                 ' ORDER BY a.first_observed_at_utc,a.artifact_id LIMIT ?',(*args,budget)))
-    selected=bounded_lanes(rows,limit=limit,historical_limit=historical_limit,epoch=epoch,now=now)
+    selected=(download_lanes(rows,limit=limit,epoch=epoch,now=now) if historical_fallback else
+              bounded_lanes(rows,limit=limit,historical_limit=historical_limit,epoch=epoch,now=now))
     results=[]
     for row,lane in selected:
         aid=row['artifact_id'];cid=row['company_id']

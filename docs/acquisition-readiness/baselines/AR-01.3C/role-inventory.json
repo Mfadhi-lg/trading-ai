@@ -1,0 +1,542 @@
+[
+  {
+    "role": "artifact-reconciler",
+    "entrypoint": [
+      "/bin/sh",
+      "-c"
+    ],
+    "command": [
+      "# Allow the scheduler to finish its bounded missed-day catch-up first.\nsleep 30\npython -m scrapper.cli backfill-result-artifacts\nwhile true; do\n  # 50 prioritized PPT/transcript expectations are normally 25\n  # company/result groups. This keeps\n  # the source-refresh batch comfortably inside the 15-minute leases.\n  python -m scrapper.cli reconcile-artifacts --due --limit 50\n  sleep 300\ndone\n"
+    ],
+    "environment": {
+      "SCRAPER_DB_PATH": "/data/scraper.db",
+      "SCRAPER_STORE_PATH": "/data",
+      "SCREENER_SESSION_FILE": "/run/secrets/screener_session",
+      "SCREENER_THROTTLE_JITTER": "1.5",
+      "SCREENER_THROTTLE_SECONDS": "4",
+      "TRADING_AI_ENV": "production",
+      "TRADING_AI_RUNTIME_IDENTITY_FILE": "/run/trading-ai/runtime-identity.json"
+    },
+    "profiles": [
+      "authorized-artifact-reconciler"
+    ],
+    "restart": "no",
+    "image": "trading-ai-c281-release@sha256:4d289faa67334bc870d4f2a6a181feecee777fd427eac209b9adef68ecab0238"
+  },
+  {
+    "role": "cli",
+    "entrypoint": null,
+    "command": [
+      "--help"
+    ],
+    "environment": {
+      "SCRAPER_DB_PATH": "/data/scraper.db",
+      "SCRAPER_STORE_PATH": "/data",
+      "SCREENER_SESSION_FILE": "/run/secrets/screener_session",
+      "TRADING_AI_ENV": "production",
+      "TRADING_AI_RUNTIME_IDENTITY_FILE": "/run/trading-ai/runtime-identity.json"
+    },
+    "profiles": [
+      "authorized-cli"
+    ],
+    "restart": "no",
+    "image": "trading-ai-c281-release@sha256:4d289faa67334bc870d4f2a6a181feecee777fd427eac209b9adef68ecab0238"
+  },
+  {
+    "role": "credit-rating-worker-care",
+    "entrypoint": null,
+    "command": [
+      "run-acquisition-role",
+      "--role",
+      "credit-rating-worker-care"
+    ],
+    "environment": {
+      "DOCUMENT_MIN_FREE_BYTES": "107374182400",
+      "DOCUMENT_MIN_FREE_PERCENT": "15",
+      "DOCUMENT_REQUIRE_SENTINEL": "1",
+      "DOCUMENT_STORE_REQUIRE_CAPACITY_FILE": "1",
+      "SCRAPER_DB_PATH": "/data/scraper.db",
+      "SCRAPER_DOCUMENT_STORE_PATH": "/documents",
+      "SCRAPER_STORE_PATH": "/data",
+      "TRADING_AI_ENV": "production",
+      "TRADING_AI_RUNTIME_IDENTITY_FILE": "/run/trading-ai/runtime-identity.json"
+    },
+    "profiles": [
+      "authorized-credit-rating-worker-care"
+    ],
+    "restart": "no",
+    "image": "trading-ai-c281-release@sha256:4d289faa67334bc870d4f2a6a181feecee777fd427eac209b9adef68ecab0238"
+  },
+  {
+    "role": "credit-rating-worker-india-ratings",
+    "entrypoint": null,
+    "command": [
+      "run-acquisition-role",
+      "--role",
+      "credit-rating-worker-india-ratings"
+    ],
+    "environment": {
+      "DOCUMENT_MIN_FREE_BYTES": "107374182400",
+      "DOCUMENT_MIN_FREE_PERCENT": "15",
+      "DOCUMENT_REQUIRE_SENTINEL": "1",
+      "DOCUMENT_STORE_REQUIRE_CAPACITY_FILE": "1",
+      "SCRAPER_DB_PATH": "/data/scraper.db",
+      "SCRAPER_DOCUMENT_STORE_PATH": "/documents",
+      "SCRAPER_STORE_PATH": "/data",
+      "TRADING_AI_ENV": "production",
+      "TRADING_AI_RUNTIME_IDENTITY_FILE": "/run/trading-ai/runtime-identity.json"
+    },
+    "profiles": [
+      "authorized-credit-rating-worker-india-ratings"
+    ],
+    "restart": "no",
+    "image": "trading-ai-c281-release@sha256:4d289faa67334bc870d4f2a6a181feecee777fd427eac209b9adef68ecab0238"
+  },
+  {
+    "role": "credit-rating-worker-other",
+    "entrypoint": null,
+    "command": [
+      "run-acquisition-role",
+      "--role",
+      "credit-rating-worker-other"
+    ],
+    "environment": {
+      "DOCUMENT_MIN_FREE_BYTES": "107374182400",
+      "DOCUMENT_MIN_FREE_PERCENT": "15",
+      "DOCUMENT_REQUIRE_SENTINEL": "1",
+      "DOCUMENT_STORE_REQUIRE_CAPACITY_FILE": "1",
+      "SCRAPER_DB_PATH": "/data/scraper.db",
+      "SCRAPER_DOCUMENT_STORE_PATH": "/documents",
+      "SCRAPER_STORE_PATH": "/data",
+      "TRADING_AI_ENV": "production",
+      "TRADING_AI_RUNTIME_IDENTITY_FILE": "/run/trading-ai/runtime-identity.json"
+    },
+    "profiles": [
+      "authorized-credit-rating-worker-other"
+    ],
+    "restart": "no",
+    "image": "trading-ai-c281-release@sha256:4d289faa67334bc870d4f2a6a181feecee777fd427eac209b9adef68ecab0238"
+  },
+  {
+    "role": "daemon",
+    "entrypoint": [
+      "/bin/sh",
+      "-c"
+    ],
+    "command": [
+      "echo \"Starting continuous scraper daemon...\"\nwhile true; do\n  python -m scrapper.cli screener-company-worker --due --limit 10\n  sleep 10\ndone\n"
+    ],
+    "environment": {
+      "SCRAPER_DB_PATH": "/data/scraper.db",
+      "SCRAPER_STORE_PATH": "/data",
+      "SCREENER_SESSION_FILE": "/run/secrets/screener_session",
+      "SCREENER_THROTTLE_JITTER": "1.5",
+      "SCREENER_THROTTLE_SECONDS": "4",
+      "TRADING_AI_ENV": "production",
+      "TRADING_AI_RUNTIME_IDENTITY_FILE": "/run/trading-ai/runtime-identity.json"
+    },
+    "profiles": [
+      "authorized-daemon"
+    ],
+    "restart": "no",
+    "image": "trading-ai-c281-release@sha256:4d289faa67334bc870d4f2a6a181feecee777fd427eac209b9adef68ecab0238"
+  },
+  {
+    "role": "discovery",
+    "entrypoint": null,
+    "command": [
+      "screener-discover-results",
+      "--query-role",
+      "current_reporting_cycle",
+      "--query",
+      "Last result date > 202605"
+    ],
+    "environment": {
+      "SCRAPER_DB_PATH": "/data/scraper.db",
+      "SCRAPER_STORE_PATH": "/data",
+      "SCREENER_SESSION_FILE": "/run/secrets/screener_session",
+      "TRADING_AI_ENV": "production",
+      "TRADING_AI_RUNTIME_IDENTITY_FILE": "/run/trading-ai/runtime-identity.json"
+    },
+    "profiles": [
+      "authorized-discovery"
+    ],
+    "restart": "no",
+    "image": "trading-ai-c281-release@sha256:4d289faa67334bc870d4f2a6a181feecee777fd427eac209b9adef68ecab0238"
+  },
+  {
+    "role": "document-download-worker",
+    "entrypoint": null,
+    "command": [
+      "run-acquisition-role",
+      "--role",
+      "document-download-worker"
+    ],
+    "environment": {
+      "DOCUMENT_MIN_FREE_BYTES": "107374182400",
+      "DOCUMENT_MIN_FREE_PERCENT": "15",
+      "DOCUMENT_REQUIRE_SENTINEL": "1",
+      "DOCUMENT_STORE_REQUIRE_CAPACITY_FILE": "1",
+      "SCRAPER_DB_PATH": "/data/scraper.db",
+      "SCRAPER_DOCUMENT_STORE_PATH": "/documents",
+      "SCRAPER_STORE_PATH": "/data",
+      "TRADING_AI_ENV": "production",
+      "TRADING_AI_RUNTIME_IDENTITY_FILE": "/run/trading-ai/runtime-identity.json"
+    },
+    "profiles": [
+      "authorized-document-download-worker"
+    ],
+    "restart": "no",
+    "image": "trading-ai-c281-release@sha256:4d289faa67334bc870d4f2a6a181feecee777fd427eac209b9adef68ecab0238"
+  },
+  {
+    "role": "document-processing-worker",
+    "entrypoint": [
+      "python",
+      "-m",
+      "scrapper.commands.quarter_processing_role"
+    ],
+    "command": [
+      "--period",
+      "2026-06-30",
+      "--apply",
+      "--limit",
+      "10"
+    ],
+    "environment": {
+      "SCRAPER_DB_PATH": "/data/scraper.db",
+      "SCRAPER_DOCUMENT_STORE_PATH": "/documents",
+      "SCRAPER_STORE_PATH": "/data",
+      "TRADING_AI_ENV": "production",
+      "TRADING_AI_RUNTIME_IDENTITY_FILE": "/run/trading-ai/runtime-identity.json"
+    },
+    "profiles": [
+      "authorized-document-processing-worker"
+    ],
+    "restart": "no",
+    "image": "trading-ai-c281-release@sha256:4d289faa67334bc870d4f2a6a181feecee777fd427eac209b9adef68ecab0238"
+  },
+  {
+    "role": "exchange-reconciliation",
+    "entrypoint": null,
+    "command": [
+      "exchange-reconciliation-report"
+    ],
+    "environment": {
+      "SCRAPER_DB_PATH": "/data/scraper.db",
+      "SCRAPER_STORE_PATH": "/data",
+      "TRADING_AI_ENV": "production",
+      "TRADING_AI_RUNTIME_IDENTITY_FILE": "/run/trading-ai/runtime-identity.json"
+    },
+    "profiles": [
+      "authorized-exchange-reconciliation"
+    ],
+    "restart": "no",
+    "image": "trading-ai-c281-release@sha256:4d289faa67334bc870d4f2a6a181feecee777fd427eac209b9adef68ecab0238"
+  },
+  {
+    "role": "exchange-results",
+    "entrypoint": null,
+    "command": [
+      "exchange-discover-results",
+      "--dataset",
+      "nse_financial_results",
+      "--result-period",
+      "2026-06"
+    ],
+    "environment": {
+      "SCRAPER_DB_PATH": "/data/scraper.db",
+      "SCRAPER_STORE_PATH": "/data",
+      "TRADING_AI_ENV": "production",
+      "TRADING_AI_RUNTIME_IDENTITY_FILE": "/run/trading-ai/runtime-identity.json"
+    },
+    "profiles": [
+      "authorized-exchange-results"
+    ],
+    "restart": "no",
+    "image": "trading-ai-c281-release@sha256:4d289faa67334bc870d4f2a6a181feecee777fd427eac209b9adef68ecab0238"
+  },
+  {
+    "role": "exchange-universe",
+    "entrypoint": null,
+    "command": [
+      "exchange-refresh-universe",
+      "--dataset",
+      "nse_equity_master"
+    ],
+    "environment": {
+      "SCRAPER_DB_PATH": "/data/scraper.db",
+      "SCRAPER_STORE_PATH": "/data",
+      "TRADING_AI_ENV": "production",
+      "TRADING_AI_RUNTIME_IDENTITY_FILE": "/run/trading-ai/runtime-identity.json"
+    },
+    "profiles": [
+      "authorized-exchange-universe"
+    ],
+    "restart": "no",
+    "image": "trading-ai-c281-release@sha256:4d289faa67334bc870d4f2a6a181feecee777fd427eac209b9adef68ecab0238"
+  },
+  {
+    "role": "market-cap-monitor",
+    "entrypoint": [
+      "/bin/sh",
+      "-c"
+    ],
+    "command": [
+      "while true; do\n  python -m scrapper.commands.collection_scope --monitor --apply --limit 40\n  sleep 3600\ndone\n"
+    ],
+    "environment": {
+      "SCRAPER_DB_PATH": "/data/scraper.db",
+      "SCRAPER_STORE_PATH": "/data",
+      "SCREENER_SESSION_FILE": "/run/secrets/screener_session",
+      "SCREENER_THROTTLE_JITTER": "1.5",
+      "SCREENER_THROTTLE_SECONDS": "4",
+      "TRADING_AI_ENV": "production",
+      "TRADING_AI_RUNTIME_IDENTITY_FILE": "/run/trading-ai/runtime-identity.json"
+    },
+    "profiles": [
+      "authorized-market-cap-monitor"
+    ],
+    "restart": "no",
+    "image": "trading-ai-c281-release@sha256:4d289faa67334bc870d4f2a6a181feecee777fd427eac209b9adef68ecab0238"
+  },
+  {
+    "role": "rating-recovery-discovery",
+    "entrypoint": [
+      "/bin/sh",
+      "-c"
+    ],
+    "command": [
+      "python -m scrapper.cli build-document-recovery-targets\nwhile true; do\n  out=$$(python -m scrapper.cli run-document-recovery-worker \\\n    --source bse --source nse --source issuer-ir \\\n    --limit 50 --throttle-seconds 2)\n  echo \"$$out\"\n  case \"$$out\" in\n    *'\"processed_target_source_count\": 0'*) sleep 120 ;;\n    *) sleep 3 ;;\n  esac\ndone\n"
+    ],
+    "environment": {
+      "DOCUMENT_MIN_FREE_BYTES": "107374182400",
+      "DOCUMENT_MIN_FREE_PERCENT": "15",
+      "DOCUMENT_REQUIRE_SENTINEL": "1",
+      "DOCUMENT_STORE_REQUIRE_CAPACITY_FILE": "1",
+      "SCRAPER_DB_PATH": "/data/scraper.db",
+      "SCRAPER_DOCUMENT_STORE_PATH": "/documents",
+      "SCRAPER_STORE_PATH": "/data",
+      "TRADING_AI_ENV": "production",
+      "TRADING_AI_RUNTIME_IDENTITY_FILE": "/run/trading-ai/runtime-identity.json"
+    },
+    "profiles": [
+      "authorized-rating-recovery-discovery"
+    ],
+    "restart": "no",
+    "image": "trading-ai-c281-release@sha256:4d289faa67334bc870d4f2a6a181feecee777fd427eac209b9adef68ecab0238"
+  },
+  {
+    "role": "rating-recovery-download",
+    "entrypoint": null,
+    "command": [
+      "run-acquisition-role",
+      "--role",
+      "rating-recovery-download"
+    ],
+    "environment": {
+      "DOCUMENT_MIN_FREE_BYTES": "107374182400",
+      "DOCUMENT_MIN_FREE_PERCENT": "15",
+      "DOCUMENT_REQUIRE_SENTINEL": "1",
+      "DOCUMENT_STORE_REQUIRE_CAPACITY_FILE": "1",
+      "SCRAPER_DB_PATH": "/data/scraper.db",
+      "SCRAPER_DOCUMENT_STORE_PATH": "/documents",
+      "SCRAPER_STORE_PATH": "/data",
+      "TRADING_AI_ENV": "production",
+      "TRADING_AI_RUNTIME_IDENTITY_FILE": "/run/trading-ai/runtime-identity.json"
+    },
+    "profiles": [
+      "authorized-rating-recovery-download"
+    ],
+    "restart": "no",
+    "image": "trading-ai-c281-release@sha256:4d289faa67334bc870d4f2a6a181feecee777fd427eac209b9adef68ecab0238"
+  },
+  {
+    "role": "scheduler",
+    "entrypoint": null,
+    "command": [
+      "exchange-scheduler"
+    ],
+    "environment": {
+      "SCRAPER_DB_PATH": "/data/scraper.db",
+      "SCRAPER_STORE_PATH": "/data",
+      "TRADING_AI_ENV": "production",
+      "TRADING_AI_RUNTIME_IDENTITY_FILE": "/run/trading-ai/runtime-identity.json"
+    },
+    "profiles": [
+      "authorized-scheduler"
+    ],
+    "restart": "no",
+    "image": "trading-ai-c281-release@sha256:4d289faa67334bc870d4f2a6a181feecee777fd427eac209b9adef68ecab0238"
+  },
+  {
+    "role": "worker",
+    "entrypoint": null,
+    "command": [
+      "screener-company-worker",
+      "--due",
+      "--limit",
+      "5"
+    ],
+    "environment": {
+      "SCRAPER_DB_PATH": "/data/scraper.db",
+      "SCRAPER_STORE_PATH": "/data",
+      "SCREENER_SESSION_FILE": "/run/secrets/screener_session",
+      "SCREENER_THROTTLE_JITTER": "1.5",
+      "SCREENER_THROTTLE_SECONDS": "4",
+      "SCREENER_WORKER_LIMIT": "5",
+      "TRADING_AI_ENV": "production",
+      "TRADING_AI_RUNTIME_IDENTITY_FILE": "/run/trading-ai/runtime-identity.json"
+    },
+    "profiles": [
+      "authorized-worker"
+    ],
+    "restart": "no",
+    "image": "trading-ai-c281-release@sha256:4d289faa67334bc870d4f2a6a181feecee777fd427eac209b9adef68ecab0238"
+  },
+  {
+    "role": "browser-rating-crisil",
+    "entrypoint": [
+      "python",
+      "-m",
+      "scrapper.commands.browser_rating_recovery"
+    ],
+    "command": [
+      "--run-id",
+      "REQUIRES_SEPARATE_AUTHORIZATION",
+      "--apply",
+      "--operator-authorized",
+      "--host",
+      "www.crisil.com",
+      "--host",
+      "www.crisilratings.com",
+      "--throttle-seconds",
+      "20"
+    ],
+    "environment": {
+      "DOCUMENT_MIN_FREE_BYTES": "107374182400",
+      "DOCUMENT_MIN_FREE_PERCENT": "15",
+      "DOCUMENT_REQUIRE_SENTINEL": "1",
+      "DOCUMENT_STORE_REQUIRE_CAPACITY_FILE": "1",
+      "SCRAPER_DB_PATH": "/data/scraper.db",
+      "SCRAPER_DOCUMENT_STORE_PATH": "/documents",
+      "SCRAPER_STORE_PATH": "/data",
+      "TRADING_AI_ENV": "production",
+      "TRADING_AI_RUNTIME_IDENTITY_FILE": "/run/trading-ai/runtime-identity.json"
+    },
+    "profiles": [
+      "authorized-browser-rating-crisil"
+    ],
+    "restart": "no",
+    "image": "trading-ai-c281-release@sha256:4d289faa67334bc870d4f2a6a181feecee777fd427eac209b9adef68ecab0238"
+  },
+  {
+    "role": "browser-rating-extract",
+    "entrypoint": [
+      "python",
+      "-m",
+      "scrapper.commands.browser_rating_recovery"
+    ],
+    "command": [
+      "--run-id",
+      "REQUIRES_SEPARATE_AUTHORIZATION",
+      "--process",
+      "--follow",
+      "--operator-authorized"
+    ],
+    "environment": {
+      "DOCUMENT_MIN_FREE_BYTES": "107374182400",
+      "DOCUMENT_MIN_FREE_PERCENT": "15",
+      "DOCUMENT_REQUIRE_SENTINEL": "1",
+      "DOCUMENT_STORE_REQUIRE_CAPACITY_FILE": "1",
+      "SCRAPER_DB_PATH": "/data/scraper.db",
+      "SCRAPER_DOCUMENT_STORE_PATH": "/documents",
+      "SCRAPER_STORE_PATH": "/data",
+      "TRADING_AI_ENV": "production",
+      "TRADING_AI_RUNTIME_IDENTITY_FILE": "/run/trading-ai/runtime-identity.json"
+    },
+    "profiles": [
+      "authorized-browser-rating-extract"
+    ],
+    "restart": "no",
+    "image": "trading-ai-c281-release@sha256:4d289faa67334bc870d4f2a6a181feecee777fd427eac209b9adef68ecab0238"
+  },
+  {
+    "role": "browser-rating-icra",
+    "entrypoint": [
+      "python",
+      "-m",
+      "scrapper.commands.browser_rating_recovery"
+    ],
+    "command": [
+      "--run-id",
+      "REQUIRES_SEPARATE_AUTHORIZATION",
+      "--apply",
+      "--operator-authorized",
+      "--host",
+      "www.icra.in"
+    ],
+    "environment": {
+      "DOCUMENT_MIN_FREE_BYTES": "107374182400",
+      "DOCUMENT_MIN_FREE_PERCENT": "15",
+      "DOCUMENT_REQUIRE_SENTINEL": "1",
+      "DOCUMENT_STORE_REQUIRE_CAPACITY_FILE": "1",
+      "SCRAPER_DB_PATH": "/data/scraper.db",
+      "SCRAPER_DOCUMENT_STORE_PATH": "/documents",
+      "SCRAPER_STORE_PATH": "/data",
+      "TRADING_AI_ENV": "production",
+      "TRADING_AI_RUNTIME_IDENTITY_FILE": "/run/trading-ai/runtime-identity.json"
+    },
+    "profiles": [
+      "authorized-browser-rating-icra"
+    ],
+    "restart": "no",
+    "image": "trading-ai-c281-release@sha256:4d289faa67334bc870d4f2a6a181feecee777fd427eac209b9adef68ecab0238"
+  },
+  {
+    "role": "browser-rating-other",
+    "entrypoint": [
+      "python",
+      "-m",
+      "scrapper.commands.browser_rating_recovery"
+    ],
+    "command": [
+      "--run-id",
+      "REQUIRES_SEPARATE_AUTHORIZATION",
+      "--apply",
+      "--operator-authorized",
+      "--host",
+      "bcrisp.in",
+      "--host",
+      "www.bcrisp.in",
+      "--host",
+      "www.acuite.in",
+      "--host",
+      "connect.acuite.in",
+      "--host",
+      "www.infomerics.com",
+      "--host",
+      "www.indiaratings.co.in",
+      "--host",
+      "www.brickworkratings.com",
+      "--host",
+      "www.careratings.com"
+    ],
+    "environment": {
+      "DOCUMENT_MIN_FREE_BYTES": "107374182400",
+      "DOCUMENT_MIN_FREE_PERCENT": "15",
+      "DOCUMENT_REQUIRE_SENTINEL": "1",
+      "DOCUMENT_STORE_REQUIRE_CAPACITY_FILE": "1",
+      "SCRAPER_DB_PATH": "/data/scraper.db",
+      "SCRAPER_DOCUMENT_STORE_PATH": "/documents",
+      "SCRAPER_STORE_PATH": "/data",
+      "TRADING_AI_ENV": "production",
+      "TRADING_AI_RUNTIME_IDENTITY_FILE": "/run/trading-ai/runtime-identity.json"
+    },
+    "profiles": [
+      "authorized-browser-rating-other"
+    ],
+    "restart": "no",
+    "image": "trading-ai-c281-release@sha256:4d289faa67334bc870d4f2a6a181feecee777fd427eac209b9adef68ecab0238"
+  }
+]

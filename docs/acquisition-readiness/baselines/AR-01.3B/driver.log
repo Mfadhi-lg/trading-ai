@@ -1,0 +1,21 @@
+{"at_utc": "2026-10-08T04:04:39Z", "stage": "START_AR013B_ONLY"}
+{"at_utc": "2026-10-08T04:04:45Z", "stage": "restore-copy-availability_start"}
+{"at_utc": "2026-10-08T04:04:53Z", "stage": "restore-copy-availability_PASS"}
+{"at_utc": "2026-10-08T04:04:54Z", "stage": "pre-write_start"}
+{"at_utc": "2026-10-08T04:05:07Z", "stage": "pre-write_PASS"}
+{"at_utc": "2026-10-08T04:05:08Z", "stage": "MIGRATION_START"}
+{"at_utc": "2026-10-08T04:05:08Z", "stage": "MIGRATION_END", "start_epoch": 1791432308.4414668, "end_epoch": 1791432308.8153658, "duration_seconds": 0.3738984170195181, "exit_code": 0}
+{"at_utc": "2026-10-08T04:05:09Z", "stage": "post-metadata_start"}
+{"at_utc": "2026-10-08T04:05:16Z", "stage": "post-metadata_PASS"}
+{"at_utc": "2026-10-08T04:05:17Z", "stage": "post-capture_start"}
+{"at_utc": "2026-10-08T04:06:41Z", "stage": "post-capture_PASS"}
+{"at_utc": "2026-10-08T04:06:42Z", "stage": "seed-post-verification_start"}
+{"at_utc": "2026-10-08T04:09:09Z", "stage": "seed-post-verification_PASS"}
+{"at_utc": "2026-10-08T04:09:09Z", "stage": "FULL_POST_VERIFICATION_START"}
+{"at_utc": "2026-10-08T04:18:12Z", "stage": "STOP_NO_RETRY_NO_RESTORE", "error": "Full post-migration verification failed; no repair", "migration_attempted": true}
+{"at_utc": "2026-10-08T04:27:22Z", "stage": "resumed-production-gate_start"}
+{"at_utc": "2026-10-08T04:27:29Z", "stage": "resumed-production-gate_PASS"}
+{"at_utc": "2026-10-08T04:27:29Z", "stage": "RESUMED_READONLY_VERIFICATION_START"}
+{"at_utc": "2026-10-08T04:30:18Z", "stage": "schema075-canary_start"}
+{"at_utc": "2026-10-08T04:30:32Z", "stage": "schema075-canary_PASS"}
+{"at_utc": "2026-10-08T04:30:33Z", "stage": "PASS_AR013B_READONLY_RESUME_NO_MIGRATION_RETRY"}

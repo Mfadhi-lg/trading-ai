@@ -1,0 +1,21 @@
+{
+  "status": "PASS",
+  "new_schema_objects": 19,
+  "modified_existing_schema_objects": [
+    "artifact_download_queue",
+    "browser_rating_recovery_jobs",
+    "credit_rating_download_queue"
+  ],
+  "baseline_original_tables": 149,
+  "baseline_original_rows": 62554193,
+  "identity_only_authorized_flag_changed": true,
+  "accepted_identity_unchanged": true,
+  "application_py_files_preserved": 2539,
+  "scripts": {
+    "capture_state.py": "720c76c31613638e577bd04095fcd2e7bed1e93086010ca5e155ad5b7bc9e0de",
+    "migration_driver.py": "21fee0ed4fe8ea44f1c0cbaaba60a1331e673a55c5b1520bb8eefd55ec540084",
+    "inspect_db.py": "4c74f75ac75fb7b10a8cab8a1bf3f2b6520964a14dade6a601bf76cf634a090e",
+    "preflight.py": "c25205e77b12212b05bff1884aa0d9c1edcd108db53e334167ea8df09f57287e",
+    "verify_post.py": "36d3fc127103dc4a07f71230614ddf86edb140177338ddbc79c5278920a4cee5"
+  }
+}

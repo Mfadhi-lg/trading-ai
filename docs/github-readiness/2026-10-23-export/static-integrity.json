@@ -1,0 +1,1914 @@
+{
+  "python_compilation_issues": [],
+  "missing_local_import_modules": [],
+  "local_script_imports": [
+    {
+      "path": "ops/host/acquisition_db_status.py",
+      "line": 9,
+      "module": "sqlite_sidecar_guard",
+      "source": "ops/activation/sqlite_sidecar_guard.py",
+      "note": "local script module; callers supply sys.path, not a third-party package"
+    },
+    {
+      "path": "ops/host/acquisition_db_status.py",
+      "line": 10,
+      "module": "production_ownership",
+      "source": "ops/activation/production_ownership.py",
+      "note": "local script module; callers supply sys.path, not a third-party package"
+    },
+    {
+      "path": "ops/host/acquisition_lifecycle.py",
+      "line": 18,
+      "module": "automatic_acquisition",
+      "source": "ops/activation/automatic_acquisition.py",
+      "note": "local script module; callers supply sys.path, not a third-party package"
+    },
+    {
+      "path": "ops/host/acquisition_lifecycle.py",
+      "line": 109,
+      "module": "phase4_documents",
+      "source": "ops/activation/phase4_documents.py",
+      "note": "local script module; callers supply sys.path, not a third-party package"
+    },
+    {
+      "path": "ops/host/acquisition_lifecycle.py",
+      "line": 140,
+      "module": "phase4_documents",
+      "source": "ops/activation/phase4_documents.py",
+      "note": "local script module; callers supply sys.path, not a third-party package"
+    },
+    {
+      "path": "ops/host/acquisition_lifecycle.py",
+      "line": 141,
+      "module": "production_ownership",
+      "source": "ops/activation/production_ownership.py",
+      "note": "local script module; callers supply sys.path, not a third-party package"
+    },
+    {
+      "path": "ops/host/acquisition_lifecycle.py",
+      "line": 163,
+      "module": "phase4_documents",
+      "source": "ops/activation/phase4_documents.py",
+      "note": "local script module; callers supply sys.path, not a third-party package"
+    },
+    {
+      "path": "ops/host/acquisition_lifecycle.py",
+      "line": 177,
+      "module": "production_ownership",
+      "source": "ops/activation/production_ownership.py",
+      "note": "local script module; callers supply sys.path, not a third-party package"
+    },
+    {
+      "path": "ops/host/acquisition_lifecycle.py",
+      "line": 247,
+      "module": "phase4_schedule",
+      "source": "ops/activation/phase4_schedule.py",
+      "note": "local script module; callers supply sys.path, not a third-party package"
+    },
+    {
+      "path": "ops/host/acquisition_lifecycle.py",
+      "line": 248,
+      "module": "step3_schedule",
+      "source": "ops/activation/step3_schedule.py",
+      "note": "local script module; callers supply sys.path, not a third-party package"
+    },
+    {
+      "path": "ops/host/acquisition_lifecycle.py",
+      "line": 336,
+      "module": "phase4_schedule",
+      "source": "ops/activation/phase4_schedule.py",
+      "note": "local script module; callers supply sys.path, not a third-party package"
+    },
+    {
+      "path": "ops/host/acquisition_lifecycle.py",
+      "line": 337,
+      "module": "step3_schedule",
+      "source": "ops/activation/step3_schedule.py",
+      "note": "local script module; callers supply sys.path, not a third-party package"
+    },
+    {
+      "path": "ops/host/acquisition_lifecycle.py",
+      "line": 278,
+      "module": "phase4_documents",
+      "source": "ops/activation/phase4_documents.py",
+      "note": "local script module; callers supply sys.path, not a third-party package"
+    },
+    {
+      "path": "ops/host/acquisition_lifecycle.py",
+      "line": 357,
+      "module": "phase4_documents",
+      "source": "ops/activation/phase4_documents.py",
+      "note": "local script module; callers supply sys.path, not a third-party package"
+    },
+    {
+      "path": "ops/host/acquisition_lifecycle.py",
+      "line": 367,
+      "module": "nse_results",
+      "source": "ops/activation/nse_results.py",
+      "note": "local script module; callers supply sys.path, not a third-party package"
+    },
+    {
+      "path": "ops/host/acquisition_observations.py",
+      "line": 204,
+      "module": "production_ownership",
+      "source": "ops/activation/production_ownership.py",
+      "note": "local script module; callers supply sys.path, not a third-party package"
+    },
+    {
+      "path": "ops/host/acquisition_queries.py",
+      "line": 10,
+      "module": "sqlite_sidecar_guard",
+      "source": "ops/activation/sqlite_sidecar_guard.py",
+      "note": "local script module; callers supply sys.path, not a third-party package"
+    },
+    {
+      "path": "ops/host/acquisition_queries.py",
+      "line": 116,
+      "module": "production_ownership",
+      "source": "ops/activation/production_ownership.py",
+      "note": "local script module; callers supply sys.path, not a third-party package"
+    },
+    {
+      "path": "ops/host/install_lifecycle_gate.py",
+      "line": 32,
+      "module": "automatic_acquisition",
+      "source": "ops/activation/automatic_acquisition.py",
+      "note": "local script module; callers supply sys.path, not a third-party package"
+    },
+    {
+      "path": "ops/host/test_acquisition_lifecycle.py",
+      "line": 40,
+      "module": "phase4_documents",
+      "source": "ops/activation/phase4_documents.py",
+      "note": "local script module; callers supply sys.path, not a third-party package"
+    },
+    {
+      "path": "ops/host/test_acquisition_lifecycle.py",
+      "line": 62,
+      "module": "nse_results",
+      "source": "ops/activation/nse_results.py",
+      "note": "local script module; callers supply sys.path, not a third-party package"
+    },
+    {
+      "path": "ops/host/test_acquisition_lifecycle.py",
+      "line": 126,
+      "module": "phase4_documents",
+      "source": "ops/activation/phase4_documents.py",
+      "note": "local script module; callers supply sys.path, not a third-party package"
+    },
+    {
+      "path": "ops/host/test_acquisition_observations.py",
+      "line": 173,
+      "module": "production_ownership",
+      "source": "ops/activation/production_ownership.py",
+      "note": "local script module; callers supply sys.path, not a third-party package"
+    }
+  ],
+  "third_party_dependencies": [
+    {
+      "import": "PIL",
+      "distributions": [
+        "pillow"
+      ],
+      "declared_in_lock": true,
+      "occurrences": 3
+    },
+    {
+      "import": "apscheduler",
+      "distributions": [
+        "apscheduler"
+      ],
+      "declared_in_lock": true,
+      "occurrences": 8
+    },
+    {
+      "import": "bs4",
+      "distributions": [
+        "beautifulsoup4"
+      ],
+      "declared_in_lock": true,
+      "occurrences": 38
+    },
+    {
+      "import": "certifi",
+      "distributions": [
+        "certifi"
+      ],
+      "declared_in_lock": true,
+      "occurrences": 12
+    },
+    {
+      "import": "faster_whisper",
+      "distributions": [
+        "faster_whisper"
+      ],
+      "declared_in_lock": false,
+      "occurrences": 1
+    },
+    {
+      "import": "huggingface_hub",
+      "distributions": [
+        "huggingface_hub"
+      ],
+      "declared_in_lock": false,
+      "occurrences": 1
+    },
+    {
+      "import": "mlx",
+      "distributions": [
+        "mlx"
+      ],
+      "declared_in_lock": false,
+      "occurrences": 1
+    },
+    {
+      "import": "mlx_vlm",
+      "distributions": [
+        "mlx_vlm"
+      ],
+      "declared_in_lock": false,
+      "occurrences": 1
+    },
+    {
+      "import": "olefile",
+      "distributions": [
+        "olefile"
+      ],
+      "declared_in_lock": true,
+      "occurrences": 1
+    },
+    {
+      "import": "packaging",
+      "distributions": [
+        "packaging"
+      ],
+      "declared_in_lock": true,
+      "occurrences": 1
+    },
+    {
+      "import": "pdfplumber",
+      "distributions": [
+        "pdfplumber"
+      ],
+      "declared_in_lock": true,
+      "occurrences": 4
+    },
+    {
+      "import": "playwright",
+      "distributions": [
+        "playwright"
+      ],
+      "declared_in_lock": true,
+      "occurrences": 11
+    },
+    {
+      "import": "pptx",
+      "distributions": [
+        "python-pptx"
+      ],
+      "declared_in_lock": true,
+      "occurrences": 15
+    },
+    {
+      "import": "prompt_toolkit",
+      "distributions": [
+        "prompt-toolkit"
+      ],
+      "declared_in_lock": true,
+      "occurrences": 8
+    },
+    {
+      "import": "pyarrow",
+      "distributions": [
+        "pyarrow"
+      ],
+      "declared_in_lock": false,
+      "occurrences": 2
+    },
+    {
+      "import": "pypdf",
+      "distributions": [
+        "pypdf"
+      ],
+      "declared_in_lock": true,
+      "occurrences": 5
+    },
+    {
+      "import": "pytesseract",
+      "distributions": [
+        "pytesseract"
+      ],
+      "declared_in_lock": true,
+      "occurrences": 2
+    },
+    {
+      "import": "pytest",
+      "distributions": [
+        "pytest"
+      ],
+      "declared_in_lock": true,
+      "occurrences": 23
+    },
+    {
+      "import": "reportlab",
+      "distributions": [
+        "reportlab"
+      ],
+      "declared_in_lock": true,
+      "occurrences": 15
+    },
+    {
+      "import": "requests",
+      "distributions": [
+        "requests"
+      ],
+      "declared_in_lock": true,
+      "occurrences": 20
+    },
+    {
+      "import": "rich",
+      "distributions": [
+        "rich"
+      ],
+      "declared_in_lock": true,
+      "occurrences": 36
+    },
+    {
+      "import": "urllib3",
+      "distributions": [
+        "urllib3"
+      ],
+      "declared_in_lock": true,
+      "occurrences": 1
+    },
+    {
+      "import": "xlrd",
+      "distributions": [
+        "xlrd"
+      ],
+      "declared_in_lock": true,
+      "occurrences": 4
+    }
+  ],
+  "third_party_import_locations": [
+    {
+      "path": "ops/activation/automatic_acquisition.py",
+      "line": 46,
+      "module": "apscheduler"
+    },
+    {
+      "path": "ops/activation/automatic_acquisition.py",
+      "line": 85,
+      "module": "playwright"
+    },
+    {
+      "path": "ops/activation/phase4_schedule.py",
+      "line": 33,
+      "module": "apscheduler"
+    },
+    {
+      "path": "ops/activation/phase4_tls_context_verify.py",
+      "line": 4,
+      "module": "certifi"
+    },
+    {
+      "path": "ops/activation/phase4_tls_diagnose.py",
+      "line": 2,
+      "module": "certifi"
+    },
+    {
+      "path": "ops/activation/phase4_tls_verify.py",
+      "line": 2,
+      "module": "certifi"
+    },
+    {
+      "path": "ops/activation/step3_schedule.py",
+      "line": 29,
+      "module": "apscheduler"
+    },
+    {
+      "path": "ops/activation/test_automatic_acquisition.py",
+      "line": 7,
+      "module": "pytest"
+    },
+    {
+      "path": "ops/activation/test_financial_priority.py",
+      "line": 5,
+      "module": "pytest"
+    },
+    {
+      "path": "ops/activation/test_phase3_bse_periods.py",
+      "line": 5,
+      "module": "pytest"
+    },
+    {
+      "path": "ops/activation/test_phase3_cap_mapping.py",
+      "line": 9,
+      "module": "pytest"
+    },
+    {
+      "path": "ops/activation/test_retained_screener_supplementals.py",
+      "line": 7,
+      "module": "bs4"
+    },
+    {
+      "path": "ops/activation/test_retained_screener_supplementals.py",
+      "line": 8,
+      "module": "pytest"
+    },
+    {
+      "path": "ops/activation/test_stage_recovery.py",
+      "line": 6,
+      "module": "pytest"
+    },
+    {
+      "path": "ops/activation/test_step3_financial.py",
+      "line": 10,
+      "module": "pytest"
+    },
+    {
+      "path": "ops/activation/test_step3_schedule.py",
+      "line": 9,
+      "module": "pytest"
+    },
+    {
+      "path": "ops/host/acquisition_terminal.py",
+      "line": 19,
+      "module": "rich"
+    },
+    {
+      "path": "ops/host/acquisition_terminal.py",
+      "line": 20,
+      "module": "rich"
+    },
+    {
+      "path": "ops/host/acquisition_terminal.py",
+      "line": 21,
+      "module": "rich"
+    },
+    {
+      "path": "ops/host/acquisition_terminal.py",
+      "line": 22,
+      "module": "rich"
+    },
+    {
+      "path": "ops/host/acquisition_terminal.py",
+      "line": 23,
+      "module": "rich"
+    },
+    {
+      "path": "ops/host/acquisition_terminal.py",
+      "line": 487,
+      "module": "prompt_toolkit"
+    },
+    {
+      "path": "ops/host/acquisition_terminal.py",
+      "line": 488,
+      "module": "prompt_toolkit"
+    },
+    {
+      "path": "ops/host/test_acquisition_lifecycle.py",
+      "line": 13,
+      "module": "pytest"
+    },
+    {
+      "path": "ops/host/test_acquisition_observations.py",
+      "line": 9,
+      "module": "pytest"
+    },
+    {
+      "path": "ops/host/test_acquisition_terminal.py",
+      "line": 9,
+      "module": "pytest"
+    },
+    {
+      "path": "ops/host/test_acquisition_terminal.py",
+      "line": 10,
+      "module": "rich"
+    },
+    {
+      "path": "scrapper/commands/browser_rating_headed.py",
+      "line": 18,
+      "module": "playwright"
+    },
+    {
+      "path": "scrapper/commands/browser_rating_probe.py",
+      "line": 7,
+      "module": "playwright"
+    },
+    {
+      "path": "scrapper/commands/browser_rating_recovery.py",
+      "line": 41,
+      "module": "bs4"
+    },
+    {
+      "path": "scrapper/commands/browser_rating_recovery.py",
+      "line": 42,
+      "module": "playwright"
+    },
+    {
+      "path": "scrapper/commands/browser_rating_recovery.py",
+      "line": 43,
+      "module": "pypdf"
+    },
+    {
+      "path": "scrapper/commands/screener_period_coverage.py",
+      "line": 97,
+      "module": "bs4"
+    },
+    {
+      "path": "scrapper/core/collection_scope.py",
+      "line": 38,
+      "module": "bs4"
+    },
+    {
+      "path": "scrapper/core/http.py",
+      "line": 12,
+      "module": "certifi"
+    },
+    {
+      "path": "scrapper/core/http.py",
+      "line": 13,
+      "module": "requests"
+    },
+    {
+      "path": "scrapper/documents/credit_rating_resolver.py",
+      "line": 10,
+      "module": "requests"
+    },
+    {
+      "path": "scrapper/documents/credit_rating_resolver.py",
+      "line": 11,
+      "module": "bs4"
+    },
+    {
+      "path": "scrapper/documents/credit_rating_resolver.py",
+      "line": 81,
+      "module": "playwright"
+    },
+    {
+      "path": "scrapper/documents/credit_rating_resolver.py",
+      "line": 82,
+      "module": "playwright"
+    },
+    {
+      "path": "scrapper/documents/credit_rating_resolver.py",
+      "line": 83,
+      "module": "playwright"
+    },
+    {
+      "path": "scrapper/documents/download/derivatives.py",
+      "line": 16,
+      "module": "bs4"
+    },
+    {
+      "path": "scrapper/documents/download/derivatives.py",
+      "line": 17,
+      "module": "reportlab"
+    },
+    {
+      "path": "scrapper/documents/download/derivatives.py",
+      "line": 18,
+      "module": "reportlab"
+    },
+    {
+      "path": "scrapper/documents/download/derivatives.py",
+      "line": 19,
+      "module": "reportlab"
+    },
+    {
+      "path": "scrapper/documents/download/derivatives.py",
+      "line": 20,
+      "module": "reportlab"
+    },
+    {
+      "path": "scrapper/documents/download/derivatives.py",
+      "line": 21,
+      "module": "reportlab"
+    },
+    {
+      "path": "scrapper/documents/download/derivatives.py",
+      "line": 22,
+      "module": "reportlab"
+    },
+    {
+      "path": "scrapper/documents/download/isolated_http.py",
+      "line": 12,
+      "module": "requests"
+    },
+    {
+      "path": "scrapper/documents/download/recording.py",
+      "line": 10,
+      "module": "certifi"
+    },
+    {
+      "path": "scrapper/documents/download/recording.py",
+      "line": 11,
+      "module": "requests"
+    },
+    {
+      "path": "scrapper/documents/download/tls.py",
+      "line": 11,
+      "module": "certifi"
+    },
+    {
+      "path": "scrapper/documents/download/tls.py",
+      "line": 12,
+      "module": "requests"
+    },
+    {
+      "path": "scrapper/documents/download/tls.py",
+      "line": 13,
+      "module": "requests"
+    },
+    {
+      "path": "scrapper/documents/download/tls.py",
+      "line": 14,
+      "module": "urllib3"
+    },
+    {
+      "path": "scrapper/documents/download/transport.py",
+      "line": 7,
+      "module": "certifi"
+    },
+    {
+      "path": "scrapper/documents/download/transport.py",
+      "line": 8,
+      "module": "requests"
+    },
+    {
+      "path": "scrapper/documents/downloader.py",
+      "line": 22,
+      "module": "certifi"
+    },
+    {
+      "path": "scrapper/documents/downloader.py",
+      "line": 23,
+      "module": "requests"
+    },
+    {
+      "path": "scrapper/documents/html.py",
+      "line": 5,
+      "module": "bs4"
+    },
+    {
+      "path": "scrapper/documents/html_pdf.py",
+      "line": 16,
+      "module": "bs4"
+    },
+    {
+      "path": "scrapper/documents/html_pdf.py",
+      "line": 17,
+      "module": "reportlab"
+    },
+    {
+      "path": "scrapper/documents/html_pdf.py",
+      "line": 18,
+      "module": "reportlab"
+    },
+    {
+      "path": "scrapper/documents/html_pdf.py",
+      "line": 19,
+      "module": "reportlab"
+    },
+    {
+      "path": "scrapper/documents/html_pdf.py",
+      "line": 20,
+      "module": "reportlab"
+    },
+    {
+      "path": "scrapper/documents/html_pdf.py",
+      "line": 21,
+      "module": "reportlab"
+    },
+    {
+      "path": "scrapper/documents/html_pdf.py",
+      "line": 22,
+      "module": "reportlab"
+    },
+    {
+      "path": "scrapper/documents/landing_page.py",
+      "line": 3,
+      "module": "bs4"
+    },
+    {
+      "path": "scrapper/documents/ocr.py",
+      "line": 8,
+      "module": "pytesseract"
+    },
+    {
+      "path": "scrapper/documents/pdf.py",
+      "line": 9,
+      "module": "pdfplumber"
+    },
+    {
+      "path": "scrapper/documents/pdf.py",
+      "line": 10,
+      "module": "pypdf"
+    },
+    {
+      "path": "scrapper/documents/powerpoint.py",
+      "line": 9,
+      "module": "olefile"
+    },
+    {
+      "path": "scrapper/documents/powerpoint.py",
+      "line": 10,
+      "module": "PIL"
+    },
+    {
+      "path": "scrapper/documents/powerpoint.py",
+      "line": 11,
+      "module": "pptx"
+    },
+    {
+      "path": "scrapper/documents/powerpoint.py",
+      "line": 12,
+      "module": "pptx"
+    },
+    {
+      "path": "scrapper/documents/recovery/browser_rating/validation.py",
+      "line": 4,
+      "module": "bs4"
+    },
+    {
+      "path": "scrapper/documents/recovery/browser_rating/validation.py",
+      "line": 5,
+      "module": "pypdf"
+    },
+    {
+      "path": "scrapper/documents/recovery/browser_rating/validation.py",
+      "line": 40,
+      "module": "pdfplumber"
+    },
+    {
+      "path": "scrapper/documents/recovery/browser_rating/validation.py",
+      "line": 41,
+      "module": "pytesseract"
+    },
+    {
+      "path": "scrapper/documents/recovery/rating_metadata_refresh.py",
+      "line": 11,
+      "module": "bs4"
+    },
+    {
+      "path": "scrapper/documents/transcription.py",
+      "line": 339,
+      "module": "faster_whisper"
+    },
+    {
+      "path": "scrapper/operations/coordinator/collection.py",
+      "line": 87,
+      "module": "apscheduler"
+    },
+    {
+      "path": "scrapper/operations/coordinator/exchange.py",
+      "line": 127,
+      "module": "apscheduler"
+    },
+    {
+      "path": "scrapper/operations/coordinator/exchange.py",
+      "line": 156,
+      "module": "apscheduler"
+    },
+    {
+      "path": "scrapper/operations/coordinator/periodic.py",
+      "line": 104,
+      "module": "apscheduler"
+    },
+    {
+      "path": "scrapper/operations/workers/host_requests.py",
+      "line": 8,
+      "module": "requests"
+    },
+    {
+      "path": "scrapper/operations/workers/screener_requests.py",
+      "line": 4,
+      "module": "requests"
+    },
+    {
+      "path": "scrapper/operations/workers/screener_requests.py",
+      "line": 5,
+      "module": "certifi"
+    },
+    {
+      "path": "scrapper/pipeline/credit_rating_downloads.py",
+      "line": 23,
+      "module": "requests"
+    },
+    {
+      "path": "scrapper/pipeline/fetch_documents.py",
+      "line": 15,
+      "module": "requests"
+    },
+    {
+      "path": "scrapper/pipeline/run_document_download_worker.py",
+      "line": 17,
+      "module": "requests"
+    },
+    {
+      "path": "scrapper/research/bse_browser_results.py",
+      "line": 84,
+      "module": "playwright"
+    },
+    {
+      "path": "scrapper/research/document_intelligence/charts.py",
+      "line": 14,
+      "module": "pptx"
+    },
+    {
+      "path": "scrapper/research/document_intelligence/evaluation.py",
+      "line": 42,
+      "module": "pypdf"
+    },
+    {
+      "path": "scrapper/research/document_intelligence/evaluation.py",
+      "line": 45,
+      "module": "bs4"
+    },
+    {
+      "path": "scrapper/research/document_intelligence/native_layout.py",
+      "line": 14,
+      "module": "pdfplumber"
+    },
+    {
+      "path": "scrapper/research/focus/build_p0_governance.py",
+      "line": 873,
+      "module": "pyarrow"
+    },
+    {
+      "path": "scrapper/research/focus/build_p0_governance.py",
+      "line": 874,
+      "module": "pyarrow"
+    },
+    {
+      "path": "scrapper/research/general_ai_experiment/local.py",
+      "line": 63,
+      "module": "mlx"
+    },
+    {
+      "path": "scrapper/research/general_ai_experiment/local.py",
+      "line": 64,
+      "module": "mlx_vlm"
+    },
+    {
+      "path": "scrapper/research/general_ai_experiment/prepare_local.py",
+      "line": 8,
+      "module": "huggingface_hub"
+    },
+    {
+      "path": "scrapper/research/general_ai_experiment/runner.py",
+      "line": 131,
+      "module": "pdfplumber"
+    },
+    {
+      "path": "scrapper/research/general_ai_experiment/runner.py",
+      "line": 87,
+      "module": "certifi"
+    },
+    {
+      "path": "scrapper/runtime_capabilities.py",
+      "line": 71,
+      "module": "playwright"
+    },
+    {
+      "path": "scrapper/runtime_capabilities.py",
+      "line": 90,
+      "module": "PIL"
+    },
+    {
+      "path": "scrapper/runtime_capabilities.py",
+      "line": 109,
+      "module": "prompt_toolkit"
+    },
+    {
+      "path": "scrapper/runtime_capabilities.py",
+      "line": 110,
+      "module": "rich"
+    },
+    {
+      "path": "scrapper/runtime_capabilities.py",
+      "line": 111,
+      "module": "rich"
+    },
+    {
+      "path": "scrapper/runtime_capabilities.py",
+      "line": 112,
+      "module": "rich"
+    },
+    {
+      "path": "scrapper/runtime_capabilities.py",
+      "line": 29,
+      "module": "packaging"
+    },
+    {
+      "path": "scrapper/sources/amc_workbook/detector.py",
+      "line": 13,
+      "module": "xlrd"
+    },
+    {
+      "path": "scrapper/sources/amc_workbook/workbook.py",
+      "line": 15,
+      "module": "xlrd"
+    },
+    {
+      "path": "scrapper/sources/amc_workbook/workbook.py",
+      "line": 16,
+      "module": "xlrd"
+    },
+    {
+      "path": "scrapper/sources/amc_workbook/workbook.py",
+      "line": 17,
+      "module": "xlrd"
+    },
+    {
+      "path": "scrapper/sources/documents/browser_rating.py",
+      "line": 5,
+      "module": "playwright"
+    },
+    {
+      "path": "scrapper/sources/documents/issuer_ir_recovery.py",
+      "line": 7,
+      "module": "bs4"
+    },
+    {
+      "path": "scrapper/sources/documents/routine.py",
+      "line": 11,
+      "module": "bs4"
+    },
+    {
+      "path": "scrapper/sources/exchange/transport.py",
+      "line": 5,
+      "module": "requests"
+    },
+    {
+      "path": "scrapper/sources/exchange/transport.py",
+      "line": 6,
+      "module": "certifi"
+    },
+    {
+      "path": "scrapper/sources/screener/assembly.py",
+      "line": 14,
+      "module": "bs4"
+    },
+    {
+      "path": "scrapper/sources/screener/commentary.py",
+      "line": 5,
+      "module": "bs4"
+    },
+    {
+      "path": "scrapper/sources/screener/company.py",
+      "line": 14,
+      "module": "bs4"
+    },
+    {
+      "path": "scrapper/sources/screener/document_links.py",
+      "line": 3,
+      "module": "bs4"
+    },
+    {
+      "path": "scrapper/sources/screener/growth.py",
+      "line": 6,
+      "module": "bs4"
+    },
+    {
+      "path": "scrapper/sources/screener/identity.py",
+      "line": 9,
+      "module": "bs4"
+    },
+    {
+      "path": "scrapper/sources/screener/manifest.py",
+      "line": 10,
+      "module": "bs4"
+    },
+    {
+      "path": "scrapper/sources/screener/metrics.py",
+      "line": 6,
+      "module": "bs4"
+    },
+    {
+      "path": "scrapper/sources/screener/parsing.py",
+      "line": 5,
+      "module": "bs4"
+    },
+    {
+      "path": "scrapper/sources/screener/peers.py",
+      "line": 7,
+      "module": "bs4"
+    },
+    {
+      "path": "scrapper/sources/screener/profile.py",
+      "line": 5,
+      "module": "bs4"
+    },
+    {
+      "path": "scrapper/sources/screener/result_screen.py",
+      "line": 9,
+      "module": "bs4"
+    },
+    {
+      "path": "scrapper/sources/screener/shareholding.py",
+      "line": 8,
+      "module": "bs4"
+    },
+    {
+      "path": "scrapper/sources/screener/statements.py",
+      "line": 8,
+      "module": "bs4"
+    },
+    {
+      "path": "scrapper/sources/trendlyne/monthly_mf.py",
+      "line": 12,
+      "module": "bs4"
+    },
+    {
+      "path": "scrapper/tests/fixtures/documents/generate_d03_fixtures.py",
+      "line": 11,
+      "module": "PIL"
+    },
+    {
+      "path": "scrapper/tests/fixtures/documents/generate_d03_fixtures.py",
+      "line": 12,
+      "module": "pptx"
+    },
+    {
+      "path": "scrapper/tests/fixtures/documents/generate_d03_fixtures.py",
+      "line": 13,
+      "module": "pptx"
+    },
+    {
+      "path": "scrapper/tests/fixtures/documents/generate_d03_fixtures.py",
+      "line": 14,
+      "module": "pptx"
+    },
+    {
+      "path": "scrapper/tests/fixtures/documents/generate_d03_fixtures.py",
+      "line": 15,
+      "module": "pptx"
+    },
+    {
+      "path": "scrapper/tests/fixtures/documents/generate_d03_fixtures.py",
+      "line": 16,
+      "module": "reportlab"
+    },
+    {
+      "path": "scrapper/tests/fixtures/documents/generate_d03_fixtures.py",
+      "line": 17,
+      "module": "reportlab"
+    },
+    {
+      "path": "scrapper/tests/test_browser_host_requests.py",
+      "line": 218,
+      "module": "requests"
+    },
+    {
+      "path": "scrapper/tests/test_browser_rating_monitor.py",
+      "line": 4,
+      "module": "rich"
+    },
+    {
+      "path": "scrapper/tests/test_browser_rating_recovery.py",
+      "line": 132,
+      "module": "reportlab"
+    },
+    {
+      "path": "scrapper/tests/test_bse_browser_integration.py",
+      "line": 8,
+      "module": "pytest"
+    },
+    {
+      "path": "scrapper/tests/test_bse_browser_results.py",
+      "line": 4,
+      "module": "pytest"
+    },
+    {
+      "path": "scrapper/tests/test_bse_browser_results.py",
+      "line": 122,
+      "module": "playwright"
+    },
+    {
+      "path": "scrapper/tests/test_d02_document_downloader.py",
+      "line": 12,
+      "module": "requests"
+    },
+    {
+      "path": "scrapper/tests/test_e06_scheduler.py",
+      "line": 20,
+      "module": "pytest"
+    },
+    {
+      "path": "scrapper/tests/test_exchange_coordinator.py",
+      "line": 75,
+      "module": "apscheduler"
+    },
+    {
+      "path": "scrapper/tests/test_exchange_reference_import.py",
+      "line": 14,
+      "module": "rich"
+    },
+    {
+      "path": "scrapper/tests/test_host_request_executors.py",
+      "line": 14,
+      "module": "requests"
+    },
+    {
+      "path": "scrapper/tests/test_html_pdf_rendering.py",
+      "line": 9,
+      "module": "pypdf"
+    },
+    {
+      "path": "scrapper/tests/test_phase4_tls.py",
+      "line": 5,
+      "module": "certifi"
+    },
+    {
+      "path": "scrapper/tests/test_phase4_tls.py",
+      "line": 5,
+      "module": "requests"
+    },
+    {
+      "path": "scrapper/tests/test_phase5_accuracy_corrections.py",
+      "line": 7,
+      "module": "pytest"
+    },
+    {
+      "path": "scrapper/tests/test_phase5_claim_candidates.py",
+      "line": 4,
+      "module": "pytest"
+    },
+    {
+      "path": "scrapper/tests/test_phase5_document_intelligence.py",
+      "line": 11,
+      "module": "pytest"
+    },
+    {
+      "path": "scrapper/tests/test_phase5_document_intelligence.py",
+      "line": 295,
+      "module": "pptx"
+    },
+    {
+      "path": "scrapper/tests/test_phase5_document_intelligence.py",
+      "line": 296,
+      "module": "pptx"
+    },
+    {
+      "path": "scrapper/tests/test_phase5_document_intelligence.py",
+      "line": 297,
+      "module": "pptx"
+    },
+    {
+      "path": "scrapper/tests/test_phase5_document_intelligence.py",
+      "line": 298,
+      "module": "pptx"
+    },
+    {
+      "path": "scrapper/tests/test_phase5_focused_disclosures.py",
+      "line": 6,
+      "module": "pytest"
+    },
+    {
+      "path": "scrapper/tests/test_phase5_focused_disclosures.py",
+      "line": 124,
+      "module": "pptx"
+    },
+    {
+      "path": "scrapper/tests/test_phase5_focused_disclosures.py",
+      "line": 125,
+      "module": "pptx"
+    },
+    {
+      "path": "scrapper/tests/test_phase5_focused_disclosures.py",
+      "line": 126,
+      "module": "pptx"
+    },
+    {
+      "path": "scrapper/tests/test_phase5_focused_disclosures.py",
+      "line": 127,
+      "module": "pptx"
+    },
+    {
+      "path": "scrapper/tests/test_phase5_general_ai_experiment.py",
+      "line": 7,
+      "module": "pytest"
+    },
+    {
+      "path": "scrapper/tests/test_phase5_generalization.py",
+      "line": 5,
+      "module": "pytest"
+    },
+    {
+      "path": "scrapper/tests/test_phase5_native_attribution.py",
+      "line": 5,
+      "module": "pytest"
+    },
+    {
+      "path": "scrapper/tests/test_phase5_quality_evaluation.py",
+      "line": 8,
+      "module": "pytest"
+    },
+    {
+      "path": "scrapper/tests/test_phase5_source_review.py",
+      "line": 6,
+      "module": "pytest"
+    },
+    {
+      "path": "scrapper/tests/test_screener_document_links_assembly.py",
+      "line": 43,
+      "module": "bs4"
+    },
+    {
+      "path": "scrapper/tests/test_screener_document_links_assembly.py",
+      "line": 56,
+      "module": "bs4"
+    },
+    {
+      "path": "scrapper/tests/test_screener_growth_shareholding.py",
+      "line": 43,
+      "module": "bs4"
+    },
+    {
+      "path": "scrapper/tests/test_screener_growth_shareholding.py",
+      "line": 52,
+      "module": "bs4"
+    },
+    {
+      "path": "scrapper/tests/test_screener_host_requests.py",
+      "line": 11,
+      "module": "requests"
+    },
+    {
+      "path": "scrapper/tests/test_screener_period_coverage.py",
+      "line": 151,
+      "module": "bs4"
+    },
+    {
+      "path": "scrapper/tests/test_screener_statements.py",
+      "line": 42,
+      "module": "bs4"
+    },
+    {
+      "path": "scrapper/tests/test_screener_vertical.py",
+      "line": 12,
+      "module": "bs4"
+    },
+    {
+      "path": "scrapper/tests/test_trendlyne_t01.py",
+      "line": 14,
+      "module": "bs4"
+    },
+    {
+      "path": "scrapper/validation/screener.py",
+      "line": 11,
+      "module": "bs4"
+    },
+    {
+      "path": "scrapper/view/browser_rating_monitor.py",
+      "line": 43,
+      "module": "rich"
+    },
+    {
+      "path": "scrapper/view/browser_rating_monitor.py",
+      "line": 44,
+      "module": "rich"
+    },
+    {
+      "path": "scrapper/view/browser_rating_monitor.py",
+      "line": 45,
+      "module": "rich"
+    },
+    {
+      "path": "scrapper/view/browser_rating_monitor.py",
+      "line": 46,
+      "module": "rich"
+    },
+    {
+      "path": "scrapper/view/browser_rating_monitor.py",
+      "line": 74,
+      "module": "rich"
+    },
+    {
+      "path": "scrapper/view/browser_rating_monitor.py",
+      "line": 75,
+      "module": "rich"
+    },
+    {
+      "path": "scrapper/view/browser_rating_monitor.py",
+      "line": 86,
+      "module": "rich"
+    },
+    {
+      "path": "scrapper/view/download_monitor.py",
+      "line": 12,
+      "module": "rich"
+    },
+    {
+      "path": "scrapper/view/download_monitor.py",
+      "line": 13,
+      "module": "rich"
+    },
+    {
+      "path": "scrapper/view/download_monitor.py",
+      "line": 14,
+      "module": "rich"
+    },
+    {
+      "path": "scrapper/view/download_monitor.py",
+      "line": 15,
+      "module": "rich"
+    },
+    {
+      "path": "scrapper/view/download_monitor.py",
+      "line": 16,
+      "module": "rich"
+    },
+    {
+      "path": "scrapper/view/monitor.py",
+      "line": 15,
+      "module": "rich"
+    },
+    {
+      "path": "scrapper/view/monitor.py",
+      "line": 16,
+      "module": "rich"
+    },
+    {
+      "path": "scrapper/view/monitor.py",
+      "line": 17,
+      "module": "rich"
+    },
+    {
+      "path": "scrapper/view/monitor.py",
+      "line": 18,
+      "module": "rich"
+    },
+    {
+      "path": "scrapper/view/monitor.py",
+      "line": 19,
+      "module": "rich"
+    },
+    {
+      "path": "scrapper/view/monitor.py",
+      "line": 20,
+      "module": "rich"
+    },
+    {
+      "path": "scrapper/view/monitor.py",
+      "line": 21,
+      "module": "rich"
+    },
+    {
+      "path": "scrapper/view/monitor.py",
+      "line": 22,
+      "module": "rich"
+    },
+    {
+      "path": "scrapper/view/shell.py",
+      "line": 14,
+      "module": "rich"
+    },
+    {
+      "path": "scrapper/view/shell.py",
+      "line": 15,
+      "module": "rich"
+    },
+    {
+      "path": "scrapper/view/shell.py",
+      "line": 16,
+      "module": "rich"
+    },
+    {
+      "path": "scrapper/view/shell.py",
+      "line": 17,
+      "module": "rich"
+    },
+    {
+      "path": "scrapper/view/shell.py",
+      "line": 18,
+      "module": "rich"
+    },
+    {
+      "path": "scrapper/view/shell.py",
+      "line": 21,
+      "module": "prompt_toolkit"
+    },
+    {
+      "path": "scrapper/view/shell.py",
+      "line": 22,
+      "module": "prompt_toolkit"
+    },
+    {
+      "path": "scrapper/view/shell.py",
+      "line": 23,
+      "module": "prompt_toolkit"
+    },
+    {
+      "path": "scrapper/view/shell.py",
+      "line": 24,
+      "module": "prompt_toolkit"
+    },
+    {
+      "path": "scrapper/view/shell.py",
+      "line": 25,
+      "module": "prompt_toolkit"
+    },
+    {
+      "path": "scrapper/workflows/documents/download.py",
+      "line": 19,
+      "module": "requests"
+    }
+  ],
+  "machine_path_locations": [
+    {
+      "path": "ops/activation/automatic_acquisition.py",
+      "line": 22
+    },
+    {
+      "path": "ops/activation/automatic_acquisition.py",
+      "line": 23
+    },
+    {
+      "path": "ops/activation/phase4_documents.py",
+      "line": 10
+    },
+    {
+      "path": "ops/activation/phase4_documents.py",
+      "line": 19
+    },
+    {
+      "path": "ops/activation/phase4_documents.py",
+      "line": 20
+    },
+    {
+      "path": "ops/activation/phase4_trial_observer.py",
+      "line": 91
+    },
+    {
+      "path": "ops/activation/test_production_ownership.py",
+      "line": 17
+    },
+    {
+      "path": "ops/activation/test_production_ownership.py",
+      "line": 18
+    },
+    {
+      "path": "ops/activation/test_production_ownership.py",
+      "line": 22
+    },
+    {
+      "path": "ops/host/test_acquisition_lifecycle.py",
+      "line": 270
+    },
+    {
+      "path": "scrapper/commands/publish_document_store_capacity.py",
+      "line": 14
+    },
+    {
+      "path": "scrapper/runtime_identity.py",
+      "line": 13
+    },
+    {
+      "path": "scrapper/runtime_identity.py",
+      "line": 14
+    },
+    {
+      "path": "scrapper/tests/test_phase5_source_review.py",
+      "line": 19
+    }
+  ],
+  "missing_literal_data_references": [
+    {
+      "path": "ops/activation/automatic_acquisition.py",
+      "line": 19,
+      "reference": "artifacts/automatic-acquisition"
+    },
+    {
+      "path": "ops/activation/automatic_acquisition.py",
+      "line": 20,
+      "reference": "artifacts/bse-browser-results"
+    },
+    {
+      "path": "ops/activation/automatic_acquisition.py",
+      "line": 124,
+      "reference": "artifacts/bse-visible-runner-verification-2026-10-09"
+    },
+    {
+      "path": "ops/activation/automatic_acquisition.py",
+      "line": 118,
+      "reference": "artifacts/bse-production-ingestion-ownership-fixed-2026-10-09/manifest.json"
+    },
+    {
+      "path": "ops/activation/bse_retained.py",
+      "line": 13,
+      "reference": "artifacts/bse-production-ingestion-wal-validated-2026-10-09"
+    },
+    {
+      "path": "ops/activation/bse_retained.py",
+      "line": 65,
+      "reference": "artifacts/bse-visible-runner-verification-2026-10-09"
+    },
+    {
+      "path": "ops/activation/bse_retained.py",
+      "line": 94,
+      "reference": "artifacts/bse-browser-integration-2026-10-09/focused-tests.log"
+    },
+    {
+      "path": "ops/activation/bse_retained.py",
+      "line": 100,
+      "reference": "artifacts/bse-browser-integration-2026-10-09/expected-changes.json"
+    },
+    {
+      "path": "ops/activation/bse_retained.py",
+      "line": 75,
+      "reference": "artifacts/bse-production-ingestion-ownership-fixed-2026-10-09/manifest.json"
+    },
+    {
+      "path": "ops/activation/bse_retained.py",
+      "line": 88,
+      "reference": "artifacts/bse-browser-integration-2026-10-09/production-projection.json"
+    },
+    {
+      "path": "ops/activation/bse_retained.py",
+      "line": 70,
+      "reference": "artifacts/bse-browser-integration-2026-10-09/focused-tests.log"
+    },
+    {
+      "path": "ops/activation/monitor_phase4_receipts.py",
+      "line": 9,
+      "reference": "artifacts/automatic-acquisition"
+    },
+    {
+      "path": "ops/activation/nse_results.py",
+      "line": 13,
+      "reference": "ops/docker/release/ar02-period-20261008"
+    },
+    {
+      "path": "ops/activation/nse_results.py",
+      "line": 14,
+      "reference": "ops/docker/release/ar02-combined-20261008"
+    },
+    {
+      "path": "ops/activation/nse_results.py",
+      "line": 121,
+      "reference": "artifacts/acquisition-readiness/operations"
+    },
+    {
+      "path": "ops/activation/phase3_bse_reassess.py",
+      "line": 15,
+      "reference": "artifacts/phase3-completion/bse-retained-reassessment"
+    },
+    {
+      "path": "ops/activation/phase3_bse_reassess.py",
+      "line": 21,
+      "reference": "artifacts/bse-browser-results/2026-10-11-evening.json"
+    },
+    {
+      "path": "ops/activation/phase3_bse_reassess.py",
+      "line": 30,
+      "reference": "artifacts/automatic-acquisition"
+    },
+    {
+      "path": "ops/activation/phase3_bse_reassess.py",
+      "line": 49,
+      "reference": "artifacts/bse-production-ingestion-ownership-fixed-2026-10-09/manifest.json"
+    },
+    {
+      "path": "ops/activation/phase3_bse_reassess.py",
+      "line": 24,
+      "reference": "artifacts/bse-browser-results"
+    },
+    {
+      "path": "ops/activation/phase3_inspect.py",
+      "line": 13,
+      "reference": "artifacts/phase3-completion/inspection"
+    },
+    {
+      "path": "ops/activation/phase4_attempt02_verify.py",
+      "line": 13,
+      "reference": "artifacts/phase4/canary/verification"
+    },
+    {
+      "path": "ops/activation/phase4_attempt02_verify.py",
+      "line": 43,
+      "reference": "artifacts/phase4/canary"
+    },
+    {
+      "path": "ops/activation/phase4_attempt03_verify.py",
+      "line": 13,
+      "reference": "artifacts/phase4/canary/verification"
+    },
+    {
+      "path": "ops/activation/phase4_attempt03_verify.py",
+      "line": 24,
+      "reference": "artifacts/phase4/canary"
+    },
+    {
+      "path": "ops/activation/phase4_canary_verify.py",
+      "line": 13,
+      "reference": "artifacts/phase4/canary/verification"
+    },
+    {
+      "path": "ops/activation/phase4_canary_verify.py",
+      "line": 24,
+      "reference": "artifacts/phase4/canary"
+    },
+    {
+      "path": "ops/activation/phase4_documents.py",
+      "line": 9,
+      "reference": "artifacts/phase4/canary"
+    },
+    {
+      "path": "ops/activation/phase4_documents.py",
+      "line": 29,
+      "reference": "artifacts/phase4/inspection/20261011T150755/production-inspection.json"
+    },
+    {
+      "path": "ops/activation/phase4_documents.py",
+      "line": 65,
+      "reference": "artifacts/phase4/canary-attempt-02/verification/production-inspection.json"
+    },
+    {
+      "path": "ops/activation/phase4_followup.py",
+      "line": 19,
+      "reference": "artifacts/phase4/routine/followup-20261014"
+    },
+    {
+      "path": "ops/activation/phase4_followup.py",
+      "line": 20,
+      "reference": "artifacts/phase4/routine/gap-closure-20261013/followup-config.json"
+    },
+    {
+      "path": "ops/activation/phase4_followup.py",
+      "line": 80,
+      "reference": "artifacts/phase4/routine/trial"
+    },
+    {
+      "path": "ops/activation/phase4_followup.py",
+      "line": 158,
+      "reference": "artifacts/phase4/routine/trial"
+    },
+    {
+      "path": "ops/activation/phase4_followup.py",
+      "line": 118,
+      "reference": "artifacts/phase4/routine/rollout/seal.json"
+    },
+    {
+      "path": "ops/activation/phase4_followup.py",
+      "line": 69,
+      "reference": "artifacts/phase4/routine/trial/preflight/preservation-hashes.json"
+    },
+    {
+      "path": "ops/activation/phase4_inspect.py",
+      "line": 13,
+      "reference": "artifacts/phase4/inspection"
+    },
+    {
+      "path": "ops/activation/phase4_trial_observer.py",
+      "line": 12,
+      "reference": "artifacts/phase4/routine/trial"
+    },
+    {
+      "path": "ops/activation/phase4_trial_observer.py",
+      "line": 12,
+      "reference": "artifacts/automatic-acquisition"
+    },
+    {
+      "path": "ops/activation/phase4_trial_preflight.py",
+      "line": 43,
+      "reference": "artifacts/phase4/routine/trial/preflight"
+    },
+    {
+      "path": "ops/activation/phase4_trial_preflight.py",
+      "line": 47,
+      "reference": "artifacts/phase4/routine/trial/preflight/schedule-tests.log"
+    },
+    {
+      "path": "ops/activation/phase4_trial_preflight.py",
+      "line": 50,
+      "reference": "artifacts/phase4/routine/trial/preflight/launchctl.txt"
+    },
+    {
+      "path": "ops/activation/phase4_trial_preflight.py",
+      "line": 52,
+      "reference": "artifacts/phase4/routine/trial/preflight/preservation-hashes.json"
+    },
+    {
+      "path": "ops/activation/phase4_trial_preflight.py",
+      "line": 39,
+      "reference": "artifacts/phase4/routine/rollout/seal.json"
+    },
+    {
+      "path": "ops/activation/prepare_phase4_routine.py",
+      "line": 10,
+      "reference": "artifacts/phase4/routine/rollout"
+    },
+    {
+      "path": "ops/activation/screener_auth_check.py",
+      "line": 21,
+      "reference": "artifacts/screener-supplemental-access"
+    },
+    {
+      "path": "ops/activation/screener_auth_check.py",
+      "line": 23,
+      "reference": "artifacts/step3-financial-readiness/prepared/compose.json"
+    },
+    {
+      "path": "ops/activation/step3_canary_state.py",
+      "line": 10,
+      "reference": "artifacts/step3-financial-canary-2026-10-09"
+    },
+    {
+      "path": "ops/activation/step3_canary_state.py",
+      "line": 16,
+      "reference": "artifacts/step3-financial-retry-2026-10-09"
+    },
+    {
+      "path": "ops/activation/step3_financial.py",
+      "line": 18,
+      "reference": "artifacts/step3-financial-readiness/prepared"
+    },
+    {
+      "path": "ops/activation/step3_financial.py",
+      "line": 108,
+      "reference": "artifacts/step3-financial-readiness/prepared-scope-monitor"
+    },
+    {
+      "path": "ops/activation/step3_financial.py",
+      "line": 111,
+      "reference": "artifacts/step3-financial-readiness/prepared"
+    },
+    {
+      "path": "ops/activation/step3_financial.py",
+      "line": 113,
+      "reference": "artifacts/step3-financial-readiness/retry-updated-session-20261009"
+    },
+    {
+      "path": "ops/activation/step3_inspect.py",
+      "line": 13,
+      "reference": "artifacts/step3-financial-readiness"
+    },
+    {
+      "path": "ops/activation/test_guard_bse_repair.py",
+      "line": 75,
+      "reference": "artifacts/bse-browser-results/2026-10-13-morning.json"
+    },
+    {
+      "path": "ops/activation/test_guard_bse_repair.py",
+      "line": 85,
+      "reference": "artifacts/bse-browser-results/2026-10-13-morning.raw"
+    },
+    {
+      "path": "ops/activation/test_guard_bse_repair.py",
+      "line": 85,
+      "reference": "artifacts/bse-browser-results/2026-10-13-morning.json"
+    },
+    {
+      "path": "ops/activation/test_phase3_bse_periods.py",
+      "line": 11,
+      "reference": "artifacts/bse-browser-results/2026-10-11-evening.raw"
+    },
+    {
+      "path": "ops/activation/test_phase3_bse_periods.py",
+      "line": 12,
+      "reference": "artifacts/bse-browser-results/2026-10-11-evening.json"
+    },
+    {
+      "path": "ops/activation/test_phase4_bounded_followup.py",
+      "line": 37,
+      "reference": "artifacts/phase4/routine/gap-closure-20261013/followup-config.json"
+    },
+    {
+      "path": "ops/activation/test_retained_screener_supplementals.py",
+      "line": 13,
+      "reference": "artifacts/screener-supplemental-access/20261009T132929396890Z"
+    },
+    {
+      "path": "ops/activation/verify_unattended_acquisition.py",
+      "line": 9,
+      "reference": "artifacts/automatic-acquisition"
+    },
+    {
+      "path": "ops/activation/verify_unattended_acquisition.py",
+      "line": 10,
+      "reference": "artifacts/bse-browser-results"
+    },
+    {
+      "path": "ops/host/acquisition_lifecycle.py",
+      "line": 20,
+      "reference": "artifacts/operational-recovery/lifecycle"
+    },
+    {
+      "path": "ops/host/acquisition_observations.py",
+      "line": 159,
+      "reference": "artifacts/automatic-acquisition/"
+    },
+    {
+      "path": "ops/host/install_lifecycle_gate.py",
+      "line": 41,
+      "reference": "artifacts/operational-recovery/gate-integration"
+    },
+    {
+      "path": "scrapper/commands/browser_rating_host_config.py",
+      "line": 8,
+      "reference": "artifacts/icra-download-test"
+    },
+    {
+      "path": "scrapper/pipeline/evaluate_document_acquisition_gate.py",
+      "line": 271,
+      "reference": "artifacts/focus_ml/governance"
+    },
+    {
+      "path": "scrapper/research/bse_browser_results.py",
+      "line": 233,
+      "reference": "artifacts/bse-browser-results"
+    },
+    {
+      "path": "scrapper/research/focus/build_p0_governance.py",
+      "line": 941,
+      "reference": "OLD/ML_PRO/DATA/RESULTS/2027/Q1/SFC/EXCEL-DATA"
+    },
+    {
+      "path": "scrapper/research/focus/build_p0_governance.py",
+      "line": 943,
+      "reference": "OLD/RESULTS/2026/Q4"
+    },
+    {
+      "path": "scrapper/research/focus/build_p0_governance.py",
+      "line": 1499,
+      "reference": "artifacts/focus_ml/governance"
+    },
+    {
+      "path": "scrapper/research/focus/build_p0_governance.py",
+      "line": 1513,
+      "reference": "OLD/RESULTS/2026/Q4"
+    },
+    {
+      "path": "scrapper/research/general_ai_experiment/final_report.py",
+      "line": 163,
+      "reference": "artifacts/phase5/general-ai-experiment/holdout-final"
+    },
+    {
+      "path": "scrapper/research/general_ai_experiment/runner.py",
+      "line": 33,
+      "reference": "artifacts/phase5/general-ai-experiment"
+    },
+    {
+      "path": "scrapper/sources/exchange/reference.py",
+      "line": 23,
+      "reference": "resources/exchange/exchange_securities_master.csv"
+    },
+    {
+      "path": "scrapper/tests/test_exchange_reference_import.py",
+      "line": 171,
+      "reference": "resources/exchange/exchange_securities_master.csv"
+    },
+    {
+      "path": "scrapper/tests/test_phase5_accuracy_corrections.py",
+      "line": 17,
+      "reference": "artifacts/phase5/quality-evaluation/v1"
+    },
+    {
+      "path": "scrapper/tests/test_phase5_claim_candidates.py",
+      "line": 147,
+      "reference": "artifacts/phase5/bottleneck/v4"
+    },
+    {
+      "path": "scrapper/tests/test_phase5_document_intelligence.py",
+      "line": 20,
+      "reference": "artifacts/phase5/offline-demo/inputs"
+    },
+    {
+      "path": "scrapper/tests/test_phase5_generalization.py",
+      "line": 18,
+      "reference": "artifacts/phase5/corrections/v2/final-holdout/inputs"
+    },
+    {
+      "path": "scrapper/tests/test_phase5_native_attribution.py",
+      "line": 109,
+      "reference": "artifacts/phase5/bottleneck/v4"
+    },
+    {
+      "path": "scrapper/tests/test_phase5_quality_evaluation.py",
+      "line": 15,
+      "reference": "artifacts/phase5/quality-evaluation/v1"
+    },
+    {
+      "path": "scrapper/tests/test_rating_metadata_refresh_ownership.py",
+      "line": 7,
+      "reference": "artifacts/rating-link-refresh-20261001/refresh.py"
+    }
+  ],
+  "binary_or_database_magic": [],
+  "over_1MiB_files": [],
+  "hidden_files": [
+    ".dockerignore",
+    ".github/workflows/source-regressions.yml",
+    ".gitignore"
+  ],
+  "largest_file": {
+    "path": "scrapper/tests/test_screener_vertical.py",
+    "bytes": 104524,
+    "sha256": "a3c6b078bc19a7575becfdc1ea077120a813427125d6a327b3e8ed75e781957d"
+  },
+  "total_bytes": 5873901,
+  "limits": "AST module resolution, not execution of every command; dynamic imports and constructed paths require runtime-specific review."
+}

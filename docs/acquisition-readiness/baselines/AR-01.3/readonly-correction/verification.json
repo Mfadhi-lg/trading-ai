@@ -1,0 +1,17 @@
+{
+  "status": "PASS",
+  "application_py_files_preserved": 2539,
+  "all_c28_application_sources_unchanged": true,
+  "stderr_empty": true,
+  "docker_exit_code": 0,
+  "host_exit_code": 0,
+  "db_identity_unchanged": true,
+  "before_epoch_utc": "2026-10-07T16:25:24.357273+00:00",
+  "after_epoch_utc": "2026-10-07T16:25:24.973800+00:00",
+  "docker_container_count": 52,
+  "trading_ai_container_count": 15,
+  "probe_host_gate_age_seconds": 0.21368694305419922,
+  "recovery_operator_required_for_this_read_only_probe": false,
+  "capacity_publisher_required_for_this_read_only_probe": false,
+  "activation_performed": false
+}

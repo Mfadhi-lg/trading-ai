@@ -1,0 +1,11 @@
+{
+  "automatic_recovery": false,
+  "database_restore": false,
+  "error": "initial-gate failed; STOP without retry/recovery",
+  "historical_backlog_changed": false,
+  "network_requests": 0,
+  "operational_workers_started": false,
+  "pre_write_gate": "FAIL",
+  "status": "FAIL",
+  "write_attempted": false
+}

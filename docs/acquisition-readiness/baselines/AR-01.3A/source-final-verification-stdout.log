@@ -1,0 +1,32 @@
+{
+  "source_before": {
+    "bytes": 14602158080,
+    "mtime_ns": 1791180467659852004,
+    "ctime_ns": 1791180467659852004,
+    "device": 65025,
+    "inode": 1731212,
+    "sidecars": {
+      "-wal": false,
+      "-shm": false,
+      "-journal": false
+    }
+  },
+  "source_sha256_before": "f237daa6f4696f75e2081e93d69a57be6f8d9c097769aaa169a819789c9e4811",
+  "writer_gate_age_seconds_at_start": 0.21912789344787598,
+  "source_mount": "read-only",
+  "production_sqlite_opened": false,
+  "source_after": {
+    "bytes": 14602158080,
+    "mtime_ns": 1791180467659852004,
+    "ctime_ns": 1791180467659852004,
+    "device": 65025,
+    "inode": 1731212,
+    "sidecars": {
+      "-wal": false,
+      "-shm": false,
+      "-journal": false
+    }
+  },
+  "source_sha256_after": "f237daa6f4696f75e2081e93d69a57be6f8d9c097769aaa169a819789c9e4811",
+  "status": "PASS"
+}

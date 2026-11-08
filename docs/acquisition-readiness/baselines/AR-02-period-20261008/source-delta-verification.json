@@ -1,0 +1,13 @@
+{
+  "dependency_and_migration_changes": [],
+  "exact_delta": [
+    "scrapper/sources/exchange/reporting_periods.py",
+    "scrapper/sources/exchange/result_filings.py",
+    "scrapper/tests/test_e01_exchange_universe.py",
+    "scrapper/tests/test_e06_scheduler.py",
+    "scrapper/tests/test_reporting_periods.py",
+    "scrapper/workflows/exchange/schedule.py"
+  ],
+  "status": "PASS",
+  "unchanged_inputs_verified": 641
+}

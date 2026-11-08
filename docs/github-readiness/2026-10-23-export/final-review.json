@@ -1,0 +1,27 @@
+{
+  "review_completed_at_utc": "2026-10-23T04:58:44.051169+00:00",
+  "decision": "BLOCKED for private GitHub publication; reviewed local candidate prepared",
+  "candidate_commit": "272a1da16ab56afee737e3e83efb3cce32b0f8f1",
+  "files": 725,
+  "core_tests_passed": 92,
+  "host_tests_passed": 50,
+  "host_tests_deselected": 10,
+  "original_head_and_index_preserved": true,
+  "candidate_and_original_commit_sets_disjoint": true,
+  "concurrent_source_drift": [
+    "ops/host/acquisition_lifecycle.py",
+    "ops/host/acquisition_queries.py",
+    "ops/host/acquisition_terminal.py",
+    "ops/host/test_acquisition_terminal.py"
+  ],
+  "remote_operations_performed": false,
+  "production_databases_opened": false,
+  "credentials_rotated": false,
+  "original_history_rewritten": false,
+  "remaining_blockers": [
+    "authorized historical credential remediation and exposure review",
+    "source/third-party rights clearance",
+    "external data, fixture, optional dependency and deployment portability gaps",
+    "frozen snapshot acceptance amid concurrent edits"
+  ]
+}

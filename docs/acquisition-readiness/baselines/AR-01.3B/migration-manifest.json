@@ -1,0 +1,36 @@
+{
+  "baseline": "068_exchange_source_access_compatibility.sql",
+  "baseline_foreign_key_violations": 10771,
+  "pending": [
+    {
+      "filename": "069_worker_claim_fencing.sql",
+      "sha256": "3207e495e464d079ffd5d18ade9197d5f9cd3510916e83f2dd281f7aec7a71cb"
+    },
+    {
+      "filename": "070_document_extraction_claims.sql",
+      "sha256": "cc6c82616d2e78d622a4e925c8b8bf7f9916c9b4b585a0ae9663f7541e7e447b"
+    },
+    {
+      "filename": "071_shared_host_permits.sql",
+      "sha256": "c27f8542dc2d0ea2fa12a3736eb6c08b1e8a4a1f0f90c3317c006e370a9daa32"
+    },
+    {
+      "filename": "072_document_processing_work.sql",
+      "sha256": "71f2e6662a34959334c393ca8a35f71fd0155c22fdfecd34c148d3bc354e2897"
+    },
+    {
+      "filename": "073_exchange_coordinator_tasks.sql",
+      "sha256": "e514e175670059b67aa23a06510532bee4742b88dbc253dcf0c5c9438f859571"
+    },
+    {
+      "filename": "074_collection_scope_tasks.sql",
+      "sha256": "11c16d9edf80189409b9c5fdfe1158f91d5f717fdcfdee068f6b5d11f6f4b871"
+    },
+    {
+      "filename": "075_periodic_dispatch.sql",
+      "sha256": "ef3758d563a8791e3c889158e20b165fc295f6818ea83b32f3048c6086a059e1"
+    }
+  ],
+  "recovery": "quiescent pre-write snapshot restore only; no blind partial-DDL retry",
+  "reviewed_effects": "docs/acquisition-readiness/baselines/AR-01.1/migration-effect-manifest.json"
+}

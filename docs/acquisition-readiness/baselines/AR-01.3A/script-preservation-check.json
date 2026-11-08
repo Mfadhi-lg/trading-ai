@@ -1,0 +1,9 @@
+{
+  "status": "PASS",
+  "scripts_unchanged_from_authorized_preparation": {
+    "validate_copy.py": "49becb95ec073c2cf6dbe9f21c8ae076d8c387aa12ea48904bbe955f0edb748c",
+    "copy_source.py": "40e6325b838f9873d3a6709b95df970dfe1bde001771cbabbed009063f059e74",
+    "snapshot_driver.py": "17fab4bfe28692e9216dda83cb45b9cdadbdfed5d13675274472a588195995a0"
+  },
+  "daemon_recovery": "No snapshot directory, driver log, final result or active run was present before the single execution started at 18:23:22Z."
+}

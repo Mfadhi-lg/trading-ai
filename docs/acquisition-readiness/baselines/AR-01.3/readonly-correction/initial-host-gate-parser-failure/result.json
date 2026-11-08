@@ -1,0 +1,25 @@
+{
+  "CANARY_HARNESS": "FAIL",
+  "docker_launched": false,
+  "image_identity": {
+    "id": "sha256:4d289faa67334bc870d4f2a6a181feecee777fd427eac209b9adef68ecab0238",
+    "source": "c3ddbbb9c298d07b8b46a362996251417282476a",
+    "platform": "linux/arm64"
+  },
+  "volume_identity": {
+    "CreatedAt": "2026-08-05T20:44:24Z",
+    "Driver": "local",
+    "Labels": {
+      "com.docker.compose.config-hash": "42d6777d3ced6b86ac33dbc865d78a1a1e7b4676803bd3de8fd755c0515442cd",
+      "com.docker.compose.project": "trading-ai",
+      "com.docker.compose.version": "5.1.3",
+      "com.docker.compose.volume": "scraper-data"
+    },
+    "Mountpoint": "/var/lib/docker/volumes/trading-ai_scraper-data/_data",
+    "Name": "trading-ai_scraper-data",
+    "Options": null,
+    "Scope": "local"
+  },
+  "error": "Unknown host process may own DB: [89235, 89290]",
+  "exit_classification": "FAIL_CLOSED"
+}

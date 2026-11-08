@@ -15,9 +15,12 @@ import time
 
 class WorkerLifecycle:
     def __init__(self, *, event=None, monotonic=time.monotonic,
-                 heartbeat_seconds=5, observer=None, signal_api=signal):
+                 heartbeat_seconds=5, observer=None, signal_api=signal, stop_at=None):
         if not math.isfinite(heartbeat_seconds) or heartbeat_seconds <= 0:
             raise ValueError("heartbeat_seconds must be finite and positive")
+        if stop_at is not None and not math.isfinite(stop_at):
+            raise ValueError("stop_at must be finite")
+        self.stop_at = stop_at
         self.event = event if event is not None else threading.Event()
         self.clock = monotonic
         self.interval = heartbeat_seconds
@@ -64,7 +67,7 @@ class WorkerLifecycle:
         self.event.set()
 
     def is_set(self):
-        return self.event.is_set()
+        return self.event.is_set() or (self.stop_at is not None and self.clock() >= self.stop_at)
 
     def claimed(self, job_id):
         if self.active_job is not None:

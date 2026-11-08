@@ -1,0 +1,8 @@
+{
+  "baseline_exists": true,
+  "migrated_exists": true,
+  "baseline_bytes": 14602158080,
+  "migrated_bytes": 14602240000,
+  "observed_growth_bytes": 81920,
+  "claim": "Retained clone size observation; not production sizing guarantee"
+}

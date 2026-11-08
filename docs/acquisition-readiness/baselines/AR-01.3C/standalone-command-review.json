@@ -1,0 +1,330 @@
+[
+  {
+    "module": "scrapper/commands/browser_rating_headed.py",
+    "sha256": "481d811f6f2f283d24f394ae63243c3fe3e8ca2f18de76d23b45604118d9af67",
+    "argparse_inputs": [],
+    "while_loops": 0,
+    "has_main": true
+  },
+  {
+    "module": "scrapper/commands/browser_rating_host.py",
+    "sha256": "90c5bc2ace9ea8b03b1af9769fbe33bc2790d7cfa9506b922a195f8cb7d6054a",
+    "argparse_inputs": [],
+    "while_loops": 0,
+    "has_main": true
+  },
+  {
+    "module": "scrapper/commands/browser_rating_host_config.py",
+    "sha256": "9c686704e27b92681b2779669848f6629711abb597ec9dc24d5190957955ce36",
+    "argparse_inputs": [],
+    "while_loops": 0,
+    "has_main": false
+  },
+  {
+    "module": "scrapper/commands/browser_rating_probe.py",
+    "sha256": "4a8b320e06ee9404935a81ab284c6f5aa123015263ace77fcf6b0a278f75d02b",
+    "argparse_inputs": [
+      [
+        "--host"
+      ],
+      [
+        "--artifact-id"
+      ]
+    ],
+    "while_loops": 0,
+    "has_main": true
+  },
+  {
+    "module": "scrapper/commands/browser_rating_progress.py",
+    "sha256": "7236d5597292523dff0d1787112ffe1ff7e061b788c59441492ea9c5699c226e",
+    "argparse_inputs": [
+      [
+        "--run-id"
+      ],
+      [
+        "--include-exceptions"
+      ]
+    ],
+    "while_loops": 0,
+    "has_main": true
+  },
+  {
+    "module": "scrapper/commands/browser_rating_recovery.py",
+    "sha256": "b6cd3e73c88e59c7bc1e40a07afbad6768ceb7f4f8522c6ab7f14db646cc90d2",
+    "argparse_inputs": [
+      [
+        "--db"
+      ],
+      [
+        "--run-id"
+      ],
+      [
+        "--seed"
+      ],
+      [
+        "--apply"
+      ],
+      [
+        "--process"
+      ],
+      [
+        "--repair-pdfs"
+      ],
+      [
+        "--bridge"
+      ],
+      [
+        "--follow"
+      ],
+      [
+        "--operator-authorized"
+      ],
+      [
+        "--host"
+      ],
+      [
+        "--job-id"
+      ],
+      [
+        "--limit"
+      ],
+      [
+        "--throttle-seconds"
+      ]
+    ],
+    "while_loops": 1,
+    "has_main": true
+  },
+  {
+    "module": "scrapper/commands/collection_scope.py",
+    "sha256": "199af7d27542548215e99f42462a7b2600e6eb011e8ad220b6349c32a66372b3",
+    "argparse_inputs": [
+      [
+        "--db"
+      ],
+      [
+        "--bootstrap"
+      ],
+      [
+        "--monitor"
+      ],
+      [
+        "--serve"
+      ],
+      [
+        "--apply"
+      ],
+      [
+        "--limit"
+      ]
+    ],
+    "while_loops": 0,
+    "has_main": true
+  },
+  {
+    "module": "scrapper/commands/diagnose_retryable_failures.py",
+    "sha256": "848a820aadd7c59f6d421134fdd62929ddb38c3281004e3a15d8c62b153d06f5",
+    "argparse_inputs": [
+      [
+        "--db"
+      ],
+      [
+        "--scope-id"
+      ],
+      [
+        "--output-dir"
+      ]
+    ],
+    "while_loops": 0,
+    "has_main": true
+  },
+  {
+    "module": "scrapper/commands/exchange_bulk_enqueue.py",
+    "sha256": "4cbc89020203b6be654c073e2b66679123b33a0155fce744f6156d96ad1c067f",
+    "argparse_inputs": [],
+    "while_loops": 0,
+    "has_main": false
+  },
+  {
+    "module": "scrapper/commands/exchange_unaccepted_backfill.py",
+    "sha256": "c732d29b5f96bf5e13aec4e29ee6bedcb7f44fde4c6df586d11116f12ba46018",
+    "argparse_inputs": [],
+    "while_loops": 0,
+    "has_main": false
+  },
+  {
+    "module": "scrapper/commands/periodic_dispatch.py",
+    "sha256": "f54743fad0cefbef552b5340ff6ee997dc7e6fe39a36bc3a53035cd038eaa8b9",
+    "argparse_inputs": [
+      [
+        "--db"
+      ],
+      [
+        "--apply"
+      ],
+      [
+        "--once"
+      ]
+    ],
+    "while_loops": 0,
+    "has_main": true
+  },
+  {
+    "module": "scrapper/commands/processing_campaign.py",
+    "sha256": "6576b18885112f24bc8e92b2194485aa8bef6288dcd10b1d56fe16cd94848ac1",
+    "argparse_inputs": [
+      [
+        "--db"
+      ],
+      [
+        "freeze"
+      ],
+      [
+        "--campaign-id"
+      ],
+      [
+        "--period"
+      ],
+      [
+        "--run-id"
+      ],
+      [
+        "--browser-job-id"
+      ],
+      [
+        "--limit"
+      ],
+      [],
+      [
+        "--manifest"
+      ],
+      [
+        "--sha256"
+      ],
+      [
+        "--output-dir"
+      ],
+      [
+        "--limit"
+      ],
+      [
+        "--apply"
+      ]
+    ],
+    "while_loops": 0,
+    "has_main": true
+  },
+  {
+    "module": "scrapper/commands/publish_document_store_capacity.py",
+    "sha256": "baa39114c91fa4b3f2b08c50968eb3055aee241df2c2c832c45df9d066797034",
+    "argparse_inputs": [
+      [
+        "--root"
+      ],
+      [
+        "--no-require-sentinel"
+      ],
+      [
+        "--loop"
+      ]
+    ],
+    "while_loops": 1,
+    "has_main": true
+  },
+  {
+    "module": "scrapper/commands/quarter_documents.py",
+    "sha256": "6f42eb9da102fdbc3d0e14fec7715b530d16d7fbc1f7266292a9f0a32395572b",
+    "argparse_inputs": [
+      [
+        "--db"
+      ],
+      [
+        "--period"
+      ],
+      [
+        "--output"
+      ],
+      [
+        "--prioritize"
+      ],
+      [
+        "--repair-period-tags"
+      ],
+      [
+        "--apply"
+      ]
+    ],
+    "while_loops": 0,
+    "has_main": true
+  },
+  {
+    "module": "scrapper/commands/quarter_extract.py",
+    "sha256": "5011113715bbd3e04ae6c84b9057405f73781f35a0361d819af37d44e0beeb40",
+    "argparse_inputs": [
+      [
+        "--db"
+      ],
+      [
+        "--period"
+      ],
+      [
+        "--limit"
+      ],
+      [
+        "--apply"
+      ]
+    ],
+    "while_loops": 0,
+    "has_main": true
+  },
+  {
+    "module": "scrapper/commands/quarter_processing_role.py",
+    "sha256": "46543c67d0db73d768e7d80e2aee13e2ed6c7b5aa910ba61b9d4b7a264aab4d3",
+    "argparse_inputs": [
+      [
+        "--db"
+      ],
+      [
+        "--period"
+      ],
+      [
+        "--limit"
+      ],
+      [
+        "--state-dir"
+      ],
+      [
+        "--apply"
+      ]
+    ],
+    "while_loops": 0,
+    "has_main": true
+  },
+  {
+    "module": "scrapper/commands/recover_quarter_document_links.py",
+    "sha256": "eb4720e02e5aead5ba2c49bd7e8d022e5dbe25c36f956a7bd08baa131d043a3e",
+    "argparse_inputs": [
+      [
+        "--db"
+      ],
+      [
+        "--period"
+      ],
+      [
+        "--limit"
+      ],
+      [
+        "--apply"
+      ]
+    ],
+    "while_loops": 0,
+    "has_main": true
+  },
+  {
+    "module": "scrapper/commands/screener_period_coverage.py",
+    "sha256": "f11a1364abb16f053fa9feeeeab92001282a9f3b92da0dbf9bf431ef8eed799e",
+    "argparse_inputs": [],
+    "while_loops": 0,
+    "has_main": false
+  }
+]

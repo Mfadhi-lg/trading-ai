@@ -26,6 +26,10 @@ def settings():
         raise ValueError('Invalid storage growth enforcement setting')
     if type(c.get('concurrent_processing_enabled', False)) is not bool:
         raise ValueError('Invalid concurrent processing setting')
+    if type(c.get('historical_download_fallback',False)) is not bool:
+        raise ValueError('Invalid historical download fallback')
+    if type(c.get('download_max_response_bytes',10485760)) is not int or not 10485760 <= c.get('download_max_response_bytes',10485760) <= 256*1024**2:
+        raise ValueError('Invalid document download response limit')
     bounds={
         'historical_limit':0,'runtime_deadline_seconds':480,'max_response_bytes':10485760,
         'max_redirects':1,'max_download_attempts':3,'initial_duration_hours':24,'concurrency':1,
@@ -157,7 +161,7 @@ def reserve_daily_stage(out,kind,now,*,download_limit=None,reservation_file='dai
     source_units=(capacity['screener_request_limit']+capacity['official_request_limit'] if kind=='DOCUMENT_DISCOVERY'
         else config.get('rating_browser_request_limit',12) if kind=='DOCUMENT_RATING'
         else selected_limit*2 if kind=='DOCUMENT_DOWNLOAD' else 1 if kind=='DOCUMENT_PATROL' else 0)
-    source_bytes=source_units*(2 if kind=='DOCUMENT_DISCOVERY' else 10)*1024**2
+    source_bytes=source_units*(config.get('download_max_response_bytes',10*1024**2) if kind=='DOCUMENT_DOWNLOAD' else (2 if kind=='DOCUMENT_DISCOVERY' else 10)*1024**2)
     if used+units>maximum:return False
     document_units=config.get('processing_limit',1) if kind=='DOCUMENT_PROCESSING' else 0
     if document_units and processing_documents+document_units>config.get('extractions_max_per_day',720):return False
@@ -329,7 +333,7 @@ def execute_once(kind,out,*,local_historical_processing=False,resume_local_campa
         from scraper_storage_growth import batch_account,account_and_refresh
         from automatic_acquisition import STATE
         growth,capacity=account_and_refresh(STORE,STATE/'scraper-storage-growth-v1.json',c,capacity,
-            reserve_bytes=c['max_response_bytes']*((discovery_capacity(c)['screener_request_limit']+c['official_request_limit']) if kind=='DOCUMENT_DISCOVERY' else c['download_limit']*2 if kind=='DOCUMENT_DOWNLOAD' else c.get('rating_browser_request_limit',12) if kind=='DOCUMENT_RATING' else 2))
+            reserve_bytes=(c.get('download_max_response_bytes',c['max_response_bytes']) if kind=='DOCUMENT_DOWNLOAD' else c['max_response_bytes'])*((discovery_capacity(c)['screener_request_limit']+c['official_request_limit']) if kind=='DOCUMENT_DISCOVERY' else c['download_limit']*2 if kind=='DOCUMENT_DOWNLOAD' else c.get('rating_browser_request_limit',12) if kind=='DOCUMENT_RATING' else 2))
         save(out,'execution-storage-preflight.json',capacity)
         save(out,'scraper-storage-growth.json',growth)
         timing('storage_growth_inventory_and_capacity_refresh')

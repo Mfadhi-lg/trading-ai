@@ -1,0 +1,8 @@
+[
+  {
+    "path": "ops/host/acquisition_queries.py",
+    "line": 47,
+    "module": "acquisition_financial_renderer",
+    "disposition": "deployment-only optional renderer; ModuleNotFoundError branch falls back to included scrapper.view.render outside /activation"
+  }
+]

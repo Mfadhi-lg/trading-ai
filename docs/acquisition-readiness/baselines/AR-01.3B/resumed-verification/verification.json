@@ -1,0 +1,36 @@
+{
+  "db_sha256": "d773f4863e41266ca2cbbd76f1d542eb888878be1380e40114c34b4164fe4afc",
+  "fk_after": 10771,
+  "fk_before": 10771,
+  "integrity_check": [
+    "ok"
+  ],
+  "missing_fk_identities": 0,
+  "new_fk_identities": 0,
+  "new_ledger_rows": 7,
+  "new_table_counts": {
+    "acquisition_host_permits": 0,
+    "acquisition_host_state": 0,
+    "collection_scope_tasks": 0,
+    "document_extraction_claims": 0,
+    "document_processing_inbox": 0,
+    "document_processing_work": 0,
+    "exchange_coordinator_tasks": 0,
+    "periodic_dispatch_tasks": 0
+  },
+  "nonnull_claim_tokens": {
+    "artifact_download_queue": 0,
+    "browser_rating_recovery_jobs": 0,
+    "credit_rating_download_queue": 0
+  },
+  "original_data_preserved": true,
+  "original_ledger_rows": 69,
+  "original_rows": 62554193,
+  "original_tables": 149,
+  "production_mounts": [],
+  "quick_check": [
+    "ok"
+  ],
+  "status": "PASS",
+  "total_ledger_rows": 76
+}

@@ -1,0 +1,28 @@
+{
+  "modules": [
+    "test_screener_acceptance_repo",
+    "test_screener_observation_repo",
+    "test_screener_statements",
+    "test_screener_period_coverage",
+    "test_company_quarter_features",
+    "test_financial_feature_ownership",
+    "test_reporting_periods",
+    "test_document_persistence_ownership",
+    "test_d02_document_store_guard",
+    "test_document_download_queue",
+    "test_document_download_ownership",
+    "test_document_evidence_interface",
+    "test_document_reconciliation_ownership",
+    "test_document_readiness_ownership"
+  ],
+  "python": "3.14.5 (v3.14.5:5607950ef23, May 10 2026, 07:38:09) [Clang 21.0.0 (clang-2100.0.123.102)]",
+  "tests": 68,
+  "failures": 0,
+  "errors": 5,
+  "skips": 0,
+  "successful": false,
+  "network": "denied by audit hook in test runner",
+  "sqlite": "memory/temporary fixtures only",
+  "production_database_opened": false,
+  "limits": "subprocess import-inertness probes use existing tests; existing B0-derived fixture inputs read in place and not copied to report"
+}

@@ -1,0 +1,21 @@
+{
+  "execution_agent": "CODEX",
+  "fk_count": 10771,
+  "fk_multiset_matches_historical_and_restored": true,
+  "production_migrations": 0,
+  "production_restore": false,
+  "production_source_unchanged": true,
+  "production_writes": 0,
+  "recovery_authority": "USER",
+  "restore_volume": "trading-ai-ar013a-restore-proof-20261007",
+  "restored_manifests_match": true,
+  "restored_sha256": "f237daa6f4696f75e2081e93d69a57be6f8d9c097769aaa169a819789c9e4811",
+  "row_count": 62554193,
+  "schema": "068",
+  "snapshot_path": "/Users/mohamedfadhi/Fadhi/trading-ai/artifacts/acquisition-readiness/AR-01.3/pre-migration-068/raw/scraper.db",
+  "snapshot_sha256": "f237daa6f4696f75e2081e93d69a57be6f8d9c097769aaa169a819789c9e4811",
+  "snapshot_validation_volume": "trading-ai-ar013a-snapshot-validation-20261007",
+  "source_sha256": "f237daa6f4696f75e2081e93d69a57be6f8d9c097769aaa169a819789c9e4811",
+  "status": "PASS",
+  "table_count": 149
+}

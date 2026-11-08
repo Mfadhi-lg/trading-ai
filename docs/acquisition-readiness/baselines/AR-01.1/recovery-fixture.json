@@ -1,0 +1,11 @@
+{
+  "claim_type": "CONTROLLED_FIXTURE",
+  "migration": "069_worker_claim_fencing.sql",
+  "injected_error": "not authorized",
+  "partial_schema_persists": true,
+  "ledger_rows_after_failure": 0,
+  "blind_resume_error": "duplicate column name: claim_token",
+  "recreated_baseline_apply": "PASS",
+  "recovery_rule": "Stop all writers; preserve failed state; restore verified pre-change snapshot before retry. No automatic skip/renumber/replay.",
+  "production_access": "none"
+}

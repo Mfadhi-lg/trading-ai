@@ -1,0 +1,10 @@
+{
+  "claim_type": "CLONE_REHEARSAL",
+  "baseline_tables": 149,
+  "baseline_rows": 62554193,
+  "unchanged_tables": 148,
+  "unchanged_rows": 62554124,
+  "unexpected_row_deltas": [],
+  "migration_ledger_rows_before": 69,
+  "migration_ledger_rows_after": 76
+}

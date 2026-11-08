@@ -1,0 +1,1 @@
+Read-only gate failed before any write attempt due to omitted sidecars field in the gate identity dictionary. Independent RO diagnosis established exact source identity/hash, absent key and zero other claims/work references. Gate now includes the verified absent sidecar fields. No canary write command was run or retried.

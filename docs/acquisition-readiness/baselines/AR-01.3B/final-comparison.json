@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "original_149_table_fingerprints_equal": true,
+  "baseline_ledger_rows_preserved": 69,
+  "only_seven_new_ledger_rows": true,
+  "runtime_marker_bytes_unchanged": true,
+  "accepted_identity_unauthorized_unchanged": true,
+  "application_py_files_preserved": 2539,
+  "canary_db_identity_hash_unchanged": true,
+  "operational_workers_started": false,
+  "network_requests": 0,
+  "production_business_writes": 0,
+  "recovery_authority": "USER",
+  "execution_agent": "CODEX",
+  "automatic_restore": false
+}

@@ -86,14 +86,16 @@ def execute_once(kind,out,*,verify_only=False,company_path=None,paired_downloads
             from automatic_acquisition import STATE,save as durable_save
             documents=document_settings();capacity=storage_preflight()
             growth,capacity=account_and_refresh(STORE,STATE/'scraper-storage-growth-v1.json',documents,capacity,
-                reserve_bytes=documents['max_response_bytes']*config.get('paired_download_limit',5)*2)
+                reserve_bytes=documents.get('download_max_response_bytes',documents['max_response_bytes'])*config.get('paired_download_limit',5)*2)
             adapter.save('paired-storage-growth.json',growth)
             if reserve_daily_stage(out,'DOCUMENT_DOWNLOAD',datetime.now(timezone.utc),
                     download_limit=config.get('paired_download_limit',5)):
                 limit=config.get('paired_download_limit',5)
                 if type(limit) is not int or not 1<=limit<=30:raise ValueError('Invalid paired download limit')
                 plan['paired_downloads']={'id':hashlib.sha256(str(out).encode()).hexdigest()[:24],
-                    'limit':limit,'epoch':documents.get('acquisition_epoch_utc',documents['activated_at_utc'])}
+                    'limit':limit,'epoch':documents.get('acquisition_epoch_utc',documents['activated_at_utc']),
+                    'max_response_bytes':documents.get('download_max_response_bytes',documents['max_response_bytes']),
+                    'historical_fallback':documents.get('historical_download_fallback',False)}
                 from phase4_schedule import enable_processing_companion
                 enable_processing_companion(out,plan,documents,datetime.now(timezone.utc))
                 adapter.save('plan.json',plan)

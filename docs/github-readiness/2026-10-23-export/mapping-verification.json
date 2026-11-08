@@ -1,0 +1,13 @@
+{
+  "mapping_rows": 725,
+  "mapping_covers_manifest_exactly": true,
+  "export_hashes_match": true,
+  "operations": {
+    "copy": 714,
+    "generated_export_only": 7,
+    "export_only_modification": 3,
+    "extract_exact_sql_member": 1
+  },
+  "shell_files_checked": 3,
+  "shell_syntax_failures": 0
+}

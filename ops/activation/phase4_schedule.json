@@ -21,7 +21,7 @@
   "max_download_attempts": 3,
   "initial_duration_hours": 24,
   "source_requests_max_per_day": 11000,
-  "source_bytes_max_per_day": 115343360000,
+  "source_bytes_max_per_day": 2952790016000,
   "extractions_max_per_day": 7200,
   "document_versions_max_per_day": 365,
   "concurrency": 1,
@@ -43,5 +43,8 @@
   "processing_daily_slots": 240,
   "download_minutes": "8,20,28,40,48",
   "enforce_external_growth_limit": false,
-  "concurrent_processing_enabled": true
+  "concurrent_processing_enabled": true,
+  "historical_download_fallback": true,
+  "download_max_response_bytes": 268435456,
+  "large_document_history_authorization": "8 November user: download the 60 large files; current-quarter first, historical downloads when current work is exhausted"
 }

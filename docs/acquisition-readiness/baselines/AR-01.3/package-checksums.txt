@@ -1,0 +1,8 @@
+323430153aee665857c94fc8ef4085d7785cc48e0499343935d5bd9c48d3d4ea  ops/docker/release/c28.1/ROLLOUT_ROLLBACK.md
+dab46d09d22252126352ce02b649b1f53f9a8689ee4b388a48f861478ca7dd59  ops/docker/release/c28.1/compose.candidate.json
+2d0bf67aea44ecbc4ffa46582d4fae553d8440248d0cdd1debed81079f55e9d1  ops/docker/release/c28.1/core-documents-sentinel.json
+8ddae3a1d85d8e87771ffa9a4bc82158def90bf1b0507517805543cc4ad0b6fd  ops/docker/release/c28.1/external-documents-sentinel.json
+78e09cdfbffbed6943e72c540f11c7555c0cdd2463cd8bf213530072d39fd12b  ops/docker/release/c28.1/release-manifest.json
+b9cbb4aa22016b31bad9d99b80908f35927f1eb0df9ae5dc91f465dc024f3c77  ops/docker/release/c28.1/runtime-identity-core.json
+3abce5b2baaa354f5a0e61e98f403867b774c962835c893936edca38a3fb728f  ops/docker/release/c28.1/runtime-identity-documents.json
+bf885c5205ace8e3b68eacd4cf946a39353626e09fc3803aef5cbdc730ee641b  ops/docker/release/c28.1/store-sentinel.json

@@ -1,0 +1,36 @@
+{
+  "files": [
+    {
+      "path": "scraper-monitor",
+      "bytes": 156,
+      "classification": "REVIEW_REQUIRED",
+      "scope": "concurrent final-tree drift; not executed or changed by audit"
+    },
+    {
+      "path": "ops/host/acquisition_observations.py",
+      "bytes": 14285,
+      "classification": "REVIEW_REQUIRED",
+      "scope": "concurrent final-tree drift; not executed or changed by audit"
+    },
+    {
+      "path": "ops/host/acquisition_queries.py",
+      "bytes": 8483,
+      "classification": "REVIEW_REQUIRED",
+      "scope": "concurrent final-tree drift; not executed or changed by audit"
+    },
+    {
+      "path": "ops/host/acquisition_terminal.py",
+      "bytes": 28758,
+      "classification": "REVIEW_REQUIRED",
+      "scope": "concurrent final-tree drift; not executed or changed by audit"
+    },
+    {
+      "path": "ops/host/test_acquisition_observations.py",
+      "bytes": 11124,
+      "classification": "REVIEW_REQUIRED",
+      "scope": "concurrent final-tree drift; not executed or changed by audit"
+    }
+  ],
+  "heuristic_findings": [],
+  "limit": "static text only; no runtime or complete compatibility acceptance"
+}

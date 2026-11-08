@@ -1,0 +1,14 @@
+{
+  "automatic_restore": false,
+  "error": "Full post-migration verification failed; no repair",
+  "execution_agent": "CODEX",
+  "failure_preservation_error": "Read-only inventory command failed: docker ps -aq\nfailed to connect to the docker API at unix:///Users/mohamedfadhi/.docker/run/docker.sock; check if the path is correct and if the daemon is running: dial unix /Users/mohamedfadhi/.docker/run/docker.sock: connect: no such file or directory\n",
+  "migration_attempted": true,
+  "migration_exit_success": true,
+  "network_requests": 0,
+  "operational_workers_started": false,
+  "pre_write_gate": "PASS",
+  "production_business_writes": 0,
+  "recovery_authority": "USER",
+  "status": "FAIL"
+}

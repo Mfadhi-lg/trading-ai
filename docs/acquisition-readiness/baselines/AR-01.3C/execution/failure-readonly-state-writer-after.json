@@ -1,0 +1,1326 @@
+{
+  "containers": [
+    {
+      "id": "639aec6fe6fb8029ee07d989f9cc0847509ca5e21cb1e9a1c896e5e7a1364cab",
+      "image": "sha256:44da7074157fd2a946c41d064a91ef3f729ebd31ab3bcdf2aa09233c5a794b6b",
+      "mounts": [
+        {
+          "Destination": "/data",
+          "Name": "trading-ai_scraper-data",
+          "RW": true,
+          "Source": "/var/lib/docker/volumes/trading-ai_scraper-data/_data",
+          "Type": "volume"
+        },
+        {
+          "Destination": "/data/.trading_ai_runtime_identity.json",
+          "Name": null,
+          "RW": false,
+          "Source": "/private/tmp/trading-ai-cleanup-c050-20261002/dev/ops/docker/release/c05.3/store-sentinel.json",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/data/snapshots/.trading_ai_runtime_identity.json",
+          "Name": null,
+          "RW": false,
+          "Source": "/private/tmp/trading-ai-cleanup-c050-20261002/dev/ops/docker/release/c05.3/core-documents-sentinel.json",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/run/secrets/screener_session",
+          "Name": null,
+          "RW": false,
+          "Source": "/Users/mohamedfadhi/Fadhi/trading-ai/.screener_session",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/run/trading-ai/runtime-identity.json",
+          "Name": null,
+          "RW": false,
+          "Source": "/private/tmp/trading-ai-cleanup-c050-20261002/dev/ops/docker/release/c05.3/runtime-identity-core.json",
+          "Type": "bind"
+        }
+      ],
+      "name": "/trading-ai-artifact-reconciler-1",
+      "project": "trading-ai",
+      "running": false,
+      "status": "exited"
+    },
+    {
+      "id": "6950b6e80d6a547ef13d21d8ad1a80da47412056185439d58c465396233d6a82",
+      "image": "sha256:44da7074157fd2a946c41d064a91ef3f729ebd31ab3bcdf2aa09233c5a794b6b",
+      "mounts": [
+        {
+          "Destination": "/data",
+          "Name": "trading-ai_scraper-data",
+          "RW": true,
+          "Source": "/var/lib/docker/volumes/trading-ai_scraper-data/_data",
+          "Type": "volume"
+        },
+        {
+          "Destination": "/documents",
+          "Name": null,
+          "RW": true,
+          "Source": "/host_mnt/Volumes/My Passport/passport/trading-ai",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/data/.trading_ai_runtime_identity.json",
+          "Name": null,
+          "RW": false,
+          "Source": "/private/tmp/trading-ai-cleanup-c050-20261002/dev/ops/docker/release/c05.3/store-sentinel.json",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/run/trading-ai/runtime-identity.json",
+          "Name": null,
+          "RW": false,
+          "Source": "/private/tmp/trading-ai-cleanup-c050-20261002/dev/ops/docker/release/c05.3/runtime-identity-documents.json",
+          "Type": "bind"
+        }
+      ],
+      "name": "/trading-ai-credit-rating-worker-india-ratings-1",
+      "project": "trading-ai",
+      "running": false,
+      "status": "exited"
+    },
+    {
+      "id": "7e52a78debfce30f2afffe61bf41db6a91577f4495eabcbce1ec0254cd1fe372",
+      "image": "sha256:44da7074157fd2a946c41d064a91ef3f729ebd31ab3bcdf2aa09233c5a794b6b",
+      "mounts": [
+        {
+          "Destination": "/data",
+          "Name": "trading-ai_scraper-data",
+          "RW": true,
+          "Source": "/var/lib/docker/volumes/trading-ai_scraper-data/_data",
+          "Type": "volume"
+        },
+        {
+          "Destination": "/documents",
+          "Name": null,
+          "RW": true,
+          "Source": "/Volumes/My Passport/passport/trading-ai",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/data/.trading_ai_runtime_identity.json",
+          "Name": null,
+          "RW": false,
+          "Source": "/private/tmp/trading-ai-cleanup-c050-20261002/dev/ops/docker/release/c05.3/store-sentinel.json",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/run/trading-ai/runtime-identity.json",
+          "Name": null,
+          "RW": false,
+          "Source": "/private/tmp/trading-ai-cleanup-c050-20261002/dev/ops/docker/release/c05.3/runtime-identity-documents.json",
+          "Type": "bind"
+        }
+      ],
+      "name": "/trading-ai-rating-recovery-download-1",
+      "project": "trading-ai",
+      "running": false,
+      "status": "exited"
+    },
+    {
+      "id": "13e1a6d9003e1e44d53e659cd15c3d84ae5061389f644f4fbfd683ad51d6d5c0",
+      "image": "sha256:44da7074157fd2a946c41d064a91ef3f729ebd31ab3bcdf2aa09233c5a794b6b",
+      "mounts": [
+        {
+          "Destination": "/data",
+          "Name": "trading-ai_scraper-data",
+          "RW": true,
+          "Source": "/var/lib/docker/volumes/trading-ai_scraper-data/_data",
+          "Type": "volume"
+        },
+        {
+          "Destination": "/documents",
+          "Name": null,
+          "RW": true,
+          "Source": "/host_mnt/Volumes/My Passport/passport/trading-ai",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/data/.trading_ai_runtime_identity.json",
+          "Name": null,
+          "RW": false,
+          "Source": "/private/tmp/trading-ai-cleanup-c050-20261002/dev/ops/docker/release/c05.3/store-sentinel.json",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/run/trading-ai/runtime-identity.json",
+          "Name": null,
+          "RW": false,
+          "Source": "/private/tmp/trading-ai-cleanup-c050-20261002/dev/ops/docker/release/c05.3/runtime-identity-documents.json",
+          "Type": "bind"
+        }
+      ],
+      "name": "/trading-ai-credit-rating-worker-other-1",
+      "project": "trading-ai",
+      "running": false,
+      "status": "exited"
+    },
+    {
+      "id": "250e11f9035c89c7cc87ea50a21f45f063431cd1940d6a459da3bc14ba90a263",
+      "image": "sha256:44da7074157fd2a946c41d064a91ef3f729ebd31ab3bcdf2aa09233c5a794b6b",
+      "mounts": [
+        {
+          "Destination": "/data",
+          "Name": "trading-ai_scraper-data",
+          "RW": true,
+          "Source": "/var/lib/docker/volumes/trading-ai_scraper-data/_data",
+          "Type": "volume"
+        },
+        {
+          "Destination": "/data/.trading_ai_runtime_identity.json",
+          "Name": null,
+          "RW": false,
+          "Source": "/private/tmp/trading-ai-cleanup-c050-20261002/dev/ops/docker/release/c05.3/store-sentinel.json",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/data/snapshots/.trading_ai_runtime_identity.json",
+          "Name": null,
+          "RW": false,
+          "Source": "/private/tmp/trading-ai-cleanup-c050-20261002/dev/ops/docker/release/c05.3/core-documents-sentinel.json",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/run/secrets/screener_session",
+          "Name": null,
+          "RW": false,
+          "Source": "/Users/mohamedfadhi/Fadhi/trading-ai/.screener_session",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/run/trading-ai/runtime-identity.json",
+          "Name": null,
+          "RW": false,
+          "Source": "/private/tmp/trading-ai-cleanup-c050-20261002/dev/ops/docker/release/c05.3/runtime-identity-core.json",
+          "Type": "bind"
+        }
+      ],
+      "name": "/trading-ai-daemon-1",
+      "project": "trading-ai",
+      "running": false,
+      "status": "exited"
+    },
+    {
+      "id": "2585a1c3f82d748395e775ff9a7e81deb89752f796bbc7584ebae199d8657499",
+      "image": "sha256:44da7074157fd2a946c41d064a91ef3f729ebd31ab3bcdf2aa09233c5a794b6b",
+      "mounts": [
+        {
+          "Destination": "/data",
+          "Name": "trading-ai_scraper-data",
+          "RW": true,
+          "Source": "/var/lib/docker/volumes/trading-ai_scraper-data/_data",
+          "Type": "volume"
+        },
+        {
+          "Destination": "/data/.trading_ai_runtime_identity.json",
+          "Name": null,
+          "RW": false,
+          "Source": "/private/tmp/trading-ai-cleanup-c050-20261002/dev/ops/docker/release/c05.3/store-sentinel.json",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/data/snapshots/.trading_ai_runtime_identity.json",
+          "Name": null,
+          "RW": false,
+          "Source": "/private/tmp/trading-ai-cleanup-c050-20261002/dev/ops/docker/release/c05.3/core-documents-sentinel.json",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/run/secrets/screener_session",
+          "Name": null,
+          "RW": false,
+          "Source": "/Users/mohamedfadhi/Fadhi/trading-ai/.screener_session",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/run/trading-ai/runtime-identity.json",
+          "Name": null,
+          "RW": false,
+          "Source": "/private/tmp/trading-ai-cleanup-c050-20261002/dev/ops/docker/release/c05.3/runtime-identity-core.json",
+          "Type": "bind"
+        }
+      ],
+      "name": "/trading-ai-market-cap-monitor-1",
+      "project": "trading-ai",
+      "running": false,
+      "status": "exited"
+    },
+    {
+      "id": "6616ad3c971c6ececd3e03d499757d4418b76badbdd8535ea6b8377616019fe7",
+      "image": "sha256:44da7074157fd2a946c41d064a91ef3f729ebd31ab3bcdf2aa09233c5a794b6b",
+      "mounts": [
+        {
+          "Destination": "/data",
+          "Name": "trading-ai_scraper-data",
+          "RW": true,
+          "Source": "/var/lib/docker/volumes/trading-ai_scraper-data/_data",
+          "Type": "volume"
+        },
+        {
+          "Destination": "/documents",
+          "Name": null,
+          "RW": true,
+          "Source": "/host_mnt/Volumes/My Passport/passport/trading-ai",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/data/.trading_ai_runtime_identity.json",
+          "Name": null,
+          "RW": false,
+          "Source": "/private/tmp/trading-ai-cleanup-c050-20261002/dev/ops/docker/release/c05.3/store-sentinel.json",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/run/trading-ai/runtime-identity.json",
+          "Name": null,
+          "RW": false,
+          "Source": "/private/tmp/trading-ai-cleanup-c050-20261002/dev/ops/docker/release/c05.3/runtime-identity-documents.json",
+          "Type": "bind"
+        }
+      ],
+      "name": "/trading-ai-credit-rating-worker-care-1",
+      "project": "trading-ai",
+      "running": false,
+      "status": "exited"
+    },
+    {
+      "id": "8d9ce95e9fb370ed58dfc6bc015c4cd64cf3612e1ab4f99bd3a89dccee804a8a",
+      "image": "sha256:44da7074157fd2a946c41d064a91ef3f729ebd31ab3bcdf2aa09233c5a794b6b",
+      "mounts": [
+        {
+          "Destination": "/data",
+          "Name": "trading-ai_scraper-data",
+          "RW": true,
+          "Source": "/var/lib/docker/volumes/trading-ai_scraper-data/_data",
+          "Type": "volume"
+        },
+        {
+          "Destination": "/documents",
+          "Name": null,
+          "RW": true,
+          "Source": "/host_mnt/Volumes/My Passport/passport/trading-ai",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/data/.trading_ai_runtime_identity.json",
+          "Name": null,
+          "RW": false,
+          "Source": "/private/tmp/trading-ai-cleanup-c050-20261002/dev/ops/docker/release/c05.3/store-sentinel.json",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/run/trading-ai/runtime-identity.json",
+          "Name": null,
+          "RW": false,
+          "Source": "/private/tmp/trading-ai-cleanup-c050-20261002/dev/ops/docker/release/c05.3/runtime-identity-documents.json",
+          "Type": "bind"
+        }
+      ],
+      "name": "/trading-ai-document-download-worker-1",
+      "project": "trading-ai",
+      "running": false,
+      "status": "exited"
+    },
+    {
+      "id": "77b0f22ffea118f0898735590b164e892ba74b28ddcb0552bc6336d799c805ec",
+      "image": "sha256:44da7074157fd2a946c41d064a91ef3f729ebd31ab3bcdf2aa09233c5a794b6b",
+      "mounts": [
+        {
+          "Destination": "/data",
+          "Name": "trading-ai_scraper-data",
+          "RW": true,
+          "Source": "/var/lib/docker/volumes/trading-ai_scraper-data/_data",
+          "Type": "volume"
+        },
+        {
+          "Destination": "/documents",
+          "Name": null,
+          "RW": true,
+          "Source": "/host_mnt/Volumes/My Passport/passport/trading-ai",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/data/.trading_ai_runtime_identity.json",
+          "Name": null,
+          "RW": false,
+          "Source": "/private/tmp/trading-ai-cleanup-c050-20261002/dev/ops/docker/release/c05.3/store-sentinel.json",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/run/trading-ai/runtime-identity.json",
+          "Name": null,
+          "RW": false,
+          "Source": "/private/tmp/trading-ai-cleanup-c050-20261002/dev/ops/docker/release/c05.3/runtime-identity-documents.json",
+          "Type": "bind"
+        }
+      ],
+      "name": "/trading-ai-rating-recovery-discovery-1",
+      "project": "trading-ai",
+      "running": false,
+      "status": "exited"
+    },
+    {
+      "id": "3f668247dc567ffedb32f34b8d42a407eb31d71dffb92b1d45c6e56154d8f1d8",
+      "image": "sha256:44da7074157fd2a946c41d064a91ef3f729ebd31ab3bcdf2aa09233c5a794b6b",
+      "mounts": [
+        {
+          "Destination": "/data",
+          "Name": "trading-ai_scraper-data",
+          "RW": true,
+          "Source": "/var/lib/docker/volumes/trading-ai_scraper-data/_data",
+          "Type": "volume"
+        },
+        {
+          "Destination": "/documents",
+          "Name": null,
+          "RW": false,
+          "Source": "/host_mnt/Volumes/My Passport/passport/trading-ai",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/data/.trading_ai_runtime_identity.json",
+          "Name": null,
+          "RW": false,
+          "Source": "/private/tmp/trading-ai-cleanup-c050-20261002/dev/ops/docker/release/c05.3/store-sentinel.json",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/run/trading-ai/runtime-identity.json",
+          "Name": null,
+          "RW": false,
+          "Source": "/private/tmp/trading-ai-cleanup-c050-20261002/dev/ops/docker/release/c05.3/runtime-identity-documents.json",
+          "Type": "bind"
+        }
+      ],
+      "name": "/trading-ai-june-extraction-worker-1",
+      "project": "trading-ai",
+      "running": false,
+      "status": "exited"
+    },
+    {
+      "id": "9ca2f37f946cd54d9e226a48b0d1efe13084250cacbd3bc376dc15a236a3d997",
+      "image": "sha256:44da7074157fd2a946c41d064a91ef3f729ebd31ab3bcdf2aa09233c5a794b6b",
+      "mounts": [
+        {
+          "Destination": "/data",
+          "Name": "trading-ai_scraper-data",
+          "RW": true,
+          "Source": "/var/lib/docker/volumes/trading-ai_scraper-data/_data",
+          "Type": "volume"
+        },
+        {
+          "Destination": "/data/.trading_ai_runtime_identity.json",
+          "Name": null,
+          "RW": false,
+          "Source": "/private/tmp/trading-ai-cleanup-c050-20261002/dev/ops/docker/release/c05.3/store-sentinel.json",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/data/snapshots/.trading_ai_runtime_identity.json",
+          "Name": null,
+          "RW": false,
+          "Source": "/private/tmp/trading-ai-cleanup-c050-20261002/dev/ops/docker/release/c05.3/core-documents-sentinel.json",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/run/trading-ai/runtime-identity.json",
+          "Name": null,
+          "RW": false,
+          "Source": "/private/tmp/trading-ai-cleanup-c050-20261002/dev/ops/docker/release/c05.3/runtime-identity-core.json",
+          "Type": "bind"
+        }
+      ],
+      "name": "/trading-ai-scheduler-1",
+      "project": "trading-ai",
+      "running": false,
+      "status": "exited"
+    },
+    {
+      "id": "0abb4dee49b75588148b6cdff973754e9861a3cbb551c2a80d7b201c350bb617",
+      "image": "sha256:628c1939e064c0aea4df267117f1f8498c57e02c35dbdf119a9078e51d3d7ef5",
+      "mounts": [
+        {
+          "Destination": "/data",
+          "Name": "trading-ai_scraper-data",
+          "RW": true,
+          "Source": "/var/lib/docker/volumes/trading-ai_scraper-data/_data",
+          "Type": "volume"
+        },
+        {
+          "Destination": "/documents",
+          "Name": null,
+          "RW": true,
+          "Source": "/host_mnt/Volumes/My Passport/passport/trading-ai",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/app/scrapper",
+          "Name": null,
+          "RW": false,
+          "Source": "/host_mnt/Users/mohamedfadhi/Fadhi/trading-ai/scrapper",
+          "Type": "bind"
+        }
+      ],
+      "name": "/trading-ai-browser-rating-crisil-1",
+      "project": "trading-ai",
+      "running": false,
+      "status": "exited"
+    },
+    {
+      "id": "d2692d92a114f1ecada7edeee746af90f52c0055dbe62acb1b9596534d065ce7",
+      "image": "sha256:628c1939e064c0aea4df267117f1f8498c57e02c35dbdf119a9078e51d3d7ef5",
+      "mounts": [
+        {
+          "Destination": "/data",
+          "Name": "trading-ai_scraper-data",
+          "RW": true,
+          "Source": "/var/lib/docker/volumes/trading-ai_scraper-data/_data",
+          "Type": "volume"
+        },
+        {
+          "Destination": "/documents",
+          "Name": null,
+          "RW": true,
+          "Source": "/host_mnt/Volumes/My Passport/passport/trading-ai",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/app/scrapper",
+          "Name": null,
+          "RW": false,
+          "Source": "/host_mnt/Users/mohamedfadhi/Fadhi/trading-ai/scrapper",
+          "Type": "bind"
+        }
+      ],
+      "name": "/trading-ai-browser-rating-other-1",
+      "project": "trading-ai",
+      "running": false,
+      "status": "exited"
+    },
+    {
+      "id": "00b4776ea29052f9ef249b8f92a79e8870a269e2f2af97222675b78dcff40ea1",
+      "image": "sha256:628c1939e064c0aea4df267117f1f8498c57e02c35dbdf119a9078e51d3d7ef5",
+      "mounts": [
+        {
+          "Destination": "/data",
+          "Name": "trading-ai_scraper-data",
+          "RW": true,
+          "Source": "/var/lib/docker/volumes/trading-ai_scraper-data/_data",
+          "Type": "volume"
+        },
+        {
+          "Destination": "/documents",
+          "Name": null,
+          "RW": true,
+          "Source": "/host_mnt/Volumes/My Passport/passport/trading-ai",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/app/scrapper",
+          "Name": null,
+          "RW": false,
+          "Source": "/host_mnt/Users/mohamedfadhi/Fadhi/trading-ai/scrapper",
+          "Type": "bind"
+        }
+      ],
+      "name": "/trading-ai-browser-rating-extract-1",
+      "project": "trading-ai",
+      "running": false,
+      "status": "exited"
+    },
+    {
+      "id": "e0d6d57cfb7967764f537bbb15cf27e93b7bf92f38458be785db033bdcef5f8e",
+      "image": "sha256:7ac04052eae910a8373270cd4c9031fad28a6a8fc3b4a389681cc5ae0c8ca8c6",
+      "mounts": [
+        {
+          "Destination": "/data",
+          "Name": "trading-ai_scraper-data",
+          "RW": true,
+          "Source": "/var/lib/docker/volumes/trading-ai_scraper-data/_data",
+          "Type": "volume"
+        },
+        {
+          "Destination": "/app/scrapper",
+          "Name": null,
+          "RW": false,
+          "Source": "/host_mnt/Users/mohamedfadhi/Fadhi/trading-ai/scrapper",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/run/secrets/screener_session",
+          "Name": null,
+          "RW": false,
+          "Source": "/host_mnt/Users/mohamedfadhi/Fadhi/trading-ai/.screener_session",
+          "Type": "bind"
+        }
+      ],
+      "name": "/screener-master-backfill-v2",
+      "project": "trading-ai",
+      "running": false,
+      "status": "exited"
+    },
+    {
+      "id": "f5019b5a7ffbd225721f0f8c90693e88005c4df767a48d590413d2d126e18a01",
+      "image": "sha256:65919a9ca10940feb10d9400fead0d639bf86241f47c91e2b9ea4703aa8452cf",
+      "mounts": [
+        {
+          "Destination": "/var/www/html",
+          "Name": "genzee-version-02_wordpress_data",
+          "RW": true,
+          "Source": "/var/lib/docker/volumes/genzee-version-02_wordpress_data/_data",
+          "Type": "volume"
+        },
+        {
+          "Destination": "/var/www/html/wp-content/seed-assets",
+          "Name": null,
+          "RW": false,
+          "Source": "/host_mnt/Users/mohamedfadhi/Fadhi/Zircon-ai-agents/genzee-version-0.2/seed-assets",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/var/www/html/wp-content/themes/genzee",
+          "Name": null,
+          "RW": true,
+          "Source": "/host_mnt/Users/mohamedfadhi/Fadhi/Zircon-ai-agents/genzee-version-0.2/wp-content/themes/genzee",
+          "Type": "bind"
+        }
+      ],
+      "name": "/genzee-version-02-wordpress-1",
+      "project": "genzee-version-02",
+      "running": false,
+      "status": "exited"
+    },
+    {
+      "id": "b11497265bbc0b9889ed02f5074190306dac561dc470813043a8bc5305058460",
+      "image": "sha256:4f1d8d202fcf7bcb3902f63af09f9c1a050c2922a89652f22abaec0d4f015e83",
+      "mounts": [
+        {
+          "Destination": "/var/lib/mysql",
+          "Name": "genzee-version-02_db_data",
+          "RW": true,
+          "Source": "/var/lib/docker/volumes/genzee-version-02_db_data/_data",
+          "Type": "volume"
+        }
+      ],
+      "name": "/genzee-version-02-database-1",
+      "project": "genzee-version-02",
+      "running": false,
+      "status": "exited"
+    },
+    {
+      "id": "a14ca5af9fd71d9502438d1766f282d8e9461f1334fccf3fb6e0756e65333c05",
+      "image": "sha256:8801a1239d7ba9fb340a5fc5ba0bf7f8d3652adbd64893e3fba7992ba618108e",
+      "mounts": [
+        {
+          "Destination": "/var/www/html",
+          "Name": "genzee-wordpress-2_wordpress_data",
+          "RW": true,
+          "Source": "/var/lib/docker/volumes/genzee-wordpress-2_wordpress_data/_data",
+          "Type": "volume"
+        },
+        {
+          "Destination": "/var/www/html/wp-content/themes/genzee-prototype",
+          "Name": null,
+          "RW": true,
+          "Source": "/host_mnt/Users/mohamedfadhi/Fadhi/Zircon-ai-agents/genzee-wordpress-2/wp-content/themes/genzee-prototype",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/var/www/html/wp-content/themes/genzee-prototype/prototype.html",
+          "Name": null,
+          "RW": false,
+          "Source": "/Users/mohamedfadhi/Fadhi/Zircon-ai-agents/genzee-wordpress-2/genzee_playful_commerce_v4_cart_wishlist_fixed.html",
+          "Type": "bind"
+        }
+      ],
+      "name": "/genzee-wordpress-2-wordpress-1",
+      "project": "genzee-wordpress-2",
+      "running": false,
+      "status": "exited"
+    },
+    {
+      "id": "9132bebdd931a4453c829aa2b1a6d7f497076e78023b78cf6efa5872f16ee0e9",
+      "image": "sha256:2b5e9d4d3e51909dca1aaa4732e9f5e5bf0377c2114dbd8ff39f060bff202586",
+      "mounts": [
+        {
+          "Destination": "/var/www/html",
+          "Name": "zircon_jewels_wordpress_wordpress_data",
+          "RW": true,
+          "Source": "/var/lib/docker/volumes/zircon_jewels_wordpress_wordpress_data/_data",
+          "Type": "volume"
+        },
+        {
+          "Destination": "/var/www/html/wp-content",
+          "Name": null,
+          "RW": true,
+          "Source": "/host_mnt/Users/mohamedfadhi/Fadhi/Zircon-ai-agents/zircon_jewels_wordpress/wp-content",
+          "Type": "bind"
+        }
+      ],
+      "name": "/zircon-wp-setup",
+      "project": "zircon_jewels_wordpress",
+      "running": false,
+      "status": "exited"
+    },
+    {
+      "id": "904336d6cbc892f209a1e8dac32e268444bbbef4e2fb7311274388f81fe1ae23",
+      "image": "sha256:65919a9ca10940feb10d9400fead0d639bf86241f47c91e2b9ea4703aa8452cf",
+      "mounts": [
+        {
+          "Destination": "/prototype/Zircon_Mixed_Theme_24_Full_Width_Overlay_Section.html",
+          "Name": null,
+          "RW": false,
+          "Source": "/host_mnt/Users/mohamedfadhi/Fadhi/Zircon-ai-agents/zircon_jewels_wordpress/Zircon_Mixed_Theme_24_Full_Width_Overlay_Section.html",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/var/www/html",
+          "Name": "zircon_jewels_wordpress_wordpress_data",
+          "RW": true,
+          "Source": "/var/lib/docker/volumes/zircon_jewels_wordpress_wordpress_data/_data",
+          "Type": "volume"
+        },
+        {
+          "Destination": "/var/www/html/wp-content",
+          "Name": null,
+          "RW": true,
+          "Source": "/host_mnt/Users/mohamedfadhi/Fadhi/Zircon-ai-agents/zircon_jewels_wordpress/wp-content",
+          "Type": "bind"
+        }
+      ],
+      "name": "/zircon-wp",
+      "project": "zircon_jewels_wordpress",
+      "running": false,
+      "status": "exited"
+    },
+    {
+      "id": "20c90c0d7c1b27b873962aa788ffb3bf81b2eb27bc6377d284f7667c4ff5d790",
+      "image": "sha256:8620869ecf48e0eda305b4ee466990fa318664c638b861ebd5ce443d9904abde",
+      "mounts": [
+        {
+          "Destination": "/var/www/html",
+          "Name": "genzee-wordpress-2_wordpress_data",
+          "RW": true,
+          "Source": "/var/lib/docker/volumes/genzee-wordpress-2_wordpress_data/_data",
+          "Type": "volume"
+        },
+        {
+          "Destination": "/var/www/html/wp-content/themes/genzee-prototype",
+          "Name": null,
+          "RW": true,
+          "Source": "/host_mnt/Users/mohamedfadhi/Fadhi/Zircon-ai-agents/genzee-wordpress-2/wp-content/themes/genzee-prototype",
+          "Type": "bind"
+        }
+      ],
+      "name": "/genzee-wordpress-2-wordpress-init-1",
+      "project": "genzee-wordpress-2",
+      "running": false,
+      "status": "exited"
+    },
+    {
+      "id": "3a4393b05a55df95f512a35a1b4be453cf290bd94e781facc31ea6c892aa9415",
+      "image": "sha256:4f1d8d202fcf7bcb3902f63af09f9c1a050c2922a89652f22abaec0d4f015e83",
+      "mounts": [
+        {
+          "Destination": "/var/lib/mysql",
+          "Name": "zircon_jewels_wordpress_db_data",
+          "RW": true,
+          "Source": "/var/lib/docker/volumes/zircon_jewels_wordpress_db_data/_data",
+          "Type": "volume"
+        }
+      ],
+      "name": "/zircon-wp-db",
+      "project": "zircon_jewels_wordpress",
+      "running": false,
+      "status": "exited"
+    },
+    {
+      "id": "3e60d2bf2296ec16b5fcc138fca8487ae82940b859bd2237d8b83accf29c14cf",
+      "image": "sha256:4f1d8d202fcf7bcb3902f63af09f9c1a050c2922a89652f22abaec0d4f015e83",
+      "mounts": [
+        {
+          "Destination": "/var/lib/mysql",
+          "Name": "genzee-wordpress-2_db_data",
+          "RW": true,
+          "Source": "/var/lib/docker/volumes/genzee-wordpress-2_db_data/_data",
+          "Type": "volume"
+        }
+      ],
+      "name": "/genzee-wordpress-2-db-1",
+      "project": "genzee-wordpress-2",
+      "running": false,
+      "status": "exited"
+    },
+    {
+      "id": "3f632e7a9276909873441259fe089dbf9dd2c457824fbeeb9eabddde2d81c6c0",
+      "image": "sha256:00ba258a66dac104fd5171074a0084462a64a1369d8513f3d0a634e2f24d15bc",
+      "mounts": [
+        {
+          "Destination": "/var/lib/postgresql/data",
+          "Name": "fb6de995622210b341153f21a081ff165935663bf0ce29fbb6f5f259a8110dba",
+          "RW": true,
+          "Source": "/var/lib/docker/volumes/fb6de995622210b341153f21a081ff165935663bf0ce29fbb6f5f259a8110dba/_data",
+          "Type": "volume"
+        }
+      ],
+      "name": "/saj-release-gate-pg",
+      "project": null,
+      "running": false,
+      "status": "exited"
+    },
+    {
+      "id": "dfa43e8b31ea520fb65f3514f7c89c226b9072fcc7af270f3fb8877e6c155977",
+      "image": "sha256:00ba258a66dac104fd5171074a0084462a64a1369d8513f3d0a634e2f24d15bc",
+      "mounts": [
+        {
+          "Destination": "/var/lib/postgresql/data",
+          "Name": "infra_postgres_data",
+          "RW": true,
+          "Source": "/var/lib/docker/volumes/infra_postgres_data/_data",
+          "Type": "volume"
+        }
+      ],
+      "name": "/infra-postgres-1",
+      "project": "infra",
+      "running": false,
+      "status": "exited"
+    },
+    {
+      "id": "63557a803e1c49108ea0010d77b737fab196bf9f8304a215d202283860b65898",
+      "image": "sha256:e3c570ba6f38dbc8b6aa085e3fe1d057863649851a1a5b427326a408990369ea",
+      "mounts": [],
+      "name": "/zircon-customer-ai-api-1",
+      "project": "zircon-customer-ai",
+      "running": false,
+      "status": "exited"
+    },
+    {
+      "id": "3e32afc05e320e0d27115e0c023d015dd7d03ed44d2f209f85666804babb2d27",
+      "image": "sha256:9adc4a30bc7fa2cf175c503430385e4c356b026194173d0548eb1333bb04befc",
+      "mounts": [],
+      "name": "/zircon-customer-ai-inbound-1",
+      "project": "zircon-customer-ai",
+      "running": false,
+      "status": "exited"
+    },
+    {
+      "id": "0f0074183d5a3756d6540c3421485392a1f75ab60e09caeecc9b87c54ecf646e",
+      "image": "sha256:d2dfe99bd57c785089b7577a0542a03b2cb0831f6e980f1617000d0767150b1d",
+      "mounts": [],
+      "name": "/zircon-customer-ai-scheduler-1",
+      "project": "zircon-customer-ai",
+      "running": false,
+      "status": "exited"
+    },
+    {
+      "id": "bdedfc7abddc8112c8966422ca5acd667c6284c1ab0893ad3c70734cfd7375b5",
+      "image": "sha256:e5b0bdcc935b01742b0d47ace42825afd9f38b4812ad37cb09804eb27d5716b8",
+      "mounts": [],
+      "name": "/zircon-customer-ai-outbox-1",
+      "project": "zircon-customer-ai",
+      "running": false,
+      "status": "exited"
+    },
+    {
+      "id": "0885cab21af1ad240f50518fb9373bb757c465be2dc4a80a7fc29bd25e972a2d",
+      "image": "sha256:dd729027cafc9fc4d9e82dcfaace870e2a751cf217894df29d16d481a3a6a2f7",
+      "mounts": [],
+      "name": "/zircon-customer-ai-migrate-1",
+      "project": "zircon-customer-ai",
+      "running": false,
+      "status": "exited"
+    },
+    {
+      "id": "c1601e0b86c076c00db3722f8741fe7b8481015636fc36098c835afe30b53573",
+      "image": "sha256:6ab0b6e7381779332f97b8ca76193e45b0756f38d4c0dcda72dbb3c32061ab99",
+      "mounts": [
+        {
+          "Destination": "/data",
+          "Name": "docker_redis_data",
+          "RW": true,
+          "Source": "/var/lib/docker/volumes/docker_redis_data/_data",
+          "Type": "volume"
+        }
+      ],
+      "name": "/zircon-customer-ai-redis-1",
+      "project": "zircon-customer-ai",
+      "running": false,
+      "status": "exited"
+    },
+    {
+      "id": "afe11dae895ac1202773f2f625b0562b4163d9dbff4d707bbd0a4ff6beb28b43",
+      "image": "sha256:00ba258a66dac104fd5171074a0084462a64a1369d8513f3d0a634e2f24d15bc",
+      "mounts": [
+        {
+          "Destination": "/var/lib/postgresql/data",
+          "Name": "docker_postgres_data",
+          "RW": true,
+          "Source": "/var/lib/docker/volumes/docker_postgres_data/_data",
+          "Type": "volume"
+        }
+      ],
+      "name": "/zircon-customer-ai-postgres-1",
+      "project": "zircon-customer-ai",
+      "running": false,
+      "status": "exited"
+    },
+    {
+      "id": "c37a704d68b3ef8354ca51161fe159a2ce6c02a656a5f7e8f653ea7351af5af3",
+      "image": "sha256:d48b1810cbadcc2b8510b172b1ff705d7b57c64694be61e79c1dd372e4b30b7c",
+      "mounts": [
+        {
+          "Destination": "/ragflow/entrypoint.sh",
+          "Name": null,
+          "RW": true,
+          "Source": "/Users/mohamedfadhi/no-code tools/ragflow/docker/entrypoint.sh",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/ragflow/logs",
+          "Name": null,
+          "RW": true,
+          "Source": "/Users/mohamedfadhi/no-code tools/ragflow/docker/ragflow-logs",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/ragflow/conf/service_conf.yaml.template",
+          "Name": null,
+          "RW": true,
+          "Source": "/Users/mohamedfadhi/no-code tools/ragflow/docker/service_conf.yaml.template",
+          "Type": "bind"
+        }
+      ],
+      "name": "/ragflow-ragflow-cpu-1",
+      "project": "ragflow",
+      "running": false,
+      "status": "exited"
+    },
+    {
+      "id": "5a09c2d97d5b4ccacd9400cbee3d8729d24e59ebdca52d152e0407e382c8eb6d",
+      "image": "sha256:58a3a280935d830215802322e9a0373faaacdfd646477aa7e718939c2f29292a",
+      "mounts": [
+        {
+          "Destination": "/usr/share/elasticsearch/data",
+          "Name": "ragflow_esdata01",
+          "RW": true,
+          "Source": "/var/lib/docker/volumes/ragflow_esdata01/_data",
+          "Type": "volume"
+        }
+      ],
+      "name": "/ragflow-es01-1",
+      "project": "ragflow",
+      "running": false,
+      "status": "exited"
+    },
+    {
+      "id": "057307f8e59d53900af787d0324c8477a691dd63e1423bb59db75b3b713c7128",
+      "image": "sha256:ccb8f749bb5e59f9f8f03bf7282c7ef27a93a1814a24f0a8a926fb4e19b7fb97",
+      "mounts": [
+        {
+          "Destination": "/data/application/init.sql",
+          "Name": null,
+          "RW": true,
+          "Source": "/host_mnt/Users/mohamedfadhi/no-code tools/ragflow/docker/init.sql",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/var/lib/mysql",
+          "Name": "ragflow_mysql_data",
+          "RW": true,
+          "Source": "/var/lib/docker/volumes/ragflow_mysql_data/_data",
+          "Type": "volume"
+        }
+      ],
+      "name": "/ragflow-mysql-1",
+      "project": "ragflow",
+      "running": false,
+      "status": "exited"
+    },
+    {
+      "id": "fd0cc4c2c43a42cb9f1a04053e65e665a3c13d0fcdae5b9eefff963aa9081afc",
+      "image": "sha256:a72bf37c235a83a73890d2a46c5b36801fed61c335175e0396070bf84a8bbb98",
+      "mounts": [
+        {
+          "Destination": "/data",
+          "Name": "ragflow_minio_data",
+          "RW": true,
+          "Source": "/var/lib/docker/volumes/ragflow_minio_data/_data",
+          "Type": "volume"
+        }
+      ],
+      "name": "/ragflow-minio-1",
+      "project": "ragflow",
+      "running": false,
+      "status": "exited"
+    },
+    {
+      "id": "aed012ec34537e48e5c4e5632f62cacb16d25cc091c84c6d2e4158d8fc450f4b",
+      "image": "sha256:9917e842cfc3220e4ac3e819eb98a975cc171eff5e532c79cb75558030eb9078",
+      "mounts": [
+        {
+          "Destination": "/data",
+          "Name": "ragflow_redis_data",
+          "RW": true,
+          "Source": "/var/lib/docker/volumes/ragflow_redis_data/_data",
+          "Type": "volume"
+        }
+      ],
+      "name": "/ragflow-redis-1",
+      "project": "ragflow",
+      "running": false,
+      "status": "exited"
+    },
+    {
+      "id": "032a4c2b72b9694565a50955655f8f729b4caf6163aaed7d6206d14f30d1fe17",
+      "image": "sha256:8015fc08a0006d201b464a43e6997705d3f99cbd2581bf2bea0d23ae501b68c5",
+      "mounts": [
+        {
+          "Destination": "/docker-entrypoint-mount.sh",
+          "Name": null,
+          "RW": true,
+          "Source": "/Users/mohamedfadhi/no-code tools/dify/docker/nginx/docker-entrypoint.sh",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/etc/letsencrypt",
+          "Name": null,
+          "RW": true,
+          "Source": "/Users/mohamedfadhi/no-code tools/dify/docker/volumes/certbot/conf",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/etc/ssl",
+          "Name": null,
+          "RW": true,
+          "Source": "/Users/mohamedfadhi/no-code tools/dify/docker/nginx/ssl",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/etc/letsencrypt/live",
+          "Name": null,
+          "RW": true,
+          "Source": "/Users/mohamedfadhi/no-code tools/dify/docker/volumes/certbot/conf/live",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/etc/nginx/conf.d",
+          "Name": null,
+          "RW": true,
+          "Source": "/Users/mohamedfadhi/no-code tools/dify/docker/nginx/conf.d",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/etc/nginx/https.conf.template",
+          "Name": null,
+          "RW": true,
+          "Source": "/Users/mohamedfadhi/no-code tools/dify/docker/nginx/https.conf.template",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/etc/nginx/nginx.conf.template",
+          "Name": null,
+          "RW": true,
+          "Source": "/Users/mohamedfadhi/no-code tools/dify/docker/nginx/nginx.conf.template",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/etc/nginx/proxy.conf.template",
+          "Name": null,
+          "RW": true,
+          "Source": "/Users/mohamedfadhi/no-code tools/dify/docker/nginx/proxy.conf.template",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/var/www/html",
+          "Name": null,
+          "RW": true,
+          "Source": "/Users/mohamedfadhi/no-code tools/dify/docker/volumes/certbot/www",
+          "Type": "bind"
+        }
+      ],
+      "name": "/defy-nginx-1",
+      "project": "defy",
+      "running": false,
+      "status": "exited"
+    },
+    {
+      "id": "a67d241c6f79108ea2ec1b37599da743ffb20e9c12986b9c533063d893b6e958",
+      "image": "sha256:fa7ad45e1b2a777cd243b902609abecb4fd924adcd13d21ef4258b5090a09be5",
+      "mounts": [
+        {
+          "Destination": "/app/storage",
+          "Name": null,
+          "RW": true,
+          "Source": "/Users/mohamedfadhi/no-code tools/dify/docker/volumes/plugin_daemon",
+          "Type": "bind"
+        }
+      ],
+      "name": "/defy-plugin_daemon-1",
+      "project": "defy",
+      "running": false,
+      "status": "exited"
+    },
+    {
+      "id": "93b89d762351eba8245bae3a7b6739a47fc36d1a26169c046ec110b04ea7f8ab",
+      "image": "sha256:062815df8ed6fcf82285e55f3cb5586241b2828e6695a3fb8114bfb99b5e8517",
+      "mounts": [
+        {
+          "Destination": "/app/api/storage",
+          "Name": null,
+          "RW": true,
+          "Source": "/Users/mohamedfadhi/no-code tools/dify/docker/volumes/app/storage",
+          "Type": "bind"
+        }
+      ],
+      "name": "/defy-worker-1",
+      "project": "defy",
+      "running": false,
+      "status": "exited"
+    },
+    {
+      "id": "a69bdc48c087175a5029c778f47bed05dc5f2f57f3a5a27bba25e95a4040bcb0",
+      "image": "sha256:062815df8ed6fcf82285e55f3cb5586241b2828e6695a3fb8114bfb99b5e8517",
+      "mounts": [],
+      "name": "/defy-worker_beat-1",
+      "project": "defy",
+      "running": false,
+      "status": "exited"
+    },
+    {
+      "id": "ebf3559f0061bc58a8b84340c27dcd30f7a48b06b1d92d29c0fec3a6c559a510",
+      "image": "sha256:062815df8ed6fcf82285e55f3cb5586241b2828e6695a3fb8114bfb99b5e8517",
+      "mounts": [
+        {
+          "Destination": "/app/api/storage",
+          "Name": null,
+          "RW": true,
+          "Source": "/Users/mohamedfadhi/no-code tools/dify/docker/volumes/app/storage",
+          "Type": "bind"
+        }
+      ],
+      "name": "/defy-api-1",
+      "project": "defy",
+      "running": false,
+      "status": "exited"
+    },
+    {
+      "id": "39e51377b8009ef0b602f8f06e6f003c8258e14cf50019793bf6ac766f003c87",
+      "image": "sha256:062815df8ed6fcf82285e55f3cb5586241b2828e6695a3fb8114bfb99b5e8517",
+      "mounts": [],
+      "name": "/defy-api_websocket-1",
+      "project": "defy",
+      "running": false,
+      "status": "exited"
+    },
+    {
+      "id": "f6b2287062a5d1f3c63f5c79dcb11858d366d84273b55c644ffa790e53c2a05f",
+      "image": "sha256:750e1111426ef31a9217b81c98cccfb750f17b182af3221102e420afa9f0928e",
+      "mounts": [
+        {
+          "Destination": "/conf",
+          "Name": null,
+          "RW": true,
+          "Source": "/Users/mohamedfadhi/no-code tools/dify/docker/volumes/sandbox/conf",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/dependencies",
+          "Name": null,
+          "RW": true,
+          "Source": "/Users/mohamedfadhi/no-code tools/dify/docker/volumes/sandbox/dependencies",
+          "Type": "bind"
+        }
+      ],
+      "name": "/defy-sandbox-1",
+      "project": "defy",
+      "running": false,
+      "status": "exited"
+    },
+    {
+      "id": "cb3eb3ba8b0cba1367bf4987b0562f65ddb5232adde23c00a1d02de2bfb4fb2b",
+      "image": "sha256:db73434e185ac778f31f4cc1adcce0dbe84b41a95ea5af58216acf095eed5f67",
+      "mounts": [],
+      "name": "/defy-web-1",
+      "project": "defy",
+      "running": false,
+      "status": "exited"
+    },
+    {
+      "id": "b3f702e45665911f633b4abd21d9cc5a4682c78ee58bb9b56bb058b4126d4fa4",
+      "image": "sha256:c9ab371a96b057d3642be9bd71cb1b3fe97920d345dc949860578bffb3d54460",
+      "mounts": [
+        {
+          "Destination": "/data",
+          "Name": null,
+          "RW": true,
+          "Source": "/Users/mohamedfadhi/no-code tools/dify/docker/volumes/redis/data",
+          "Type": "bind"
+        }
+      ],
+      "name": "/defy-redis-1",
+      "project": "defy",
+      "running": false,
+      "status": "exited"
+    },
+    {
+      "id": "1e4c1cb536671ff46305cabd6f79b73541ad572eba66f483b7334729a75ebd84",
+      "image": "sha256:df7bca0066e6f60cc3dd32faa70caddec20e2c22b58932f79498e5704b23854a",
+      "mounts": [
+        {
+          "Destination": "/var/lib/postgresql/data",
+          "Name": null,
+          "RW": true,
+          "Source": "/Users/mohamedfadhi/no-code tools/dify/docker/volumes/db/data",
+          "Type": "bind"
+        }
+      ],
+      "name": "/defy-db_postgres-1",
+      "project": "defy",
+      "running": false,
+      "status": "exited"
+    },
+    {
+      "id": "88a3fc6d99f5d93ddbd3a9eefd95cfd0e9374af1c84fe5f0ffaab689b4bdc590",
+      "image": "sha256:1487d0af5f52b4ba31c7e465126ee2123fe3f2305d638e7827681e7cf6c83d5e",
+      "mounts": [
+        {
+          "Destination": "/app/api/storage",
+          "Name": null,
+          "RW": true,
+          "Source": "/Users/mohamedfadhi/no-code tools/dify/docker/volumes/app/storage",
+          "Type": "bind"
+        }
+      ],
+      "name": "/defy-init_permissions-1",
+      "project": "defy",
+      "running": false,
+      "status": "exited"
+    },
+    {
+      "id": "e25fe8a5b917adb4bccd871fc29c39f96f075ce608d39f926b2fde85ec20cc6d",
+      "image": "sha256:53fa576934f8e2c9130dc3a61a0f9b7d9330fe0ff456ccb37db05d03b700abc9",
+      "mounts": [
+        {
+          "Destination": "/var/lib/weaviate",
+          "Name": null,
+          "RW": true,
+          "Source": "/Users/mohamedfadhi/no-code tools/dify/docker/volumes/weaviate",
+          "Type": "bind"
+        }
+      ],
+      "name": "/defy-weaviate-1",
+      "project": "defy",
+      "running": false,
+      "status": "exited"
+    },
+    {
+      "id": "a55550e405a4b9af04df17991513a4e2c80bd1db609a444fcc3e40e698a23db0",
+      "image": "sha256:6a097f68bae708cedbabd6188d68c7e2e7a38cedd05a176e1cc0ba29e3bbe029",
+      "mounts": [
+        {
+          "Destination": "/docker-entrypoint-mount.sh",
+          "Name": null,
+          "RW": true,
+          "Source": "/Users/mohamedfadhi/no-code tools/dify/docker/ssrf_proxy/docker-entrypoint.sh",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/etc/squid/squid.conf.template",
+          "Name": null,
+          "RW": true,
+          "Source": "/Users/mohamedfadhi/no-code tools/dify/docker/ssrf_proxy/squid.conf.template",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/var/log/squid",
+          "Name": "8b3cdcddeee8d00569aa9ade63280174a1806c6f1399fa7a91a3cff960862066",
+          "RW": true,
+          "Source": "/var/lib/docker/volumes/8b3cdcddeee8d00569aa9ade63280174a1806c6f1399fa7a91a3cff960862066/_data",
+          "Type": "volume"
+        },
+        {
+          "Destination": "/var/spool/squid",
+          "Name": "337023bd619e9c65faf1af9a834ea7f927bedc9f1373cdd306b4b5c648c417c2",
+          "RW": true,
+          "Source": "/var/lib/docker/volumes/337023bd619e9c65faf1af9a834ea7f927bedc9f1373cdd306b4b5c648c417c2/_data",
+          "Type": "volume"
+        }
+      ],
+      "name": "/defy-ssrf_proxy-1",
+      "project": "defy",
+      "running": false,
+      "status": "exited"
+    },
+    {
+      "id": "9b91243187e9b2a9153bca6834fc4a7bf21b7299ca7052ed266f7250ecaa19b0",
+      "image": "sha256:c99242725f0663dbff1c4375500a5c0094ff7635a83510650d53e0573a7be1f6",
+      "mounts": [
+        {
+          "Destination": "/root/.flowise",
+          "Name": null,
+          "RW": true,
+          "Source": "/Users/mohamedfadhi/.flowise",
+          "Type": "bind"
+        }
+      ],
+      "name": "/flowise-flowise-1",
+      "project": "flowise",
+      "running": false,
+      "status": "exited"
+    },
+    {
+      "id": "e329617f2d9aec92bdcbe66cb3cc9a93730c9e60edcdefdb25d01ea9ba6e227f",
+      "image": "sha256:e755a7ba60113bb5e3959e24999e810be1aeee25e267d9dfec3dcfcb3d14617c",
+      "mounts": [
+        {
+          "Destination": "/home/node/.n8n",
+          "Name": "n8n_data",
+          "RW": true,
+          "Source": "/var/lib/docker/volumes/n8n_data/_data",
+          "Type": "volume"
+        }
+      ],
+      "name": "/n8n",
+      "project": null,
+      "running": false,
+      "status": "exited"
+    }
+  ],
+  "host_processes": [
+    {
+      "classification": "development_editor_or_agent_not_db_worker",
+      "executable": "/Users/mohamedfadhi/.gemini/bin/agy",
+      "pid": 2233
+    },
+    {
+      "classification": "development_editor_or_agent_not_db_worker",
+      "executable": "/Users/mohamedfadhi/.gemini/bin/agy",
+      "pid": 2235
+    },
+    {
+      "classification": "this_readonly_host_gate",
+      "executable": "/Library/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
+      "pid": 6002
+    }
+  ],
+  "known_external_db_writers": [],
+  "loaded_relevant_launch_tasks": [
+    "-\t1\tcom.trading-ai.document-capacity"
+  ],
+  "observed_at_epoch": 1791443343.1437619,
+  "scheduled_tasks": [
+    {
+      "classification": "document_capacity_only",
+      "label": "com.trading-ai.document-capacity",
+      "path": "/Users/mohamedfadhi/Library/LaunchAgents/com.trading-ai.document-capacity.plist",
+      "sha256": "4926210cb1d79766c4934497ffa672b8d3f44c17861dfdd4f517b1a5809789c2"
+    }
+  ],
+  "scope": "all Docker containers; host process inventory; user cron; host launch plists/user launch labels",
+  "user_cron": "none",
+  "writer_gate_passed": true
+}

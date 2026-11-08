@@ -1,0 +1,11 @@
+{
+  "branch": "chore/root-hygiene-pr",
+  "captured_at": "2026-10-22T18:20:01.141488+00:00",
+  "head": "0e6ee264931ba1a1e009e0785cf188f5dc9f37e8",
+  "indexed_files": 26066,
+  "remote": [
+    "origin\thttps://github.com/Mfadhi-lg/trading-ai.git (fetch)",
+    "origin\thttps://github.com/Mfadhi-lg/trading-ai.git (push)"
+  ],
+  "status_entries": 926
+}

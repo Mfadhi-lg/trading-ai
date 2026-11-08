@@ -1,0 +1,8 @@
+{
+  "environment": "production",
+  "path": "/data/snapshots",
+  "release_id": "c28.1-ar012-20261007",
+  "roles": [
+    "documents"
+  ]
+}

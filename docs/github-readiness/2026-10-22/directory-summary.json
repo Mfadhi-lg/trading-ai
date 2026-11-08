@@ -1,0 +1,134 @@
+{
+  ".DS_Store": {
+    "bytes": 10244,
+    "files": 1
+  },
+  ".dockerignore": {
+    "bytes": 430,
+    "files": 1
+  },
+  ".env": {
+    "bytes": 190,
+    "files": 1
+  },
+  ".github": {
+    "bytes": 1625,
+    "files": 2
+  },
+  ".gitignore": {
+    "bytes": 1598,
+    "files": 1
+  },
+  ".scraper_shutdown_state": {
+    "bytes": 386,
+    "files": 1
+  },
+  ".screener_csrf": {
+    "bytes": 32,
+    "files": 1
+  },
+  ".screener_session": {
+    "bytes": 33,
+    "files": 1
+  },
+  "Dockerfile": {
+    "bytes": 1674,
+    "files": 1
+  },
+  "OLD": {
+    "bytes": 1193505792,
+    "files": 937
+  },
+  "README.md": {
+    "bytes": 5535,
+    "files": 1
+  },
+  "SHARE_MANIFEST.md": {
+    "bytes": 11007,
+    "files": 1
+  },
+  "TRADING_AI_CLEANUP_EXECUTION.md": {
+    "bytes": 98185,
+    "files": 1
+  },
+  "TRADING_AI_MASTER_ROADMAP_V4_2026-09-29.md": {
+    "bytes": 37589,
+    "files": 1
+  },
+  "artifacts": {
+    "bytes": 85679602609,
+    "files": 113157
+  },
+  "compose.browser-recovery.development.yml": {
+    "bytes": 1081,
+    "files": 1
+  },
+  "compose.browser-recovery.yml": {
+    "bytes": 2423,
+    "files": 1
+  },
+  "compose.development.yml": {
+    "bytes": 4227,
+    "files": 1
+  },
+  "compose.yml": {
+    "bytes": 15633,
+    "files": 1
+  },
+  "control-center": {
+    "bytes": 506764,
+    "files": 10
+  },
+  "docs": {
+    "bytes": 9595750808,
+    "files": 1977
+  },
+  "experiments": {
+    "bytes": 154876,
+    "files": 21
+  },
+  "ops": {
+    "bytes": 1286804,
+    "files": 189
+  },
+  "resources": {
+    "bytes": 397816,
+    "files": 1
+  },
+  "sample_files": {
+    "bytes": 8740512,
+    "files": 14
+  },
+  "sample_files-2": {
+    "bytes": 20393773,
+    "files": 28
+  },
+  "sample_files-2.zip": {
+    "bytes": 18652381,
+    "files": 1
+  },
+  "scraper": {
+    "bytes": 158,
+    "files": 1
+  },
+  "scraper-monitor": {
+    "bytes": 174,
+    "files": 1
+  },
+  "scrapper": {
+    "bytes": 605436730,
+    "files": 1620
+  },
+  "screener-token": {
+    "bytes": 1425,
+    "files": 1
+  },
+  "scripts": {
+    "bytes": 51604,
+    "files": 7
+  },
+  "trading-ai-code-review-compact.zip": {
+    "bytes": 49023949,
+    "files": 1
+  }
+}

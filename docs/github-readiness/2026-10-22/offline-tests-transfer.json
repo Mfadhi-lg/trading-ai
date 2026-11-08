@@ -1,0 +1,15 @@
+{
+  "modules": [
+    "test_d02_document_downloader"
+  ],
+  "python": "3.13.13 (main, May 10 2026, 19:20:37) [Clang 22.1.3 ]",
+  "tests": 13,
+  "failures": 0,
+  "errors": 0,
+  "skips": 0,
+  "successful": true,
+  "network": "denied by audit hook in test runner",
+  "sqlite": "memory/temporary fixtures only",
+  "production_database_opened": false,
+  "limits": "subprocess import-inertness probes use existing tests; existing B0-derived fixture inputs read in place and not copied to report"
+}

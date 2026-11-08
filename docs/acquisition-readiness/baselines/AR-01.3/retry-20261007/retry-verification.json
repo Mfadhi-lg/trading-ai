@@ -1,0 +1,45 @@
+{
+  "at_utc": "2026-10-07T13:20:43.640034+00:00",
+  "status": "BLOCKED",
+  "selection": "User requested do it again for AR-01.3; finite seven-migration/read-only-canary scope reselected, subject to prerequisites",
+  "review_passed": true,
+  "source_hash_reconciled": true,
+  "loaded_image_identity_matches": true,
+  "archive_durably_retained": true,
+  "live_schema_matches_audited_068": true,
+  "live_ledger_count": 69,
+  "pending_migrations": [
+    "069_worker_claim_fencing.sql",
+    "070_document_extraction_claims.sql",
+    "071_shared_host_permits.sql",
+    "072_document_processing_work.sql",
+    "073_exchange_coordinator_tasks.sql",
+    "074_collection_scope_tasks.sql",
+    "075_periodic_dispatch.sql"
+  ],
+  "wal_shm_absent": true,
+  "expired_download_claim_ids": [
+    78106,
+    126196
+  ],
+  "unclosed_scrape_run_ids": [
+    19232,
+    19275,
+    20183
+  ],
+  "runtime_inventory": "All 52 Docker containers exited; 15 Trading AI project containers exited",
+  "host_processes": "No Trading AI worker/CLI/capacity process observed; two development editor processes reference checkout (tokens omitted)",
+  "cron": "No user crontab",
+  "capacity_launch_agent": {
+    "state": "spawn scheduled",
+    "keepalive": true,
+    "last_exit_code": 1,
+    "fenced": false
+  },
+  "read_only_mode_ro_failure": "sqlite3.OperationalError: unable to open database file on existing WAL-mode DB lacking WAL/SHM in read-only volume",
+  "diagnostic_immutable_probe": "Succeeded only after asserting WAL absent; not the reviewed connect(read_only=True) canary",
+  "recovery_operator": "Requested; not supplied",
+  "fresh_restore_proof": "Not attempted while operator/fencing/canary preconditions unresolved",
+  "production_activation": "none",
+  "production_db_and_sentinel_writes": 0
+}

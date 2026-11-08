@@ -1,0 +1,15 @@
+{
+  "status": "PASS",
+  "source_py_preserved": 2539,
+  "code_extracted_exactly_from_reviewed_plan": true,
+  "normal_max_affected_rows": 2,
+  "resource_key": "AR-01.3C/control-ownership/2026-10-08/v1",
+  "host_free_bytes": 285758885888,
+  "reserved_bytes": 44880461824,
+  "scripts": {
+    "reviewed-inline-code.py": "937352ea7d4a5fae5dbcaf879d9821f4b5ae3ebd5bb8d5c6acd7d238654ed992",
+    "fingerprint.py": "c634b8800980dbb970738e372b8063d16b7a588fee2fd1bab020c112d8064353",
+    "observe.py": "ff3ef31fef257bd8baafc7909da2d52e54942153cae10c8c7b2892dfff34ed30",
+    "driver.py": "98b4126cadfe0b6408e3eeec1e6d738fcb6a8dfc4ce41fd50fdef4adf34d8371"
+  }
+}

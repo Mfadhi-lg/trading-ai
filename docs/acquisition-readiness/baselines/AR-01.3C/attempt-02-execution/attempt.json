@@ -1,0 +1,10 @@
+{
+  "attempt": 2,
+  "authorization": "User explicit corrected attempt 02; once only",
+  "code_sha256": "937352ea7d4a5fae5dbcaf879d9821f4b5ae3ebd5bb8d5c6acd7d238654ed992",
+  "execution_agent": "CODEX",
+  "execution_authorized": true,
+  "key": "AR-01.3C/control-ownership/2026-10-08/v1",
+  "recovery_authority": "USER",
+  "retry_authorized": false
+}

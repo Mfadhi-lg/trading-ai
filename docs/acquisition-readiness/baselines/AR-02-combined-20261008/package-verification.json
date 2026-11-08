@@ -1,0 +1,11 @@
+{
+  "config_change_scope": "only image digest and new candidate config-file paths",
+  "identities_authorized": false,
+  "independent_review": "PENDING_FOR_NEW_DIGEST",
+  "loaded_digest_matches_oci": true,
+  "production_activation": "NOT_STARTED",
+  "production_inventory_unchanged": true,
+  "roles": 21,
+  "status": "PASS",
+  "zero_default_services": true
+}

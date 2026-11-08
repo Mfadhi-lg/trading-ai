@@ -1,0 +1,15 @@
+trading-ai-artifact-reconciler-1 exited 44da7074157f
+trading-ai-credit-rating-worker-india-ratings-1 exited 44da7074157f
+trading-ai-rating-recovery-download-1 exited 44da7074157f
+trading-ai-credit-rating-worker-other-1 exited 44da7074157f
+trading-ai-daemon-1 exited 44da7074157f
+trading-ai-market-cap-monitor-1 exited 44da7074157f
+trading-ai-credit-rating-worker-care-1 exited 44da7074157f
+trading-ai-document-download-worker-1 exited 44da7074157f
+trading-ai-rating-recovery-discovery-1 exited 44da7074157f
+trading-ai-june-extraction-worker-1 exited 44da7074157f
+trading-ai-scheduler-1 exited 44da7074157f
+trading-ai-browser-rating-crisil-1 exited trading-ai-document-download-worker:latest
+trading-ai-browser-rating-other-1 exited trading-ai-document-download-worker:latest
+trading-ai-browser-rating-extract-1 exited trading-ai-document-download-worker:latest
+screener-master-backfill-v2 exited 7ac04052eae9

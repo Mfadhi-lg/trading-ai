@@ -1,0 +1,12 @@
+[
+  "env",
+  "TRADING_AI_ENV=test",
+  "SCRAPER_STORE_PATH=/private/tmp/trading-ai-release-activation-tests",
+  "PYTHONPATH=/Users/mohamedfadhi/.cache/uv/archive-v0/4GTYw8_mNnscx89r/lib/python3.13/site-packages",
+  "/Users/mohamedfadhi/.cache/uv/archive-v0/-WyGD_mChAFVX11K/bin/python",
+  "-m",
+  "pytest",
+  "ops/activation/test_nse_results.py",
+  "-q",
+  "--tb=short"
+]

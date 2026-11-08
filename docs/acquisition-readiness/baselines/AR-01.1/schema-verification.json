@@ -1,0 +1,34 @@
+{
+  "expected_modified_objects": [
+    "artifact_download_queue",
+    "browser_rating_recovery_jobs",
+    "credit_rating_download_queue"
+  ],
+  "expected_new_objects": [
+    "acquisition_host_permits",
+    "acquisition_host_state",
+    "collection_scope_single_pending",
+    "collection_scope_tasks",
+    "document_extraction_claims",
+    "document_processing_inbox",
+    "document_processing_saved",
+    "document_processing_work",
+    "exchange_coordinator_ready",
+    "exchange_coordinator_tasks",
+    "idx_acquisition_host_active",
+    "periodic_dispatch_tasks",
+    "periodic_single_pending"
+  ],
+  "implicit_unique_indexes": [
+    "sqlite_autoindex_acquisition_host_permits_1",
+    "sqlite_autoindex_acquisition_host_state_1",
+    "sqlite_autoindex_document_extraction_claims_1",
+    "sqlite_autoindex_document_processing_work_1",
+    "sqlite_autoindex_document_processing_work_2",
+    "sqlite_autoindex_exchange_coordinator_tasks_1"
+  ],
+  "unexpected_schema_deltas": [],
+  "manifest_preconditions": "PASS",
+  "schema_effect_review": "PASS",
+  "claim_type": "CLONE_REHEARSAL"
+}

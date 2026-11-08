@@ -1,0 +1,17 @@
+{
+  "status": "PASS",
+  "versus_accepted_c281": [
+    "scrapper/tests/test_ar022_access_block.py",
+    "scrapper/tests/test_ar02_snapshot_dates.py",
+    "scrapper/workflows/exchange/schedule.py",
+    "scrapper/workflows/exchange/universe.py"
+  ],
+  "versus_original_ar021": [
+    "scrapper/tests/test_ar022_access_block.py",
+    "scrapper/workflows/exchange/schedule.py"
+  ],
+  "removed_files": [],
+  "dockerfile_and_lock_unchanged": true,
+  "ar021_files_identical": true,
+  "ar022_hashes_match_verified_record": true
+}

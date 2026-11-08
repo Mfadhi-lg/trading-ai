@@ -1,0 +1,76 @@
+{
+  "at_utc": "2026-10-07T17:19:00.452515+00:00",
+  "documents": {
+    "path": "/Volumes/My Passport/passport/trading-ai",
+    "exists": true,
+    "resolved": "/Volumes/My Passport/passport/trading-ai",
+    "device": 16777239,
+    "inode": 66668
+  },
+  "files": {
+    ".trading_ai_document_store": {
+      "exists": true,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mtime_ns": 1786635093616021966,
+      "text": ""
+    },
+    ".trading_ai_runtime_identity.json": {
+      "exists": true,
+      "sha256": "e27cf871b745af9f38edb77dbc7e36e8b8bd6a22fbc6ae086b7ee6c11acc7f72",
+      "bytes": 126,
+      "mtime_ns": 1791010653035579579,
+      "json": {
+        "environment": "production",
+        "path": "/documents",
+        "release_id": "c05.3-release-20261003",
+        "roles": [
+          "documents"
+        ]
+      }
+    },
+    ".trading_ai_document_store_capacity.json": {
+      "exists": true,
+      "sha256": "723a3686d857de795fccf28bc3e958645c3f01604f0270ea7d8c70f41c03d7a9",
+      "bytes": 230,
+      "mtime_ns": 1791346329541563751,
+      "json": {
+        "free_bytes": 375151329280,
+        "measured_at_utc": "2026-10-07T04:12:09.121024+00:00",
+        "measured_by": "host",
+        "root": "/Volumes/My Passport/passport/trading-ai",
+        "schema_version": "1.0.0",
+        "total_bytes": 1000168488960
+      }
+    }
+  },
+  "filesystems": {
+    "host_workspace": {
+      "free_bytes": 261773172736,
+      "total_bytes": 994610155520,
+      "free_percent": 26.319173525745903
+    },
+    "document_device": {
+      "free_bytes": 375168335872,
+      "total_bytes": 1000168488960,
+      "free_percent": 37.510513479794724
+    }
+  },
+  "document_mount_identity": {
+    "DeviceIdentifier": "disk5s1",
+    "DeviceNode": "/dev/disk5s1",
+    "VolumeName": "My Passport",
+    "VolumeUUID": "60E1204B-CB98-48C4-9398-1D2FBAC9B44A",
+    "DiskUUID": "60E1204B-CB98-48C4-9398-1D2FBAC9B44A",
+    "FilesystemType": "apfs",
+    "Mounted": null,
+    "MountPoint": "/Volumes/My Passport",
+    "Writable": true,
+    "VolumeSize": 0,
+    "VolumeFreeSpace": null
+  },
+  "document_mount_error_initial_sandbox": "Unable to run because unable to use the DiskManagement framework.\nCommon reasons include, but are not limited to, the DiskArbitration\nframework being unavailable due to being booted in single-user mode.\n",
+  "published_capacity_age_seconds": 47211.331491,
+  "published_capacity_fresh_3600s": false,
+  "document_live_reserve_pass": true
+}

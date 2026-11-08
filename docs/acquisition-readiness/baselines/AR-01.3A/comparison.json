@@ -1,0 +1,15 @@
+{
+  "status": "PASS",
+  "schema_equal": true,
+  "ledger_equal": true,
+  "all_row_fingerprints_equal": true,
+  "fk_identity_multisets_equal": true,
+  "fresh_matches_historical_full_manifest": true,
+  "source_identity_and_full_hash_unchanged": true,
+  "application_py_files_preserved": 2539,
+  "recovery_authority": "USER",
+  "execution_agent": "CODEX",
+  "production_migrations": 0,
+  "production_restore": false,
+  "production_business_or_operational_writes": 0
+}

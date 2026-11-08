@@ -1,0 +1,3 @@
+{"phase": "prepared", "resource_key": "AR-01.3C/control-ownership/2026-10-08/v1", "now": "2026-10-08T07:36:21.868627+00:00", "lease_seconds": 60}
+{"phase": "claimed", "claim": {"resource_key": "AR-01.3C/control-ownership/2026-10-08/v1", "owner": "5150330a7a5492dd63eeb97cef242783", "claim_token": "5150330a7a5492dd63eeb97cef242783", "status": "ACTIVE", "lease_expires_at_utc": "2026-10-08T07:37:21.868627+00:00"}}
+{"phase": "released", "record": {"resource_key": "AR-01.3C/control-ownership/2026-10-08/v1", "owner": "5150330a7a5492dd63eeb97cef242783", "claim_token": "5150330a7a5492dd63eeb97cef242783", "status": "RELEASED", "lease_expires_at_utc": "2026-10-08T07:37:21.868627+00:00"}, "affected_rows": 2}

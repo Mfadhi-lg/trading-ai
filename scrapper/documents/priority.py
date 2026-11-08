@@ -10,6 +10,19 @@ def current_period(now):
     return period + '-%02d' % monthrange(year, month)[1]
 
 
+def download_lanes(rows, *, limit, epoch, now):
+    """Current quarter first; fill spare capacity with other and older work."""
+    if type(limit) is not int or not 1 <= limit <= 100:
+        raise ValueError('Document batch limit must be 1–100')
+    activated, period = parse_utc(epoch), current_period(now)
+    lanes = {1: [], 2: [], 3: []}
+    for row in rows:
+        lane = (1 if row['period_end'] == period else
+                2 if parse_utc(row['first_observed_at_utc']) >= activated else 3)
+        lanes[lane].append(row)
+    return [(row, lane) for lane in (1, 2, 3) for row in lanes[lane]][:limit]
+
+
 def bounded_lanes(rows, *, limit, historical_limit, epoch, now):
     if type(limit) is not int or not 1 <= limit <= 100:
         raise ValueError('Document batch limit must be 1–100')

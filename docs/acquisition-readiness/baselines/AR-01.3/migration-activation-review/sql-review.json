@@ -1,0 +1,37 @@
+[
+  {
+    "filename": "069_worker_claim_fencing.sql",
+    "sha256": "3207e495e464d079ffd5d18ade9197d5f9cd3510916e83f2dd281f7aec7a71cb",
+    "exact_sql": "-- C19.2: unique generation for each generic, direct-rating and browser claim.\n-- Nullable for compatibility with existing history and older readers.\n-- Apply explicitly on release; no attempt/history reset or queue redesign.\nALTER TABLE artifact_download_queue ADD COLUMN claim_token TEXT;\nALTER TABLE credit_rating_download_queue ADD COLUMN claim_token TEXT;\nALTER TABLE browser_rating_recovery_jobs ADD COLUMN claim_token TEXT;\n"
+  },
+  {
+    "filename": "070_document_extraction_claims.sql",
+    "sha256": "cc6c82616d2e78d622a4e925c8b8bf7f9916c9b4b585a0ae9663f7541e7e447b",
+    "exact_sql": "-- C19.3 ownership only: no enqueue, corpus selection or processing campaign.\nCREATE TABLE document_extraction_claims (\n    resource_key TEXT PRIMARY KEY,\n    owner TEXT NOT NULL,\n    claim_token TEXT NOT NULL,\n    status TEXT NOT NULL CHECK(status IN ('ACTIVE','RELEASED')),\n    lease_expires_at_utc TEXT NOT NULL\n);\n"
+  },
+  {
+    "filename": "071_shared_host_permits.sql",
+    "sha256": "c27f8542dc2d0ea2fa12a3736eb6c08b1e8a4a1f0f90c3317c006e370a9daa32",
+    "exact_sql": "-- C20.1 additive durable contract only; executors are not connected yet.\n-- No updates to existing queues, attempts, publisher policy, bytes or history.\nCREATE TABLE acquisition_host_state (\n    publisher_group TEXT PRIMARY KEY,\n    next_request_at REAL NOT NULL DEFAULT 0,\n    blocked_until REAL NOT NULL DEFAULT 0,\n    circuit_until REAL NOT NULL DEFAULT 0,\n    observed_at REAL NOT NULL DEFAULT 0,\n    consecutive_failures INTEGER NOT NULL DEFAULT 0 CHECK(consecutive_failures >= 0),\n    retry_after_raw TEXT,\n    last_outcome TEXT,\n    policy_version TEXT NOT NULL\n);\nCREATE TABLE acquisition_host_permits (\n    permit_token TEXT PRIMARY KEY,\n    publisher_group TEXT NOT NULL REFERENCES acquisition_host_state(publisher_group),\n    host TEXT NOT NULL,\n    acquisition_mode TEXT NOT NULL CHECK(acquisition_mode IN ('generic','rating','browser','screener')),\n    owner TEXT NOT NULL,\n    status TEXT NOT NULL CHECK(status IN ('ACTIVE','RELEASED')),\n    acquired_at REAL NOT NULL,\n    lease_expires_at REAL NOT NULL,\n    released_at REAL,\n    policy_version TEXT NOT NULL,\n    authorization_json TEXT NOT NULL DEFAULT '{}',\n    CHECK(lease_expires_at > acquired_at)\n);\nCREATE INDEX idx_acquisition_host_active\nON acquisition_host_permits(publisher_group,status,lease_expires_at);\n"
+  },
+  {
+    "filename": "072_document_processing_work.sql",
+    "sha256": "71f2e6662a34959334c393ca8a35f71fd0155c22fdfecd34c148d3bc354e2897",
+    "exact_sql": "-- Durable handoff only. No historic corpus scan or automatic processing.\nCREATE TABLE document_processing_inbox (\n    content_id INTEGER PRIMARY KEY REFERENCES artifact_contents(content_id),\n    saved_at_utc TEXT NOT NULL\n);\nCREATE TABLE document_processing_work (\n    work_id INTEGER PRIMARY KEY,\n    content_id INTEGER NOT NULL REFERENCES artifact_contents(content_id),\n    parser_name TEXT NOT NULL,\n    parser_version TEXT NOT NULL,\n    ocr_engine TEXT NOT NULL,\n    ocr_engine_version TEXT NOT NULL,\n    options_json TEXT NOT NULL,\n    resource_key TEXT NOT NULL UNIQUE,\n    created_at_utc TEXT NOT NULL,\n    extraction_id INTEGER REFERENCES document_extractions(extraction_id),\n    UNIQUE(content_id, parser_name, parser_version, ocr_engine, ocr_engine_version, options_json)\n);\nCREATE TRIGGER document_processing_saved AFTER INSERT ON artifact_contents\nBEGIN\n    INSERT INTO document_processing_inbox VALUES (NEW.content_id, NEW.created_at_utc);\nEND;\n"
+  },
+  {
+    "filename": "073_exchange_coordinator_tasks.sql",
+    "sha256": "e514e175670059b67aa23a06510532bee4742b88dbc253dcf0c5c9438f859571",
+    "exact_sql": "-- Additive dispatch inbox. Existing exchange schedule/snapshot/queue history stays intact.\nCREATE TABLE exchange_coordinator_tasks (\n    task_id INTEGER PRIMARY KEY,\n    kind TEXT NOT NULL CHECK (kind IN ('attempt', 'weekly_report')),\n    scheduled_for TEXT NOT NULL,\n    attempt INTEGER NOT NULL CHECK (attempt >= 0),\n    priority INTEGER NOT NULL CHECK (priority IN (0, 10, 20)),\n    state TEXT NOT NULL DEFAULT 'PENDING' CHECK (state IN ('PENDING', 'RUNNING', 'DONE', 'FAILED')),\n    created_at_utc TEXT NOT NULL,\n    owner TEXT,\n    generation INTEGER NOT NULL DEFAULT 0,\n    lease_until_utc TEXT,\n    finished_at_utc TEXT,\n    result_json TEXT,\n    error TEXT NOT NULL DEFAULT '',\n    UNIQUE(kind, scheduled_for, attempt),\n    CHECK ((kind = 'attempt' AND attempt BETWEEN 1 AND 3) OR\n           (kind = 'weekly_report' AND attempt = 0)),\n    CHECK ((state = 'RUNNING' AND owner IS NOT NULL AND lease_until_utc IS NOT NULL) OR\n           (state != 'RUNNING' AND owner IS NULL AND lease_until_utc IS NULL))\n);\nCREATE INDEX exchange_coordinator_ready ON exchange_coordinator_tasks(state, priority, scheduled_for, attempt);\n"
+  },
+  {
+    "filename": "074_collection_scope_tasks.sql",
+    "sha256": "11c16d9edf80189409b9c5fdfe1158f91d5f717fdcfdee068f6b5d11f6f4b871",
+    "exact_sql": "-- Bounded admission batches; existing eligibility and claim history remains authoritative.\nCREATE TABLE collection_scope_tasks (\n task_id INTEGER PRIMARY KEY,\n created_at_utc TEXT NOT NULL,\n budget INTEGER NOT NULL CHECK (budget BETWEEN 1 AND 100),\n admitted INTEGER NOT NULL DEFAULT 0 CHECK (admitted >= 0 AND admitted <= budget),\n state TEXT NOT NULL DEFAULT 'PENDING' CHECK (state IN ('PENDING','DONE','FAILED')),\n finished_at_utc TEXT,\n result_json TEXT,\n error TEXT NOT NULL DEFAULT ''\n);\nCREATE UNIQUE INDEX collection_scope_single_pending ON collection_scope_tasks(state) WHERE state='PENDING';\n"
+  },
+  {
+    "filename": "075_periodic_dispatch.sql",
+    "sha256": "ef3758d563a8791e3c889158e20b165fc295f6818ea83b32f3048c6086a059e1",
+    "exact_sql": "-- Durable bounded admission, independent underlying work claims remain authoritative.\nCREATE TABLE periodic_dispatch_tasks (\n task_id INTEGER PRIMARY KEY,\n kind TEXT NOT NULL CHECK(kind IN ('delayed','recovery','housekeeping')),\n created_at_utc TEXT NOT NULL,\n budget INTEGER NOT NULL CHECK(budget BETWEEN 1 AND 100),\n admitted INTEGER NOT NULL DEFAULT 0 CHECK(admitted BETWEEN 0 AND budget),\n state TEXT NOT NULL DEFAULT 'PENDING' CHECK(state IN ('PENDING','DONE','FAILED')),\n result_cursor INTEGER NOT NULL DEFAULT 0,\n artifact_cursor INTEGER NOT NULL DEFAULT 0,\n finished_at_utc TEXT,\n next_due_at_utc TEXT,\n result_json TEXT,\n error TEXT NOT NULL DEFAULT ''\n);\nCREATE UNIQUE INDEX periodic_single_pending ON periodic_dispatch_tasks(kind) WHERE state='PENDING';\n"
+  }
+]

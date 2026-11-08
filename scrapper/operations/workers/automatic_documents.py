@@ -1,14 +1,14 @@
 """Bounded adapters over existing queues; no new crawler or historical campaign."""
 from ...db.database import connect, check_schema_compatibility
 from ...db.repo import utc_now
-from ...documents.priority import bounded_lanes, current_period
+from ...documents.priority import bounded_lanes, current_period, download_lanes
 from ...documents.availability import parse_utc
 from ...pipeline.run_document_download_worker import run_document_download_worker
 from ..coordinator.exchange import ownership
 from ...documents.rating_browser import browser_host_sql
 
 
-def select_downloads(conn, *, now, epoch, limit=2, historical_limit=0, recovery_job_ids=()):
+def select_downloads(conn, *, now, epoch, limit=2, historical_limit=0, recovery_job_ids=(), historical_fallback=False):
     # SQL bounds each lane before Python fairness selection. Existing claimant
     # still decides policy, retries, health, content dedup and fenced ownership.
     parse_utc(epoch); parse_utc(now)
@@ -47,20 +47,37 @@ def select_downloads(conn, *, now, epoch, limit=2, historical_limit=0, recovery_
             (now,now,now,*ids,current_period(now),limit))]
         return [(r,1 if r['period_end']==current_period(now) else 3) for r in rows]
     rows = []
-    for predicate,args,budget in (
+    lanes = ((
+        ('a.period_end=?',(current_period(now),),limit),
+        ('q.created_at_utc>=? AND (a.period_end IS NULL OR a.period_end<>?)',(epoch,current_period(now)),limit),
+        ('q.created_at_utc<? AND (a.period_end IS NULL OR a.period_end<>?)',(epoch,current_period(now)),limit),
+    ) if historical_fallback else (
         ('q.created_at_utc>=? AND a.period_end=?',(epoch,current_period(now)),limit),
         ('q.created_at_utc>=? AND (a.period_end IS NULL OR a.period_end<>?)',(epoch,current_period(now)),limit),
         ('q.created_at_utc<?',(epoch,),historical_limit),
-    ):
+    ))
+    for predicate,args,budget in lanes:
         if budget:
             rows.extend(dict(r) for r in conn.execute(common+' AND '+predicate+
                 ' ORDER BY host_sequence,q.created_at_utc,q.download_job_id LIMIT ?',
                 (now,now,now,*args,budget)))
+    if historical_fallback:
+        return download_lanes(rows,limit=limit,epoch=epoch,now=now)
     return bounded_lanes(rows,limit=limit,historical_limit=historical_limit,epoch=epoch,now=now)
 
 
 def run_automatic_downloads(*, db_path, epoch, limit=2, historical_limit=0, recovery_job_ids=(), saved_parse_ids=(),
-                            now_utc=utc_now, connection_factory=connect, **worker_options):
+                            now_utc=utc_now, connection_factory=connect, historical_fallback=False,
+                            claim_budget_seconds=None, **worker_options):
+    if claim_budget_seconds is not None:
+        import math
+        import time
+        from .lifecycle import WorkerLifecycle
+        if not math.isfinite(claim_budget_seconds) or claim_budget_seconds <= 0:
+            raise ValueError('Download claim budget must be positive and finite')
+        if worker_options.get('lifecycle') is not None:
+            raise ValueError('Download claim budget cannot replace an existing lifecycle')
+        worker_options['lifecycle'] = WorkerLifecycle(stop_at=time.monotonic()+claim_budget_seconds)
     conn=connection_factory(db_path)
     try:
         check_schema_compatibility(conn)
@@ -88,14 +105,36 @@ def run_automatic_downloads(*, db_path, epoch, limit=2, historical_limit=0, reco
                     repaired.append(refresh_saved_links(conn,company_id=row['company_id'],accepted_parse_id=row['parse_id'],period_end=period))
             from ...pipeline.accepted_document_downloads import enqueue_discovered_documents
             enqueued=[] if recovery_job_ids else enqueue_discovered_documents(conn,epoch=epoch,now=now_utc(),
-                limit=limit,historical_limit=historical_limit)
+                limit=limit,historical_limit=historical_limit,historical_fallback=historical_fallback)
             selected=select_downloads(conn,now=now_utc(),epoch=epoch,
-                limit=limit,historical_limit=historical_limit,recovery_job_ids=recovery_job_ids)
+                limit=limit,historical_limit=historical_limit,recovery_job_ids=recovery_job_ids,historical_fallback=historical_fallback)
             if not selected: return {'status':'idle','selected':[],'enqueued':enqueued,'saved_link_repairs':repaired}
-            result=run_document_download_worker(conn,limit=len(selected),
-                artifact_types=('presentation','transcript','credit_rating'),
-                allowed_job_ids=tuple(r['download_job_id'] for r,_ in selected),
-                shared_permits=True,now=now_utc,**worker_options)
+            # A whitelist does not override the canonical queue's persisted
+            # priorities. Claim one lane at a time so old high-priority jobs
+            # cannot consume the batch deadline ahead of current-quarter work.
+            groups=([[(r,lane) for r,lane in selected if lane==priority]
+                     for priority in (1,2,3)] if historical_fallback else [selected])
+            batches=[]
+            for group in groups:
+                if not group:
+                    continue
+                lifecycle=worker_options.get('lifecycle')
+                if lifecycle is not None and lifecycle.is_set():
+                    break
+                batches.append(run_document_download_worker(conn,limit=len(group),
+                    artifact_types=('presentation','transcript','credit_rating'),
+                    allowed_job_ids=tuple(r['download_job_id'] for r,_ in group),
+                    shared_permits=True,now=now_utc,**worker_options))
+            from collections import Counter
+            outcomes=Counter()
+            blocked={}
+            for batch in batches:
+                outcomes.update(batch['outcome_counts'])
+                blocked.update(batch['blocked_hosts'])
+            result={**(batches[-1] if batches else {}),
+                'processed_job_count':sum(b['processed_job_count'] for b in batches),
+                'outcome_counts':dict(outcomes),'blocked_hosts':blocked,
+                'cleaned_recording_partial_count':sum(b['cleaned_recording_partial_count'] for b in batches)}
             return {'enqueued':enqueued,'saved_link_repairs':repaired,'selected':[{'download_job_id':r['download_job_id'],'priority':lane}
                 for r,lane in selected],'download':result}
     finally: conn.close()

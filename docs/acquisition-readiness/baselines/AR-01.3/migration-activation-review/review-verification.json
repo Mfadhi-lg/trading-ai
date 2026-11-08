@@ -1,0 +1,18 @@
+{
+  "at_utc": "2026-10-07T17:22:54.926398+00:00",
+  "accepted_release_artifact_count": 43,
+  "accepted_release_checksum_index": "8c629df53e11e78c1ab5331a59f24e80e74df766e211bc30d5073018a9fad02e",
+  "release_checksum_verification": "PASS",
+  "application_py_files_preserved": 2539,
+  "fresh_baseline": "PASS",
+  "canary_exit_code": 0,
+  "host_inventory_before_utc": "2026-10-07T17:18:30.930333+00:00",
+  "host_inventory_after_utc": "2026-10-07T17:18:33.683568+00:00",
+  "known_external_db_writers": [],
+  "trading_ai_containers": 15,
+  "all_containers_stopped": true,
+  "document_identity_reconfirmed": true,
+  "snapshot_created": false,
+  "migrations_applied": false,
+  "services_started": false
+}

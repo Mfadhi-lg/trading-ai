@@ -1,0 +1,163 @@
+{
+  "added": [
+    {
+      "name": "collection_scope_single_pending",
+      "sql": "CREATE UNIQUE INDEX collection_scope_single_pending ON collection_scope_tasks(state) WHERE state='PENDING'",
+      "tbl_name": "collection_scope_tasks",
+      "type": "index"
+    },
+    {
+      "name": "exchange_coordinator_ready",
+      "sql": "CREATE INDEX exchange_coordinator_ready ON exchange_coordinator_tasks(state, priority, scheduled_for, attempt)",
+      "tbl_name": "exchange_coordinator_tasks",
+      "type": "index"
+    },
+    {
+      "name": "idx_acquisition_host_active",
+      "sql": "CREATE INDEX idx_acquisition_host_active\nON acquisition_host_permits(publisher_group,status,lease_expires_at)",
+      "tbl_name": "acquisition_host_permits",
+      "type": "index"
+    },
+    {
+      "name": "periodic_single_pending",
+      "sql": "CREATE UNIQUE INDEX periodic_single_pending ON periodic_dispatch_tasks(kind) WHERE state='PENDING'",
+      "tbl_name": "periodic_dispatch_tasks",
+      "type": "index"
+    },
+    {
+      "name": "sqlite_autoindex_acquisition_host_permits_1",
+      "sql": null,
+      "tbl_name": "acquisition_host_permits",
+      "type": "index"
+    },
+    {
+      "name": "sqlite_autoindex_acquisition_host_state_1",
+      "sql": null,
+      "tbl_name": "acquisition_host_state",
+      "type": "index"
+    },
+    {
+      "name": "sqlite_autoindex_document_extraction_claims_1",
+      "sql": null,
+      "tbl_name": "document_extraction_claims",
+      "type": "index"
+    },
+    {
+      "name": "sqlite_autoindex_document_processing_work_1",
+      "sql": null,
+      "tbl_name": "document_processing_work",
+      "type": "index"
+    },
+    {
+      "name": "sqlite_autoindex_document_processing_work_2",
+      "sql": null,
+      "tbl_name": "document_processing_work",
+      "type": "index"
+    },
+    {
+      "name": "sqlite_autoindex_exchange_coordinator_tasks_1",
+      "sql": null,
+      "tbl_name": "exchange_coordinator_tasks",
+      "type": "index"
+    },
+    {
+      "name": "acquisition_host_permits",
+      "sql": "CREATE TABLE acquisition_host_permits (\n    permit_token TEXT PRIMARY KEY,\n    publisher_group TEXT NOT NULL REFERENCES acquisition_host_state(publisher_group),\n    host TEXT NOT NULL,\n    acquisition_mode TEXT NOT NULL CHECK(acquisition_mode IN ('generic','rating','browser','screener')),\n    owner TEXT NOT NULL,\n    status TEXT NOT NULL CHECK(status IN ('ACTIVE','RELEASED')),\n    acquired_at REAL NOT NULL,\n    lease_expires_at REAL NOT NULL,\n    released_at REAL,\n    policy_version TEXT NOT NULL,\n    authorization_json TEXT NOT NULL DEFAULT '{}',\n    CHECK(lease_expires_at > acquired_at)\n)",
+      "tbl_name": "acquisition_host_permits",
+      "type": "table"
+    },
+    {
+      "name": "acquisition_host_state",
+      "sql": "CREATE TABLE acquisition_host_state (\n    publisher_group TEXT PRIMARY KEY,\n    next_request_at REAL NOT NULL DEFAULT 0,\n    blocked_until REAL NOT NULL DEFAULT 0,\n    circuit_until REAL NOT NULL DEFAULT 0,\n    observed_at REAL NOT NULL DEFAULT 0,\n    consecutive_failures INTEGER NOT NULL DEFAULT 0 CHECK(consecutive_failures >= 0),\n    retry_after_raw TEXT,\n    last_outcome TEXT,\n    policy_version TEXT NOT NULL\n)",
+      "tbl_name": "acquisition_host_state",
+      "type": "table"
+    },
+    {
+      "name": "collection_scope_tasks",
+      "sql": "CREATE TABLE collection_scope_tasks (\n task_id INTEGER PRIMARY KEY,\n created_at_utc TEXT NOT NULL,\n budget INTEGER NOT NULL CHECK (budget BETWEEN 1 AND 100),\n admitted INTEGER NOT NULL DEFAULT 0 CHECK (admitted >= 0 AND admitted <= budget),\n state TEXT NOT NULL DEFAULT 'PENDING' CHECK (state IN ('PENDING','DONE','FAILED')),\n finished_at_utc TEXT,\n result_json TEXT,\n error TEXT NOT NULL DEFAULT ''\n)",
+      "tbl_name": "collection_scope_tasks",
+      "type": "table"
+    },
+    {
+      "name": "document_extraction_claims",
+      "sql": "CREATE TABLE document_extraction_claims (\n    resource_key TEXT PRIMARY KEY,\n    owner TEXT NOT NULL,\n    claim_token TEXT NOT NULL,\n    status TEXT NOT NULL CHECK(status IN ('ACTIVE','RELEASED')),\n    lease_expires_at_utc TEXT NOT NULL\n)",
+      "tbl_name": "document_extraction_claims",
+      "type": "table"
+    },
+    {
+      "name": "document_processing_inbox",
+      "sql": "CREATE TABLE document_processing_inbox (\n    content_id INTEGER PRIMARY KEY REFERENCES artifact_contents(content_id),\n    saved_at_utc TEXT NOT NULL\n)",
+      "tbl_name": "document_processing_inbox",
+      "type": "table"
+    },
+    {
+      "name": "document_processing_work",
+      "sql": "CREATE TABLE document_processing_work (\n    work_id INTEGER PRIMARY KEY,\n    content_id INTEGER NOT NULL REFERENCES artifact_contents(content_id),\n    parser_name TEXT NOT NULL,\n    parser_version TEXT NOT NULL,\n    ocr_engine TEXT NOT NULL,\n    ocr_engine_version TEXT NOT NULL,\n    options_json TEXT NOT NULL,\n    resource_key TEXT NOT NULL UNIQUE,\n    created_at_utc TEXT NOT NULL,\n    extraction_id INTEGER REFERENCES document_extractions(extraction_id),\n    UNIQUE(content_id, parser_name, parser_version, ocr_engine, ocr_engine_version, options_json)\n)",
+      "tbl_name": "document_processing_work",
+      "type": "table"
+    },
+    {
+      "name": "exchange_coordinator_tasks",
+      "sql": "CREATE TABLE exchange_coordinator_tasks (\n    task_id INTEGER PRIMARY KEY,\n    kind TEXT NOT NULL CHECK (kind IN ('attempt', 'weekly_report')),\n    scheduled_for TEXT NOT NULL,\n    attempt INTEGER NOT NULL CHECK (attempt >= 0),\n    priority INTEGER NOT NULL CHECK (priority IN (0, 10, 20)),\n    state TEXT NOT NULL DEFAULT 'PENDING' CHECK (state IN ('PENDING', 'RUNNING', 'DONE', 'FAILED')),\n    created_at_utc TEXT NOT NULL,\n    owner TEXT,\n    generation INTEGER NOT NULL DEFAULT 0,\n    lease_until_utc TEXT,\n    finished_at_utc TEXT,\n    result_json TEXT,\n    error TEXT NOT NULL DEFAULT '',\n    UNIQUE(kind, scheduled_for, attempt),\n    CHECK ((kind = 'attempt' AND attempt BETWEEN 1 AND 3) OR\n           (kind = 'weekly_report' AND attempt = 0)),\n    CHECK ((state = 'RUNNING' AND owner IS NOT NULL AND lease_until_utc IS NOT NULL) OR\n           (state != 'RUNNING' AND owner IS NULL AND lease_until_utc IS NULL))\n)",
+      "tbl_name": "exchange_coordinator_tasks",
+      "type": "table"
+    },
+    {
+      "name": "periodic_dispatch_tasks",
+      "sql": "CREATE TABLE periodic_dispatch_tasks (\n task_id INTEGER PRIMARY KEY,\n kind TEXT NOT NULL CHECK(kind IN ('delayed','recovery','housekeeping')),\n created_at_utc TEXT NOT NULL,\n budget INTEGER NOT NULL CHECK(budget BETWEEN 1 AND 100),\n admitted INTEGER NOT NULL DEFAULT 0 CHECK(admitted BETWEEN 0 AND budget),\n state TEXT NOT NULL DEFAULT 'PENDING' CHECK(state IN ('PENDING','DONE','FAILED')),\n result_cursor INTEGER NOT NULL DEFAULT 0,\n artifact_cursor INTEGER NOT NULL DEFAULT 0,\n finished_at_utc TEXT,\n next_due_at_utc TEXT,\n result_json TEXT,\n error TEXT NOT NULL DEFAULT ''\n)",
+      "tbl_name": "periodic_dispatch_tasks",
+      "type": "table"
+    },
+    {
+      "name": "document_processing_saved",
+      "sql": "CREATE TRIGGER document_processing_saved AFTER INSERT ON artifact_contents\nBEGIN\n    INSERT INTO document_processing_inbox VALUES (NEW.content_id, NEW.created_at_utc);\nEND",
+      "tbl_name": "artifact_contents",
+      "type": "trigger"
+    }
+  ],
+  "modified": [
+    {
+      "after": {
+        "name": "credit_rating_download_queue",
+        "sql": "CREATE TABLE credit_rating_download_queue (\n    download_job_id INTEGER PRIMARY KEY,\n    artifact_id INTEGER NOT NULL REFERENCES document_artifacts(artifact_id),\n    requested_url TEXT NOT NULL,\n    priority INTEGER NOT NULL DEFAULT 100,\n    status TEXT NOT NULL DEFAULT 'PENDING' CHECK (\n      status IN (\n        'PENDING', 'LEASED', 'SUCCEEDED', 'RETRYABLE_FAILURE',\n        'TERMINAL_FAILURE', 'INTERACTION_REQUIRED',\n        'SKIPPED_ALREADY_HAVE_CONTENT', 'SKIPPED_POLICY'\n      )\n    ),\n    attempt_count INTEGER NOT NULL DEFAULT 0 CHECK (attempt_count >= 0),\n    next_attempt_at_utc TEXT,\n    lease_owner TEXT,\n    lease_expires_at_utc TEXT,\n    last_result_status TEXT,\n    last_error TEXT,\n    created_at_utc TEXT NOT NULL,\n    updated_at_utc TEXT NOT NULL, target_host TEXT NOT NULL DEFAULT '', claim_token TEXT,\n    UNIQUE(artifact_id, requested_url)\n)",
+        "tbl_name": "credit_rating_download_queue",
+        "type": "table"
+      },
+      "before": {
+        "name": "credit_rating_download_queue",
+        "sql": "CREATE TABLE credit_rating_download_queue (\n    download_job_id INTEGER PRIMARY KEY,\n    artifact_id INTEGER NOT NULL REFERENCES document_artifacts(artifact_id),\n    requested_url TEXT NOT NULL,\n    priority INTEGER NOT NULL DEFAULT 100,\n    status TEXT NOT NULL DEFAULT 'PENDING' CHECK (\n      status IN (\n        'PENDING', 'LEASED', 'SUCCEEDED', 'RETRYABLE_FAILURE',\n        'TERMINAL_FAILURE', 'INTERACTION_REQUIRED',\n        'SKIPPED_ALREADY_HAVE_CONTENT', 'SKIPPED_POLICY'\n      )\n    ),\n    attempt_count INTEGER NOT NULL DEFAULT 0 CHECK (attempt_count >= 0),\n    next_attempt_at_utc TEXT,\n    lease_owner TEXT,\n    lease_expires_at_utc TEXT,\n    last_result_status TEXT,\n    last_error TEXT,\n    created_at_utc TEXT NOT NULL,\n    updated_at_utc TEXT NOT NULL, target_host TEXT NOT NULL DEFAULT '',\n    UNIQUE(artifact_id, requested_url)\n)",
+        "tbl_name": "credit_rating_download_queue",
+        "type": "table"
+      }
+    },
+    {
+      "after": {
+        "name": "artifact_download_queue",
+        "sql": "CREATE TABLE artifact_download_queue (\n    download_job_id INTEGER PRIMARY KEY,\n    artifact_id INTEGER NOT NULL REFERENCES document_artifacts(artifact_id),\n    requested_url TEXT NOT NULL,\n    target_host TEXT NOT NULL,\n    priority INTEGER NOT NULL DEFAULT 100,\n    scope_id TEXT NOT NULL\n      REFERENCES artifact_download_scopes(scope_id) ON DELETE CASCADE,\n    status TEXT NOT NULL DEFAULT 'PENDING' CHECK (\n      status IN (\n        'PENDING', 'LEASED', 'SUCCEEDED', 'RETRYABLE_FAILURE',\n        'TERMINAL_FAILURE', 'SKIPPED_ALREADY_HAVE_CONTENT', 'SKIPPED_POLICY'\n      )\n    ),\n    attempt_count INTEGER NOT NULL DEFAULT 0 CHECK (attempt_count >= 0),\n    next_attempt_at_utc TEXT,\n    lease_owner TEXT,\n    lease_expires_at_utc TEXT,\n    last_result_status TEXT,\n    last_error TEXT,\n    created_at_utc TEXT NOT NULL,\n    updated_at_utc TEXT NOT NULL, claim_token TEXT,\n    UNIQUE(artifact_id, requested_url, scope_id)\n)",
+        "tbl_name": "artifact_download_queue",
+        "type": "table"
+      },
+      "before": {
+        "name": "artifact_download_queue",
+        "sql": "CREATE TABLE artifact_download_queue (\n    download_job_id INTEGER PRIMARY KEY,\n    artifact_id INTEGER NOT NULL REFERENCES document_artifacts(artifact_id),\n    requested_url TEXT NOT NULL,\n    target_host TEXT NOT NULL,\n    priority INTEGER NOT NULL DEFAULT 100,\n    scope_id TEXT NOT NULL\n      REFERENCES artifact_download_scopes(scope_id) ON DELETE CASCADE,\n    status TEXT NOT NULL DEFAULT 'PENDING' CHECK (\n      status IN (\n        'PENDING', 'LEASED', 'SUCCEEDED', 'RETRYABLE_FAILURE',\n        'TERMINAL_FAILURE', 'SKIPPED_ALREADY_HAVE_CONTENT', 'SKIPPED_POLICY'\n      )\n    ),\n    attempt_count INTEGER NOT NULL DEFAULT 0 CHECK (attempt_count >= 0),\n    next_attempt_at_utc TEXT,\n    lease_owner TEXT,\n    lease_expires_at_utc TEXT,\n    last_result_status TEXT,\n    last_error TEXT,\n    created_at_utc TEXT NOT NULL,\n    updated_at_utc TEXT NOT NULL,\n    UNIQUE(artifact_id, requested_url, scope_id)\n)",
+        "tbl_name": "artifact_download_queue",
+        "type": "table"
+      }
+    },
+    {
+      "after": {
+        "name": "browser_rating_recovery_jobs",
+        "sql": "CREATE TABLE browser_rating_recovery_jobs (\n    browser_job_id INTEGER PRIMARY KEY,\n    run_id TEXT NOT NULL,\n    artifact_id INTEGER NOT NULL REFERENCES document_artifacts(artifact_id),\n    artifact_source_id INTEGER NOT NULL REFERENCES artifact_sources(artifact_source_id),\n    requested_url TEXT NOT NULL,\n    target_host TEXT NOT NULL,\n    company_name TEXT NOT NULL,\n    status TEXT NOT NULL DEFAULT 'PENDING' CHECK (status IN (\n      'PENDING','RUNNING','SUCCEEDED','FAILED','REVIEW_REQUIRED','SKIPPED_EXISTING'\n    )),\n    attempt_count INTEGER NOT NULL DEFAULT 0,\n    lease_owner TEXT,\n    lease_expires_at_utc TEXT,\n    content_id INTEGER REFERENCES artifact_contents(content_id),\n    final_url TEXT,\n    error TEXT,\n    evidence_json TEXT NOT NULL DEFAULT '{}',\n    created_at_utc TEXT NOT NULL,\n    updated_at_utc TEXT NOT NULL, claim_token TEXT,\n    UNIQUE(run_id,artifact_id,requested_url)\n)",
+        "tbl_name": "browser_rating_recovery_jobs",
+        "type": "table"
+      },
+      "before": {
+        "name": "browser_rating_recovery_jobs",
+        "sql": "CREATE TABLE browser_rating_recovery_jobs (\n    browser_job_id INTEGER PRIMARY KEY,\n    run_id TEXT NOT NULL,\n    artifact_id INTEGER NOT NULL REFERENCES document_artifacts(artifact_id),\n    artifact_source_id INTEGER NOT NULL REFERENCES artifact_sources(artifact_source_id),\n    requested_url TEXT NOT NULL,\n    target_host TEXT NOT NULL,\n    company_name TEXT NOT NULL,\n    status TEXT NOT NULL DEFAULT 'PENDING' CHECK (status IN (\n      'PENDING','RUNNING','SUCCEEDED','FAILED','REVIEW_REQUIRED','SKIPPED_EXISTING'\n    )),\n    attempt_count INTEGER NOT NULL DEFAULT 0,\n    lease_owner TEXT,\n    lease_expires_at_utc TEXT,\n    content_id INTEGER REFERENCES artifact_contents(content_id),\n    final_url TEXT,\n    error TEXT,\n    evidence_json TEXT NOT NULL DEFAULT '{}',\n    created_at_utc TEXT NOT NULL,\n    updated_at_utc TEXT NOT NULL,\n    UNIQUE(run_id,artifact_id,requested_url)\n)",
+        "tbl_name": "browser_rating_recovery_jobs",
+        "type": "table"
+      }
+    }
+  ],
+  "removed": []
+}

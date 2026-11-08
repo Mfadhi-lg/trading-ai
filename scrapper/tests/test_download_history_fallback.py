@@ -1,0 +1,113 @@
+"""Download ordering, historical handoff, and files beyond the old 10 MiB limit."""
+import json
+import unittest
+from pathlib import Path
+from scrapper.tests.test_phase4_routine import RoutineTests, NOW, EPOCH
+from scrapper.sources.documents.routine import ingest_page
+from scrapper.pipeline.accepted_document_downloads import enqueue_discovered_documents
+from scrapper.operations.workers.automatic_documents import select_downloads
+from scrapper.documents.downloader import DownloadPolicy, download_url
+from scrapper.tests.test_d02_document_downloader import FakeResponse, FakeSession, PDF_BYTES
+
+
+class DownloadFallbackTests(unittest.TestCase):
+    setUp = RoutineTests.setUp
+
+    def arrival(self, name, period, old=False):
+        url=f'https://fixture.example/{name}.pdf'
+        body=f'<a href="{url}" data-period-end="{period}">Earnings transcript</a>'.encode()
+        value=ingest_page(self.c,company_id=self.f.company_id,source='company_ir',url=url,
+                          body=body,now=NOW,snapshot_root=self.f.root/'pages')
+        aid=value['artifact_ids'][0]
+        if old:
+            with self.c:self.c.execute("UPDATE document_artifacts SET first_observed_at_utc='2026-08-01T00:00:00+00:00' WHERE artifact_id=?",(aid,))
+        return aid
+
+    def enqueue(self):
+        return enqueue_discovered_documents(self.c,epoch=EPOCH,now=NOW,limit=30,historical_fallback=True)
+
+    def selected(self, limit=30):
+        return select_downloads(self.c,epoch=EPOCH,now=NOW,limit=limit,historical_fallback=True)
+
+    def test_current_precedes_history_and_history_fills_remaining_capacity(self):
+        old=[self.arrival('old'+str(i),('2026-06-30','2026-03-31','2025-12-31','2025-09-30')[i],True) for i in range(4)]
+        current=self.arrival('current','2026-09-30')
+        self.enqueue()
+        with self.c:self.c.execute("UPDATE artifact_download_queue SET created_at_utc='2026-08-01T00:00:00+00:00' WHERE artifact_id<>?",(current,))
+        selected=self.selected(limit=3)
+        self.assertEqual([lane for _,lane in selected],[1,3,3])
+        current_job=self.c.execute('SELECT download_job_id FROM artifact_download_queue WHERE artifact_id=?',(current,)).fetchone()[0]
+        self.assertEqual(selected[0][0]['download_job_id'],current_job)
+        self.assertEqual([lane for _,lane in self.selected(limit=1)],[1])
+
+    def test_current_quarter_wins_even_when_queue_entry_predates_epoch(self):
+        self.arrival('current-old','2026-09-30',True);self.enqueue()
+        with self.c:self.c.execute("UPDATE artifact_download_queue SET created_at_utc='2026-08-01T00:00:00+00:00'")
+        self.assertEqual([lane for _,lane in self.selected()],[1])
+        self.assertEqual(select_downloads(self.c,epoch=EPOCH,now=NOW,limit=30),[])
+
+    def test_history_has_no_one_document_reservation_cap(self):
+        for i in range(4):self.arrival('old'+str(i),('2026-06-30','2026-03-31','2025-12-31','2025-09-30')[i],True)
+        self.assertEqual(len(self.enqueue()),4)
+        with self.c:self.c.execute("UPDATE artifact_download_queue SET created_at_utc='2026-08-01T00:00:00+00:00'")
+        self.assertEqual(len(self.selected()),4)
+
+    def test_history_preserves_retry_due_cooldown_and_company_eligibility(self):
+        self.arrival('old','2026-06-30',True);self.enqueue()
+        with self.c:self.c.execute("UPDATE artifact_download_queue SET created_at_utc='2026-08-01T00:00:00+00:00',next_attempt_at_utc='2027-01-01T00:00:00+00:00'")
+        self.assertEqual(self.selected(),[])
+        with self.c:
+            self.c.execute('UPDATE artifact_download_queue SET next_attempt_at_utc=NULL')
+            self.c.execute("UPDATE screener_collection_scope SET eligibility='below_floor'")
+        self.assertEqual(self.selected(),[])
+
+    def test_large_pdf_is_validated_with_new_policy(self):
+        url='https://fixture.example/large.pdf';body=PDF_BYTES+b'\n'*(11*1024**2)
+        def session():return FakeSession({url:FakeResponse(body,url=url,content_length=len(body))})
+        self.assertEqual(download_url(url,artifact_type='transcript',policy=DownloadPolicy(max_bytes=10*1024**2),session=session()).result_status,'too_large')
+        result=download_url(url,artifact_type='transcript',policy=DownloadPolicy(max_bytes=256*1024**2),session=session())
+        self.assertEqual(result.result_status,'validated');self.assertEqual(result.byte_size,len(body))
+
+    def test_batch_drains_before_deadline_without_leaving_a_lease(self):
+        from scrapper.operations.workers.lifecycle import WorkerLifecycle
+        from scrapper.pipeline.run_document_download_worker import run_document_download_worker
+        from scrapper.tests.test_document_download_queue import FakeHealth
+        self.arrival('current','2026-09-30');self.arrival('older','2026-06-30');self.enqueue()
+        clock=[0.0];life=WorkerLifecycle(monotonic=lambda:clock[0],stop_at=10)
+        urls=[r[0] for r in self.c.execute('SELECT requested_url FROM artifact_download_queue')]
+        fake=FakeSession({url:FakeResponse(PDF_BYTES,url=url) for url in urls})
+        get=fake.get
+        def slow_get(*args,**kwargs):
+            clock[0]=20
+            return get(*args,**kwargs)
+        fake.get=slow_get
+        result=run_document_download_worker(self.c,limit=2,lifecycle=life,
+            snapshot_root=self.f.root/'contents',document_store=self.f.root,
+            session_factory=lambda:fake,health_check=FakeHealth,throttle_seconds=0,now=lambda:NOW)
+        self.assertEqual(result['processed_job_count'],1)
+        self.assertEqual(life.active_job,None)
+        states={r[0]:r[1] for r in self.c.execute('SELECT status,count(*) FROM artifact_download_queue GROUP BY status')}
+        self.assertEqual(states,{'PENDING':1,'SUCCEEDED':1})
+
+    def test_execution_respects_lanes_even_when_old_queue_priority_is_higher(self):
+        from unittest.mock import patch
+        from scrapper.operations.workers.automatic_documents import run_automatic_downloads
+        current=self.arrival('current','2026-09-30')
+        late=self.arrival('late','2026-06-30')
+        old=self.arrival('old','2026-03-31',True)
+        self.enqueue()
+        with self.c:
+            self.c.execute("UPDATE artifact_download_queue SET priority=0,created_at_utc='2026-08-01T00:00:00+00:00' WHERE artifact_id=?",(old,))
+            self.c.execute('UPDATE artifact_download_queue SET priority=100 WHERE artifact_id=?',(current,))
+        ids={r[0]:r[1] for r in self.c.execute('SELECT artifact_id,download_job_id FROM artifact_download_queue')}
+        calls=[]
+        def worker(conn,**kwargs):
+            calls.append(kwargs['allowed_job_ids'])
+            return {'processed_job_count':len(kwargs['allowed_job_ids']),'outcome_counts':{'validated':1},
+                    'blocked_hosts':{},'cleaned_recording_partial_count':0}
+        with patch('scrapper.operations.workers.automatic_documents.run_document_download_worker',side_effect=worker):
+            result=run_automatic_downloads(db_path=self.f.db_path,epoch=EPOCH,now_utc=lambda:NOW,
+                                           limit=3,historical_fallback=True)
+        self.assertEqual(calls,[(ids[current],),(ids[late],),(ids[old],)])
+        self.assertEqual(result['download']['processed_job_count'],3)
+        self.assertEqual(result['download']['outcome_counts'],{'validated':3})

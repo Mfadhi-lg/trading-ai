@@ -1,0 +1,17 @@
+[
+  {
+    "path": "ops/host/scraper_lifecycle.sh",
+    "returncode": 0,
+    "stderr": ""
+  },
+  {
+    "path": "scraper",
+    "returncode": 0,
+    "stderr": ""
+  },
+  {
+    "path": "scraper-monitor",
+    "returncode": 0,
+    "stderr": ""
+  }
+]

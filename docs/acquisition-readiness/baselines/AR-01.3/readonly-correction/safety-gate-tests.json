@@ -1,0 +1,17 @@
+{
+  "status": "PASS",
+  "checks": [
+    "no-sidecars accepted",
+    "zero-byte-WAL rejected",
+    "broken-WAL-symlink rejected",
+    "nonempty-SHM rejected",
+    "empty-SHM accepted",
+    "file-identity change detected",
+    "rw-mount rejected",
+    "exact-ro-mount accepted",
+    "missing-mount rejected",
+    "repeat-run rejected before Docker; PASS evidence preserved"
+  ],
+  "tested_probe_sha256": "661648920750f947b1322bc1b375de78c1387e2ad8a9ce722582a0459f5433fa",
+  "production_access": "none in these fixture/idempotency checks"
+}

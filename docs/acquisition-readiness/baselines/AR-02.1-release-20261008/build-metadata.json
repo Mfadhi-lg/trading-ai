@@ -1,0 +1,75 @@
+{
+  "buildx.build.provenance": {
+    "builder": {
+      "id": ""
+    },
+    "buildType": "https://mobyproject.org/buildkit@v1",
+    "materials": [
+      {
+        "uri": "pkg:docker/docker/buildkit-syft-scanner@stable-1?platform=linux%2Farm64",
+        "digest": {
+          "sha256": "ae4f3b554449e7e25548e7d8ccc029d17357348e30c6e3df01b92bc93654d6a9"
+        }
+      },
+      {
+        "uri": "pkg:docker/python@3.12.14-slim-trixie?digest=sha256:f77ac9e44ae96ef2c90b8053ea08c31f8be030f824196b0ae4db6d462c84e51f\u0026platform=linux%2Farm64",
+        "digest": {
+          "sha256": "f77ac9e44ae96ef2c90b8053ea08c31f8be030f824196b0ae4db6d462c84e51f"
+        }
+      }
+    ],
+    "invocation": {
+      "configSource": {
+        "entryPoint": "Dockerfile"
+      },
+      "parameters": {
+        "frontend": "dockerfile.v0",
+        "args": {
+          "build-arg:SOURCE_DATE_EPOCH": "1791345462",
+          "label:ai.trading.source.patch.sha256": "d3bb97915c57acac6ae769ab22d0e1088fa2d38f383a4bdf5d2172fb714b2ba5",
+          "label:ai.trading.source.projection.sha256": "1e773bd3c8282fe9eaad1e7a118d68c8395d564a5c2ed36b251de2d0cd8750f6",
+          "label:org.opencontainers.image.revision": "c3ddbbb9c298d07b8b46a362996251417282476a",
+          "label:org.opencontainers.image.version": "c28.1-ar021-20261008"
+        },
+        "locals": [
+          {
+            "name": "context"
+          },
+          {
+            "name": "dockerfile"
+          }
+        ],
+        "root": {
+          "configSource": {
+            "path": "Dockerfile"
+          },
+          "request": {
+            "args": {
+              "build-arg:SOURCE_DATE_EPOCH": "1791345462",
+              "label:ai.trading.source.patch.sha256": "d3bb97915c57acac6ae769ab22d0e1088fa2d38f383a4bdf5d2172fb714b2ba5",
+              "label:ai.trading.source.projection.sha256": "1e773bd3c8282fe9eaad1e7a118d68c8395d564a5c2ed36b251de2d0cd8750f6",
+              "label:org.opencontainers.image.revision": "c3ddbbb9c298d07b8b46a362996251417282476a",
+              "label:org.opencontainers.image.version": "c28.1-ar021-20261008"
+            }
+          }
+        },
+        "compatibilityVersion": 30
+      },
+      "environment": {
+        "dockerfileVersion": "1.27.0",
+        "platform": "linux/arm64"
+      }
+    }
+  },
+  "buildx.build.ref": "desktop-linux/desktop-linux/g1otdyd3ztpd7t5uc09irpkux",
+  "containerimage.descriptor": {
+    "mediaType": "application/vnd.oci.image.index.v1+json",
+    "digest": "sha256:58060bbfeb8df338a3d3569c8f1489e0c1b784a1aa584f3b23a890e5dc5fe1ae",
+    "size": 857,
+    "annotations": {
+      "org.opencontainers.image.created": "2026-10-07T03:57:42Z"
+    }
+  },
+  "containerimage.digest": "sha256:58060bbfeb8df338a3d3569c8f1489e0c1b784a1aa584f3b23a890e5dc5fe1ae",
+  "image.name": "docker.io/library/trading-ai-ar021-release:20261008"
+}

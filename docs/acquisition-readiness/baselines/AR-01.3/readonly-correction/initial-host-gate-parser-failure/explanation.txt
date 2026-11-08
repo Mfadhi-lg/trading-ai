@@ -1,0 +1,1 @@
+Initial host gate exited 2 before Docker launch. macOS truncated intermediate comm column to 15 characters. PIDs 89235 and 89290 were independently identified as /Users/mohamedfadhi/.gemini/bin/agy. Host parser now reads executable and args in separate inventories; no production read or mutation occurred in the rejected attempt.

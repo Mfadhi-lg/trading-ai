@@ -1,0 +1,63 @@
+{
+  "status": "PASS",
+  "select_1": 1,
+  "schema_compatibility": "PASS",
+  "ledger_count": 76,
+  "latest_schema": "075_periodic_dispatch.sql",
+  "db_before": {
+    "bytes": 14602240000,
+    "mtime_ns": 1791444981869399006,
+    "ctime_ns": 1791444981869399006,
+    "device": 65025,
+    "inode": 1731212,
+    "sidecars": {
+      "-wal": false,
+      "-shm": false,
+      "-journal": false
+    }
+  },
+  "db_after": {
+    "bytes": 14602240000,
+    "mtime_ns": 1791444981869399006,
+    "ctime_ns": 1791444981869399006,
+    "device": 65025,
+    "inode": 1731212,
+    "sidecars": {
+      "-wal": false,
+      "-shm": false,
+      "-journal": false
+    }
+  },
+  "db_sha256": "b01f61dba625c6ca3b73f50f1e1cceb0da11f4246464352024459bf90977c70a",
+  "schema_ledger_matches_C": true,
+  "control_row": {
+    "resource_key": "AR-01.3C/control-ownership/2026-10-08/v1",
+    "owner": "5150330a7a5492dd63eeb97cef242783",
+    "claim_token": "5150330a7a5492dd63eeb97cef242783",
+    "status": "RELEASED",
+    "lease_expires_at_utc": "2026-10-08T07:37:21.868627+00:00"
+  },
+  "empty_new_work_tables": [
+    "acquisition_host_state",
+    "acquisition_host_permits",
+    "document_processing_inbox",
+    "document_processing_work",
+    "exchange_coordinator_tasks",
+    "collection_scope_tasks",
+    "periodic_dispatch_tasks"
+  ],
+  "physical_markers": {
+    "/data/.trading_ai_runtime_identity.json": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "/data/snapshots/.trading_ai_runtime_identity.json": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    }
+  },
+  "query_only": true,
+  "sql_changes": 0,
+  "network_requests": 0,
+  "reused_full_row_FK_proof": true
+}

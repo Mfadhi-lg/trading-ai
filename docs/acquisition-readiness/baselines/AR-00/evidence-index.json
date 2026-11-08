@@ -1,0 +1,473 @@
+{
+  "indexed_at_utc": "2026-10-07T10:27:49.670261+00:00",
+  "audit_cutoff_utc": "2026-10-07T09:09:40Z",
+  "artifacts": [
+    {
+      "path": "docs/audits/TRADING_AI_ACQUISITION_BLACKBOX_AUDIT_2026-10-07.md",
+      "bytes": 52054,
+      "sha256": "e648d7b26c762df4a48bed5d0ee60edc769ab791223c6a002135f5aa8d05c2d3",
+      "verification": "RETAINED_BYTES_HASHED"
+    },
+    {
+      "path": "docs/audits/acquisition-blackbox/failure_ledger.csv",
+      "bytes": 30632656,
+      "sha256": "fc8c9f4f8ebe127f2decf672db87ca33d970eb7e266e3eb09cfe209118839d6a",
+      "verification": "RETAINED_BYTES_HASHED",
+      "columns": [
+        "domain",
+        "company_id",
+        "company_name",
+        "period_event",
+        "document_artifact_content_job_id",
+        "source_agency",
+        "failure_class",
+        "exact_stored_status_error",
+        "first_failure_time",
+        "last_attempt_time",
+        "attempt_count",
+        "next_attempt",
+        "automatic_or_operator_required",
+        "retryable_or_terminal",
+        "current_owner_queue",
+        "suggested_owner_action_category",
+        "age_days",
+        "severity"
+      ],
+      "data_rows": 82972
+    },
+    {
+      "path": "docs/audits/acquisition-blackbox/document_coverage.csv",
+      "bytes": 4146,
+      "sha256": "ec5b43fc38785e0a5b3275d617dd0db53e1f7b295585f1d6af70c1fd11b5b13c",
+      "verification": "RETAINED_BYTES_HASHED",
+      "columns": [
+        "reporting_period",
+        "artifact_type",
+        "expected_artifact_count",
+        "expected_not_yet_published_schema_status",
+        "unknown_source_not_covered",
+        "discovery_failed",
+        "expectation_available",
+        "candidate_artifacts_with_source",
+        "candidate_source_links",
+        "valid_downloaded_original_content",
+        "extraction_ok",
+        "extraction_partial",
+        "extraction_failed",
+        "extraction_pending_not_started",
+        "download_waiting_pending",
+        "download_retryable",
+        "download_leased",
+        "download_terminal_failure",
+        "oldest_unresolved_queue_created",
+        "pdf_content_count",
+        "pptx_media_content_count",
+        "recording_audio_video_content_count",
+        "status_mapping"
+      ],
+      "data_rows": 15
+    },
+    {
+      "path": "docs/audits/acquisition-blackbox/rating_coverage.csv",
+      "bytes": 3256,
+      "sha256": "0d4c8bd637990b014dcc3282779f0a3953b3b9983bfe60d3e9ef724724676e69",
+      "verification": "RETAINED_BYTES_HASHED",
+      "columns": [
+        "agency",
+        "publisher_artifacts",
+        "discovered_source_links",
+        "direct_source_links",
+        "alternate_exchange_or_issuer_links",
+        "content_attempts_by_retrieval_source",
+        "browser_success_content_ids",
+        "direct_jobs_succeeded",
+        "direct_jobs_pending_retry_terminal",
+        "direct_jobs_policy_skipped",
+        "valid_publisher_original_contents",
+        "extraction_ok",
+        "extraction_partial",
+        "extraction_failed",
+        "alternate_recovery_targets",
+        "recovery_candidates",
+        "recovery_candidates_attached",
+        "recovery_candidates_alternate_source",
+        "browser_jobs_succeeded",
+        "browser_jobs_failed",
+        "browser_jobs_review_required",
+        "normalization_status_counts",
+        "agency_code_normalization_status_counts",
+        "unresolved_recovery_targets",
+        "oldest_unresolved_target",
+        "terminal_reason_status_counts",
+        "html_originals",
+        "html_original_structural_validation_ok",
+        "html_rendered_derivative_mislabeled_original",
+        "generated_pdf_derivatives",
+        "agency_identity_basis"
+      ],
+      "data_rows": 9
+    },
+    {
+      "path": "docs/audits/acquisition-blackbox/company_scope.csv",
+      "bytes": 1278839,
+      "sha256": "c348c1e7697727f5be3bd291d43563c6bd2f9a7a660f7ecab7d40b66b3e01622",
+      "verification": "RETAINED_BYTES_HASHED",
+      "columns": [
+        "company_id",
+        "company",
+        "company_path",
+        "current_cap_crore",
+        "current_state",
+        "floor_crore",
+        "previous_state",
+        "previous_cap_crore",
+        "previous_observed_at",
+        "last_checked",
+        "next_check",
+        "queue_status_counts",
+        "queue_disposition",
+        "queue_items",
+        "latest_queue_update",
+        "oldest_queue_due",
+        "check_failures",
+        "last_check_error",
+        "anomalies"
+      ],
+      "data_rows": 5490
+    },
+    {
+      "path": "docs/audits/acquisition-blackbox/runtime_roles.csv",
+      "bytes": 10214,
+      "sha256": "3f08f88ba60ac4080eccd23c759b63c3d4b0bc8f1924fecc19e75a9820410fb0",
+      "verification": "RETAINED_BYTES_HASHED",
+      "columns": [
+        "queue_or_worker_class",
+        "compose_service",
+        "expected_role_or_profile",
+        "observed_container",
+        "container_state_exit",
+        "image_release",
+        "queue_status_counts",
+        "pending_due",
+        "running_leased",
+        "retry",
+        "blocked_deferred",
+        "terminal_failed",
+        "review_required",
+        "completed_or_succeeded",
+        "oldest_actionable_item",
+        "stale_leases",
+        "retry_exhaustion",
+        "host_cooldown_or_access_hold",
+        "worker_heartbeat_or_last_progress",
+        "expected_role_running",
+        "mounts"
+      ],
+      "data_rows": 15
+    }
+  ],
+  "retained_database": {
+    "path": "/private/tmp/trading-ai-audit-2026-10-07/scraper.db",
+    "audit_sha256": "f237daa6f4696f75e2081e93d69a57be6f8d9c097769aaa169a819789c9e4811",
+    "production_source_rehashed": false,
+    "integrity_checks": "audit-recorded ok; not repeated during indexing",
+    "sidecars": [
+      {
+        "path": "/private/tmp/trading-ai-audit-2026-10-07/scraper.db-wal",
+        "exists": true,
+        "bytes": 0
+      },
+      {
+        "path": "/private/tmp/trading-ai-audit-2026-10-07/scraper.db-shm",
+        "exists": true,
+        "bytes": 32768
+      }
+    ],
+    "bytes": 14602158080,
+    "sha256": "f237daa6f4696f75e2081e93d69a57be6f8d9c097769aaa169a819789c9e4811",
+    "matches_audit": true,
+    "migration_columns": [
+      "version",
+      "applied_at_utc"
+    ],
+    "migration_rows": [
+      [
+        "001_initial.sql",
+        "2026-08-05T20:45:06.818961+00:00"
+      ],
+      [
+        "002_source_identifiers.sql",
+        "2026-08-05T20:45:06.819763+00:00"
+      ],
+      [
+        "003_availability_acceptance_periods.sql",
+        "2026-08-05T20:45:06.822324+00:00"
+      ],
+      [
+        "004_growth_observations.sql",
+        "2026-08-05T20:45:06.823179+00:00"
+      ],
+      [
+        "005_financial_expandable_marker.sql",
+        "2026-08-05T20:45:06.826362+00:00"
+      ],
+      [
+        "006_shareholding_observations.sql",
+        "2026-08-05T20:45:06.827213+00:00"
+      ],
+      [
+        "007_document_links.sql",
+        "2026-08-05T20:45:06.828656+00:00"
+      ],
+      [
+        "008_company_profile_text.sql",
+        "2026-08-05T20:45:06.829881+00:00"
+      ],
+      [
+        "009_peer_table.sql",
+        "2026-08-05T20:45:06.832656+00:00"
+      ],
+      [
+        "010_trendlyne_monthly_page.sql",
+        "2026-08-05T20:45:06.834140+00:00"
+      ],
+      [
+        "011_trendlyne_fund_source_rows.sql",
+        "2026-08-05T20:45:06.836283+00:00"
+      ],
+      [
+        "012_trendlyne_fund_observations.sql",
+        "2026-08-05T20:45:06.837843+00:00"
+      ],
+      [
+        "013_trendlyne_mf_page_summaries.sql",
+        "2026-08-05T20:45:06.839129+00:00"
+      ],
+      [
+        "014_trendlyne_month_history.sql",
+        "2026-08-05T20:45:06.842787+00:00"
+      ],
+      [
+        "015_trendlyne_pilot_backfill.sql",
+        "2026-08-05T20:45:06.844133+00:00"
+      ],
+      [
+        "016_mf_workbook_import_foundation.sql",
+        "2026-08-05T20:45:06.851501+00:00"
+      ],
+      [
+        "017_mf_ppfas_source_cells.sql",
+        "2026-08-05T20:45:06.858717+00:00"
+      ],
+      [
+        "018_mf_holdings_normalization.sql",
+        "2026-08-05T20:45:06.865829+00:00"
+      ],
+      [
+        "019_mf_scheme_registry_acceptance.sql",
+        "2026-08-05T20:45:06.876515+00:00"
+      ],
+      [
+        "020_mf_consecutive_month_changes.sql",
+        "2026-08-05T20:45:06.880658+00:00"
+      ],
+      [
+        "021_mf_stock_monthly_features.sql",
+        "2026-08-05T20:45:06.887740+00:00"
+      ],
+      [
+        "022_mfdata_crosscheck.sql",
+        "2026-08-05T20:45:06.894843+00:00"
+      ],
+      [
+        "023_document_artifact_discovery.sql",
+        "2026-08-05T20:45:06.899681+00:00"
+      ],
+      [
+        "024_artifact_downloads.sql",
+        "2026-08-05T20:45:06.903152+00:00"
+      ],
+      [
+        "025_document_extraction.sql",
+        "2026-08-05T20:45:06.906893+00:00"
+      ],
+      [
+        "026_credit_rating_normalization.sql",
+        "2026-08-05T20:45:06.919478+00:00"
+      ],
+      [
+        "027_official_transcripts.sql",
+        "2026-08-05T20:45:06.930302+00:00"
+      ],
+      [
+        "028_recording_audio_normalization.sql",
+        "2026-08-05T20:45:06.936716+00:00"
+      ],
+      [
+        "029_machine_transcription.sql",
+        "2026-08-05T20:45:06.945856+00:00"
+      ],
+      [
+        "030_artifact_reconciliation.sql",
+        "2026-08-05T20:45:06.951881+00:00"
+      ],
+      [
+        "031_screener_result_discovery.sql",
+        "2026-08-05T20:45:06.958491+00:00"
+      ],
+      [
+        "032_exchange_universe.sql",
+        "2026-08-05T20:45:06.977815+00:00"
+      ],
+      [
+        "033_exchange_automation.sql",
+        "2026-08-06T15:59:53.306442+00:00"
+      ],
+      [
+        "034_schedule_publication.sql",
+        "2026-08-07T00:00:00+00:00"
+      ],
+      [
+        "035_company_period_queue.sql",
+        "2026-08-11T06:58:22.932875+00:00"
+      ],
+      [
+        "036_document_followups.sql",
+        "2026-08-11T07:00:07.387654+00:00"
+      ],
+      [
+        "037_disable_blind_document_followups.sql",
+        "2026-08-11T07:08:34.277536+00:00"
+      ],
+      [
+        "038_monitor_query_indexes.sql",
+        "2026-08-13T09:15:12.365845+00:00"
+      ],
+      [
+        "039_credit_rating_acquisition.sql",
+        "2026-08-13T15:35:30.861887+00:00"
+      ],
+      [
+        "040_credit_rating_host_health.sql",
+        "2026-08-13T15:38:14.055494+00:00"
+      ],
+      [
+        "041_credit_rating_host_policy.sql",
+        "2026-08-13T18:54:27.460896+00:00"
+      ],
+      [
+        "042_document_download_queue.sql",
+        "2026-08-14T06:40:15.201686+00:00"
+      ],
+      [
+        "043_generic_download_host_policy.sql",
+        "2026-08-15T05:55:17.438896+00:00"
+      ],
+      [
+        "044_crisilratings_and_recording_safety.sql",
+        "2026-08-15T05:55:18.151919+00:00"
+      ],
+      [
+        "045_document_download_recovery.sql",
+        "2026-08-16T08:09:53.918470+00:00"
+      ],
+      [
+        "046_document_alternate_source_recovery.sql",
+        "2026-08-16T08:09:54.869897+00:00"
+      ],
+      [
+        "047_generic_download_host_health.sql",
+        "2026-08-16T11:43:51.239008+00:00"
+      ],
+      [
+        "048_exchange_retrieval_provenance.sql",
+        "2026-08-16T12:37:50.756386+00:00"
+      ],
+      [
+        "049_document_acquisition_closure.sql",
+        "2026-08-16T13:01:22.100043+00:00"
+      ],
+      [
+        "050_rating_agency_direct_provenance.sql",
+        "2026-08-16T13:08:36.582416+00:00"
+      ],
+      [
+        "051_html_pdf_derivatives.sql",
+        "2026-09-08T04:04:24.946146+00:00"
+      ],
+      [
+        "052_reporting_scope_ml_contract.sql",
+        "2026-09-15T05:09:52.761412+00:00"
+      ],
+      [
+        "053_fix_financial_scope_integrity_audit.sql",
+        "2026-09-15T05:09:52.763444+00:00"
+      ],
+      [
+        "054_standalone_financial_write_guard.sql",
+        "2026-09-15T05:09:52.766256+00:00"
+      ],
+      [
+        "055_repair_circuit_deferred_downloads.sql",
+        "2026-09-15T06:11:58.215342+00:00"
+      ],
+      [
+        "056_rearm_delayed_concall_refresh.sql",
+        "2026-09-15T06:36:41.714730+00:00"
+      ],
+      [
+        "057_close_invalid_result_period_artifacts.sql",
+        "2026-09-15T11:52:49.918616+00:00"
+      ],
+      [
+        "058_rebase_active_concall_refresh.sql",
+        "2026-09-15T12:17:22.718755+00:00"
+      ],
+      [
+        "059_finalize_concall_retry_rebase.sql",
+        "2026-09-16T03:58:02.699798+00:00"
+      ],
+      [
+        "060_rebase_all_overdue_concall_refresh.sql",
+        "2026-09-16T04:19:08.363087+00:00"
+      ],
+      [
+        "061_limit_delayed_concall_refresh_by_market_cap.sql",
+        "2026-09-16T04:44:05.911039+00:00"
+      ],
+      [
+        "062_collection_scope_monitor.sql",
+        "2026-09-28T12:50:48.999055+00:00"
+      ],
+      [
+        "063_document_period_corrections.sql",
+        "2026-09-28T12:50:49.000508+00:00"
+      ],
+      [
+        "064_exchange_filing_identity_collisions.sql",
+        "2026-09-29T04:10:38.002169+00:00"
+      ],
+      [
+        "065_exchange_source_access.sql",
+        "2026-09-29T09:29:23.883230+00:00"
+      ],
+      [
+        "065_operator_browser_rating_recovery.sql",
+        "2026-10-01T07:56:56.131563+00:00"
+      ],
+      [
+        "066_browser_rating_recovery_backoff.sql",
+        "2026-10-01T09:24:47.785691+00:00"
+      ],
+      [
+        "067_browser_rating_workers.sql",
+        "2026-10-01T12:36:44.273882+00:00"
+      ],
+      [
+        "068_exchange_source_access_compatibility.sql",
+        "2026-10-03T06:59:37.386528+00:00"
+      ]
+    ],
+    "processing_tables": []
+  }
+}

@@ -1,0 +1,992 @@
+[
+  {
+    "bytes": 14602240000,
+    "indexed": false,
+    "path": "artifacts/acquisition-readiness/AR-01.3B/post-migration/raw/scraper.db"
+  },
+  {
+    "bytes": 14602240000,
+    "indexed": false,
+    "path": "artifacts/acquisition-readiness/AR-01.3C/attempt-02-post-canary/scraper.db"
+  },
+  {
+    "bytes": 14602158080,
+    "indexed": false,
+    "path": "artifacts/acquisition-readiness/AR-01.3/pre-migration-068/raw/scraper.db"
+  },
+  {
+    "bytes": 14602158080,
+    "indexed": false,
+    "path": "artifacts/acquisition-readiness/AR-01.3/pre-migration-068/validation/scraper.db"
+  },
+  {
+    "bytes": 3034300695,
+    "indexed": false,
+    "path": "artifacts/phase5/general-ai-experiment/checkpoint/model.safetensors"
+  },
+  {
+    "bytes": 1038407680,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C20.3/harness.tar"
+  },
+  {
+    "bytes": 921903296,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C28.1/preintegration.patch"
+  },
+  {
+    "bytes": 854143584,
+    "indexed": false,
+    "path": "artifacts/b2-discovery-2026-10-01/B2_EXISTING_BACKUP_EXPORT.jsonl"
+  },
+  {
+    "bytes": 693943808,
+    "indexed": false,
+    "path": "artifacts/acquisition-readiness/AR-02-period-20261008/release.oci.tar"
+  },
+  {
+    "bytes": 693940736,
+    "indexed": true,
+    "path": "artifacts/acquisition-readiness/AR-02-combined-20261008/release.oci.tar"
+  },
+  {
+    "bytes": 693938688,
+    "indexed": true,
+    "path": "artifacts/acquisition-readiness/AR-02.1-release-20261008/release.oci.tar"
+  },
+  {
+    "bytes": 693936128,
+    "indexed": false,
+    "path": "artifacts/acquisition-readiness/AR-01.3/release.oci.tar"
+  },
+  {
+    "bytes": 591263297,
+    "indexed": false,
+    "path": "artifacts/phase5/document-parsing-v10/mineru-home/models/MinerU-4_models_onnx/MFR/pp_formulanet_plus_m/PP-FormulaNet_plus-M.onnx"
+  },
+  {
+    "bytes": 386016816,
+    "indexed": false,
+    "path": "artifacts/phase5/document-parsing-v10/env-docling/lib/python3.11/site-packages/torch/lib/libtorch_cpu.dylib"
+  },
+  {
+    "bytes": 386016816,
+    "indexed": false,
+    "path": "artifacts/phase5/document-parsing-v10/env-mineru/lib/python3.11/site-packages/torch/lib/libtorch_cpu.dylib"
+  },
+  {
+    "bytes": 307353600,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C19.2/harness.tar"
+  },
+  {
+    "bytes": 256808960,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C20.2/harness.tar"
+  },
+  {
+    "bytes": 252897280,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C22.1/harness.tar"
+  },
+  {
+    "bytes": 234752000,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C22.3/harness.tar"
+  },
+  {
+    "bytes": 213963712,
+    "indexed": false,
+    "path": "artifacts/phase5/document-parsing-v10/mineru-home/models/MinerU-4_models_onnx/Layout/PP-DocLayoutV2/inference.onnx"
+  },
+  {
+    "bytes": 212758388,
+    "indexed": false,
+    "path": "artifacts/phase5/document-parsing-v10/docling-models/docling-project--docling-models/model_artifacts/tableformer/accurate/tableformer_accurate.safetensors"
+  },
+  {
+    "bytes": 207258056,
+    "indexed": false,
+    "path": "artifacts/phase5/generalization/v3/teleocr-runtime/rustup-home/toolchains/1.97.1-aarch64-apple-darwin/lib/librustc_driver-e03ed1db822dfa4c.dylib"
+  },
+  {
+    "bytes": 199014400,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C23.4/harness.tar"
+  },
+  {
+    "bytes": 197795840,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C23.2/harness.tar"
+  },
+  {
+    "bytes": 197580800,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C23.3/harness.tar"
+  },
+  {
+    "bytes": 197355520,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C23.1/harness.tar"
+  },
+  {
+    "bytes": 196147200,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C18.5/harness.tar"
+  },
+  {
+    "bytes": 181288960,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C20.1/harness.tar"
+  },
+  {
+    "bytes": 181002240,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C19.4/harness.tar"
+  },
+  {
+    "bytes": 180531200,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C19.3/harness.tar"
+  },
+  {
+    "bytes": 171658996,
+    "indexed": false,
+    "path": "artifacts/phase5/document-parsing-v10/docling-models/docling-project--docling-layout-heron/model.safetensors"
+  },
+  {
+    "bytes": 171220471,
+    "indexed": false,
+    "path": "artifacts/phase5/document-parsing-v10/docling-models/docling-project--docling-layout-heron-onnx/model.onnx"
+  },
+  {
+    "bytes": 165068800,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C12.5/harness.tar"
+  },
+  {
+    "bytes": 145453276,
+    "indexed": false,
+    "path": "artifacts/phase5/document-parsing-v10/docling-models/docling-project--docling-models/model_artifacts/tableformer/fast/tableformer_fast.safetensors"
+  },
+  {
+    "bytes": 143226880,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C18.2/harness.tar"
+  },
+  {
+    "bytes": 139803178,
+    "indexed": true,
+    "path": "artifacts/a0-2026-09-29/artifact_coverage.json"
+  },
+  {
+    "bytes": 135649280,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C21.1/harness.tar"
+  },
+  {
+    "bytes": 130977488,
+    "indexed": false,
+    "path": "artifacts/phase5/generalization/v3/teleocr-runtime/rustup-home/toolchains/1.97.1-aarch64-apple-darwin/lib/rustlib/aarch64-apple-darwin/bin/rust-lld"
+  },
+  {
+    "bytes": 129812480,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C19.1/harness.tar"
+  },
+  {
+    "bytes": 129628160,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C17.5/harness.tar"
+  },
+  {
+    "bytes": 124897280,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C12.4/harness.tar"
+  },
+  {
+    "bytes": 123371520,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C11.3/harness.tar"
+  },
+  {
+    "bytes": 123351040,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C11.4/harness.tar"
+  },
+  {
+    "bytes": 123351040,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C11.5/harness.tar"
+  },
+  {
+    "bytes": 123340800,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C11.6/harness.tar"
+  },
+  {
+    "bytes": 122081280,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C13.1/harness.tar"
+  },
+  {
+    "bytes": 120688640,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C21.3/harness.tar"
+  },
+  {
+    "bytes": 120688640,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C21.2/harness.tar"
+  },
+  {
+    "bytes": 119715840,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C12.3/harness.tar"
+  },
+  {
+    "bytes": 119705600,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C12.1/harness.tar"
+  },
+  {
+    "bytes": 119685120,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C12.2/harness.tar"
+  },
+  {
+    "bytes": 115240960,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C15.2/harness.tar"
+  },
+  {
+    "bytes": 114513920,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C18.4/harness.tar"
+  },
+  {
+    "bytes": 114063360,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C18.3/harness.tar"
+  },
+  {
+    "bytes": 113950720,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C18.1/harness.tar"
+  },
+  {
+    "bytes": 109206735,
+    "indexed": true,
+    "path": "artifacts/document-acquisition/final-ops/d03-progress/extraction-payloads/document-acquisition-full-v1/artifact-27989-content-18738.json"
+  },
+  {
+    "bytes": 107445598,
+    "indexed": true,
+    "path": "artifacts/document-acquisition/final-ops/d03-progress/extraction-payloads/document-acquisition-full-v1/artifact-26530-content-17563.json"
+  },
+  {
+    "bytes": 107243520,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C17.4/harness.tar"
+  },
+  {
+    "bytes": 100925440,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C13.5/harness.tar"
+  },
+  {
+    "bytes": 100915200,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C13.4/harness.tar"
+  },
+  {
+    "bytes": 99696640,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C24.2/harness.tar"
+  },
+  {
+    "bytes": 99696640,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C24.4/harness.tar"
+  },
+  {
+    "bytes": 99614720,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C24.3/harness.tar"
+  },
+  {
+    "bytes": 97607680,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C17.3/harness.tar"
+  },
+  {
+    "bytes": 94320640,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C17.1/harness.tar"
+  },
+  {
+    "bytes": 93347840,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C17.2/harness.tar"
+  },
+  {
+    "bytes": 89169920,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C16.3/harness.tar"
+  },
+  {
+    "bytes": 89159680,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C16.2/harness.tar"
+  },
+  {
+    "bytes": 89149440,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C16.4/harness.tar"
+  },
+  {
+    "bytes": 88668160,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C23.5/revision/harness.tar"
+  },
+  {
+    "bytes": 81152000,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C16.1/harness.tar"
+  },
+  {
+    "bytes": 80397453,
+    "indexed": true,
+    "path": "artifacts/document-acquisition/final-ops/d03-progress/extraction-payloads/document-acquisition-full-v1/artifact-18259-content-10945.json"
+  },
+  {
+    "bytes": 79588798,
+    "indexed": true,
+    "path": "artifacts/document-acquisition/final-ops/d03-progress/extraction-payloads/document-acquisition-full-v1/artifact-18260-content-10946.json"
+  },
+  {
+    "bytes": 77936640,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C13.2/harness.tar"
+  },
+  {
+    "bytes": 77905920,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C13.3/harness.tar"
+  },
+  {
+    "bytes": 72569747,
+    "indexed": true,
+    "path": "artifacts/document-acquisition/final-ops/d03-progress/extraction-payloads/document-acquisition-full-v1/artifact-18264-content-10950.json"
+  },
+  {
+    "bytes": 71106560,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C14.1/harness.tar"
+  },
+  {
+    "bytes": 71014400,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C15.4/harness.tar"
+  },
+  {
+    "bytes": 71004160,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C15.3/harness.tar"
+  },
+  {
+    "bytes": 62154696,
+    "indexed": false,
+    "path": "artifacts/phase5/generalization/v3/teleocr-runtime/rustup-home/toolchains/1.97.1-aarch64-apple-darwin/lib/rustlib/aarch64-apple-darwin/lib/libcore-df38416008f914c9.rmeta"
+  },
+  {
+    "bytes": 60375040,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C15.1/harness.tar"
+  },
+  {
+    "bytes": 58654720,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C14.2/harness.tar"
+  },
+  {
+    "bytes": 58613760,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C14.3/harness.tar"
+  },
+  {
+    "bytes": 56453120,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C14.4/harness.tar"
+  },
+  {
+    "bytes": 54375092,
+    "indexed": true,
+    "path": "artifacts/document-acquisition/final-ops/d03-progress/extraction-payloads/document-acquisition-full-v1/artifact-19442-content-11867.json"
+  },
+  {
+    "bytes": 54087296,
+    "indexed": false,
+    "path": "artifacts/phase5/generalization/v3/teleocr-runtime/target/release/deps/libobjc2_foundation-8650e57a0f467f1a.rlib"
+  },
+  {
+    "bytes": 54051328,
+    "indexed": false,
+    "path": "artifacts/phase5/generalization/v3/teleocr-runtime/target/release/deps/libobjc2_foundation-8c9f8cc68c670350.rlib"
+  },
+  {
+    "bytes": 50469499,
+    "indexed": false,
+    "path": "artifacts/phase5/financial-evidence-report-v2/reports/hinduja-global/discovery.json"
+  },
+  {
+    "bytes": 50416559,
+    "indexed": false,
+    "path": "artifacts/phase5/financial-evidence-report-v2/reports/presentation-610bca/discovery.json"
+  },
+  {
+    "bytes": 49023949,
+    "indexed": false,
+    "path": "trading-ai-code-review-compact.zip"
+  },
+  {
+    "bytes": 48680498,
+    "indexed": true,
+    "path": "artifacts/document-acquisition/final-ops/d03-progress/extraction-payloads/document-acquisition-full-v1/artifact-19449-content-11873.json"
+  },
+  {
+    "bytes": 47605040,
+    "indexed": false,
+    "path": "artifacts/phase5/generalization/v3/teleocr-runtime/target/release/deps/libobjc2_foundation-8c9f8cc68c670350.rmeta"
+  },
+  {
+    "bytes": 47551308,
+    "indexed": false,
+    "path": "artifacts/phase5/generalization/v3/teleocr-runtime/target/release/deps/libobjc2_foundation-8650e57a0f467f1a.rmeta"
+  },
+  {
+    "bytes": 47455617,
+    "indexed": true,
+    "path": "artifacts/document-acquisition/final-ops/d03-progress/extraction-payloads/document-acquisition-full-v1/artifact-21282-content-13336.json"
+  },
+  {
+    "bytes": 42303696,
+    "indexed": false,
+    "path": "artifacts/phase5/document-parsing-v10/env-docling/lib/python3.11/site-packages/cv2/cv2.abi3.so"
+  },
+  {
+    "bytes": 40695376,
+    "indexed": false,
+    "path": "artifacts/phase5/document-parsing-v10/env-mineru/lib/python3.11/site-packages/onnxruntime/capi/onnxruntime_pybind11_state.so"
+  },
+  {
+    "bytes": 40076745,
+    "indexed": true,
+    "path": "artifacts/document-acquisition/final-ops/d03-progress/extraction-payloads/document-acquisition-full-v1/artifact-28419-content-19090.json"
+  },
+  {
+    "bytes": 38228448,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C03.1/B2-discovery.tar.gz"
+  },
+  {
+    "bytes": 36741120,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C25.3/harness.tar"
+  },
+  {
+    "bytes": 35439311,
+    "indexed": true,
+    "path": "artifacts/document-acquisition/final-ops/d03-progress/extraction-payloads/document-acquisition-full-v1/artifact-24831-content-16193.json"
+  },
+  {
+    "bytes": 34833318,
+    "indexed": false,
+    "path": "scrapper/store/exports/mf_workbook/groww/2026-06/dfdf10963e561b64b10d49b78b66c0c0c79552e75d8f52d0fc97dba5086a4a4b.json"
+  },
+  {
+    "bytes": 33037336,
+    "indexed": false,
+    "path": "artifacts/phase5/document-parsing-v10/env-mineru/lib/python3.11/site-packages/onnxruntime/capi/libonnxruntime.1.31.0.dylib"
+  },
+  {
+    "bytes": 31867672,
+    "indexed": false,
+    "path": "artifacts/phase5/generalization/v3/teleocr-runtime/rustup-home/toolchains/1.97.1-aarch64-apple-darwin/bin/cargo"
+  },
+  {
+    "bytes": 31739621,
+    "indexed": false,
+    "path": "artifacts/phase5/document-parsing-v10/env-mineru/lib/python3.11/site-packages/gradio/templates/frontend/static/ffmpeg/ffmpeg-core.wasm"
+  },
+  {
+    "bytes": 30811440,
+    "indexed": false,
+    "path": "artifacts/phase5/document-parsing-v10/env-docling/lib/python3.11/site-packages/torch/lib/libtorch_python.dylib"
+  },
+  {
+    "bytes": 30811440,
+    "indexed": false,
+    "path": "artifacts/phase5/document-parsing-v10/env-mineru/lib/python3.11/site-packages/torch/lib/libtorch_python.dylib"
+  },
+  {
+    "bytes": 30632656,
+    "indexed": true,
+    "path": "docs/audits/acquisition-blackbox/failure_ledger.csv"
+  },
+  {
+    "bytes": 29573120,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C02.3/tooling.tar"
+  },
+  {
+    "bytes": 29009981,
+    "indexed": true,
+    "path": "artifacts/coverage-audit-2026-10-01/STORED_COVERAGE_EXPORT.jsonl"
+  },
+  {
+    "bytes": 28471997,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C24.1/harness.tar"
+  },
+  {
+    "bytes": 28102304,
+    "indexed": false,
+    "path": "artifacts/phase5/document-parsing-v10/env-mineru/bin/magika"
+  },
+  {
+    "bytes": 27522319,
+    "indexed": false,
+    "path": "OLD/ML_PRO/DATA/RESULTS/2027/Q1/SFC/FINANCIALS/HUDCO/ab6c4cbd-41c7-4dce-a557-d30b29a8b35f.pdf"
+  },
+  {
+    "bytes": 27072815,
+    "indexed": false,
+    "path": "OLD/ML_PRO/DATA/RESULTS/2027/Q1/SFC/GOLD/PNGJL/069634d3-20c6-4159-bd78-eb60b9f0272b.pdf"
+  },
+  {
+    "bytes": 26795916,
+    "indexed": true,
+    "path": "artifacts/document-acquisition/final-ops/d03-progress/extraction-payloads/document-acquisition-full-v1/artifact-25217-content-16502.json"
+  },
+  {
+    "bytes": 26689424,
+    "indexed": false,
+    "path": "artifacts/phase5/generalization/v3/teleocr-runtime/target/release/deps/libobjc2_metal-683b3ec74a3e9bc1.rlib"
+  },
+  {
+    "bytes": 26646998,
+    "indexed": true,
+    "path": "artifacts/b2-discovery-2026-10-01/B2_FOCUS_COMPANY_EXPLANATIONS.csv"
+  },
+  {
+    "bytes": 26642744,
+    "indexed": false,
+    "path": "artifacts/phase5/generalization/v3/teleocr-runtime/target/release/deps/libobjc2_metal-83ed692243b626e3.rlib"
+  },
+  {
+    "bytes": 26290843,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/cumulative-candidate/source-baseline.zip"
+  },
+  {
+    "bytes": 24870748,
+    "indexed": true,
+    "path": "artifacts/document-acquisition/final-ops/d03-progress/extraction-payloads/document-acquisition-full-v1/artifact-22709-content-14504.json"
+  },
+  {
+    "bytes": 24773545,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C22.2/harness.tar"
+  },
+  {
+    "bytes": 24566464,
+    "indexed": false,
+    "path": "artifacts/phase5/generalization/v3/teleocr-runtime/target/release/deps/libcandle_core-49f124831771d897.rlib"
+  },
+  {
+    "bytes": 24466184,
+    "indexed": false,
+    "path": "artifacts/phase5/generalization/v3/teleocr-runtime/target/release/deps/libcandle_core-e0a239f7a3baec67.rlib"
+  },
+  {
+    "bytes": 24290515,
+    "indexed": true,
+    "path": "artifacts/document-acquisition/final-ops/d03-progress/extraction-payloads/document-acquisition-full-v1/artifact-19448-content-11872.json"
+  },
+  {
+    "bytes": 24273118,
+    "indexed": true,
+    "path": "artifacts/document-acquisition/final-ops/d03-progress/extraction-payloads/document-acquisition-full-v1/artifact-29987-content-20331.json"
+  },
+  {
+    "bytes": 24089688,
+    "indexed": false,
+    "path": "artifacts/phase5/generalization/v3/teleocr-runtime/target/release/deps/libobjc2_metal-683b3ec74a3e9bc1.rmeta"
+  },
+  {
+    "bytes": 24087962,
+    "indexed": false,
+    "path": "artifacts/phase5/generalization/v3/teleocr-runtime/target/release/deps/libobjc2_metal-83ed692243b626e3.rmeta"
+  },
+  {
+    "bytes": 23527063,
+    "indexed": false,
+    "path": "OLD/ML_PRO/DATA/RESULTS/2027/Q1/SFC/OTHERS/STYLAMIND/f052090f-7308-4df5-9b30-7c1b495abc44.pdf"
+  },
+  {
+    "bytes": 23327071,
+    "indexed": true,
+    "path": "artifacts/document-acquisition/final-ops/d03-progress/extraction-payloads/document-acquisition-full-v1/artifact-28907-content-19499.json"
+  },
+  {
+    "bytes": 23155923,
+    "indexed": true,
+    "path": "artifacts/document-acquisition/final-ops/d03-progress/extraction-payloads/document-acquisition-full-v1/artifact-22429-content-14274.json"
+  },
+  {
+    "bytes": 22953772,
+    "indexed": true,
+    "path": "artifacts/document-acquisition/final-closure-20260816T113743Z/09_FULL_ACQUISITION_SCOPE.json"
+  },
+  {
+    "bytes": 22436892,
+    "indexed": true,
+    "path": "artifacts/document-acquisition/final-ops/d03-progress/extraction-payloads/document-acquisition-full-v1/artifact-28910-content-19502.json"
+  },
+  {
+    "bytes": 22289447,
+    "indexed": false,
+    "path": "artifacts/phase5/architecture-validation/events.json"
+  },
+  {
+    "bytes": 22276000,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C03.1/A2.tar.gz"
+  },
+  {
+    "bytes": 21827263,
+    "indexed": false,
+    "path": "scrapper/store/exports/mf_workbook/groww/2026-05/37d3a08a687ec4d8957b7031d2b1bf162ca73ac69fb3adb36a8c453a014a1186.json"
+  },
+  {
+    "bytes": 21505819,
+    "indexed": true,
+    "path": "artifacts/document-acquisition/final-ops/d03-progress/extraction-payloads/document-acquisition-full-v1/artifact-20668-content-12832.json"
+  },
+  {
+    "bytes": 21407505,
+    "indexed": true,
+    "path": "artifacts/document-acquisition/final-ops/d03-progress/extraction-payloads/document-acquisition-full-v1/artifact-16942-content-9934.json"
+  },
+  {
+    "bytes": 21234383,
+    "indexed": false,
+    "path": "artifacts/phase5/document-parsing-v10/env-docling/lib/python3.11/site-packages/rapidocr/models/PP-OCRv6_rec_small.onnx"
+  },
+  {
+    "bytes": 21159378,
+    "indexed": false,
+    "path": "artifacts/phase5/document-parsing-v10/mineru-home/models/MinerU-4_models_onnx/OCR/paddleocr/ch_PP-OCRv6_small_rec_infer.onnx"
+  },
+  {
+    "bytes": 20960960,
+    "indexed": true,
+    "path": "artifacts/document-acquisition/final-ops/d03-progress/extraction-payloads/document-acquisition-full-v1/artifact-29315-content-19831.json"
+  },
+  {
+    "bytes": 20466909,
+    "indexed": false,
+    "path": "artifacts/phase5/qwen-financial-table-understanding/runs/holdout-2-p10/discovery.json"
+  },
+  {
+    "bytes": 20082849,
+    "indexed": false,
+    "path": "artifacts/phase5/qwen-financial-table-understanding/runs/unseen-1-p12/discovery.json"
+  },
+  {
+    "bytes": 19989343,
+    "indexed": false,
+    "path": "artifacts/phase5/general-ai-experiment/checkpoint/tokenizer.json"
+  },
+  {
+    "bytes": 19855957,
+    "indexed": true,
+    "path": "artifacts/document-acquisition/final-ops/d03-progress/extraction-payloads/document-acquisition-full-v1/artifact-28924-content-25014.json"
+  },
+  {
+    "bytes": 19855957,
+    "indexed": true,
+    "path": "artifacts/document-acquisition/final-ops/d03-progress/extraction-payloads/document-acquisition-full-v1/artifact-28922-content-19514.json"
+  },
+  {
+    "bytes": 19855957,
+    "indexed": true,
+    "path": "artifacts/document-acquisition/final-ops/d03-progress/extraction-payloads/document-acquisition-full-v1/artifact-28923-content-25013.json"
+  },
+  {
+    "bytes": 18954082,
+    "indexed": false,
+    "path": "artifacts/phase5/pdf-visual-experiment/preservation-before.json"
+  },
+  {
+    "bytes": 18652381,
+    "indexed": false,
+    "path": "sample_files-2.zip"
+  },
+  {
+    "bytes": 18462720,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C25.2/harness.tar"
+  },
+  {
+    "bytes": 18308586,
+    "indexed": false,
+    "path": "OLD/ML_PRO/DATA/RESULTS/2027/Q1/SFC/CHEMICALS/JUBLINGREA/f96b94a0-8de0-41af-b230-4f18e08c9e89.pdf"
+  },
+  {
+    "bytes": 18278400,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C25.1/harness.tar"
+  },
+  {
+    "bytes": 16385389,
+    "indexed": true,
+    "path": "artifacts/document-acquisition/final-ops/d03-progress/extraction-payloads/document-acquisition-full-v1/artifact-19410-content-11834.json"
+  },
+  {
+    "bytes": 16015024,
+    "indexed": false,
+    "path": "artifacts/phase5/generalization/v3/teleocr-runtime/target/release/deps/libzerocopy-e5d551966c2258cf.rlib"
+  },
+  {
+    "bytes": 16011778,
+    "indexed": false,
+    "path": "artifacts/phase5/generalization/v3/teleocr-runtime/target/release/deps/libzerocopy-e5d551966c2258cf.rmeta"
+  },
+  {
+    "bytes": 15992992,
+    "indexed": false,
+    "path": "artifacts/phase5/generalization/v3/teleocr-runtime/target/release/deps/libzerocopy-85f5fc14fcddae20.rlib"
+  },
+  {
+    "bytes": 15989730,
+    "indexed": false,
+    "path": "artifacts/phase5/generalization/v3/teleocr-runtime/target/release/deps/libzerocopy-85f5fc14fcddae20.rmeta"
+  },
+  {
+    "bytes": 15885312,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C20.4/harness.tar"
+  },
+  {
+    "bytes": 15643248,
+    "indexed": true,
+    "path": "artifacts/coverage-audit-2026-10-01/COVERAGE_UNIVERSE_RECONCILIATION.csv"
+  },
+  {
+    "bytes": 15287199,
+    "indexed": false,
+    "path": "artifacts/phase5/generalization/v3/teleocr-runtime/rustup-home/toolchains/1.97.1-aarch64-apple-darwin/share/doc/rust/COPYRIGHT.html"
+  },
+  {
+    "bytes": 15244032,
+    "indexed": true,
+    "path": "artifacts/document-acquisition/final-ops/d03-progress/extraction-payloads/document-acquisition-full-v1/artifact-19441-content-11866.json"
+  },
+  {
+    "bytes": 15202293,
+    "indexed": true,
+    "path": "artifacts/document-acquisition/ac-final-01-20260817T052931Z/12_TRANSCRIPT_COVERAGE.json"
+  },
+  {
+    "bytes": 15093760,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C25.4/harness.tar"
+  },
+  {
+    "bytes": 15058757,
+    "indexed": true,
+    "path": "artifacts/document-acquisition/final-ops/d03-progress/extraction-payloads/document-acquisition-full-v1/artifact-27143-content-18062.json"
+  },
+  {
+    "bytes": 15022080,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C23.5/harness.tar"
+  },
+  {
+    "bytes": 14979135,
+    "indexed": false,
+    "path": "OLD/ML_PRO/DATA/RESULTS/2027/Q1/SFC/CHEMICALS/ATUL/Analyst Meet 2026.pdf"
+  },
+  {
+    "bytes": 14725568,
+    "indexed": false,
+    "path": "artifacts/phase5/generalization/v3/teleocr-runtime/target/release/deps/libtokenizers-513968470ff2b957.rlib"
+  },
+  {
+    "bytes": 14668272,
+    "indexed": false,
+    "path": "artifacts/phase5/generalization/v3/teleocr-runtime/target/release/deps/libtokenizers-7d813ca05e39906b.rlib"
+  },
+  {
+    "bytes": 14426216,
+    "indexed": false,
+    "path": "artifacts/phase5/generalization/v3/teleocr-runtime/target/release/deps/libtokenizers-812e09bbfbec6626.rlib"
+  },
+  {
+    "bytes": 14368560,
+    "indexed": false,
+    "path": "artifacts/phase5/generalization/v3/teleocr-runtime/target/release/deps/libtokenizers-a98cffdcb4cc01f0.rlib"
+  },
+  {
+    "bytes": 14283346,
+    "indexed": true,
+    "path": "artifacts/document-acquisition/final-ops/d03-progress/extraction-payloads/document-acquisition-full-v1/artifact-19671-content-12058.json"
+  },
+  {
+    "bytes": 14028246,
+    "indexed": true,
+    "path": "artifacts/document-acquisition/final-ops/d03-progress/extraction-payloads/document-acquisition-full-v1/artifact-14268-content-7716.json"
+  },
+  {
+    "bytes": 14026546,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C27.1/retention.json"
+  },
+  {
+    "bytes": 14000761,
+    "indexed": false,
+    "path": "scrapper/store/exports/mf_features/ppfas/all_scheme/through-2026-06.json"
+  },
+  {
+    "bytes": 13622151,
+    "indexed": true,
+    "path": "artifacts/document-acquisition/final-ops/d03-progress/extraction-payloads/document-acquisition-full-v1/artifact-19440-content-11865.json"
+  },
+  {
+    "bytes": 13545854,
+    "indexed": false,
+    "path": "artifacts/phase5/generalization/v3/holdout/inputs/hul.pdf"
+  },
+  {
+    "bytes": 13208928,
+    "indexed": false,
+    "path": "OLD/ML_PRO/DATA/RESULTS/2027/Q1/SFC/WIRES/STLTECH/ffa18a79-e103-49db-ba78-2e6d478a9a9a.pdf"
+  },
+  {
+    "bytes": 13159234,
+    "indexed": false,
+    "path": "OLD/ML_PRO/DATA/RESULTS/2027/Q1/SFC/AUTO/AETHER/89fa99f2-ecbb-4e10-8a30-fb127d2cb9ed.pdf"
+  },
+  {
+    "bytes": 13139097,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C27.1/harness.tar.gz"
+  },
+  {
+    "bytes": 12827942,
+    "indexed": true,
+    "path": "artifacts/document-acquisition/final-ops/d03-progress/extraction-payloads/document-acquisition-full-v1/artifact-19407-content-11831.json"
+  },
+  {
+    "bytes": 12825527,
+    "indexed": false,
+    "path": "OLD/ML_PRO/DATA/RESULTS/2027/Q1/SFC/COMMODITY/NUVOCO/764650db-407d-41ab-90f1-6958df6f28d9.pdf"
+  },
+  {
+    "bytes": 12617995,
+    "indexed": true,
+    "path": "artifacts/document-acquisition/final-ops/d03-progress/extraction-payloads/document-acquisition-full-v1/artifact-18266-content-10952.json"
+  },
+  {
+    "bytes": 12516640,
+    "indexed": false,
+    "path": "artifacts/phase5/qwen-financial-table-understanding/runs/unseen-2-p11/discovery.json"
+  },
+  {
+    "bytes": 12336706,
+    "indexed": false,
+    "path": "artifacts/phase5/qwen-financial-table-understanding/runs/unseen-1-p12/financial-evidence-report.html"
+  },
+  {
+    "bytes": 12181625,
+    "indexed": true,
+    "path": "artifacts/document-acquisition/final-ops/d03-progress/extraction-payloads/document-acquisition-full-v1/artifact-14260-content-7710.json"
+  },
+  {
+    "bytes": 12021256,
+    "indexed": false,
+    "path": "artifacts/phase5/generalization/v3/teleocr-runtime/rustup-home/toolchains/1.97.1-aarch64-apple-darwin/bin/rustdoc"
+  },
+  {
+    "bytes": 11884639,
+    "indexed": false,
+    "path": "OLD/ML_PRO/DATA/RESULTS/2027/Q1/SFC/POWER/WAAREERTL/a0e67575-8bff-4f2c-b292-5976105bb351.pdf"
+  },
+  {
+    "bytes": 11864154,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C26.4/baseline.json"
+  },
+  {
+    "bytes": 11713611,
+    "indexed": true,
+    "path": "artifacts/document-acquisition/final-ops/d03-progress/extraction-payloads/document-acquisition-full-v1/artifact-21040-content-13118.json"
+  },
+  {
+    "bytes": 11554901,
+    "indexed": true,
+    "path": "docs/cleanup/baselines/C04.3/tooling.tar.gz"
+  },
+  {
+    "bytes": 11499404,
+    "indexed": true,
+    "path": "artifacts/document-acquisition/final-ops/d03-progress/extraction-payloads/document-acquisition-full-v1/artifact-14266-content-7714.json"
+  },
+  {
+    "bytes": 11413491,
+    "indexed": false,
+    "path": "scrapper/store/exports/mf_workbook/ppfas/2026-05/4aa830be206c69e937fc40fb91e756776f1b3063fb3e72c25b4019471b4ab671.json"
+  },
+  {
+    "bytes": 11319056,
+    "indexed": false,
+    "path": "artifacts/phase5/generalization/v3/teleocr-runtime/rustup-init"
+  },
+  {
+    "bytes": 11319056,
+    "indexed": false,
+    "path": "artifacts/phase5/generalization/v3/teleocr-runtime/cargo-home/bin/rustup"
+  },
+  {
+    "bytes": 11316105,
+    "indexed": false,
+    "path": "artifacts/three-document-reality-check-v0.4/reference-expansion/review-package.zip"
+  },
+  {
+    "bytes": 11151275,
+    "indexed": true,
+    "path": "artifacts/document-acquisition/final-ops/d03-progress/extraction-payloads/document-acquisition-full-v1/artifact-14267-content-7715.json"
+  },
+  {
+    "bytes": 11100912,
+    "indexed": false,
+    "path": "artifacts/phase5/generalization/v3/teleocr-runtime/target/release/deps/libtokio-5091a04ba2c8db1f.rlib"
+  },
+  {
+    "bytes": 11085896,
+    "indexed": true,
+    "path": "artifacts/document-acquisition/final-ops/d03-progress/extraction-payloads/document-acquisition-full-v1/artifact-24816-content-16178.json"
+  },
+  {
+    "bytes": 10778284,
+    "indexed": true,
+    "path": "artifacts/document-acquisition/final-ops/d03-progress/extraction-payloads/document-acquisition-full-v1/artifact-13726-content-7259.json"
+  },
+  {
+    "bytes": 10721821,
+    "indexed": false,
+    "path": "artifacts/phase5/document-parsing-v10/env-mineru/lib/python3.11/site-packages/jieba/lac_small/model_baseline/word_emb"
+  }
+]

@@ -1,0 +1,18 @@
+{
+  "date": "2026-10-08",
+  "chunk": "AR-02.1",
+  "status": "BLOCKED",
+  "classification": "CONTROLLED_FIXTURE",
+  "production_activation": "none",
+  "checks": {
+    "previous_evidence_checksums": "PASS",
+    "git_diff_check": "PASS",
+    "offline_test_command": "env TRADING_AI_ENV=test SCRAPER_STORE_PATH=/private/tmp/trading-ai-ar021-tests SCRAPER_DOCUMENT_STORE_PATH=/private/tmp/trading-ai-ar021-tests/documents scrapper/.venv/bin/python -m unittest scrapper.tests.test_ar02_snapshot_dates scrapper.tests.test_e02_snapshot_guard scrapper.tests.test_e06_scheduler scrapper.tests.test_exchange_snapshots -v",
+    "offline_tests": 94,
+    "offline_test_exit_code": 0,
+    "source_csv_search": "No original 263-byte rejected CSV or 1,611,721-byte known-good CSV found under docs/acquisition-readiness/baselines/AR-02.1, artifacts/acquisition-readiness, or /private/tmp.",
+    "AR-01.3": "BLOCKED; named operator, writer fencing, WAL-safe reviewed canary procedure, and fresh snapshot/restore/row/FK proof remain unmet."
+  },
+  "decision": "Retain the IST date-boundary source fix as offline-prepared. Keep the zero-row feed held and row_count_floor unchanged. Do not activate or claim the AR-02.1 acceptance gate passed.",
+  "next_prerequisite": "Complete AR-01.3 preconditions, then acquire and hash-verify the exact source CSVs for bounded parser replay."
+}

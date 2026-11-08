@@ -33,7 +33,9 @@ def main():
     from processing_pipeline import begin
     with begin(plan,Path('/data/exports/paired-downloads')/pair['id']) as processing:
         result=run_automatic_downloads(db_path=db,epoch=pair['epoch'],limit=pair['limit'],historical_limit=0,
-            connection_factory=guarded,policy=DownloadPolicy(max_bytes=10*1024**2,max_redirects=1,total_timeout_seconds=45),max_attempts=3)
+            connection_factory=guarded,historical_fallback=pair.get('historical_fallback',False),
+            claim_budget_seconds=285,
+            policy=DownloadPolicy(max_bytes=pair.get('max_response_bytes',10*1024**2),max_redirects=1,total_timeout_seconds=120),max_attempts=3)
     record={'stage':'document_stage_outcome','document_stage':'DOCUMENT_DOWNLOAD','paired_with':'FINANCIAL',
         'started_at_utc':started,'finished_at_utc':datetime.now(timezone.utc).isoformat(),'result':result}
     if processing is not None:record['processing_companion']=processing.record

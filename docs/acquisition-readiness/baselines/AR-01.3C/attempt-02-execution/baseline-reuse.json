@@ -1,0 +1,7 @@
+{
+  "fresh_production_sha256": "d773f4863e41266ca2cbbd76f1d542eb888878be1380e40114c34b4164fe4afc",
+  "justification": "Fresh full DB hash exactly equals the retained fully fingerprinted 075 DB; previous Docker launch never ran application code",
+  "original_full_baseline": "/Users/mohamedfadhi/Fadhi/trading-ai/docs/acquisition-readiness/baselines/AR-01.3C/execution/before-fingerprints",
+  "rows": 62554200,
+  "tables": 157
+}

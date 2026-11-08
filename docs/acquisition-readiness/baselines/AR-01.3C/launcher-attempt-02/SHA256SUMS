@@ -1,0 +1,9 @@
+c4d7ecffe8ff8ea49e1db46996644e8ce422a8dbc9f449a5ea208c7baa6c93be  docs/acquisition-readiness/baselines/AR-01.3C/launcher-attempt-02/attempt-record.json
+af18f63acff8cb5ca48a2772b015d7c4cc14cec9c63b07a7acc1ffeb5b62ed52  docs/acquisition-readiness/baselines/AR-01.3C/launcher-attempt-02/corrected-command.sh
+7b7e344d1e6c1058635657f1ba526c32193b0aab4d7c986cc6bc428fab10e909  docs/acquisition-readiness/baselines/AR-01.3C/launcher-attempt-02/corrected-docker-argv.json
+10c9dab01e178f6cabdb1c82a296bebd391a2b82d8016460a4b7e2c3815305a0  docs/acquisition-readiness/baselines/AR-01.3C/launcher-attempt-02/launcher.py
+2f92cb6c5cf8013f6c83d95ba079f1261c9a110a28263e6e5caea42ddfae22d5  docs/acquisition-readiness/baselines/AR-01.3C/launcher-attempt-02/offline-tests-stderr.log
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  docs/acquisition-readiness/baselines/AR-01.3C/launcher-attempt-02/offline-tests-stdout.log
+186ea98cef0856630aeb056c6160718e9143c7bbb5fabf36284bdaf90427afc1  docs/acquisition-readiness/baselines/AR-01.3C/launcher-attempt-02/test_launcher.py
+8b304430ca7f421cdcde4c645d05cfb9ea56e6f738b486efe12ed0aa5fb9e5c2  docs/acquisition-readiness/baselines/AR-01.3C/launcher-attempt-02/verification.json
+cf29d2a36a9e736e2a36a82d5bd1a52d40db291cbd3ec302cef07c1ab254b0d0  docs/acquisition-readiness/chunks/AR-01.3C-launcher-correction-attempt-02.md

@@ -1,0 +1,696 @@
+{
+  "claim": "RETAINED_AUDIT_DB_READ_ONLY",
+  "source": "/private/tmp/trading-ai-audit-2026-10-07/scraper.db",
+  "source_sha256_audit_recorded": "f237daa6f4696f75e2081e93d69a57be6f8d9c097769aaa169a819789c9e4811",
+  "hash_recomputed_this_chunk": false,
+  "connection": "mode=ro&immutable=1; PRAGMA query_only=ON",
+  "snapshot_limit": 5,
+  "schedule_run_limit": 5,
+  "snapshots": [
+    {
+      "snapshot_id": 266,
+      "exchange": "NSE",
+      "dataset": "nse_financial_results",
+      "effective_date": "2026-10-04",
+      "source_label": "https://www.nseindia.com/api/integrated-filing-results?type=Integrated%20Filing-%20Financials&period_ended=30-Sep-2026&csv=true",
+      "requested_url": "https://www.nseindia.com/api/integrated-filing-results?type=Integrated%20Filing-%20Financials&period_ended=30-Sep-2026&csv=true",
+      "acquisition_mode": "fetched",
+      "fetch_id": 73218,
+      "blob_id": 128211,
+      "parser_name": "exchange-result-filing",
+      "parser_version": "1.0.0",
+      "source_encoding": "utf-8-sig",
+      "observed_at_utc": "2026-10-03T18:44:56+00:00",
+      "header_json": "[\"SYMBOL \\n\",\"COMPANY NAME \\n\",\"QUARTER END DATE \\n\",\"TYPE OF SUBMISSION \\n\",\"AUDITED / UNAUDITED \\n\",\"CONSOLIDATED / STANDALONE \\n\",\"DETAILS \\n\",\"XBRL \\n\",\"BROADCAST DATE/TIME \\n\",\"REVISED DATE/TIME \\n\",\"REVISION REMARKS \\n\",\"EXCHANGE DISSEMINATION TIME \\n\",\"TIME TAKEN \\n\"]",
+      "accepted_row_count": 0,
+      "rejected_row_count": 0,
+      "validation_status": "failed",
+      "compression": "none",
+      "excluded_row_count": 0,
+      "baseline_snapshot_id": 261,
+      "findings_json": "[{\"code\":\"row_count_floor\",\"detail\":\"accepted rows 0 below floor 1\",\"severity\":\"error\"},{\"code\":\"future_effective_date\",\"detail\":\"effective date 2026-10-04 is after today 2026-10-03\",\"severity\":\"error\"}]",
+      "metrics_json": "{\"accepted_row_count\":0,\"distinct_isin_count\":0,\"duplicate_isin_row_count\":0,\"effective_date\":\"2026-10-04\",\"headers\":[\"SYMBOL \\n\",\"COMPANY NAME \\n\",\"QUARTER END DATE \\n\",\"TYPE OF SUBMISSION \\n\",\"AUDITED / UNAUDITED \\n\",\"CONSOLIDATED / STANDALONE \\n\",\"DETAILS \\n\",\"XBRL \\n\",\"BROADCAST DATE/TIME \\n\",\"REVISED DATE/TIME \\n\",\"REVISION REMARKS \\n\",\"EXCHANGE DISSEMINATION TIME \\n\",\"TIME TAKEN \\n\"],\"non_null_isin_count\":0,\"present_count\":0,\"rejected_row_count\":0,\"scope_metrics\":[],\"would_absent_count\":0}",
+      "thresholds_json": "{\"absence_volume_floor\":100,\"absence_volume_ratio\":0.05,\"duplicate_isin_rate\":null,\"rejected_row_rate\":0.05,\"row_count_drop_ratio\":null,\"row_floor\":1}",
+      "evaluated_at_utc": "2026-10-03T18:44:56+00:00",
+      "content_sha256": "cfbc3d1f66e23620e1b0d1ec43b0b0409c25557d6e02f533b78e9f1babf42e82",
+      "local_path": "/data/snapshots/exchange/NSE/nse_financial_results/2026-10-01/cfbc3d1f66e23620e1b0d1ec43b0b0409c25557d6e02f533b78e9f1babf42e82.csv",
+      "byte_size": 263
+    },
+    {
+      "snapshot_id": 261,
+      "exchange": "NSE",
+      "dataset": "nse_financial_results",
+      "effective_date": "2026-10-03",
+      "source_label": "https://www.nseindia.com/api/integrated-filing-results?type=Integrated%20Filing-%20Financials&period_ended=30-Jun-2026&csv=true",
+      "requested_url": "https://www.nseindia.com/api/integrated-filing-results?type=Integrated%20Filing-%20Financials&period_ended=30-Jun-2026&csv=true",
+      "acquisition_mode": "fetched",
+      "fetch_id": 72556,
+      "blob_id": 141470,
+      "parser_name": "exchange-result-filing",
+      "parser_version": "1.0.0",
+      "source_encoding": "utf-8-sig",
+      "observed_at_utc": "2026-10-03T14:04:44+00:00",
+      "header_json": "[\"SYMBOL \\n\",\"COMPANY NAME \\n\",\"QUARTER END DATE \\n\",\"TYPE OF SUBMISSION \\n\",\"AUDITED / UNAUDITED \\n\",\"CONSOLIDATED / STANDALONE \\n\",\"DETAILS \\n\",\"XBRL \\n\",\"BROADCAST DATE/TIME \\n\",\"REVISED DATE/TIME \\n\",\"REVISION REMARKS \\n\",\"EXCHANGE DISSEMINATION TIME \\n\",\"TIME TAKEN \\n\"]",
+      "accepted_row_count": 4351,
+      "rejected_row_count": 1,
+      "validation_status": "passed",
+      "compression": "none",
+      "excluded_row_count": 0,
+      "baseline_snapshot_id": 255,
+      "findings_json": "[]",
+      "metrics_json": "{\"accepted_row_count\":4351,\"distinct_isin_count\":0,\"duplicate_isin_row_count\":0,\"effective_date\":\"2026-10-03\",\"headers\":[\"SYMBOL \\n\",\"COMPANY NAME \\n\",\"QUARTER END DATE \\n\",\"TYPE OF SUBMISSION \\n\",\"AUDITED / UNAUDITED \\n\",\"CONSOLIDATED / STANDALONE \\n\",\"DETAILS \\n\",\"XBRL \\n\",\"BROADCAST DATE/TIME \\n\",\"REVISED DATE/TIME \\n\",\"REVISION REMARKS \\n\",\"EXCHANGE DISSEMINATION TIME \\n\",\"TIME TAKEN \\n\"],\"non_null_isin_count\":0,\"present_count\":0,\"rejected_row_count\":1,\"scope_metrics\":[],\"would_absent_count\":0}",
+      "thresholds_json": "{\"absence_volume_floor\":100,\"absence_volume_ratio\":0.05,\"duplicate_isin_rate\":null,\"rejected_row_rate\":0.05,\"row_count_drop_ratio\":null,\"row_floor\":1}",
+      "evaluated_at_utc": "2026-10-03T14:04:44+00:00",
+      "content_sha256": "dfa299c4a21d31bc29aacc51b50cd516e92d059c6aa1c74d2d69330782e4f869",
+      "local_path": "/data/snapshots/exchange/NSE/nse_financial_results/2026-10-03/dfa299c4a21d31bc29aacc51b50cd516e92d059c6aa1c74d2d69330782e4f869.csv",
+      "byte_size": 1611721
+    },
+    {
+      "snapshot_id": 260,
+      "exchange": "NSE",
+      "dataset": "nse_financial_results",
+      "effective_date": "2026-10-03",
+      "source_label": "https://www.nseindia.com/api/integrated-filing-results?type=Integrated%20Filing-%20Financials&period_ended=30-Sep-2026&csv=true",
+      "requested_url": "https://www.nseindia.com/api/integrated-filing-results?type=Integrated%20Filing-%20Financials&period_ended=30-Sep-2026&csv=true",
+      "acquisition_mode": "fetched",
+      "fetch_id": 72555,
+      "blob_id": 128211,
+      "parser_name": "exchange-result-filing",
+      "parser_version": "1.0.0",
+      "source_encoding": "utf-8-sig",
+      "observed_at_utc": "2026-10-03T14:04:44+00:00",
+      "header_json": "[\"SYMBOL \\n\",\"COMPANY NAME \\n\",\"QUARTER END DATE \\n\",\"TYPE OF SUBMISSION \\n\",\"AUDITED / UNAUDITED \\n\",\"CONSOLIDATED / STANDALONE \\n\",\"DETAILS \\n\",\"XBRL \\n\",\"BROADCAST DATE/TIME \\n\",\"REVISED DATE/TIME \\n\",\"REVISION REMARKS \\n\",\"EXCHANGE DISSEMINATION TIME \\n\",\"TIME TAKEN \\n\"]",
+      "accepted_row_count": 0,
+      "rejected_row_count": 0,
+      "validation_status": "failed",
+      "compression": "none",
+      "excluded_row_count": 0,
+      "baseline_snapshot_id": 255,
+      "findings_json": "[{\"code\":\"row_count_floor\",\"detail\":\"accepted rows 0 below floor 1\",\"severity\":\"error\"}]",
+      "metrics_json": "{\"accepted_row_count\":0,\"distinct_isin_count\":0,\"duplicate_isin_row_count\":0,\"effective_date\":\"2026-10-03\",\"headers\":[\"SYMBOL \\n\",\"COMPANY NAME \\n\",\"QUARTER END DATE \\n\",\"TYPE OF SUBMISSION \\n\",\"AUDITED / UNAUDITED \\n\",\"CONSOLIDATED / STANDALONE \\n\",\"DETAILS \\n\",\"XBRL \\n\",\"BROADCAST DATE/TIME \\n\",\"REVISED DATE/TIME \\n\",\"REVISION REMARKS \\n\",\"EXCHANGE DISSEMINATION TIME \\n\",\"TIME TAKEN \\n\"],\"non_null_isin_count\":0,\"present_count\":0,\"rejected_row_count\":0,\"scope_metrics\":[],\"would_absent_count\":0}",
+      "thresholds_json": "{\"absence_volume_floor\":100,\"absence_volume_ratio\":0.05,\"duplicate_isin_rate\":null,\"rejected_row_rate\":0.05,\"row_count_drop_ratio\":null,\"row_floor\":1}",
+      "evaluated_at_utc": "2026-10-03T14:04:44+00:00",
+      "content_sha256": "cfbc3d1f66e23620e1b0d1ec43b0b0409c25557d6e02f533b78e9f1babf42e82",
+      "local_path": "/data/snapshots/exchange/NSE/nse_financial_results/2026-10-01/cfbc3d1f66e23620e1b0d1ec43b0b0409c25557d6e02f533b78e9f1babf42e82.csv",
+      "byte_size": 263
+    },
+    {
+      "snapshot_id": 255,
+      "exchange": "NSE",
+      "dataset": "nse_financial_results",
+      "effective_date": "2026-10-02",
+      "source_label": "https://www.nseindia.com/api/integrated-filing-results?type=Integrated%20Filing-%20Financials&period_ended=30-Jun-2026&csv=true",
+      "requested_url": "https://www.nseindia.com/api/integrated-filing-results?type=Integrated%20Filing-%20Financials&period_ended=30-Jun-2026&csv=true",
+      "acquisition_mode": "fetched",
+      "fetch_id": 67962,
+      "blob_id": 138225,
+      "parser_name": "exchange-result-filing",
+      "parser_version": "1.0.0",
+      "source_encoding": "utf-8-sig",
+      "observed_at_utc": "2026-10-02T15:49:01+00:00",
+      "header_json": "[\"SYMBOL \\n\",\"COMPANY NAME \\n\",\"QUARTER END DATE \\n\",\"TYPE OF SUBMISSION \\n\",\"AUDITED / UNAUDITED \\n\",\"CONSOLIDATED / STANDALONE \\n\",\"DETAILS \\n\",\"XBRL \\n\",\"BROADCAST DATE/TIME \\n\",\"REVISED DATE/TIME \\n\",\"REVISION REMARKS \\n\",\"EXCHANGE DISSEMINATION TIME \\n\",\"TIME TAKEN \\n\"]",
+      "accepted_row_count": 4351,
+      "rejected_row_count": 1,
+      "validation_status": "passed",
+      "compression": "none",
+      "excluded_row_count": 0,
+      "baseline_snapshot_id": 248,
+      "findings_json": "[]",
+      "metrics_json": "{\"accepted_row_count\":4351,\"distinct_isin_count\":0,\"duplicate_isin_row_count\":0,\"effective_date\":\"2026-10-02\",\"headers\":[\"SYMBOL \\n\",\"COMPANY NAME \\n\",\"QUARTER END DATE \\n\",\"TYPE OF SUBMISSION \\n\",\"AUDITED / UNAUDITED \\n\",\"CONSOLIDATED / STANDALONE \\n\",\"DETAILS \\n\",\"XBRL \\n\",\"BROADCAST DATE/TIME \\n\",\"REVISED DATE/TIME \\n\",\"REVISION REMARKS \\n\",\"EXCHANGE DISSEMINATION TIME \\n\",\"TIME TAKEN \\n\"],\"non_null_isin_count\":0,\"present_count\":0,\"rejected_row_count\":1,\"scope_metrics\":[],\"would_absent_count\":0}",
+      "thresholds_json": "{\"absence_volume_floor\":100,\"absence_volume_ratio\":0.05,\"duplicate_isin_rate\":null,\"rejected_row_rate\":0.05,\"row_count_drop_ratio\":null,\"row_floor\":1}",
+      "evaluated_at_utc": "2026-10-02T15:49:01+00:00",
+      "content_sha256": "204d8acd3312c5050f4453bb382d031292e47b059f400c13618a01d7131be573",
+      "local_path": "/data/snapshots/exchange/NSE/nse_financial_results/2026-10-02/204d8acd3312c5050f4453bb382d031292e47b059f400c13618a01d7131be573.csv",
+      "byte_size": 1611721
+    },
+    {
+      "snapshot_id": 254,
+      "exchange": "NSE",
+      "dataset": "nse_financial_results",
+      "effective_date": "2026-10-02",
+      "source_label": "https://www.nseindia.com/api/integrated-filing-results?type=Integrated%20Filing-%20Financials&period_ended=30-Sep-2026&csv=true",
+      "requested_url": "https://www.nseindia.com/api/integrated-filing-results?type=Integrated%20Filing-%20Financials&period_ended=30-Sep-2026&csv=true",
+      "acquisition_mode": "fetched",
+      "fetch_id": 67960,
+      "blob_id": 128211,
+      "parser_name": "exchange-result-filing",
+      "parser_version": "1.0.0",
+      "source_encoding": "utf-8-sig",
+      "observed_at_utc": "2026-10-02T15:49:01+00:00",
+      "header_json": "[\"SYMBOL \\n\",\"COMPANY NAME \\n\",\"QUARTER END DATE \\n\",\"TYPE OF SUBMISSION \\n\",\"AUDITED / UNAUDITED \\n\",\"CONSOLIDATED / STANDALONE \\n\",\"DETAILS \\n\",\"XBRL \\n\",\"BROADCAST DATE/TIME \\n\",\"REVISED DATE/TIME \\n\",\"REVISION REMARKS \\n\",\"EXCHANGE DISSEMINATION TIME \\n\",\"TIME TAKEN \\n\"]",
+      "accepted_row_count": 0,
+      "rejected_row_count": 0,
+      "validation_status": "failed",
+      "compression": "none",
+      "excluded_row_count": 0,
+      "baseline_snapshot_id": 248,
+      "findings_json": "[{\"code\":\"row_count_floor\",\"detail\":\"accepted rows 0 below floor 1\",\"severity\":\"error\"}]",
+      "metrics_json": "{\"accepted_row_count\":0,\"distinct_isin_count\":0,\"duplicate_isin_row_count\":0,\"effective_date\":\"2026-10-02\",\"headers\":[\"SYMBOL \\n\",\"COMPANY NAME \\n\",\"QUARTER END DATE \\n\",\"TYPE OF SUBMISSION \\n\",\"AUDITED / UNAUDITED \\n\",\"CONSOLIDATED / STANDALONE \\n\",\"DETAILS \\n\",\"XBRL \\n\",\"BROADCAST DATE/TIME \\n\",\"REVISED DATE/TIME \\n\",\"REVISION REMARKS \\n\",\"EXCHANGE DISSEMINATION TIME \\n\",\"TIME TAKEN \\n\"],\"non_null_isin_count\":0,\"present_count\":0,\"rejected_row_count\":0,\"scope_metrics\":[],\"would_absent_count\":0}",
+      "thresholds_json": "{\"absence_volume_floor\":100,\"absence_volume_ratio\":0.05,\"duplicate_isin_rate\":null,\"rejected_row_rate\":0.05,\"row_count_drop_ratio\":null,\"row_floor\":1}",
+      "evaluated_at_utc": "2026-10-02T15:49:01+00:00",
+      "content_sha256": "cfbc3d1f66e23620e1b0d1ec43b0b0409c25557d6e02f533b78e9f1babf42e82",
+      "local_path": "/data/snapshots/exchange/NSE/nse_financial_results/2026-10-01/cfbc3d1f66e23620e1b0d1ec43b0b0409c25557d6e02f533b78e9f1babf42e82.csv",
+      "byte_size": 263
+    }
+  ],
+  "schedule_runs": [
+    {
+      "schedule_run_id": 389,
+      "dataset": "nse_financial_results",
+      "scheduled_for": "2026-10-04",
+      "attempt": 2,
+      "role": "primary",
+      "result_period": "2026-09",
+      "outcome": "guard_failed",
+      "snapshot_id": 266,
+      "error": "snapshot rejected: ['row_count_floor', 'future_effective_date']",
+      "started_at_utc": "2026-10-03T18:44:56+00:00",
+      "finished_at_utc": "2026-10-03T18:44:56+00:00"
+    },
+    {
+      "schedule_run_id": 383,
+      "dataset": "nse_financial_results",
+      "scheduled_for": "2026-10-03",
+      "attempt": 1,
+      "role": "revision",
+      "result_period": "2026-06",
+      "outcome": "published_changed",
+      "snapshot_id": 261,
+      "error": "",
+      "started_at_utc": "2026-10-03T14:04:44+00:00",
+      "finished_at_utc": "2026-10-03T14:04:45+00:00"
+    },
+    {
+      "schedule_run_id": 382,
+      "dataset": "nse_financial_results",
+      "scheduled_for": "2026-10-03",
+      "attempt": 1,
+      "role": "primary",
+      "result_period": "2026-09",
+      "outcome": "guard_failed",
+      "snapshot_id": 260,
+      "error": "snapshot rejected: ['row_count_floor']",
+      "started_at_utc": "2026-10-03T14:04:44+00:00",
+      "finished_at_utc": "2026-10-03T14:04:44+00:00"
+    },
+    {
+      "schedule_run_id": 376,
+      "dataset": "nse_financial_results",
+      "scheduled_for": "2026-10-02",
+      "attempt": 1,
+      "role": "revision",
+      "result_period": "2026-06",
+      "outcome": "published_changed",
+      "snapshot_id": 255,
+      "error": "",
+      "started_at_utc": "2026-10-02T15:49:01+00:00",
+      "finished_at_utc": "2026-10-02T15:49:02+00:00"
+    },
+    {
+      "schedule_run_id": 374,
+      "dataset": "nse_financial_results",
+      "scheduled_for": "2026-10-02",
+      "attempt": 2,
+      "role": "primary",
+      "result_period": "2026-09",
+      "outcome": "guard_failed",
+      "snapshot_id": 254,
+      "error": "snapshot rejected: ['row_count_floor']",
+      "started_at_utc": "2026-10-02T15:49:01+00:00",
+      "finished_at_utc": "2026-10-02T15:49:01+00:00"
+    }
+  ],
+  "replay": [
+    {
+      "snapshot_id": 266,
+      "claim": "CONTROLLED_FIXTURE",
+      "method": "stored metrics replay without baseline; isolates floor/date checks, not raw parser replay",
+      "utc_date": "2026-10-03",
+      "exchange_date": "2026-10-04",
+      "before": {
+        "status": "failed",
+        "findings": [
+          {
+            "code": "row_count_floor",
+            "severity": "error",
+            "detail": "accepted rows 0 below floor 1"
+          },
+          {
+            "code": "future_effective_date",
+            "severity": "error",
+            "detail": "effective date 2026-10-04 is after today 2026-10-03"
+          }
+        ],
+        "metrics": {
+          "accepted_row_count": 0,
+          "rejected_row_count": 0,
+          "headers": [
+            "SYMBOL \n",
+            "COMPANY NAME \n",
+            "QUARTER END DATE \n",
+            "TYPE OF SUBMISSION \n",
+            "AUDITED / UNAUDITED \n",
+            "CONSOLIDATED / STANDALONE \n",
+            "DETAILS \n",
+            "XBRL \n",
+            "BROADCAST DATE/TIME \n",
+            "REVISED DATE/TIME \n",
+            "REVISION REMARKS \n",
+            "EXCHANGE DISSEMINATION TIME \n",
+            "TIME TAKEN \n"
+          ],
+          "distinct_isin_count": 0,
+          "duplicate_isin_row_count": 0,
+          "non_null_isin_count": 0,
+          "effective_date": "2026-10-04",
+          "would_absent_count": 0,
+          "present_count": 0,
+          "scope_metrics": []
+        },
+        "baseline": null,
+        "thresholds": {
+          "row_count_drop_ratio": null,
+          "row_floor": 1,
+          "rejected_row_rate": 0.05,
+          "duplicate_isin_rate": null,
+          "absence_volume_floor": 100,
+          "absence_volume_ratio": 0.05
+        }
+      },
+      "after": {
+        "status": "failed",
+        "findings": [
+          {
+            "code": "row_count_floor",
+            "severity": "error",
+            "detail": "accepted rows 0 below floor 1"
+          }
+        ],
+        "metrics": {
+          "accepted_row_count": 0,
+          "rejected_row_count": 0,
+          "headers": [
+            "SYMBOL \n",
+            "COMPANY NAME \n",
+            "QUARTER END DATE \n",
+            "TYPE OF SUBMISSION \n",
+            "AUDITED / UNAUDITED \n",
+            "CONSOLIDATED / STANDALONE \n",
+            "DETAILS \n",
+            "XBRL \n",
+            "BROADCAST DATE/TIME \n",
+            "REVISED DATE/TIME \n",
+            "REVISION REMARKS \n",
+            "EXCHANGE DISSEMINATION TIME \n",
+            "TIME TAKEN \n"
+          ],
+          "distinct_isin_count": 0,
+          "duplicate_isin_row_count": 0,
+          "non_null_isin_count": 0,
+          "effective_date": "2026-10-04",
+          "would_absent_count": 0,
+          "present_count": 0,
+          "scope_metrics": []
+        },
+        "baseline": null,
+        "thresholds": {
+          "row_count_drop_ratio": null,
+          "row_floor": 1,
+          "rejected_row_rate": 0.05,
+          "duplicate_isin_rate": null,
+          "absence_volume_floor": 100,
+          "absence_volume_ratio": 0.05
+        }
+      },
+      "original_bytes_available": false
+    },
+    {
+      "snapshot_id": 261,
+      "claim": "CONTROLLED_FIXTURE",
+      "method": "stored metrics replay without baseline; isolates floor/date checks, not raw parser replay",
+      "utc_date": "2026-10-03",
+      "exchange_date": "2026-10-03",
+      "before": {
+        "status": "passed",
+        "findings": [],
+        "metrics": {
+          "accepted_row_count": 4351,
+          "rejected_row_count": 1,
+          "headers": [
+            "SYMBOL \n",
+            "COMPANY NAME \n",
+            "QUARTER END DATE \n",
+            "TYPE OF SUBMISSION \n",
+            "AUDITED / UNAUDITED \n",
+            "CONSOLIDATED / STANDALONE \n",
+            "DETAILS \n",
+            "XBRL \n",
+            "BROADCAST DATE/TIME \n",
+            "REVISED DATE/TIME \n",
+            "REVISION REMARKS \n",
+            "EXCHANGE DISSEMINATION TIME \n",
+            "TIME TAKEN \n"
+          ],
+          "distinct_isin_count": 0,
+          "duplicate_isin_row_count": 0,
+          "non_null_isin_count": 0,
+          "effective_date": "2026-10-03",
+          "would_absent_count": 0,
+          "present_count": 0,
+          "scope_metrics": []
+        },
+        "baseline": null,
+        "thresholds": {
+          "row_count_drop_ratio": null,
+          "row_floor": 1,
+          "rejected_row_rate": 0.05,
+          "duplicate_isin_rate": null,
+          "absence_volume_floor": 100,
+          "absence_volume_ratio": 0.05
+        }
+      },
+      "after": {
+        "status": "passed",
+        "findings": [],
+        "metrics": {
+          "accepted_row_count": 4351,
+          "rejected_row_count": 1,
+          "headers": [
+            "SYMBOL \n",
+            "COMPANY NAME \n",
+            "QUARTER END DATE \n",
+            "TYPE OF SUBMISSION \n",
+            "AUDITED / UNAUDITED \n",
+            "CONSOLIDATED / STANDALONE \n",
+            "DETAILS \n",
+            "XBRL \n",
+            "BROADCAST DATE/TIME \n",
+            "REVISED DATE/TIME \n",
+            "REVISION REMARKS \n",
+            "EXCHANGE DISSEMINATION TIME \n",
+            "TIME TAKEN \n"
+          ],
+          "distinct_isin_count": 0,
+          "duplicate_isin_row_count": 0,
+          "non_null_isin_count": 0,
+          "effective_date": "2026-10-03",
+          "would_absent_count": 0,
+          "present_count": 0,
+          "scope_metrics": []
+        },
+        "baseline": null,
+        "thresholds": {
+          "row_count_drop_ratio": null,
+          "row_floor": 1,
+          "rejected_row_rate": 0.05,
+          "duplicate_isin_rate": null,
+          "absence_volume_floor": 100,
+          "absence_volume_ratio": 0.05
+        }
+      },
+      "original_bytes_available": false
+    },
+    {
+      "snapshot_id": 260,
+      "claim": "CONTROLLED_FIXTURE",
+      "method": "stored metrics replay without baseline; isolates floor/date checks, not raw parser replay",
+      "utc_date": "2026-10-03",
+      "exchange_date": "2026-10-03",
+      "before": {
+        "status": "failed",
+        "findings": [
+          {
+            "code": "row_count_floor",
+            "severity": "error",
+            "detail": "accepted rows 0 below floor 1"
+          }
+        ],
+        "metrics": {
+          "accepted_row_count": 0,
+          "rejected_row_count": 0,
+          "headers": [
+            "SYMBOL \n",
+            "COMPANY NAME \n",
+            "QUARTER END DATE \n",
+            "TYPE OF SUBMISSION \n",
+            "AUDITED / UNAUDITED \n",
+            "CONSOLIDATED / STANDALONE \n",
+            "DETAILS \n",
+            "XBRL \n",
+            "BROADCAST DATE/TIME \n",
+            "REVISED DATE/TIME \n",
+            "REVISION REMARKS \n",
+            "EXCHANGE DISSEMINATION TIME \n",
+            "TIME TAKEN \n"
+          ],
+          "distinct_isin_count": 0,
+          "duplicate_isin_row_count": 0,
+          "non_null_isin_count": 0,
+          "effective_date": "2026-10-03",
+          "would_absent_count": 0,
+          "present_count": 0,
+          "scope_metrics": []
+        },
+        "baseline": null,
+        "thresholds": {
+          "row_count_drop_ratio": null,
+          "row_floor": 1,
+          "rejected_row_rate": 0.05,
+          "duplicate_isin_rate": null,
+          "absence_volume_floor": 100,
+          "absence_volume_ratio": 0.05
+        }
+      },
+      "after": {
+        "status": "failed",
+        "findings": [
+          {
+            "code": "row_count_floor",
+            "severity": "error",
+            "detail": "accepted rows 0 below floor 1"
+          }
+        ],
+        "metrics": {
+          "accepted_row_count": 0,
+          "rejected_row_count": 0,
+          "headers": [
+            "SYMBOL \n",
+            "COMPANY NAME \n",
+            "QUARTER END DATE \n",
+            "TYPE OF SUBMISSION \n",
+            "AUDITED / UNAUDITED \n",
+            "CONSOLIDATED / STANDALONE \n",
+            "DETAILS \n",
+            "XBRL \n",
+            "BROADCAST DATE/TIME \n",
+            "REVISED DATE/TIME \n",
+            "REVISION REMARKS \n",
+            "EXCHANGE DISSEMINATION TIME \n",
+            "TIME TAKEN \n"
+          ],
+          "distinct_isin_count": 0,
+          "duplicate_isin_row_count": 0,
+          "non_null_isin_count": 0,
+          "effective_date": "2026-10-03",
+          "would_absent_count": 0,
+          "present_count": 0,
+          "scope_metrics": []
+        },
+        "baseline": null,
+        "thresholds": {
+          "row_count_drop_ratio": null,
+          "row_floor": 1,
+          "rejected_row_rate": 0.05,
+          "duplicate_isin_rate": null,
+          "absence_volume_floor": 100,
+          "absence_volume_ratio": 0.05
+        }
+      },
+      "original_bytes_available": false
+    },
+    {
+      "snapshot_id": 255,
+      "claim": "CONTROLLED_FIXTURE",
+      "method": "stored metrics replay without baseline; isolates floor/date checks, not raw parser replay",
+      "utc_date": "2026-10-02",
+      "exchange_date": "2026-10-02",
+      "before": {
+        "status": "passed",
+        "findings": [],
+        "metrics": {
+          "accepted_row_count": 4351,
+          "rejected_row_count": 1,
+          "headers": [
+            "SYMBOL \n",
+            "COMPANY NAME \n",
+            "QUARTER END DATE \n",
+            "TYPE OF SUBMISSION \n",
+            "AUDITED / UNAUDITED \n",
+            "CONSOLIDATED / STANDALONE \n",
+            "DETAILS \n",
+            "XBRL \n",
+            "BROADCAST DATE/TIME \n",
+            "REVISED DATE/TIME \n",
+            "REVISION REMARKS \n",
+            "EXCHANGE DISSEMINATION TIME \n",
+            "TIME TAKEN \n"
+          ],
+          "distinct_isin_count": 0,
+          "duplicate_isin_row_count": 0,
+          "non_null_isin_count": 0,
+          "effective_date": "2026-10-02",
+          "would_absent_count": 0,
+          "present_count": 0,
+          "scope_metrics": []
+        },
+        "baseline": null,
+        "thresholds": {
+          "row_count_drop_ratio": null,
+          "row_floor": 1,
+          "rejected_row_rate": 0.05,
+          "duplicate_isin_rate": null,
+          "absence_volume_floor": 100,
+          "absence_volume_ratio": 0.05
+        }
+      },
+      "after": {
+        "status": "passed",
+        "findings": [],
+        "metrics": {
+          "accepted_row_count": 4351,
+          "rejected_row_count": 1,
+          "headers": [
+            "SYMBOL \n",
+            "COMPANY NAME \n",
+            "QUARTER END DATE \n",
+            "TYPE OF SUBMISSION \n",
+            "AUDITED / UNAUDITED \n",
+            "CONSOLIDATED / STANDALONE \n",
+            "DETAILS \n",
+            "XBRL \n",
+            "BROADCAST DATE/TIME \n",
+            "REVISED DATE/TIME \n",
+            "REVISION REMARKS \n",
+            "EXCHANGE DISSEMINATION TIME \n",
+            "TIME TAKEN \n"
+          ],
+          "distinct_isin_count": 0,
+          "duplicate_isin_row_count": 0,
+          "non_null_isin_count": 0,
+          "effective_date": "2026-10-02",
+          "would_absent_count": 0,
+          "present_count": 0,
+          "scope_metrics": []
+        },
+        "baseline": null,
+        "thresholds": {
+          "row_count_drop_ratio": null,
+          "row_floor": 1,
+          "rejected_row_rate": 0.05,
+          "duplicate_isin_rate": null,
+          "absence_volume_floor": 100,
+          "absence_volume_ratio": 0.05
+        }
+      },
+      "original_bytes_available": false
+    },
+    {
+      "snapshot_id": 254,
+      "claim": "CONTROLLED_FIXTURE",
+      "method": "stored metrics replay without baseline; isolates floor/date checks, not raw parser replay",
+      "utc_date": "2026-10-02",
+      "exchange_date": "2026-10-02",
+      "before": {
+        "status": "failed",
+        "findings": [
+          {
+            "code": "row_count_floor",
+            "severity": "error",
+            "detail": "accepted rows 0 below floor 1"
+          }
+        ],
+        "metrics": {
+          "accepted_row_count": 0,
+          "rejected_row_count": 0,
+          "headers": [
+            "SYMBOL \n",
+            "COMPANY NAME \n",
+            "QUARTER END DATE \n",
+            "TYPE OF SUBMISSION \n",
+            "AUDITED / UNAUDITED \n",
+            "CONSOLIDATED / STANDALONE \n",
+            "DETAILS \n",
+            "XBRL \n",
+            "BROADCAST DATE/TIME \n",
+            "REVISED DATE/TIME \n",
+            "REVISION REMARKS \n",
+            "EXCHANGE DISSEMINATION TIME \n",
+            "TIME TAKEN \n"
+          ],
+          "distinct_isin_count": 0,
+          "duplicate_isin_row_count": 0,
+          "non_null_isin_count": 0,
+          "effective_date": "2026-10-02",
+          "would_absent_count": 0,
+          "present_count": 0,
+          "scope_metrics": []
+        },
+        "baseline": null,
+        "thresholds": {
+          "row_count_drop_ratio": null,
+          "row_floor": 1,
+          "rejected_row_rate": 0.05,
+          "duplicate_isin_rate": null,
+          "absence_volume_floor": 100,
+          "absence_volume_ratio": 0.05
+        }
+      },
+      "after": {
+        "status": "failed",
+        "findings": [
+          {
+            "code": "row_count_floor",
+            "severity": "error",
+            "detail": "accepted rows 0 below floor 1"
+          }
+        ],
+        "metrics": {
+          "accepted_row_count": 0,
+          "rejected_row_count": 0,
+          "headers": [
+            "SYMBOL \n",
+            "COMPANY NAME \n",
+            "QUARTER END DATE \n",
+            "TYPE OF SUBMISSION \n",
+            "AUDITED / UNAUDITED \n",
+            "CONSOLIDATED / STANDALONE \n",
+            "DETAILS \n",
+            "XBRL \n",
+            "BROADCAST DATE/TIME \n",
+            "REVISED DATE/TIME \n",
+            "REVISION REMARKS \n",
+            "EXCHANGE DISSEMINATION TIME \n",
+            "TIME TAKEN \n"
+          ],
+          "distinct_isin_count": 0,
+          "duplicate_isin_row_count": 0,
+          "non_null_isin_count": 0,
+          "effective_date": "2026-10-02",
+          "would_absent_count": 0,
+          "present_count": 0,
+          "scope_metrics": []
+        },
+        "baseline": null,
+        "thresholds": {
+          "row_count_drop_ratio": null,
+          "row_floor": 1,
+          "rejected_row_rate": 0.05,
+          "duplicate_isin_rate": null,
+          "absence_volume_floor": 100,
+          "absence_volume_ratio": 0.05
+        }
+      },
+      "original_bytes_available": false
+    }
+  ]
+}

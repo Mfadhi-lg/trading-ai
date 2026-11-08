@@ -1,0 +1,15 @@
+{
+  "recovery_authority": "USER",
+  "execution_agent": "CODEX",
+  "authorized_key": "AR-01.3C/control-ownership/2026-10-08/v1",
+  "maximum_normal_row_mutations": 2,
+  "automatic_retry": false,
+  "automatic_recovery": false,
+  "database_restore": false,
+  "approved_config_hashes": {
+    "runtime-identity-core.json": "a9f83a2bde31c297fa5ff3b0f29bb12d150d4d4e28ce1af4b1a23d6308bdbc9d",
+    "core-documents-sentinel.json": "2d0bf67aea44ecbc4ffa46582d4fae553d8440248d0cdd1debed81079f55e9d1",
+    "store-sentinel.json": "bf885c5205ace8e3b68eacd4cf946a39353626e09fc3803aef5cbdc730ee641b"
+  },
+  "code_sha256": "937352ea7d4a5fae5dbcaf879d9821f4b5ae3ebd5bb8d5c6acd7d238654ed992"
+}

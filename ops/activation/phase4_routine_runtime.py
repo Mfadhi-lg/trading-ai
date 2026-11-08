@@ -93,8 +93,8 @@ def main():
         storage=assert_document_store_ready().to_dict()
         timing('storage_identity_capacity_and_write_probe')
     stage=plan['stage'];output=Path('/data/exports/phase4-routine')/now.strftime('%Y%m%dT%H%M%SZ')
-    policy=DownloadPolicy(max_bytes=plan['max_response_bytes'],
-        max_redirects=0 if plan.get('recovery_campaign') else plan['max_redirects'],total_timeout_seconds=45)
+    policy=DownloadPolicy(max_bytes=(plan.get('download_max_response_bytes',plan['max_response_bytes']) if stage=='DOCUMENT_DOWNLOAD' else plan['max_response_bytes']),
+        max_redirects=0 if plan.get('recovery_campaign') else plan['max_redirects'],total_timeout_seconds=120 if stage=='DOCUMENT_DOWNLOAD' else 45)
     if stage=='DOCUMENT_DISCOVERY':
         result=run_automatic_discovery(db_path=db,epoch=plan['epoch'],limit=plan['discovery_limit'],historical_limit=0,
             screener_request_limit=plan.get('screener_request_limit',2),
@@ -110,6 +110,8 @@ def main():
         with begin(plan,output):
             result=run_automatic_downloads(db_path=db,epoch=plan['epoch'],limit=plan['download_limit'],historical_limit=0,
                 policy=policy,max_attempts=3,connection_factory=guarded,recovery_job_ids=recovery_ids,
+                historical_fallback=plan.get('historical_download_fallback',False),
+                claim_budget_seconds=plan['runtime_deadline_seconds']-165,
                 saved_parse_ids=tuple(plan.get('saved_link_repair_ids',())))
     elif stage=='DOCUMENT_PROCESSING':
         if plan.get('local_resume_work_id'):

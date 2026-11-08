@@ -1,0 +1,11 @@
+{
+  "attempt": 2,
+  "authority": "USER",
+  "agent": "CODEX",
+  "key": "AR-01.3C/control-ownership/2026-10-08/v1",
+  "executions_authorized": 1,
+  "maximum_normal_row_mutations": 2,
+  "network": "none",
+  "automatic_retry": false,
+  "automatic_recovery": false
+}
