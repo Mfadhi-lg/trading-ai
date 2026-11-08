@@ -28,6 +28,19 @@ Start with `AGENTS.md`, `README.md`, and `PROJECT_MAP.md`. Then route by task:
 
 This table is a starting point, not a substitute for tracing actual imports and entry points. Confirm exact paths in the current checkout before editing. Historical experiments and artifacts may still be consumed by tests or scripts.
 
+## CI database environment contract
+
+Any GitHub Actions job that creates, initializes, migrates, or otherwise writes to an application database must explicitly set:
+
+```yaml
+env:
+  TRADING_AI_ENV: test
+```
+
+Set it at the job level so every database-writing step and test subprocess inherits the same explicit identity. The current database-writing CI jobs are `.github/workflows/migration-lineage.yml` and `.github/workflows/ml-readiness.yml`.
+
+The runtime write guard in `scrapper/runtime_identity.py` rejects an unset or unsupported environment. In `test` mode it also rejects known production roots, production mounts, and unverified production identity markers. CI database paths and fixtures must remain disposable and isolated; setting this variable does not authorize access to production data. A future workflow that writes to a database must follow this contract rather than relying on runner defaults.
+
 ## Task execution
 
 ### 1. Convert the request into a contract
