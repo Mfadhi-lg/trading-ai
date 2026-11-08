@@ -51,7 +51,7 @@ def test_fast_schedule_daily_document_budget(tmp_path,monkeypatch):
 def test_read_only_docker_inspection_is_not_a_competing_writer():
     import importlib.util
     root=Path(__file__).resolve().parents[2]
-    spec=importlib.util.spec_from_file_location('candidate_owner',root/'artifacts/paired-throughput-rollout/production_ownership.py')
+    spec=importlib.util.spec_from_file_location('candidate_owner',root/'ops/activation/production_ownership.py')
     guard=importlib.util.module_from_spec(spec);spec.loader.exec_module(guard)
     verdict,_=guard.classify_process({'args':'docker volume inspect '+guard.VOLUME})
     assert verdict=='unrelated'

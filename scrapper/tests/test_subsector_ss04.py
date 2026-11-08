@@ -1,5 +1,7 @@
+from scrapper.tests.retained_audits import retained_source_audit
 import csv,json,sqlite3,tempfile,unittest,hashlib
 from scrapper.research.subsector_ss04 import build as b
+@retained_source_audit
 class SS04(unittest.TestCase):
  @classmethod
  def setUpClass(cls):

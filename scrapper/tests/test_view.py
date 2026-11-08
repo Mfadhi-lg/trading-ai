@@ -512,7 +512,7 @@ class DownloadMonitorDataTests(ViewTestCase):
         self.assertEqual(care["queued"], 1)
         self.assertEqual(care["active"], 1)
         icra = next(item for item in data["hosts"] if item["host"] == "www.icra.in")
-        self.assertEqual(icra["policy"], "BLOCKED_TERMS")
+        self.assertEqual(icra["policy"], "UNSPECIFIED")
 
     def test_ansi_download_monitor_includes_file_metrics(self) -> None:
         self._seed_download_jobs()

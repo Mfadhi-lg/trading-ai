@@ -66,13 +66,14 @@ class QuarterContractTests(unittest.TestCase):
         self.assertEqual(self.conn.execute('SELECT period_end FROM document_artifacts WHERE artifact_id=?',(retain,)).fetchone()[0],'2026-06-30')
         self.assertEqual(self.conn.execute('SELECT count(*) FROM artifact_period_corrections').fetchone()[0],1)
 
+    @patch("scrapper.core.access_policy.BLOCKED_TERMS_HOSTS", frozenset({"blocked.example"}))
     def test_priority_does_not_retry_terminal_leased_recordings_or_blocked_urls(self):
         pending=self.artifact('pending')
         retry=self.artifact('retry','transcript',status='RETRYABLE_FAILURE')
         self.artifact('terminal',status='TERMINAL_FAILURE')
         self.artifact('leased',status='LEASED')
         self.artifact('recording','recording')
-        self.artifact('blocked',url='https://www.crisilratings.com/blocked.pdf')
+        self.artifact('blocked',url='https://blocked.example/blocked.pdf')
         report=quarter.build_inventory(self.conn,period='2026-06-30')
         self.assertEqual(quarter.prioritize(self.conn,report),2)
         self.assertEqual({x[0] for x in self.conn.execute('SELECT artifact_id FROM artifact_download_queue WHERE priority=10')},{pending,retry})

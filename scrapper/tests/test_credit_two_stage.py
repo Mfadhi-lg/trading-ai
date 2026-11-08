@@ -1,3 +1,5 @@
+
+from scrapper.tests.retained_audits import retained_source_audit
 from copy import deepcopy
 import json
 from pathlib import Path
@@ -168,6 +170,7 @@ class TwoStageTests(unittest.TestCase):
         self.assertEqual(packet['candidates'], [])
         self.assertEqual(len(invalid), 1)
 
+    @retained_source_audit
     def test_saved_gna_regressions(self):
         cases = json.loads((ART/'offline/case-results.json').read_text())
         self.assertEqual(len(cases), 16)
@@ -177,6 +180,7 @@ class TwoStageTests(unittest.TestCase):
         self.assertEqual(summary['automatic_semantic_admissions'], 0)
         self.assertEqual(summary['admitted_claims'], 6)
 
+    @retained_source_audit
     def test_offline_cli_on_frozen_future_source_with_empty_synthetic_response(self):
         source = ART/'future/source'
         sidecar = json.loads((source/'sidecar.json').read_text())

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import unittest
 from dataclasses import replace
+from unittest.mock import patch
 
 from scrapper.documents.rating_evidence import classify_rating_evidence
 from scrapper.documents.recovery import (
@@ -110,12 +111,13 @@ class CandidateMatchingTests(unittest.TestCase):
         self.assertEqual({item.confidence for item in decided}, {RecoveryConfidence.AMBIGUOUS})
         self.assertFalse(any(item.may_auto_attach for item in decided))
 
+    @patch("scrapper.core.access_policy.BLOCKED_TERMS_HOSTS", frozenset({"blocked.example"}))
     def test_blocked_candidate_is_policy_rejected_before_matching(self) -> None:
         candidate = match_candidate(
             target(),
             observation(
-                candidate_url="https://www.crisilratings.com/redirected.pdf",
-                retrieval_host="www.crisilratings.com",
+                candidate_url="https://blocked.example/redirected.pdf",
+                retrieval_host="blocked.example",
                 source_type=RecoverySourceType.ISSUER_IR_ATTACHMENT,
             ),
             discovered_at_utc=NOW,

@@ -40,6 +40,14 @@ Every GitHub Actions job that creates, initializes, migrates, or otherwise write
 
 The current database-writing CI jobs are `.github/workflows/migration-lineage.yml` and `.github/workflows/ml-readiness.yml`. Both use the same isolation contract, and `scrapper/tests/test_ci_database_isolation.py` guards the workflow path contract against regressions. The runtime write guard in `scrapper/runtime_identity.py` rejects an unset or unsupported environment and, in test mode, rejects known production roots, production mounts, and unverified production identity markers. `TRADING_AI_ENV=test` is necessary but is not itself proof that paths are isolated. CI database and storage targets must remain disposable; the environment flag does not authorize access to production data. Any new CI job that writes application data must follow this contract.
 
+## Portable software tests and retained-source audits
+
+The default offline suite uses committed fixtures or explicitly synthetic inputs in temporary directories. It never opens production data or needs a developer's external drive. CI installs the locked test dependencies (including workbook builders) and Chromium; browser regressions intercept all outbound requests.
+
+Historical audits that certify specific original PDFs, frozen research databases, or operator-supplied workbooks require the original retained bundle. Run them explicitly with `TRADING_AI_RUN_RETAINED_AUDITS=1 python -B -m unittest discover -s scrapper/tests -t . -v` in an isolated checkout with the required bundle. Missing/corrupt evidence then fails normally. Default CI reports these as skipped, not passed; synthetic software checks do not certify historical source bytes or research outcomes. Retained research jobs that write outputs must use isolated copies and temporary output paths.
+
+The November integration correction also permits download recovery audit INSERT operations through the existing routine SQL guard. Explicit audit UPDATE/DELETE operations and unrelated protected writes remain denied. This authorizer is an application write boundary, not protection against arbitrary SQL such as INSERT OR REPLACE. Source changes do not activate a release or clear retained production stops; deployment and recovery remain separately authorized operations.
+
 ## Task execution
 
 ### 1. Convert the request into a contract

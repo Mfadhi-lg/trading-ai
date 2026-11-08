@@ -1,7 +1,9 @@
+from scrapper.tests.retained_audits import retained_source_audit
 import sqlite3, tempfile, unittest, csv, hashlib
 from pathlib import Path
 from scrapper.research.subsector_ss03 import build
 
+@retained_source_audit
 class SS03Tests(unittest.TestCase):
  def setUp(self):
   self.c=sqlite3.connect(':memory:'); src=sqlite3.connect(f'file:{build.SOURCE}?mode=ro',uri=True);src.backup(self.c);src.close();self.c.execute('pragma foreign_keys=on');build.migrate(self.c)

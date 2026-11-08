@@ -1,5 +1,4 @@
 import os
-import shutil
 import subprocess
 import tempfile
 import unittest
@@ -24,131 +23,139 @@ class HostControlTests(unittest.TestCase):
 
 
 class WrapperLifecycleTests(unittest.TestCase):
+    """Exercise the current bounded lifecycle against isolated state and mocks."""
     def setUp(self):
+        import importlib
+        from types import SimpleNamespace
+        from contextlib import ExitStack
+
         self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
         self.root = Path(self.tmp.name)
-        repo = Path(__file__).parents[2]
-        shutil.copy(repo / 'scraper', self.root / 'scraper')
-        shutil.copytree(repo / 'ops', self.root / 'ops')
-        shutil.copytree(repo / 'scrapper', self.root / 'scrapper',
-                        ignore=shutil.ignore_patterns('__pycache__', 'store'))
-        (self.root / '.env').write_text(f'TRADING_AI_DOCUMENT_HOST_PATH={self.root}\n')
-        (self.root / '.trading_ai_document_store').touch()
-        self.events = self.root / 'events'
-        bin_dir = self.root / 'bin'
-        bin_dir.mkdir()
-        self.env = {**os.environ, 'PATH': str(bin_dir) + ':' + os.environ['PATH'], 'EVENTS': str(self.events), 'REAL_PYTHON': sys.executable,
-                    'TRADING_AI_ENV': 'test', 'PYTHONDONTWRITEBYTECODE': '1'}
-        programs = {
-            'python3': '''#!/bin/bash
-if [ "$1" = "-B" ]; then exec "$REAL_PYTHON" "$@"; fi
-echo "host:$2" >> "$EVENTS"
-case "$2" in
-is-running) [ ! -f "$EVENTS.host-stopped" ]; exit $?;;
-stop) if [ "${FAIL_HOST_STOP:-0}" = 1 ]; then exit 1; fi; touch "$EVENTS.host-stopped";;
-start) rm -f "$EVENTS.host-stopped";;
-esac
-''',
-            'docker': '''#!/bin/bash
-echo "docker:$*" >> "$EVENTS"
-case "$1" in
-ps) case "$*" in *status=running*) [ -f "$EVENTS.stopped" ] || echo trading-ai-document-download-worker-1;; esac;;
-inspect) case "$*" in *oneoff*) echo False;; *State.Running*) echo true;; esac;;
-stop) touch "$EVENTS.stopped";;
-start) rm -f "$EVENTS.stopped";;
-esac
-''',
-        }
-        for name, code in programs.items():
-            path = bin_dir / name
-            path.write_text(code)
-            path.chmod(0o755)
+        self.state = self.root / 'state'
+        self.activation = self.root / 'activation'
+        self.state.mkdir()
+        self.activation.mkdir()
+        for name in ('.scheduler-admission.lock', '.nse-owner.lock'):
+            (self.activation / name).touch()
+        # A synthetic session marker satisfies only the file-presence check;
+        # all Docker/source/LaunchAgent operations remain mocked below.
+        (self.root / '.screener_session').write_text('synthetic-offline-session')
+        repo = Path(__file__).resolve().parents[2]
+        with patch.object(sys, 'path', [str(repo / 'ops/host'), str(repo / 'ops/activation'), *sys.path]):
+            self.lifecycle = importlib.import_module('ops.host.acquisition_lifecycle')
+            documents = importlib.import_module('phase4_documents')
+            nse = importlib.import_module('nse_results')
+        self.stack = self.enterContext(ExitStack())
+        lifecycle = self.lifecycle
+        replacements = dict(ROOT=self.root, STATE=self.state,
+            ACTIVATION=self.activation, PAUSE=self.state/'lifecycle-paused.json',
+            PREVIOUS=self.state/'previous.json', config=MagicMock(return_value={'manifest':'fixture'}),
+            loaded=MagicMock(return_value=True),
+            quiescent=MagicMock(return_value={'database':{'leases':{'status':'PASS'}}}),
+            external_handles=MagicMock(return_value=[]),
+            schedule_status=MagicMock(return_value={'document_window_expired':True}),
+            missed_slots=MagicMock(return_value=[{'missed_slots':3,'replayed':False}]),
+            candles=SimpleNamespace(pause=MagicMock(return_value={'status':'PAUSED'}),
+                wake=MagicMock(return_value={'status':'RUNNING'}),
+                status=MagicMock(return_value={'status':'IDLE'})),
+            run=MagicMock(return_value=SimpleNamespace(stdout='{}',returncode=0)))
+        for key,value in replacements.items():
+            self.stack.enter_context(patch.object(lifecycle,key,value))
+        self.stack.enter_context(patch.object(documents,'storage_preflight',return_value={'free_bytes':400*1024**3}))
+        self.stack.enter_context(patch.object(nse,'check_configuration',return_value={'oci_index_digest':'sha256:'+'a'*64}))
+        original_stat = os.stat
+        def stat(path,*args,**kwargs):
+            if str(path) == '/dev/console':
+                return SimpleNamespace(st_uid=os.getuid())
+            return original_stat(path,*args,**kwargs)
+        self.stack.enter_context(patch.object(os,'stat',side_effect=stat))
+        original_is_file = Path.is_file
+        self.stack.enter_context(patch.object(Path,'is_file',lambda path: True if str(path)=='/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' else original_is_file(path)))
 
-    def tearDown(self):
-        self.tmp.cleanup()
+    def test_shutdown_then_wake_preserves_schedule_without_legacy_restore(self):
+        lifecycle=self.lifecycle
+        legacy=self.state/'.scraper_shutdown_state'
+        legacy.write_text('@browser-rating-icra\ntrading-ai-daemon-1\n')
+        result=lifecycle.shutdown(0)
+        self.assertTrue(result['safe_to_shut_down_mac'])
+        self.assertFalse(result['safe_to_disconnect_drive'])
+        previous=lifecycle.PREVIOUS.read_bytes()
+        self.assertEqual(lifecycle.shutdown(0)['status'],'PASS')
+        self.assertEqual(lifecycle.PREVIOUS.read_bytes(),previous)
+        result=lifecycle.wake()
+        self.assertFalse(result['replayed'])
+        self.assertTrue(result['legacy_shutdown_state_ignored'])
+        self.assertEqual(result['missed_schedule_opportunities'][0]['missed_slots'],3)
+        self.assertEqual(legacy.read_text(),'@browser-rating-icra\ntrading-ai-daemon-1\n')
+        self.assertFalse(lifecycle.PAUSE.exists())
+        for call in lifecycle.run.call_args_list:
+            self.assertNotIn(call.args[0][:2],(['docker','start'],['docker','stop'],['docker','compose']))
 
-    def invoke(self, action, **extra):
-        return subprocess.run(['bash', str(self.root / 'scraper'), action], env={**self.env, **extra}, capture_output=True, text=True)
+    def test_shutdown_persists_pause_before_draining_and_syncs_after(self):
+        lifecycle=self.lifecycle
+        events=[]
+        def drain(**kwargs):
+            self.assertTrue(lifecycle.PAUSE.is_file())
+            self.assertTrue(lifecycle.PREVIOUS.is_file())
+            events.append('drained')
+            return {'status':'PAUSED'}
+        lifecycle.candles.pause.side_effect=drain
+        lifecycle.quiescent.side_effect=lambda: events.append('quiescent') or {}
+        lifecycle.run.side_effect=lambda args,**kwargs:events.append(args[0])
+        lifecycle.shutdown(0)
+        self.assertEqual(events,['drained','quiescent','/bin/sync'])
 
-    def test_shutdown_then_wake_orders_host_and_containers(self):
-        self.assertEqual(self.invoke('shutdown').returncode, 0)
-        state = (self.root / '.scraper_shutdown_state').read_text()
-        self.assertIn('@browser-rating-icra', state)
-        events = self.events.read_text()
-        self.assertLess(events.index('host:stop'), events.index('docker:stop'))
-        self.events.write_text('')
-        self.assertEqual(self.invoke('wake').returncode, 0)
-        events = self.events.read_text()
-        self.assertLess(events.index('docker:start'), events.index('host:start'))
+    def test_failed_drain_keeps_pause_without_claiming_safe(self):
+        lifecycle=self.lifecycle
+        lifecycle.candles.pause.side_effect=RuntimeError('owned writer still active')
+        with self.assertRaisesRegex(RuntimeError,'owned writer still active'):
+            lifecycle.shutdown(0)
+        self.assertTrue(lifecycle.PAUSE.exists())
+        self.assertTrue(lifecycle.PREVIOUS.exists())
+        self.assertFalse((self.state/'shutdown-verification.json').exists())
+        lifecycle.run.assert_not_called()
 
-    def test_failed_host_stop_prevents_container_shutdown_and_keeps_resume_state(self):
-        self.assertNotEqual(self.invoke('shutdown', FAIL_HOST_STOP='1').returncode, 0)
-        self.assertNotIn('docker:stop', self.events.read_text())
-        self.assertIn('trading-ai-document-download-worker-1', (self.root / '.scraper_shutdown_state').read_text())
+    def test_changed_configuration_refuses_wake_before_reopening(self):
+        lifecycle=self.lifecycle
+        lifecycle.shutdown(0)
+        lifecycle.config.return_value={'manifest':'changed'}
+        with self.assertRaisesRegex(RuntimeError,'configuration/authorization changed'):
+            lifecycle.wake()
+        self.assertTrue(lifecycle.PAUSE.exists())
+        lifecycle.candles.wake.assert_not_called()
 
-    def test_configured_state_with_spaces_preserves_legacy_format_and_order(self):
-        state = self.root / 'external state' / 'resume file'
-        result = self.invoke('shutdown', SCRAPER_SHUTDOWN_STATE_PATH=str(state),
-                             SCRAPER_BROWSER_RUN_ID='selected-run',
-                             SCRAPER_BROWSER_BRIDGE_CONTAINER='selected-bridge')
-        self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertEqual(state.read_text(),
-                         '@browser-rating-icra\ntrading-ai-document-download-worker-1\n')
-        self.assertFalse((self.root / '.scraper_shutdown_state').exists())
-        self.events.write_text('')
-        self.assertEqual(self.invoke('wake', SCRAPER_SHUTDOWN_STATE_PATH=str(state)).returncode, 0)
-        events = self.events.read_text()
-        self.assertLess(events.index('docker:start'), events.index('host:start'))
+    def test_missing_session_refuses_wake_before_runtime_commands(self):
+        lifecycle=self.lifecycle
+        lifecycle.shutdown(0)
+        lifecycle.run.reset_mock()
+        (self.root/'.screener_session').unlink()
+        with self.assertRaisesRegex(RuntimeError,'session file is missing/empty'):
+            lifecycle.wake()
+        self.assertTrue(lifecycle.PAUSE.exists())
+        lifecycle.run.assert_not_called()
 
-    def test_refused_state_and_symlink_have_no_lifecycle_side_effects(self):
-        alias = self.root / 'production-alias'
-        alias.symlink_to('/data', target_is_directory=True)
-        for action in ('shutdown', 'wake'):
-            for state in ('/data/refused-resume', str(alias / 'refused-resume')):
-                result = self.invoke(action, SCRAPER_SHUTDOWN_STATE_PATH=state)
-                self.assertNotEqual(result.returncode, 0)
-                self.assertIn('refused', result.stderr)
-                self.assertFalse(self.events.exists())
-
-    def test_status_uses_selected_bridge_without_creating_state(self):
-        state = self.root / 'absent' / 'resume'
-        result = self.invoke('status', SCRAPER_SHUTDOWN_STATE_PATH=str(state),
-                             SCRAPER_BROWSER_BRIDGE_CONTAINER='selected-bridge')
-        self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertIn('docker:exec selected-bridge python -m scrapper.view.browser_rating_monitor --once',
-                      self.events.read_text())
-        self.assertFalse(state.parent.exists())
-
-    def test_failed_stop_retains_configured_state_for_retry(self):
-        state = self.root / 'external' / 'resume'
-        result = self.invoke('shutdown', FAIL_HOST_STOP='1', SCRAPER_SHUTDOWN_STATE_PATH=str(state))
-        self.assertNotEqual(result.returncode, 0)
-        self.assertIn('@browser-rating-icra', state.read_text())
-        self.assertNotIn('docker:stop', self.events.read_text())
-
-    def test_missing_store_prevents_wake_even_with_configured_state(self):
-        state = self.root / 'resume'
-        state.write_text('@browser-rating-icra\ncontainer\n')
-        (self.root / '.trading_ai_document_store').unlink()
-        self.assertNotEqual(self.invoke('wake', SCRAPER_SHUTDOWN_STATE_PATH=str(state)).returncode, 0)
-        self.assertFalse(self.events.exists())
-
-    def test_invalid_line_separator_refuses_before_actions(self):
-        self.assertNotEqual(self.invoke('shutdown', SCRAPER_SHUTDOWN_STATE_PATH='bad\npath').returncode, 0)
-        self.assertNotEqual(self.invoke('shutdown', SCRAPER_SHUTDOWN_STATE_PATH='').returncode, 0)
-        self.assertFalse(self.events.exists())
+    def test_failed_candle_wake_recloses_admissions(self):
+        lifecycle=self.lifecycle
+        lifecycle.shutdown(0)
+        original=lifecycle.PAUSE.read_bytes()
+        lifecycle.candles.wake.side_effect=RuntimeError('storage identity changed')
+        with self.assertRaisesRegex(RuntimeError,'storage identity changed'):
+            lifecycle.wake()
+        self.assertEqual(lifecycle.PAUSE.read_bytes(),original)
+        self.assertFalse((self.state/'wake-verification.json').exists())
+        self.assertEqual(lifecycle.candles.pause.call_count,2)
 
     def test_settings_help_and_import_are_inert_without_identity(self):
-        env = {key: value for key, value in self.env.items()
-               if not key.startswith(('TRADING_AI_', 'SCRAPER_'))}
-        env['SCRAPER_SHUTDOWN_STATE_PATH'] = str(self.root / 'absent' / 'state')
-        for args in (['-B', 'ops/host/lifecycle_config.py', '--help'],
-                     ['-B', '-c', 'import ops.host.lifecycle_config']):
-            result = subprocess.run([sys.executable, *args], cwd=self.root, env=env,
-                                    text=True, capture_output=True)
-            self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertFalse((self.root / 'absent').exists())
-        self.assertFalse(self.events.exists())
+        repo=Path(__file__).resolve().parents[2]
+        env={key:value for key,value in os.environ.items()
+             if not key.startswith(('TRADING_AI_','SCRAPER_'))}
+        env['SCRAPER_SHUTDOWN_STATE_PATH']=str(self.root/'absent'/'state')
+        for args in (['-B','ops/host/lifecycle_config.py','--help'],
+                     ['-B','-c','import ops.host.lifecycle_config']):
+            result=subprocess.run([sys.executable,*args],cwd=repo,env=env,text=True,capture_output=True)
+            self.assertEqual(result.returncode,0,result.stderr)
+        self.assertFalse((self.root/'absent').exists())
 
 
 if __name__ == '__main__':

@@ -37,9 +37,20 @@ jobs:
         run: |
           python -m pip install --require-hashes --requirement scrapper/requirements.test.lock
           python -m pip check
+      - name: Install browser for network-isolated browser tests
+        run: python -m playwright install --with-deps chromium
       - name: Migrate isolated database from zero
         run: python -m scrapper.cli init-db
       - name: Complete offline suite
         run: python -m unittest discover -s scrapper/tests -t . -v
+      - name: Bounded processing and terminal regressions
+        env:
+          PYTHONPATH: ops/activation:ops/host
+        run: >-
+          python -B -m pytest -q -p no:cacheprovider
+          ops/activation/test_processing_pipeline.py
+          ops/activation/test_paired_downloads.py
+          ops/host/test_acquisition_terminal.py
+          ops/host/test_monitor_usability.py
       - name: Data-integrity and fixture gates
         run: python -m unittest scrapper.tests.test_ml_reporting_contract -v

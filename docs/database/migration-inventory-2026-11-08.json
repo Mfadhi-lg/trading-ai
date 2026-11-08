@@ -4,14 +4,14 @@
   "generated_at": "2026-11-08",
   "source_manifest": "docs/cleanup/baselines/C22.3/migration-manifest.json",
   "migration_count": 76,
-  "declaration_entry_count": 372,
+  "declaration_entry_count": 380,
   "declaration_counts": {
     "create_table": 168,
     "create_view": 30,
-    "create_index": 93,
+    "create_index": 98,
     "create_trigger": 22,
     "alter_table": 46,
-    "drop_object": 13
+    "drop_object": 16
   },
   "migrations": [
     {
@@ -30,6 +30,10 @@
         {
           "line": 12,
           "text": "CREATE TABLE IF NOT EXISTS security_identifiers ("
+        },
+        {
+          "line": 23,
+          "text": "CREATE UNIQUE INDEX IF NOT EXISTS uq_current_security_identifier"
         },
         {
           "line": 27,
@@ -144,6 +148,10 @@
         {
           "line": 116,
           "text": "CREATE TABLE acceptance_events ("
+        },
+        {
+          "line": 141,
+          "text": "DROP VIEW latest_accepted_pages;"
         },
         {
           "line": 143,
@@ -420,6 +428,10 @@
           "text": "ALTER TABLE mf_workbook_cells ADD COLUMN table_position INTEGER;"
         },
         {
+          "line": 13,
+          "text": "CREATE UNIQUE INDEX IF NOT EXISTS ux_mf_workbook_cells_source_order"
+        },
+        {
           "line": 17,
           "text": "CREATE TABLE IF NOT EXISTS mf_workbook_tables ("
         },
@@ -461,6 +473,10 @@
         {
           "line": 95,
           "text": "CREATE TABLE IF NOT EXISTS mf_security_match_decisions ("
+        },
+        {
+          "line": 116,
+          "text": "CREATE UNIQUE INDEX IF NOT EXISTS ux_mf_security_match_current"
         },
         {
           "line": 120,
@@ -536,6 +552,10 @@
         {
           "line": 111,
           "text": "CREATE VIEW IF NOT EXISTS mf_active_equity_accepted_holdings AS"
+        },
+        {
+          "line": 116,
+          "text": "DROP VIEW IF EXISTS mf_stock_feature_eligible_holdings;"
         },
         {
           "line": 117,
@@ -988,6 +1008,10 @@
           "text": "CREATE INDEX IF NOT EXISTS idx_machine_transcription_target"
         },
         {
+          "line": 54,
+          "text": "CREATE UNIQUE INDEX IF NOT EXISTS idx_machine_transcript_source_identity"
+        },
+        {
           "line": 58,
           "text": "CREATE TRIGGER IF NOT EXISTS machine_transcription_run_insert_guard"
         },
@@ -1119,6 +1143,10 @@
         {
           "line": 121,
           "text": "CREATE TABLE IF NOT EXISTS exchange_company_links ("
+        },
+        {
+          "line": 133,
+          "text": "CREATE UNIQUE INDEX IF NOT EXISTS uq_exchange_company_link_current"
         },
         {
           "line": 136,
@@ -1713,6 +1741,10 @@
       "lines": 13,
       "declarations": [
         {
+          "line": 3,
+          "text": "DROP VIEW IF EXISTS financial_scope_integrity_audit;"
+        },
+        {
           "line": 4,
           "text": "CREATE VIEW financial_scope_integrity_audit AS"
         }
@@ -1872,7 +1904,7 @@
     {
       "path": "scrapper/db/migrations/068_exchange_source_access_compatibility.sql",
       "sha256": "0dcc0f22272f72e816fdb7ad1f03bbb2d63bb74d0086e262ed236b50b4a27c57",
-      "lines": 63,
+      "lines": 62,
       "declarations": [
         {
           "line": 6,
@@ -1895,7 +1927,7 @@
           "text": "CREATE INDEX idx_exchange_schedule_runs_role"
         },
         {
-          "line": 32,
+          "line": 33,
           "text": "CREATE TABLE IF NOT EXISTS exchange_source_access_events ("
         },
         {
@@ -1907,7 +1939,7 @@
     {
       "path": "scrapper/db/migrations/069_worker_claim_fencing.sql",
       "sha256": "3207e495e464d079ffd5d18ade9197d5f9cd3510916e83f2dd281f7aec7a71cb",
-      "lines": 7,
+      "lines": 6,
       "declarations": [
         {
           "line": 4,
@@ -1926,7 +1958,7 @@
     {
       "path": "scrapper/db/migrations/070_document_extraction_claims.sql",
       "sha256": "cc6c82616d2e78d622a4e925c8b8bf7f9916c9b4b585a0ae9663f7541e7e447b",
-      "lines": 9,
+      "lines": 8,
       "declarations": [
         {
           "line": 2,
@@ -1937,7 +1969,7 @@
     {
       "path": "scrapper/db/migrations/071_shared_host_permits.sql",
       "sha256": "c27f8542dc2d0ea2fa12a3736eb6c08b1e8a4a1f0f90c3317c006e370a9daa32",
-      "lines": 30,
+      "lines": 29,
       "declarations": [
         {
           "line": 3,
@@ -1956,7 +1988,7 @@
     {
       "path": "scrapper/db/migrations/072_document_processing_work.sql",
       "sha256": "71f2e6662a34959334c393ca8a35f71fd0155c22fdfecd34c148d3bc354e2897",
-      "lines": 23,
+      "lines": 22,
       "declarations": [
         {
           "line": 2,
@@ -1975,7 +2007,7 @@
     {
       "path": "scrapper/db/migrations/073_exchange_coordinator_tasks.sql",
       "sha256": "e514e175670059b67aa23a06510532bee4742b88dbc253dcf0c5c9438f859571",
-      "lines": 23,
+      "lines": 22,
       "declarations": [
         {
           "line": 2,
@@ -1983,14 +2015,14 @@
         },
         {
           "line": 22,
-          "text": "CREATE INDEX exchange_coordinator_ready ON exchange_coordinator_tasks(state, priority, scheduled_for, attempt)"
+          "text": "CREATE INDEX exchange_coordinator_ready ON exchange_coordinator_tasks(state, priority, scheduled_for, attempt);"
         }
       ]
     },
     {
       "path": "scrapper/db/migrations/074_collection_scope_tasks.sql",
       "sha256": "11c16d9edf80189409b9c5fdfe1158f91d5f717fdcfdee068f6b5d11f6f4b871",
-      "lines": 13,
+      "lines": 12,
       "declarations": [
         {
           "line": 2,
@@ -1998,14 +2030,14 @@
         },
         {
           "line": 12,
-          "text": "CREATE UNIQUE INDEX collection_scope_single_pending ON collection_scope_tasks(state) WHERE state='PENDING'"
+          "text": "CREATE UNIQUE INDEX collection_scope_single_pending ON collection_scope_tasks(state) WHERE state='PENDING';"
         }
       ]
     },
     {
       "path": "scrapper/db/migrations/075_periodic_dispatch.sql",
       "sha256": "ef3758d563a8791e3c889158e20b165fc295f6818ea83b32f3048c6086a059e1",
-      "lines": 17,
+      "lines": 16,
       "declarations": [
         {
           "line": 2,
@@ -2013,14 +2045,14 @@
         },
         {
           "line": 16,
-          "text": "CREATE UNIQUE INDEX periodic_single_pending ON periodic_dispatch_tasks(kind) WHERE state='PENDING'"
+          "text": "CREATE UNIQUE INDEX periodic_single_pending ON periodic_dispatch_tasks(kind) WHERE state='PENDING';"
         }
       ]
     },
     {
       "path": "scrapper/db/migrations/076_retire_crisil_icra_terms_holds.sql",
       "sha256": "3f94543a4af7c1d02742c0a6db8274546d9f98ef1cc83b8f5bc493d7e18d163f",
-      "lines": 47,
+      "lines": 46,
       "declarations": []
     }
   ]

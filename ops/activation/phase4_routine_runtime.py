@@ -16,7 +16,7 @@ ROUTINE_WRITE_TABLES=WRITE_TABLES|{'artifact_discovery_pages','artifact_events',
 
 def routine_authorizer(action,table,column,database,trigger):
     """The actual production write boundary, also exercised by real fixture work."""
-    if table=='artifact_period_corrections' and action in (sqlite3.SQLITE_INSERT,sqlite3.SQLITE_UPDATE,sqlite3.SQLITE_DELETE):
+    if table in ('artifact_period_corrections', 'document_download_recovery_actions') and action in (sqlite3.SQLITE_INSERT,sqlite3.SQLITE_UPDATE,sqlite3.SQLITE_DELETE):
         return sqlite3.SQLITE_OK if action==sqlite3.SQLITE_INSERT else sqlite3.SQLITE_DENY
     recovery_columns={
         'artifact_recovery_candidates':{'content_class','updated_at_utc'},

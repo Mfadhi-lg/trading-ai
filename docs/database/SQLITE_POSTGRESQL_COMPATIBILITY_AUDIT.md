@@ -35,7 +35,7 @@ The 70 modules are not 70 independent databases. They are repository/service mod
 - Document artifacts, downloads, extraction, OCR evidence, recovery, credit ratings, transcripts and recordings.
 - Worker coordination, leases, fencing, periodic tasks and host permits.
 
-The dated `docs/architecture/2026-10-01/migration-inventory.json` is a historical inventory covering migrations 001–067. A current static declaration inventory for all 76 migrations is now included at `docs/database/migration-inventory-2026-11-08.json`. It records 372 declaration entries: 168 CREATE TABLE, 30 CREATE VIEW, 93 CREATE INDEX, 22 CREATE TRIGGER, 46 ALTER TABLE and 13 DROP statements. These are declaration occurrences, not counts of unique live schema objects: migrations intentionally rebuild/rename objects and may re-declare indexes/views. The inventory includes source file SHA-256 values from the migration manifest and line numbers for declarations.
+The dated `docs/architecture/2026-10-01/migration-inventory.json` is a historical inventory covering migrations 001–067. A current static declaration inventory for all 76 migrations is now included at `docs/database/migration-inventory-2026-11-08.json`. It records 380 declaration entries: 168 CREATE TABLE, 30 CREATE VIEW, 98 CREATE INDEX (including UNIQUE indexes), 22 CREATE TRIGGER, 46 ALTER TABLE and 16 DROP statements. These are declaration occurrences, not counts of unique live schema objects: migrations intentionally rebuild/rename objects and may re-declare indexes/views. The inventory includes source file SHA-256 values and declaration line numbers, checked against canonical source bytes. Regenerate it with `python -B scripts/audit/generate_database_migration_inventory.py`; `scrapper/tests/test_database_compatibility_inventory.py` checks coverage, hashes and declarations. This line-based scanner inventories the current declaration forms, not general SQL semantics.
 
 ## 2. Current connection and runtime contract
 
@@ -162,7 +162,7 @@ Avoid introducing a full ORM as a shortcut before measuring the scope. The curre
 - The current 76-file migration declaration inventory is static and manifest-backed; it is not a live schema dump from a database. A full SQL-operation scan across all 70 DB modules remains a follow-up deliverable, so the compatibility list is evidence-backed but not a claim that every query has been exhaustively classified.
 - This audit does not yet prove every SQL statement across all repository modules has been catalogued. The next implementation step should add a deterministic scanner and current inventory, then validate its findings with tests.
 - No PostgreSQL server, driver, data migration, backup or restore was run in this audit.
-- PR #67 and PR #68 are open at the time of audit. PR #68 ML readiness is currently blocked at Python 3.12.14 setup by repeated GitHub download HTTP 504 responses; this is infrastructure failure, not a test-suite result.
+- CI status is separate from this static audit. The earlier Python download failures were superseded by the PR #68 run on Python 3.12.16: database initialization passed, and the full suite exposed fixture, dependency and stale-contract failures. The integration resolution records current executable verification; this audit does not certify runtime or database health.
 
 ## 9. Files reviewed
 

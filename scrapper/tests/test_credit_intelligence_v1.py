@@ -1,4 +1,6 @@
 """Offline vertical slice regression and fail-closed admission tests."""
+from scrapper.tests.retained_audits import retained_source_audit
+
 import copy
 import json
 from pathlib import Path
@@ -15,6 +17,7 @@ ROOT = Path(__file__).resolve().parents[2]
 DEV = ROOT / 'docs/credit-rating-intelligence-v1'
 
 
+@retained_source_audit
 class CreditV1Tests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
