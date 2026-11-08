@@ -6,6 +6,7 @@ COMMANDS = (
     'screener-company-worker',
     'screener-discover-results',
     'screener-discovery-coverage',
+    'financial-coverage-audit',
     'screener-period-coverage',
     'screener-requeue-failed',
     'screener-requeue-incomplete-metrics',
@@ -96,6 +97,28 @@ def dispatch_screener(args, facade) -> int:
             )
         )
         return 0 if payload["coverage_status"] == "complete" else 1
+
+    if args.command == "financial-coverage-audit":
+        from ..commands.financial_coverage_audit import (
+            build_financial_coverage_report,
+            write_financial_coverage_report,
+        )
+        conn = facade.connect(args.db, read_only=True)
+        try:
+            report = build_financial_coverage_report(conn, args.symbol)
+        finally:
+            conn.close()
+        json_output, csv_output = write_financial_coverage_report(
+            report, json_path=args.output, csv_path=args.csv_output
+        )
+        print(json.dumps({
+            "status": "ok",
+            "summary": report["summary"],
+            "json_output": str(json_output.resolve()),
+            "csv_output": str(csv_output.resolve()),
+            "report_version": report["report_version"],
+        }, sort_keys=True))
+        return 0
 
     if args.command == "screener-period-coverage":
         from ..commands.screener_period_coverage import run_period_coverage
