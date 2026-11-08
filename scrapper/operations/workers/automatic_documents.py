@@ -109,10 +109,32 @@ def run_automatic_downloads(*, db_path, epoch, limit=2, historical_limit=0, reco
             selected=select_downloads(conn,now=now_utc(),epoch=epoch,
                 limit=limit,historical_limit=historical_limit,recovery_job_ids=recovery_job_ids,historical_fallback=historical_fallback)
             if not selected: return {'status':'idle','selected':[],'enqueued':enqueued,'saved_link_repairs':repaired}
-            result=run_document_download_worker(conn,limit=len(selected),
-                artifact_types=('presentation','transcript','credit_rating'),
-                allowed_job_ids=tuple(r['download_job_id'] for r,_ in selected),
-                shared_permits=True,now=now_utc,**worker_options)
+            # A whitelist does not override the canonical queue's persisted
+            # priorities. Claim one lane at a time so old high-priority jobs
+            # cannot consume the batch deadline ahead of current-quarter work.
+            groups=([[(r,lane) for r,lane in selected if lane==priority]
+                     for priority in (1,2,3)] if historical_fallback else [selected])
+            batches=[]
+            for group in groups:
+                if not group:
+                    continue
+                lifecycle=worker_options.get('lifecycle')
+                if lifecycle is not None and lifecycle.is_set():
+                    break
+                batches.append(run_document_download_worker(conn,limit=len(group),
+                    artifact_types=('presentation','transcript','credit_rating'),
+                    allowed_job_ids=tuple(r['download_job_id'] for r,_ in group),
+                    shared_permits=True,now=now_utc,**worker_options))
+            from collections import Counter
+            outcomes=Counter()
+            blocked={}
+            for batch in batches:
+                outcomes.update(batch['outcome_counts'])
+                blocked.update(batch['blocked_hosts'])
+            result={**(batches[-1] if batches else {}),
+                'processed_job_count':sum(b['processed_job_count'] for b in batches),
+                'outcome_counts':dict(outcomes),'blocked_hosts':blocked,
+                'cleaned_recording_partial_count':sum(b['cleaned_recording_partial_count'] for b in batches)}
             return {'enqueued':enqueued,'saved_link_repairs':repaired,'selected':[{'download_job_id':r['download_job_id'],'priority':lane}
                 for r,lane in selected],'download':result}
     finally: conn.close()

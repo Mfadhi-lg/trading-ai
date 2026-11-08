@@ -5,7 +5,9 @@ current-quarter-first selection when `historical_download_fallback` is enabled.
 Current-quarter documents take all available batch slots first, including jobs
 created before the acquisition epoch. Remaining slots go to post-epoch documents
 from other or unknown periods, then pre-epoch historical work. Historical work
-can fill the entire batch when no higher-priority work is ready.
+can fill the entire batch when no higher-priority work is ready. Each lane is
+claimed separately so persisted queue priorities cannot reorder older work ahead
+of current-quarter files during execution.
 
 Company eligibility, publisher policy, retry due dates, host cooldowns, existing
 content deduplication and ownership fences still apply. Discovery and processing
@@ -28,5 +30,5 @@ remains queued without creating an interrupted lease.
 
 Validation: `test_download_history_fallback`, `test_phase4_routine`,
 `test_phase4_document_selection`, `test_d02_document_downloader`, and
-`test_automatic_rating_browser`, and `test_worker_lifecycle`; 85 tests, one skipped. Both existing throughput
+`test_automatic_rating_browser`, and `test_worker_lifecycle`; 86 tests, one skipped. Both existing throughput
 capacity tests also pass with the enlarged byte reservations.

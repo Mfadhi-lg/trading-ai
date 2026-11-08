@@ -88,3 +88,26 @@ class DownloadFallbackTests(unittest.TestCase):
         self.assertEqual(life.active_job,None)
         states={r[0]:r[1] for r in self.c.execute('SELECT status,count(*) FROM artifact_download_queue GROUP BY status')}
         self.assertEqual(states,{'PENDING':1,'SUCCEEDED':1})
+
+    def test_execution_respects_lanes_even_when_old_queue_priority_is_higher(self):
+        from unittest.mock import patch
+        from scrapper.operations.workers.automatic_documents import run_automatic_downloads
+        current=self.arrival('current','2026-09-30')
+        late=self.arrival('late','2026-06-30')
+        old=self.arrival('old','2026-03-31',True)
+        self.enqueue()
+        with self.c:
+            self.c.execute("UPDATE artifact_download_queue SET priority=0,created_at_utc='2026-08-01T00:00:00+00:00' WHERE artifact_id=?",(old,))
+            self.c.execute('UPDATE artifact_download_queue SET priority=100 WHERE artifact_id=?',(current,))
+        ids={r[0]:r[1] for r in self.c.execute('SELECT artifact_id,download_job_id FROM artifact_download_queue')}
+        calls=[]
+        def worker(conn,**kwargs):
+            calls.append(kwargs['allowed_job_ids'])
+            return {'processed_job_count':len(kwargs['allowed_job_ids']),'outcome_counts':{'validated':1},
+                    'blocked_hosts':{},'cleaned_recording_partial_count':0}
+        with patch('scrapper.operations.workers.automatic_documents.run_document_download_worker',side_effect=worker):
+            result=run_automatic_downloads(db_path=self.f.db_path,epoch=EPOCH,now_utc=lambda:NOW,
+                                           limit=3,historical_fallback=True)
+        self.assertEqual(calls,[(ids[current],),(ids[late],),(ids[old],)])
+        self.assertEqual(result['download']['processed_job_count'],3)
+        self.assertEqual(result['download']['outcome_counts'],{'validated':3})

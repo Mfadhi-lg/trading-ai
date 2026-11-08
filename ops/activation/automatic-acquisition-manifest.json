@@ -364,7 +364,7 @@
     "ops/activation/verify_phase4_unattended.py": "281947b4b278ef7059e55adf801d6565362bcb3c34226caf1b6753778541f5ef",
     "scrapper/exports/coverage_analytics.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "scrapper/operations/workers/quarter_processing.py": "7bb6d534896ae26f4f994bba42c8f60148f8c8c1a852dda0f3d5884222ddb383",
-    "scrapper/operations/workers/automatic_documents.py": "d200afe569e0b9c4007520f553d13995de39bffd22ef00d21619b20b6cf288cf",
+    "scrapper/operations/workers/automatic_documents.py": "c71853d1126d089dec0855d434a563e12cd6197f4e4d635a3d86ca13e5737c9a",
     "scrapper/tests/test_exchange_snapshots.py": "80d9de5630eeb6424dd3b644d31367c02b843b0e17ba836341ae401e27fb32bf",
     "scrapper/commands/automatic_documents.py": "73028e3014d6032208b70986e7a93fe6afd2ef6ee794e80dac22e54cdac6f2c4",
     "scrapper/workflows/documents/discovery.py": "c5eb61d0a9b37115cc991a5197a4b00474b7f978c57b7e54ecf84690b5114c6c",
@@ -575,7 +575,7 @@
     "experiments/historical_candle_archive_v1/repair_queue.py": "9ba95f0b197a93640f6a9c0e5cc392e3d28574e70c63ceb032f9e955cf3caeee",
     "ops/activation/acquisition_release.py": "215de995b6f97eca82c960a8b3770c8d28c44790c489458f08304632a5a51d1f",
     "ops/activation/processing_pipeline.py": "4a1b79c3ae74c096f8569946574854fb655bac79f7d308c80a3003101ca28ed6",
-    "scrapper/tests/test_download_history_fallback.py": "3ef541f9e96669c1e0a7bca25eb1e9dde0ca381703b61f2aecf6bf5b6bd1acb8"
+    "scrapper/tests/test_download_history_fallback.py": "7228f416dfc33e35a79411a4f7d5ec92284ac49c08786d04486a333604b34ad7"
   },
   "application_overlay_scope": [
     "scrapper/db/screener_discovery_repo.py",
@@ -693,6 +693,7 @@
     "download_max_bytes": 268435456,
     "historical_fallback": true,
     "claim_deadline": "drain before hard stage timeout",
+    "execution_priority": "claim each lane separately",
     "authorization": "8 November user: download 60 oversized files; current quarter first, historical work when available capacity remains"
   }
 }
