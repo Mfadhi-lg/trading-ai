@@ -32,7 +32,7 @@ jobs:
             echo "SCRAPER_BACKUPS_PATH=$test_root/store/backups"
           } >> "$GITHUB_ENV"
       - uses: actions/setup-python@v5
-        with: { python-version: '3.12.14' }
+        with: { python-version: '3.12.16' }
       - name: Install locked offline dependencies
         run: |
           python -m pip install --require-hashes --requirement scrapper/requirements.test.lock
