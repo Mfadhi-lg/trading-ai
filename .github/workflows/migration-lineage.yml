@@ -16,7 +16,6 @@ jobs:
       SCRAPER_SNAPSHOTS_PATH: ${{ runner.temp }}/trading-ai-test/store/snapshots
       SCRAPER_EXPORTS_PATH: ${{ runner.temp }}/trading-ai-test/store/exports
       SCRAPER_DB_PATH: ${{ runner.temp }}/trading-ai-test/state/scraper.db
-      SCRAPER_DOCUMENT_STORE_PATH: ${{ runner.temp }}/trading-ai-test/documents
       SCRAPER_CAMPAIGNS_PATH: ${{ runner.temp }}/trading-ai-test/store/campaigns
       SCRAPER_LOGS_PATH: ${{ runner.temp }}/trading-ai-test/store/logs
       SCRAPER_BROWSER_STATE_PATH: ${{ runner.temp }}/trading-ai-test/store/browser-state
