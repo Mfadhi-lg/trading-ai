@@ -1,0 +1,13 @@
+# Phase 4 structured recovery
+
+The user authorized fixing and running the extraction after the first paid response returned no disclosures and violated the outer response contract. The corrected attempt is preserved in `artifacts/credit-rating-intelligence-v1/phase4/structured-attempt-1`. Previous preparations and responses remain unchanged.
+
+`prepare --structured` opts into request/catalog version `credit-fresh/2`. Legacy preparation and replay retain version 1 byte compatibility. Version 2 sends the complete response schema through `response_format.json_schema` with strict mode, following [OpenRouter's structured-output interface](https://openrouter.ai/docs/guides/features/structured-outputs). Local response validation remains mandatory.
+
+The version 2 catalog retains damaged lines and adds exact intact spans on either side of entire damaged whitespace-delimited tokens. It does not reconstruct glyphs, normalize source text, or mark damaged regions available. Page text and table context remain intact. Candidates using unresolved regions are still withheld by the existing intake gate. All other candidates require a separately pinned source review before admission. This handling addresses excessive loss of intact facts from a line containing an unrelated damaged word; it does not establish why the earlier model returned an empty response.
+
+The corrected frozen payload SHA-256 is `ed15a43e8278e2bd1be869cd322d0dd830b0cf9b12a09905173c2989f918206a`. Model, provider and reasoning remain `google/gemini-3.8-flash`, `google-ai-studio/flex`, low. One request cost $0.00779325 and returned five candidates. Four were admitted after PDF review: facility, amount, rating and outlook. The action candidate remains withheld because its supporting native regions are damaged, although the original PDF is visually legible.
+
+The source PDF and canonical extraction hashes are unchanged. The fixed CLI also records transport latency using a monotonic clock. Forty-four offline tests pass. Two saved-response replays produce byte-identical exports; all 23 Phase 3 files match the previous baseline. Missing `olefile` still blocks the two broader extraction modules, separately from these passing credit tests.
+
+See `assessment.md`, `execution-receipt.json`, `source-reviews.json`, `source-evidence-ledger.json`, `coverage-and-missing-fields.json`, and `validation.json` in the attempt directory. Trusted V1 artifacts are under `reviewed/export`. The raw model originals and source-review packet are distinct, and all field coverage remains partial. The notice does not support a complete credit-rationale assessment.

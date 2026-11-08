@@ -1,0 +1,422 @@
+{
+  "actual_archive_application_files": 643,
+  "archive_sha256": "aff9a394c3ee49f8ebf85b234df7fc3ed594f8e10be22f02137f6408b659cef5",
+  "attestation_predicates": [
+    "https://spdx.dev/Document",
+    "https://slsa.dev/provenance/v1"
+  ],
+  "delta_vs_original_ar021": [
+    "scrapper/tests/test_ar022_access_block.py",
+    "scrapper/workflows/exchange/schedule.py"
+  ],
+  "focused_test_evidence": "10 tests / exit 0; reused, not rerun",
+  "image": "trading-ai-ar02-combined-release@sha256:4206ea61254ec1c490e5284d1aac0361c08b084c7e1186a86141a42c1a2c0b08",
+  "layers": [
+    {
+      "compressed_bytes": 30189691,
+      "diff_id": "sha256:8227a1264c7ff2f8bd125b585e62c1cec77dd2099c985c33e08d34292d06144f",
+      "digest": "sha256:bd36565c0fdebaf0f3af5c3b4ce610ca085ced32e9e9da850d95912f5f18f47b"
+    },
+    {
+      "compressed_bytes": 1275313,
+      "diff_id": "sha256:77e3d8b6f2ffedf0e56807fd677c6ebb630288d92163c762271391b3f9100826",
+      "digest": "sha256:c84bebac337e749a4bb38e590f1994648dedbc4a1d04db88b978cb18a5359a7b"
+    },
+    {
+      "compressed_bytes": 12052713,
+      "diff_id": "sha256:bb98c47a575f471443d45d5e96aab7c0e646879bf372ba771288b008362ffc52",
+      "digest": "sha256:d122ce05d52358f34d63025713fdaf36bd7f684c4861ef9715450970c8599024"
+    },
+    {
+      "compressed_bytes": 249,
+      "diff_id": "sha256:d9a454691b8952308fa3b779dac6aabd4faab3cd0f9d1fdf56820cbeb6637fbd",
+      "digest": "sha256:8fab80907cc75b43464f59a38c5548ae9199a01202b80a0474fb5e81c33950b4"
+    },
+    {
+      "compressed_bytes": 1109,
+      "diff_id": "sha256:93b4291a6763a4f7e8d92cd9626abafa3a3e110aa7677b78b1988562995b7eb4",
+      "digest": "sha256:8b23192f082d179a42eefae9f7fc5d2567ea7c54747d6463f335d8af5d7d09ec"
+    },
+    {
+      "compressed_bytes": 93,
+      "diff_id": "sha256:02bca982397c337b5026dca2ad31150917959c9ecca762c76bf0f13bc53350ae",
+      "digest": "sha256:1a08861d5fb738f5011ee98e1be0bc8aabacfb95af180ddb92e5542ba4f0a33f"
+    },
+    {
+      "compressed_bytes": 24022,
+      "diff_id": "sha256:b5f983983e3037b087b7c2208c5775858ccc45a0a3fe1ebbd952206fafceaea4",
+      "digest": "sha256:b3a945bd632826fda9a067a836ca4b14aa29ee7844201135af4b82a47c550ca5"
+    },
+    {
+      "compressed_bytes": 83665301,
+      "diff_id": "sha256:100a5979804b767057fab536c62feea2744ad5ac6100a6c1f8e39eb72e4e1e07",
+      "digest": "sha256:357854c8db52a8d254eb072cbbeb4db88c5856e11bbba183c1a5c61637ae5ee8"
+    },
+    {
+      "compressed_bytes": 434541422,
+      "diff_id": "sha256:1aed989b0d95420e8d56c0e17d600f0e130c06406c27eb6fd806b6f979f6834b",
+      "digest": "sha256:08693baefe3196fb563064df34bb8506eced75f867067c18828a9442f3a2b579"
+    },
+    {
+      "compressed_bytes": 112488647,
+      "diff_id": "sha256:40b0ba2ee98e8d58e00a0571b1e682e229327c7ffed7b8490ce5c291e0c2f388",
+      "digest": "sha256:1af4034d1b20ba82d6672603e2385ef89dfd567bb6600448d88f241ab274b338"
+    },
+    {
+      "compressed_bytes": 1123,
+      "diff_id": "sha256:0053289aa339a3682707aeefaa3cea3c4eaae32580f848e7de6f1323bc609d29",
+      "digest": "sha256:9504570d45b233afaf705107c7ebd5e0410ad78e78716b4735d84d6934a8d30a"
+    },
+    {
+      "compressed_bytes": 7704834,
+      "diff_id": "sha256:efa946eb4b2813fc6445b18d7f2aa24f22ffa35c8cee5adf950dd7e0565a66a7",
+      "digest": "sha256:b5196a3c0fafb91206935d7d54df2e388fd772f2dad98b53dfc264f4879b278a"
+    },
+    {
+      "compressed_bytes": 7728985,
+      "diff_id": "sha256:ed0c42d4f9c40df97da4d3a20c831df0d66bcb82cb4ecd996b2bc19e3f7fdfcb",
+      "digest": "sha256:70eff240b8ca9d6e053704be4494f8bb92fd1b9b40b7bb0a0092472bcbaf47ab"
+    }
+  ],
+  "method": "New independently authored checks; direct offline OCI tar inspection; no prior verifier executed",
+  "operations": "No Docker command, service, production access/write, exchange request, hold change, or AR-02.3 execution",
+  "package_checksum_index_sha256": "46965ab5e380794dff07060feda9ee8c76f2e9921189885253e282c8525c68f4",
+  "package_entries_verified": 56,
+  "preparation_owned_paths": [
+    {
+      "before_sha256": "e34c9d6510ff0fd72f9aba427556b1858771d2cccce5405ac7e55a35c8028003",
+      "final_sha256": "e34c9d6510ff0fd72f9aba427556b1858771d2cccce5405ac7e55a35c8028003",
+      "path": "docs/acquisition-readiness/baselines/AR-02-combined-20261008/build.py"
+    },
+    {
+      "before_sha256": "84ebf136bcc28ac3445d331d38224da5dac1b7a4a6329aba09ee053b14c72ba5",
+      "final_sha256": "19250e3ddacf4369e6b1939bccd95b6619e756a83b3dbba01e9fb21a15dbb658",
+      "path": "docs/acquisition-readiness/baselines/AR-02-combined-20261008/image_proof.py"
+    },
+    {
+      "before_sha256": "f91eaf252968c0451ee0365701445f4b175ba7d7b2e7396401570a5ad131326b",
+      "final_sha256": "f91eaf252968c0451ee0365701445f4b175ba7d7b2e7396401570a5ad131326b",
+      "path": "docs/acquisition-readiness/baselines/AR-02-combined-20261008/package.py"
+    },
+    {
+      "before_sha256": "4f8c9891ac6538685288f8e2bce68f13301b6619acaa318126f01ff278facdf8",
+      "final_sha256": "4f8c9891ac6538685288f8e2bce68f13301b6619acaa318126f01ff278facdf8",
+      "path": "docs/acquisition-readiness/baselines/AR-02-combined-20261008/prepare.py"
+    },
+    {
+      "before_sha256": "92f232cc640a4618939f48c3619149a22324ef8c0b1b655ebaa7fadb5da1d956",
+      "final_sha256": "92f232cc640a4618939f48c3619149a22324ef8c0b1b655ebaa7fadb5da1d956",
+      "path": "docs/acquisition-readiness/baselines/AR-02-combined-20261008/seal.py"
+    },
+    {
+      "before_sha256": "f3ae4f791eafe483859ad25479f5f24331a1e4cd6ccf6cb09ccfb45f907d15bc",
+      "final_sha256": "f3ae4f791eafe483859ad25479f5f24331a1e4cd6ccf6cb09ccfb45f907d15bc",
+      "path": "docs/acquisition-readiness/baselines/AR-02-combined-20261008/verify_image.py"
+    }
+  ],
+  "preserved_preexisting_paths": 761,
+  "qualified_reuse": [
+    {
+      "original_path": "docs/current/TRADING_AI_ACQUISITION_READINESS_EXECUTION.md",
+      "resolved_path": "docs/acquisition-readiness/baselines/AR-02-combined-20261008/ledger-before.md",
+      "sha256": "86da1b945d3d9423a76e7c2f6c029fc3197c8dd455a89664e579d75d5f851e23"
+    }
+  ],
+  "reused_evidence_entries": 135,
+  "reviewer": "Codex /root/independent_release_reviewer",
+  "roles": [
+    {
+      "config_sources": [
+        "runtime_identity_core",
+        "runtime_store_sentinel",
+        "runtime_core_documents_sentinel"
+      ],
+      "image": "trading-ai-ar02-combined-release@sha256:4206ea61254ec1c490e5284d1aac0361c08b084c7e1186a86141a42c1a2c0b08",
+      "name": "artifact-reconciler",
+      "profiles": [
+        "authorized-artifact-reconciler"
+      ],
+      "restart": "no"
+    },
+    {
+      "config_sources": [
+        "runtime_identity_core",
+        "runtime_store_sentinel",
+        "runtime_core_documents_sentinel"
+      ],
+      "image": "trading-ai-ar02-combined-release@sha256:4206ea61254ec1c490e5284d1aac0361c08b084c7e1186a86141a42c1a2c0b08",
+      "name": "cli",
+      "profiles": [
+        "authorized-cli"
+      ],
+      "restart": "no"
+    },
+    {
+      "config_sources": [
+        "runtime_identity_documents",
+        "runtime_store_sentinel"
+      ],
+      "image": "trading-ai-ar02-combined-release@sha256:4206ea61254ec1c490e5284d1aac0361c08b084c7e1186a86141a42c1a2c0b08",
+      "name": "credit-rating-worker-care",
+      "profiles": [
+        "authorized-credit-rating-worker-care"
+      ],
+      "restart": "no"
+    },
+    {
+      "config_sources": [
+        "runtime_identity_documents",
+        "runtime_store_sentinel"
+      ],
+      "image": "trading-ai-ar02-combined-release@sha256:4206ea61254ec1c490e5284d1aac0361c08b084c7e1186a86141a42c1a2c0b08",
+      "name": "credit-rating-worker-india-ratings",
+      "profiles": [
+        "authorized-credit-rating-worker-india-ratings"
+      ],
+      "restart": "no"
+    },
+    {
+      "config_sources": [
+        "runtime_identity_documents",
+        "runtime_store_sentinel"
+      ],
+      "image": "trading-ai-ar02-combined-release@sha256:4206ea61254ec1c490e5284d1aac0361c08b084c7e1186a86141a42c1a2c0b08",
+      "name": "credit-rating-worker-other",
+      "profiles": [
+        "authorized-credit-rating-worker-other"
+      ],
+      "restart": "no"
+    },
+    {
+      "config_sources": [
+        "runtime_identity_core",
+        "runtime_store_sentinel",
+        "runtime_core_documents_sentinel"
+      ],
+      "image": "trading-ai-ar02-combined-release@sha256:4206ea61254ec1c490e5284d1aac0361c08b084c7e1186a86141a42c1a2c0b08",
+      "name": "daemon",
+      "profiles": [
+        "authorized-daemon"
+      ],
+      "restart": "no"
+    },
+    {
+      "config_sources": [
+        "runtime_identity_core",
+        "runtime_store_sentinel",
+        "runtime_core_documents_sentinel"
+      ],
+      "image": "trading-ai-ar02-combined-release@sha256:4206ea61254ec1c490e5284d1aac0361c08b084c7e1186a86141a42c1a2c0b08",
+      "name": "discovery",
+      "profiles": [
+        "authorized-discovery"
+      ],
+      "restart": "no"
+    },
+    {
+      "config_sources": [
+        "runtime_identity_documents",
+        "runtime_store_sentinel"
+      ],
+      "image": "trading-ai-ar02-combined-release@sha256:4206ea61254ec1c490e5284d1aac0361c08b084c7e1186a86141a42c1a2c0b08",
+      "name": "document-download-worker",
+      "profiles": [
+        "authorized-document-download-worker"
+      ],
+      "restart": "no"
+    },
+    {
+      "config_sources": [
+        "runtime_identity_documents",
+        "runtime_store_sentinel"
+      ],
+      "image": "trading-ai-ar02-combined-release@sha256:4206ea61254ec1c490e5284d1aac0361c08b084c7e1186a86141a42c1a2c0b08",
+      "name": "document-processing-worker",
+      "profiles": [
+        "authorized-document-processing-worker"
+      ],
+      "restart": "no"
+    },
+    {
+      "config_sources": [
+        "runtime_identity_core",
+        "runtime_store_sentinel",
+        "runtime_core_documents_sentinel"
+      ],
+      "image": "trading-ai-ar02-combined-release@sha256:4206ea61254ec1c490e5284d1aac0361c08b084c7e1186a86141a42c1a2c0b08",
+      "name": "exchange-reconciliation",
+      "profiles": [
+        "authorized-exchange-reconciliation"
+      ],
+      "restart": "no"
+    },
+    {
+      "config_sources": [
+        "runtime_identity_core",
+        "runtime_store_sentinel",
+        "runtime_core_documents_sentinel"
+      ],
+      "image": "trading-ai-ar02-combined-release@sha256:4206ea61254ec1c490e5284d1aac0361c08b084c7e1186a86141a42c1a2c0b08",
+      "name": "exchange-results",
+      "profiles": [
+        "authorized-exchange-results"
+      ],
+      "restart": "no"
+    },
+    {
+      "config_sources": [
+        "runtime_identity_core",
+        "runtime_store_sentinel",
+        "runtime_core_documents_sentinel"
+      ],
+      "image": "trading-ai-ar02-combined-release@sha256:4206ea61254ec1c490e5284d1aac0361c08b084c7e1186a86141a42c1a2c0b08",
+      "name": "exchange-universe",
+      "profiles": [
+        "authorized-exchange-universe"
+      ],
+      "restart": "no"
+    },
+    {
+      "config_sources": [
+        "runtime_identity_core",
+        "runtime_store_sentinel",
+        "runtime_core_documents_sentinel"
+      ],
+      "image": "trading-ai-ar02-combined-release@sha256:4206ea61254ec1c490e5284d1aac0361c08b084c7e1186a86141a42c1a2c0b08",
+      "name": "market-cap-monitor",
+      "profiles": [
+        "authorized-market-cap-monitor"
+      ],
+      "restart": "no"
+    },
+    {
+      "config_sources": [
+        "runtime_identity_documents",
+        "runtime_store_sentinel"
+      ],
+      "image": "trading-ai-ar02-combined-release@sha256:4206ea61254ec1c490e5284d1aac0361c08b084c7e1186a86141a42c1a2c0b08",
+      "name": "rating-recovery-discovery",
+      "profiles": [
+        "authorized-rating-recovery-discovery"
+      ],
+      "restart": "no"
+    },
+    {
+      "config_sources": [
+        "runtime_identity_documents",
+        "runtime_store_sentinel"
+      ],
+      "image": "trading-ai-ar02-combined-release@sha256:4206ea61254ec1c490e5284d1aac0361c08b084c7e1186a86141a42c1a2c0b08",
+      "name": "rating-recovery-download",
+      "profiles": [
+        "authorized-rating-recovery-download"
+      ],
+      "restart": "no"
+    },
+    {
+      "config_sources": [
+        "runtime_identity_core",
+        "runtime_store_sentinel",
+        "runtime_core_documents_sentinel"
+      ],
+      "image": "trading-ai-ar02-combined-release@sha256:4206ea61254ec1c490e5284d1aac0361c08b084c7e1186a86141a42c1a2c0b08",
+      "name": "scheduler",
+      "profiles": [
+        "authorized-scheduler"
+      ],
+      "restart": "no"
+    },
+    {
+      "config_sources": [
+        "runtime_identity_core",
+        "runtime_store_sentinel",
+        "runtime_core_documents_sentinel"
+      ],
+      "image": "trading-ai-ar02-combined-release@sha256:4206ea61254ec1c490e5284d1aac0361c08b084c7e1186a86141a42c1a2c0b08",
+      "name": "worker",
+      "profiles": [
+        "authorized-worker"
+      ],
+      "restart": "no"
+    },
+    {
+      "config_sources": [
+        "runtime_identity_documents",
+        "runtime_store_sentinel"
+      ],
+      "image": "trading-ai-ar02-combined-release@sha256:4206ea61254ec1c490e5284d1aac0361c08b084c7e1186a86141a42c1a2c0b08",
+      "name": "browser-rating-crisil",
+      "profiles": [
+        "authorized-browser-rating-crisil"
+      ],
+      "restart": "no"
+    },
+    {
+      "config_sources": [
+        "runtime_identity_documents",
+        "runtime_store_sentinel"
+      ],
+      "image": "trading-ai-ar02-combined-release@sha256:4206ea61254ec1c490e5284d1aac0361c08b084c7e1186a86141a42c1a2c0b08",
+      "name": "browser-rating-extract",
+      "profiles": [
+        "authorized-browser-rating-extract"
+      ],
+      "restart": "no"
+    },
+    {
+      "config_sources": [
+        "runtime_identity_documents",
+        "runtime_store_sentinel"
+      ],
+      "image": "trading-ai-ar02-combined-release@sha256:4206ea61254ec1c490e5284d1aac0361c08b084c7e1186a86141a42c1a2c0b08",
+      "name": "browser-rating-icra",
+      "profiles": [
+        "authorized-browser-rating-icra"
+      ],
+      "restart": "no"
+    },
+    {
+      "config_sources": [
+        "runtime_identity_documents",
+        "runtime_store_sentinel"
+      ],
+      "image": "trading-ai-ar02-combined-release@sha256:4206ea61254ec1c490e5284d1aac0361c08b084c7e1186a86141a42c1a2c0b08",
+      "name": "browser-rating-other",
+      "profiles": [
+        "authorized-browser-rating-other"
+      ],
+      "restart": "no"
+    }
+  ],
+  "source_context_files": 645,
+  "source_delta": [
+    "scrapper/tests/test_ar022_access_block.py",
+    "scrapper/tests/test_ar02_snapshot_dates.py",
+    "scrapper/workflows/exchange/schedule.py",
+    "scrapper/workflows/exchange/universe.py"
+  ],
+  "source_projection_sha256": "aed3d89a082d7fe9852e69096169657f1f6875f66e29ad84345272536e6a3b56",
+  "status": "PASS",
+  "test_wheels": [
+    {
+      "file": "iniconfig-2.3.0-py3-none-any.whl",
+      "sha256": "f631c04d2c48c52b84d0d0549c99ff3859c98df65b3101406327ecc7d53fbf12"
+    },
+    {
+      "file": "packaging-26.3-py3-none-any.whl",
+      "sha256": "d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c"
+    },
+    {
+      "file": "pluggy-1.6.0-py3-none-any.whl",
+      "sha256": "e920276dd6813095e9377c0bc5566d94c932c33b27a3e3945d8389c374dd4746"
+    },
+    {
+      "file": "pygments-2.21.0-py3-none-any.whl",
+      "sha256": "2363c69b61c4a97c838da3b130dcd6468f4848992b21a82f2a63ec34377137d9"
+    },
+    {
+      "file": "pytest-9.1.1-py3-none-any.whl",
+      "sha256": "37a86b45efb9a47a61a36449063e8e18d0cab3161329fc099eb21783169c4f0c"
+    }
+  ]
+}

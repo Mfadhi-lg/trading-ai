@@ -192,11 +192,77 @@ def has_accepted_quarter(conn, path: str, scope: str, period: str) -> bool:
     ).fetchone() is not None
 
 
-def enqueue_screen_candidates(
+def enqueue_screen_candidates(conn, screen_run_id, *, now_utc):
+    return _enqueue_screen_candidates(conn,screen_run_id,now_utc=now_utc)
+
+
+def enqueue_complete_screen_pages(conn, screen_run_ids, *, now_utc):
+    """Admit a fully captured paginated screen without relabeling partial pages."""
+    ids=tuple(screen_run_ids)
+    if not ids or len(ids)>100 or len(set(ids))!=len(ids):
+        raise ValueError('Distinct bounded screen page IDs required')
+    marks=','.join('?' for _ in ids)
+    pages=conn.execute('SELECT * FROM screener_screen_runs WHERE screen_run_id IN ('+marks+') ORDER BY page_number',ids).fetchall()
+    if len(pages)!=len(ids):raise ValueError('Missing screen page evidence')
+    first=pages[0];count=int(first['result_count']);page_count=int(first['page_count'])
+    if [r['page_number'] for r in pages]!=list(range(1,page_count+1)):
+        raise ValueError('Incomplete screen pagination')
+    if any(r['result_count']!=count or r['page_count']!=page_count or r['query_raw']!=first['query_raw'] or r['query_role']!=first['query_role'] or r['validation_status']!='passed' for r in pages):
+        raise ValueError('Screen changed during pagination; no queue admission')
+    candidates=conn.execute('SELECT screen_row_company_id,company_path_normalized,result_period FROM screener_result_candidates WHERE screen_run_id IN ('+marks+')',ids).fetchall()
+    if len(candidates)!=count or sum(r['captured_row_count'] for r in pages)!=count or len({r['screen_row_company_id'] for r in candidates})!=count:
+        raise ValueError('Incomplete or duplicate company coverage; no queue admission')
+    totals={key:0 for key in ('new','advanced','unchanged','stale','reused')}
+    for page in pages:
+        result=_enqueue_screen_candidates(conn,page['screen_run_id'],now_utc=now_utc,verified_page_set=True)
+        for key,value in result.items():totals[key]+=value
+    return {'complete':True,'captured_companies':count,'page_count':page_count,'screen_run_ids':list(ids),'enqueue':totals}
+
+
+def enqueue_recurring_screen_pages(conn, screen_run_ids, *, now_utc):
+    """Admit observed rows from a moving screen without claiming full coverage.
+
+    Every numbered page must still be present, validated, and from the same
+    query. Only changing result counts permit this incomplete-coverage mode.
+    A stable screen retains the stricter full-capture validation above.
+    """
+    ids=tuple(screen_run_ids)
+    if not ids or len(ids)>100 or len(set(ids))!=len(ids):
+        raise ValueError('Distinct bounded screen page IDs required')
+    marks=','.join('?' for _ in ids)
+    pages=conn.execute('SELECT * FROM screener_screen_runs WHERE screen_run_id IN ('+marks+') ORDER BY page_number',ids).fetchall()
+    if len(pages)!=len(ids):raise ValueError('Missing screen page evidence')
+    first=pages[0]
+    if [r['page_number'] for r in pages]!=list(range(1,first['page_count']+1)):
+        raise ValueError('Incomplete screen pagination')
+    if any(r['page_count']!=first['page_count'] or r['query_raw']!=first['query_raw'] or
+           r['query_role']!=first['query_role'] or r['validation_status']!='passed' for r in pages):
+        raise ValueError('Screen query, page coverage or validation changed; no queue admission')
+    counts={r['result_count'] for r in pages}
+    if len(counts)==1:
+        return enqueue_complete_screen_pages(conn,ids,now_utc=now_utc)
+    identities=set()
+    for page in pages:
+        rows=conn.execute('SELECT screen_row_company_id FROM screener_result_candidates WHERE screen_run_id=?',(page['screen_run_id'],)).fetchall()
+        unique={r[0] for r in rows}
+        if len(rows)!=page['captured_row_count'] or len(unique)!=len(rows):
+            raise ValueError('Missing or duplicate company evidence within a screen page')
+        identities.update(unique)
+    totals={key:0 for key in ('new','advanced','unchanged','stale','reused')}
+    for page in pages:
+        result=_enqueue_screen_candidates(conn,page['screen_run_id'],now_utc=now_utc,verified_page_set=True)
+        for key,value in result.items():totals[key]+=value
+    return {'complete':False,'coverage_status':'moving_screen_partial',
+        'captured_companies':len(identities),'page_count':first['page_count'],
+        'source_count_range':[min(counts),max(counts)],'screen_run_ids':list(ids),'enqueue':totals}
+
+
+def _enqueue_screen_candidates(
     conn: sqlite3.Connection,
     screen_run_id: int,
     *,
     now_utc: str,
+    verified_page_set: bool = False,
 ) -> dict[str, int]:
     screen = conn.execute(
         "SELECT coverage_status FROM screener_screen_runs WHERE screen_run_id=?",
@@ -205,7 +271,7 @@ def enqueue_screen_candidates(
     if screen is None:
         raise ValueError(f"Unknown screen run: {screen_run_id}")
     counts = {"new": 0, "advanced": 0, "unchanged": 0, "stale": 0, "reused": 0}
-    if screen["coverage_status"] != "complete":
+    if screen["coverage_status"] != "complete" and not verified_page_set:
         return counts
     candidates = conn.execute(
         """SELECT * FROM screener_result_candidates
@@ -304,16 +370,21 @@ def claim_due_companies(
     limit: int,
     worker_id: str,
     lease_seconds: int = 900,
+    queue_item_ids: tuple[int, ...] | None = None,
 ) -> tuple[ClaimedCompany, ...]:
     if not worker_id.strip() or limit < 1 or lease_seconds < 1:
         raise ValueError("worker_id, positive limit and lease are required")
+    if queue_item_ids is not None and (len(queue_item_ids) != limit or
+            len(set(queue_item_ids)) != limit or any(i < 1 for i in queue_item_ids)):
+        raise ValueError("Selected queue identities must be distinct and match the limit")
     expires = (_parse_utc(now_utc) + timedelta(seconds=lease_seconds)).isoformat()
     conn.execute("BEGIN IMMEDIATE")
     try:
+        selection = "" if queue_item_ids is None else " AND queue_item_id IN (" + ",".join("?" for _ in queue_item_ids) + ")"
         ids = [
             int(row["queue_item_id"])
             for row in conn.execute(
-                """SELECT queue_item_id FROM screener_company_queue
+                f"""SELECT queue_item_id FROM screener_company_queue
                    WHERE collection_disposition IS NULL
            AND NOT EXISTS (SELECT 1 FROM screener_scope_aliases a
              JOIN screener_collection_scope s ON s.company_path=a.scope_path
@@ -322,10 +393,32 @@ def claim_due_companies(
                      status IN ('pending', 'failed_retryable')
                      AND (next_attempt_at_utc IS NULL OR next_attempt_at_utc <= ?)
                    ) OR (status IN ('claimed', 'running') AND claim_expires_at_utc <= ?))
-                   ORDER BY result_period DESC, queue_item_id LIMIT ?""",
-                (now_utc, now_utc, limit),
+                   {selection} ORDER BY result_period DESC, queue_item_id LIMIT ?""",
+                (now_utc, now_utc, *(queue_item_ids or ()), limit),
             ).fetchall()
         ]
+        if queue_item_ids is not None:
+            if set(ids) != set(queue_item_ids):
+                raise RuntimeError("Selected work is no longer due or eligible; no claims made")
+            ids = list(queue_item_ids)
+            # A new official filing can reuse an older screen-created identity.
+            # Attach provenance atomically with the selected claim; retain the
+            # original candidate reference in the existing event history.
+            for queue_id in ids:
+                old_row=conn.execute("SELECT * FROM screener_company_queue WHERE queue_item_id=?",(queue_id,)).fetchone()
+                if old_row['origin']!='screener_screen':continue
+                filing=conn.execute('''SELECT f.filing_id FROM exchange_screener_enqueues e
+                  JOIN exchange_result_filings f USING(filing_id) WHERE e.queue_item_id=?
+                  AND e.company_path_normalized=? AND e.reporting_scope=? AND e.result_period=?
+                  AND f.result_period=? ORDER BY f.broadcast_at_utc DESC,f.filing_id DESC LIMIT 1''',
+                  (queue_id,old_row['company_path_normalized'],old_row['reporting_scope'],old_row['result_period'],old_row['result_period'])).fetchone()
+                if filing is None:continue
+                conn.execute("UPDATE screener_company_queue SET origin='exchange_filing',candidate_id=NULL,exchange_filing_id=? WHERE queue_item_id=?",(filing['filing_id'],queue_id))
+                conn.execute('''INSERT INTO screener_company_queue_events
+                  (queue_item_id,event_at_utc,from_status,to_status,worker_id,evidence_json)
+                  VALUES(?,?,?,?,?,?)''',(queue_id,now_utc,old_row['status'],old_row['status'],worker_id,
+                  _json({'reason':'official_source_attached','filing_id':filing['filing_id'],
+                         'previous_candidate_id':old_row['candidate_id'],'previous_origin':old_row['origin']})))
         claimed: list[ClaimedCompany] = []
         for queue_id in ids:
             old = conn.execute(
@@ -497,7 +590,7 @@ def complete_company(
                 )
             # Imported lazily to keep the core queue module free of the D09
             # orchestration dependency while retaining one atomic acceptance.
-            from .artifact_reconciliation_repo import ensure_result_artifact_expectations
+            from .documents.expectations import ensure_result_artifact_expectations
 
             ensure_result_artifact_expectations(
                 conn,

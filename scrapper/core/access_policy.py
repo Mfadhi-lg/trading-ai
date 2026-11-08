@@ -12,12 +12,9 @@ PUBLISHER_TERMS_ERROR = (
     "Automated acquisition disabled by reviewed publisher terms"
 )
 
-# This baseline is intentionally present at the HTTP boundary as well as in the
-# auditable database table.  Database checks protect queue orchestration; this
-# list is the last defense for direct D02/resolver calls and policy races.
-BLOCKED_TERMS_HOSTS = frozenset(
-    {"crisil.com", "crisilratings.com", "icra.in"}
-)
+# Publisher restrictions are supplied by explicit database policy. CRISIL and
+# ICRA have no built-in denial; migration 076 retires their stored terms holds.
+BLOCKED_TERMS_HOSTS: frozenset[str] = frozenset()
 
 
 def normalize_host(value: str) -> str:

@@ -5,6 +5,7 @@ import io
 import json
 import tempfile
 import unittest
+from unittest.mock import patch
 import zipfile
 from pathlib import Path
 from typing import Any
@@ -112,6 +113,18 @@ class DocumentDownloaderD02Tests(unittest.TestCase):
         self.output = self.root / "download-report.json"
         self.conn = connect(self.db_path)
         init_db(self.conn, apply_migrations=True)
+        # Exercise explicit restricted-policy behavior, independently of defaults.
+        restricted_hosts = frozenset({'crisil.com', 'crisilratings.com', 'icra.in'})
+        self.policy_patches = []
+        for target in ('scrapper.core.access_policy.BLOCKED_TERMS_HOSTS',
+                       'scrapper.db.documents.recovery.targets.BLOCKED_TERMS_HOSTS',
+                       'scrapper.db.document_recovery_repo.BLOCKED_TERMS_HOSTS'):
+            policy_patch = patch(target, restricted_hosts)
+            policy_patch.start()
+            self.policy_patches.append(policy_patch)
+            self.addCleanup(policy_patch.stop)
+        with self.conn:
+            self.conn.execute("UPDATE credit_rating_host_policy SET automation_status='BLOCKED_TERMS', max_concurrency=0 WHERE host IN ('crisil.com','www.crisil.com','crisilratings.com','www.crisilratings.com','icra.in','www.icra.in')")
         plan = build_discovery_plan(
             DISCOVERY_MANIFEST, requested_symbol="LAURUSLABS"
         )
@@ -124,6 +137,8 @@ class DocumentDownloaderD02Tests(unittest.TestCase):
         self.conn.close()
 
     def tearDown(self) -> None:
+        for policy_patch in getattr(self, "policy_patches", ()):
+            policy_patch.stop()
         self.temp.cleanup()
 
     def test_byte_signatures_cover_each_d02_container_family(self) -> None:
@@ -301,6 +316,30 @@ class DocumentDownloaderD02Tests(unittest.TestCase):
         self.assertTrue(first.closed)
         self.assertEqual(result.result_status, "network_error")
         self.assertEqual(result.error_code, "unsafe_redirect")
+
+    def test_redirect_budget_retains_http_evidence_without_host_outage(self):
+        from scrapper.documents.downloader import DownloadPolicy
+        from scrapper.documents.download.retry import _transport_host_failure
+        first='https://example.test/report';second='https://example.test/file.pdf'
+        session=FakeSession({first:FakeResponse(b'',url=first,status_code=302,location=second)})
+        result=download_url(first,artifact_type='presentation',session=session,
+            policy=DownloadPolicy(max_redirects=0))
+        self.assertEqual(result.http_status,302)
+        self.assertEqual(result.error_code,'redirect_limit_exceeded')
+        self.assertEqual(len(result.redirects),1)
+        self.assertEqual(session.calls,[first])
+        self.assertFalse(_transport_host_failure(result))
+
+    def test_single_redirect_never_issues_a_third_request(self):
+        from scrapper.documents.downloader import DownloadPolicy
+        first='https://example.test/report';second='https://example.test/file.pdf'
+        session=FakeSession({first:FakeResponse(b'',url=first,status_code=302,location=second),
+            second:FakeResponse(b'',url=second,status_code=302,location='/third.pdf')})
+        result=download_url(first,artifact_type='presentation',session=session,
+            policy=DownloadPolicy(max_redirects=1))
+        self.assertEqual(result.http_status,302)
+        self.assertEqual(len(result.redirects),2)
+        self.assertEqual(session.calls,[first,second])
 
     def test_content_length_stream_size_and_total_time_are_bounded(self) -> None:
         url = "https://example.test/large.pdf"

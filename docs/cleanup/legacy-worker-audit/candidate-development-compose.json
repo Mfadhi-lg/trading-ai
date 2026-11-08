@@ -1,0 +1,923 @@
+{
+  "configs": {
+    "runtime_core_documents_sentinel": {
+      "file": "./ops/docker/release/c05.3/core-documents-sentinel.json",
+      "name": "trading-ai-legacy-cleanup-candidate_runtime_core_documents_sentinel"
+    },
+    "runtime_identity_core": {
+      "file": "./ops/docker/release/c05.3/runtime-identity-core.json",
+      "name": "trading-ai-legacy-cleanup-candidate_runtime_identity_core"
+    },
+    "runtime_identity_documents": {
+      "file": "./ops/docker/release/c05.3/runtime-identity-documents.json",
+      "name": "trading-ai-legacy-cleanup-candidate_runtime_identity_documents"
+    },
+    "runtime_store_sentinel": {
+      "file": "./ops/docker/release/c05.3/store-sentinel.json",
+      "name": "trading-ai-legacy-cleanup-candidate_runtime_store_sentinel"
+    }
+  },
+  "name": "trading-ai-legacy-cleanup-candidate",
+  "networks": {
+    "default": {
+      "name": "trading-ai-legacy-cleanup-candidate_default"
+    }
+  },
+  "secrets": {
+    "screener_session": {
+      "file": "${SCREENER_SESSION_FILE:-.screener_session}",
+      "name": "trading-ai-legacy-cleanup-candidate_screener_session"
+    }
+  },
+  "services": {
+    "artifact-reconciler": {
+      "build": {
+        "context": ".",
+        "dockerfile": "Dockerfile"
+      },
+      "command": [
+        "# Allow the scheduler to finish its bounded missed-day catch-up first.\nsleep 30\npython -m scrapper.cli backfill-result-artifacts\nwhile true; do\n  # 50 prioritized PPT/transcript expectations are normally 25\n  # company/result groups. This keeps\n  # the source-refresh batch comfortably inside the 15-minute leases.\n  python -m scrapper.cli reconcile-artifacts --due --limit 50\n  sleep 300\ndone\n"
+      ],
+      "entrypoint": [
+        "/bin/sh",
+        "-c"
+      ],
+      "environment": [
+        "SCRAPER_DB_PATH=/development-data/scraper.db",
+        "SCRAPER_STORE_PATH=/development-data",
+        "SCREENER_SESSION_FILE=/run/secrets/screener_session",
+        "SCREENER_THROTTLE_JITTER=1.5",
+        "SCREENER_THROTTLE_SECONDS=4",
+        "TRADING_AI_ENV=development",
+        "TRADING_AI_RUNTIME_IDENTITY_FILE=",
+        "DOCUMENT_MIN_FREE_BYTES=0",
+        "DOCUMENT_MIN_FREE_PERCENT=0",
+        "DOCUMENT_REQUIRE_SENTINEL=0",
+        "DOCUMENT_STORE_REQUIRE_CAPACITY_FILE=0",
+        "SCRAPER_DOCUMENT_STORE_PATH=/development-documents"
+      ],
+      "image": "trading-ai-c052-development:local",
+      "networks": {
+        "default": null
+      },
+      "restart": "unless-stopped",
+      "secrets": [
+        {
+          "source": "screener_session",
+          "target": "/run/secrets/screener_session"
+        }
+      ],
+      "volumes": [
+        {
+          "source": "development-data",
+          "target": "/development-data",
+          "type": "volume",
+          "volume": {}
+        },
+        {
+          "source": "development-documents",
+          "target": "/development-documents",
+          "type": "volume",
+          "volume": {}
+        },
+        {
+          "bind": {
+            "create_host_path": true
+          },
+          "source": "./scrapper",
+          "target": "/app/scrapper",
+          "type": "bind"
+        }
+      ]
+    },
+    "cli": {
+      "build": {
+        "context": ".",
+        "dockerfile": "Dockerfile"
+      },
+      "command": [
+        "--help"
+      ],
+      "environment": [
+        "SCRAPER_DB_PATH=/development-data/scraper.db",
+        "SCRAPER_STORE_PATH=/development-data",
+        "SCREENER_SESSION_FILE=/run/secrets/screener_session",
+        "TRADING_AI_ENV=development",
+        "TRADING_AI_RUNTIME_IDENTITY_FILE=",
+        "DOCUMENT_MIN_FREE_BYTES=0",
+        "DOCUMENT_MIN_FREE_PERCENT=0",
+        "DOCUMENT_REQUIRE_SENTINEL=0",
+        "DOCUMENT_STORE_REQUIRE_CAPACITY_FILE=0",
+        "SCRAPER_DOCUMENT_STORE_PATH=/development-documents"
+      ],
+      "image": "trading-ai-c052-development:local",
+      "networks": {
+        "default": null
+      },
+      "profiles": [
+        "manual"
+      ],
+      "secrets": [
+        {
+          "source": "screener_session",
+          "target": "/run/secrets/screener_session"
+        }
+      ],
+      "volumes": [
+        {
+          "source": "development-data",
+          "target": "/development-data",
+          "type": "volume",
+          "volume": {}
+        },
+        {
+          "source": "development-documents",
+          "target": "/development-documents",
+          "type": "volume",
+          "volume": {}
+        },
+        {
+          "bind": {
+            "create_host_path": true
+          },
+          "source": "./scrapper",
+          "target": "/app/scrapper",
+          "type": "bind"
+        },
+        {
+          "bind": {
+            "create_host_path": true
+          },
+          "read_only": true,
+          "source": "./exchange-inbox",
+          "target": "/inbox",
+          "type": "bind"
+        }
+      ]
+    },
+    "credit-rating-worker-care": {
+      "build": {
+        "context": ".",
+        "dockerfile": "Dockerfile"
+      },
+      "command": [
+        "run-acquisition-role",
+        "--role",
+        "credit-rating-worker-care"
+      ],
+      "environment": [
+        "DOCUMENT_MIN_FREE_BYTES=0",
+        "DOCUMENT_MIN_FREE_PERCENT=0",
+        "DOCUMENT_REQUIRE_SENTINEL=0",
+        "DOCUMENT_STORE_REQUIRE_CAPACITY_FILE=0",
+        "SCRAPER_DB_PATH=/development-data/scraper.db",
+        "SCRAPER_DOCUMENT_STORE_PATH=/development-documents",
+        "SCRAPER_STORE_PATH=/development-data",
+        "TRADING_AI_ENV=development",
+        "TRADING_AI_RUNTIME_IDENTITY_FILE="
+      ],
+      "image": "trading-ai-c052-development:local",
+      "networks": {
+        "default": null
+      },
+      "restart": "unless-stopped",
+      "volumes": [
+        {
+          "source": "development-data",
+          "target": "/development-data",
+          "type": "volume",
+          "volume": {}
+        },
+        {
+          "source": "development-documents",
+          "target": "/development-documents",
+          "type": "volume",
+          "volume": {}
+        },
+        {
+          "bind": {
+            "create_host_path": true
+          },
+          "source": "./scrapper",
+          "target": "/app/scrapper",
+          "type": "bind"
+        }
+      ]
+    },
+    "credit-rating-worker-india-ratings": {
+      "build": {
+        "context": ".",
+        "dockerfile": "Dockerfile"
+      },
+      "command": [
+        "run-acquisition-role",
+        "--role",
+        "credit-rating-worker-india-ratings"
+      ],
+      "environment": [
+        "DOCUMENT_MIN_FREE_BYTES=0",
+        "DOCUMENT_MIN_FREE_PERCENT=0",
+        "DOCUMENT_REQUIRE_SENTINEL=0",
+        "DOCUMENT_STORE_REQUIRE_CAPACITY_FILE=0",
+        "SCRAPER_DB_PATH=/development-data/scraper.db",
+        "SCRAPER_DOCUMENT_STORE_PATH=/development-documents",
+        "SCRAPER_STORE_PATH=/development-data",
+        "TRADING_AI_ENV=development",
+        "TRADING_AI_RUNTIME_IDENTITY_FILE="
+      ],
+      "image": "trading-ai-c052-development:local",
+      "networks": {
+        "default": null
+      },
+      "restart": "unless-stopped",
+      "volumes": [
+        {
+          "source": "development-data",
+          "target": "/development-data",
+          "type": "volume",
+          "volume": {}
+        },
+        {
+          "source": "development-documents",
+          "target": "/development-documents",
+          "type": "volume",
+          "volume": {}
+        },
+        {
+          "bind": {
+            "create_host_path": true
+          },
+          "source": "./scrapper",
+          "target": "/app/scrapper",
+          "type": "bind"
+        }
+      ]
+    },
+    "credit-rating-worker-other": {
+      "build": {
+        "context": ".",
+        "dockerfile": "Dockerfile"
+      },
+      "command": [
+        "run-acquisition-role",
+        "--role",
+        "credit-rating-worker-other"
+      ],
+      "environment": [
+        "DOCUMENT_MIN_FREE_BYTES=0",
+        "DOCUMENT_MIN_FREE_PERCENT=0",
+        "DOCUMENT_REQUIRE_SENTINEL=0",
+        "DOCUMENT_STORE_REQUIRE_CAPACITY_FILE=0",
+        "SCRAPER_DB_PATH=/development-data/scraper.db",
+        "SCRAPER_DOCUMENT_STORE_PATH=/development-documents",
+        "SCRAPER_STORE_PATH=/development-data",
+        "TRADING_AI_ENV=development",
+        "TRADING_AI_RUNTIME_IDENTITY_FILE="
+      ],
+      "image": "trading-ai-c052-development:local",
+      "networks": {
+        "default": null
+      },
+      "restart": "unless-stopped",
+      "volumes": [
+        {
+          "source": "development-data",
+          "target": "/development-data",
+          "type": "volume",
+          "volume": {}
+        },
+        {
+          "source": "development-documents",
+          "target": "/development-documents",
+          "type": "volume",
+          "volume": {}
+        },
+        {
+          "bind": {
+            "create_host_path": true
+          },
+          "source": "./scrapper",
+          "target": "/app/scrapper",
+          "type": "bind"
+        }
+      ]
+    },
+    "discovery": {
+      "build": {
+        "context": ".",
+        "dockerfile": "Dockerfile"
+      },
+      "command": [
+        "screener-discover-results",
+        "--query-role",
+        "current_reporting_cycle",
+        "--query",
+        "Last result date \u003e 202605"
+      ],
+      "environment": [
+        "SCRAPER_DB_PATH=/development-data/scraper.db",
+        "SCRAPER_STORE_PATH=/development-data",
+        "SCREENER_SESSION_FILE=/run/secrets/screener_session",
+        "TRADING_AI_ENV=development",
+        "TRADING_AI_RUNTIME_IDENTITY_FILE=",
+        "DOCUMENT_MIN_FREE_BYTES=0",
+        "DOCUMENT_MIN_FREE_PERCENT=0",
+        "DOCUMENT_REQUIRE_SENTINEL=0",
+        "DOCUMENT_STORE_REQUIRE_CAPACITY_FILE=0",
+        "SCRAPER_DOCUMENT_STORE_PATH=/development-documents"
+      ],
+      "image": "trading-ai-c052-development:local",
+      "networks": {
+        "default": null
+      },
+      "profiles": [
+        "manual-compat"
+      ],
+      "secrets": [
+        {
+          "source": "screener_session",
+          "target": "/run/secrets/screener_session"
+        }
+      ],
+      "volumes": [
+        {
+          "source": "development-data",
+          "target": "/development-data",
+          "type": "volume",
+          "volume": {}
+        },
+        {
+          "source": "development-documents",
+          "target": "/development-documents",
+          "type": "volume",
+          "volume": {}
+        },
+        {
+          "bind": {
+            "create_host_path": true
+          },
+          "source": "./scrapper",
+          "target": "/app/scrapper",
+          "type": "bind"
+        }
+      ]
+    },
+    "document-download-worker": {
+      "build": {
+        "context": ".",
+        "dockerfile": "Dockerfile"
+      },
+      "command": [
+        "run-acquisition-role",
+        "--role",
+        "document-download-worker"
+      ],
+      "environment": [
+        "DOCUMENT_MIN_FREE_BYTES=0",
+        "DOCUMENT_MIN_FREE_PERCENT=0",
+        "DOCUMENT_REQUIRE_SENTINEL=0",
+        "DOCUMENT_STORE_REQUIRE_CAPACITY_FILE=0",
+        "SCRAPER_DB_PATH=/development-data/scraper.db",
+        "SCRAPER_DOCUMENT_STORE_PATH=/development-documents",
+        "SCRAPER_STORE_PATH=/development-data",
+        "TRADING_AI_ENV=development",
+        "TRADING_AI_RUNTIME_IDENTITY_FILE="
+      ],
+      "image": "trading-ai-c052-development:local",
+      "networks": {
+        "default": null
+      },
+      "restart": "unless-stopped",
+      "volumes": [
+        {
+          "source": "development-data",
+          "target": "/development-data",
+          "type": "volume",
+          "volume": {}
+        },
+        {
+          "source": "development-documents",
+          "target": "/development-documents",
+          "type": "volume",
+          "volume": {}
+        },
+        {
+          "bind": {
+            "create_host_path": true
+          },
+          "source": "./scrapper",
+          "target": "/app/scrapper",
+          "type": "bind"
+        }
+      ]
+    },
+    "document-processing-worker": {
+      "build": {
+        "context": ".",
+        "dockerfile": "Dockerfile"
+      },
+      "command": [
+        "--period",
+        "2026-06-30",
+        "--apply",
+        "--limit",
+        "10"
+      ],
+      "cpus": 0.5,
+      "entrypoint": [
+        "python",
+        "-m",
+        "scrapper.commands.quarter_processing_role"
+      ],
+      "environment": [
+        "SCRAPER_DB_PATH=/development-data/scraper.db",
+        "SCRAPER_DOCUMENT_STORE_PATH=/development-documents",
+        "SCRAPER_STORE_PATH=/development-data",
+        "TRADING_AI_ENV=development",
+        "TRADING_AI_RUNTIME_IDENTITY_FILE=",
+        "DOCUMENT_MIN_FREE_BYTES=0",
+        "DOCUMENT_MIN_FREE_PERCENT=0",
+        "DOCUMENT_REQUIRE_SENTINEL=0",
+        "DOCUMENT_STORE_REQUIRE_CAPACITY_FILE=0"
+      ],
+      "image": "trading-ai-c052-development:local",
+      "networks": {
+        "default": null
+      },
+      "restart": "unless-stopped",
+      "stop_grace_period": "180s",
+      "volumes": [
+        {
+          "source": "development-data",
+          "target": "/development-data",
+          "type": "volume",
+          "volume": {}
+        },
+        {
+          "source": "development-documents",
+          "target": "/development-documents",
+          "type": "volume",
+          "volume": {}
+        },
+        {
+          "bind": {
+            "create_host_path": true
+          },
+          "source": "./scrapper",
+          "target": "/app/scrapper",
+          "type": "bind"
+        }
+      ]
+    },
+    "exchange-reconciliation": {
+      "build": {
+        "context": ".",
+        "dockerfile": "Dockerfile"
+      },
+      "command": [
+        "exchange-reconciliation-report"
+      ],
+      "environment": [
+        "SCRAPER_DB_PATH=/development-data/scraper.db",
+        "SCRAPER_STORE_PATH=/development-data",
+        "TRADING_AI_ENV=development",
+        "TRADING_AI_RUNTIME_IDENTITY_FILE=",
+        "DOCUMENT_MIN_FREE_BYTES=0",
+        "DOCUMENT_MIN_FREE_PERCENT=0",
+        "DOCUMENT_REQUIRE_SENTINEL=0",
+        "DOCUMENT_STORE_REQUIRE_CAPACITY_FILE=0",
+        "SCRAPER_DOCUMENT_STORE_PATH=/development-documents"
+      ],
+      "image": "trading-ai-c052-development:local",
+      "networks": {
+        "default": null
+      },
+      "profiles": [
+        "manual-compat"
+      ],
+      "volumes": [
+        {
+          "source": "development-data",
+          "target": "/development-data",
+          "type": "volume",
+          "volume": {}
+        },
+        {
+          "source": "development-documents",
+          "target": "/development-documents",
+          "type": "volume",
+          "volume": {}
+        },
+        {
+          "bind": {
+            "create_host_path": true
+          },
+          "source": "./scrapper",
+          "target": "/app/scrapper",
+          "type": "bind"
+        }
+      ]
+    },
+    "exchange-results": {
+      "build": {
+        "context": ".",
+        "dockerfile": "Dockerfile"
+      },
+      "command": [
+        "exchange-discover-results",
+        "--dataset",
+        "nse_financial_results",
+        "--result-period",
+        "2026-06"
+      ],
+      "environment": [
+        "SCRAPER_DB_PATH=/development-data/scraper.db",
+        "SCRAPER_STORE_PATH=/development-data",
+        "TRADING_AI_ENV=development",
+        "TRADING_AI_RUNTIME_IDENTITY_FILE=",
+        "DOCUMENT_MIN_FREE_BYTES=0",
+        "DOCUMENT_MIN_FREE_PERCENT=0",
+        "DOCUMENT_REQUIRE_SENTINEL=0",
+        "DOCUMENT_STORE_REQUIRE_CAPACITY_FILE=0",
+        "SCRAPER_DOCUMENT_STORE_PATH=/development-documents"
+      ],
+      "image": "trading-ai-c052-development:local",
+      "networks": {
+        "default": null
+      },
+      "profiles": [
+        "manual-compat"
+      ],
+      "volumes": [
+        {
+          "source": "development-data",
+          "target": "/development-data",
+          "type": "volume",
+          "volume": {}
+        },
+        {
+          "source": "development-documents",
+          "target": "/development-documents",
+          "type": "volume",
+          "volume": {}
+        },
+        {
+          "bind": {
+            "create_host_path": true
+          },
+          "source": "./scrapper",
+          "target": "/app/scrapper",
+          "type": "bind"
+        },
+        {
+          "bind": {
+            "create_host_path": true
+          },
+          "read_only": true,
+          "source": "./exchange-inbox",
+          "target": "/inbox",
+          "type": "bind"
+        }
+      ]
+    },
+    "exchange-universe": {
+      "build": {
+        "context": ".",
+        "dockerfile": "Dockerfile"
+      },
+      "command": [
+        "exchange-refresh-universe",
+        "--dataset",
+        "nse_equity_master"
+      ],
+      "environment": [
+        "SCRAPER_DB_PATH=/development-data/scraper.db",
+        "SCRAPER_STORE_PATH=/development-data",
+        "TRADING_AI_ENV=development",
+        "TRADING_AI_RUNTIME_IDENTITY_FILE=",
+        "DOCUMENT_MIN_FREE_BYTES=0",
+        "DOCUMENT_MIN_FREE_PERCENT=0",
+        "DOCUMENT_REQUIRE_SENTINEL=0",
+        "DOCUMENT_STORE_REQUIRE_CAPACITY_FILE=0",
+        "SCRAPER_DOCUMENT_STORE_PATH=/development-documents"
+      ],
+      "image": "trading-ai-c052-development:local",
+      "networks": {
+        "default": null
+      },
+      "profiles": [
+        "manual-compat"
+      ],
+      "volumes": [
+        {
+          "source": "development-data",
+          "target": "/development-data",
+          "type": "volume",
+          "volume": {}
+        },
+        {
+          "source": "development-documents",
+          "target": "/development-documents",
+          "type": "volume",
+          "volume": {}
+        },
+        {
+          "bind": {
+            "create_host_path": true
+          },
+          "source": "./scrapper",
+          "target": "/app/scrapper",
+          "type": "bind"
+        },
+        {
+          "bind": {
+            "create_host_path": true
+          },
+          "read_only": true,
+          "source": "./exchange-inbox",
+          "target": "/inbox",
+          "type": "bind"
+        }
+      ]
+    },
+    "rating-recovery-discovery": {
+      "build": {
+        "context": ".",
+        "dockerfile": "Dockerfile"
+      },
+      "command": [
+        "python -m scrapper.cli build-document-recovery-targets\nwhile true; do\n  out=$$(python -m scrapper.cli run-document-recovery-worker \\\n    --source bse --source nse --source issuer-ir \\\n    --limit 50 --throttle-seconds 2)\n  echo \"$$out\"\n  case \"$$out\" in\n    *'\"processed_target_source_count\": 0'*) sleep 120 ;;\n    *) sleep 3 ;;\n  esac\ndone\n"
+      ],
+      "cpus": 0.5,
+      "entrypoint": [
+        "/bin/sh",
+        "-c"
+      ],
+      "environment": [
+        "DOCUMENT_MIN_FREE_BYTES=0",
+        "DOCUMENT_MIN_FREE_PERCENT=0",
+        "DOCUMENT_REQUIRE_SENTINEL=0",
+        "DOCUMENT_STORE_REQUIRE_CAPACITY_FILE=0",
+        "SCRAPER_DB_PATH=/development-data/scraper.db",
+        "SCRAPER_DOCUMENT_STORE_PATH=/development-documents",
+        "SCRAPER_STORE_PATH=/development-data",
+        "TRADING_AI_ENV=development",
+        "TRADING_AI_RUNTIME_IDENTITY_FILE="
+      ],
+      "image": "trading-ai-c052-development:local",
+      "networks": {
+        "default": null
+      },
+      "restart": "unless-stopped",
+      "volumes": [
+        {
+          "source": "development-data",
+          "target": "/development-data",
+          "type": "volume",
+          "volume": {}
+        },
+        {
+          "source": "development-documents",
+          "target": "/development-documents",
+          "type": "volume",
+          "volume": {}
+        },
+        {
+          "bind": {
+            "create_host_path": true
+          },
+          "source": "./scrapper",
+          "target": "/app/scrapper",
+          "type": "bind"
+        }
+      ]
+    },
+    "rating-recovery-download": {
+      "build": {
+        "context": ".",
+        "dockerfile": "Dockerfile"
+      },
+      "command": [
+        "run-acquisition-role",
+        "--role",
+        "rating-recovery-download"
+      ],
+      "cpus": 0.6,
+      "environment": [
+        "DOCUMENT_MIN_FREE_BYTES=0",
+        "DOCUMENT_MIN_FREE_PERCENT=0",
+        "DOCUMENT_REQUIRE_SENTINEL=0",
+        "DOCUMENT_STORE_REQUIRE_CAPACITY_FILE=0",
+        "SCRAPER_DB_PATH=/development-data/scraper.db",
+        "SCRAPER_DOCUMENT_STORE_PATH=/development-documents",
+        "SCRAPER_STORE_PATH=/development-data",
+        "TRADING_AI_ENV=development",
+        "TRADING_AI_RUNTIME_IDENTITY_FILE="
+      ],
+      "image": "trading-ai-c052-development:local",
+      "networks": {
+        "default": null
+      },
+      "restart": "unless-stopped",
+      "volumes": [
+        {
+          "source": "development-data",
+          "target": "/development-data",
+          "type": "volume",
+          "volume": {}
+        },
+        {
+          "source": "development-documents",
+          "target": "/development-documents",
+          "type": "volume",
+          "volume": {}
+        },
+        {
+          "bind": {
+            "create_host_path": true
+          },
+          "source": "./scrapper",
+          "target": "/app/scrapper",
+          "type": "bind"
+        }
+      ]
+    },
+    "scheduler": {
+      "build": {
+        "context": ".",
+        "dockerfile": "Dockerfile"
+      },
+      "command": [
+        "exchange-scheduler"
+      ],
+      "environment": [
+        "SCRAPER_DB_PATH=/development-data/scraper.db",
+        "SCRAPER_STORE_PATH=/development-data",
+        "TRADING_AI_ENV=development",
+        "TRADING_AI_RUNTIME_IDENTITY_FILE=",
+        "DOCUMENT_MIN_FREE_BYTES=0",
+        "DOCUMENT_MIN_FREE_PERCENT=0",
+        "DOCUMENT_REQUIRE_SENTINEL=0",
+        "DOCUMENT_STORE_REQUIRE_CAPACITY_FILE=0",
+        "SCRAPER_DOCUMENT_STORE_PATH=/development-documents"
+      ],
+      "image": "trading-ai-c052-development:local",
+      "networks": {
+        "default": null
+      },
+      "restart": "unless-stopped",
+      "volumes": [
+        {
+          "source": "development-data",
+          "target": "/development-data",
+          "type": "volume",
+          "volume": {}
+        },
+        {
+          "source": "development-documents",
+          "target": "/development-documents",
+          "type": "volume",
+          "volume": {}
+        },
+        {
+          "bind": {
+            "create_host_path": true
+          },
+          "source": "./scrapper",
+          "target": "/app/scrapper",
+          "type": "bind"
+        }
+      ]
+    },
+    "worker": {
+      "build": {
+        "context": ".",
+        "dockerfile": "Dockerfile"
+      },
+      "command": [
+        "screener-company-worker",
+        "--due",
+        "--limit",
+        "5"
+      ],
+      "environment": [
+        "SCRAPER_DB_PATH=/development-data/scraper.db",
+        "SCRAPER_STORE_PATH=/development-data",
+        "SCREENER_SESSION_FILE=/run/secrets/screener_session",
+        "SCREENER_THROTTLE_JITTER=1.5",
+        "SCREENER_THROTTLE_SECONDS=4",
+        "SCREENER_WORKER_LIMIT=5",
+        "TRADING_AI_ENV=development",
+        "TRADING_AI_RUNTIME_IDENTITY_FILE=",
+        "DOCUMENT_MIN_FREE_BYTES=0",
+        "DOCUMENT_MIN_FREE_PERCENT=0",
+        "DOCUMENT_REQUIRE_SENTINEL=0",
+        "DOCUMENT_STORE_REQUIRE_CAPACITY_FILE=0",
+        "SCRAPER_DOCUMENT_STORE_PATH=/development-documents"
+      ],
+      "image": "trading-ai-c052-development:local",
+      "networks": {
+        "default": null
+      },
+      "profiles": [
+        "manual-compat"
+      ],
+      "secrets": [
+        {
+          "source": "screener_session",
+          "target": "/run/secrets/screener_session"
+        }
+      ],
+      "volumes": [
+        {
+          "source": "development-data",
+          "target": "/development-data",
+          "type": "volume",
+          "volume": {}
+        },
+        {
+          "source": "development-documents",
+          "target": "/development-documents",
+          "type": "volume",
+          "volume": {}
+        },
+        {
+          "bind": {
+            "create_host_path": true
+          },
+          "source": "./scrapper",
+          "target": "/app/scrapper",
+          "type": "bind"
+        }
+      ]
+    }
+  },
+  "volumes": {
+    "development-data": {
+      "name": "trading-ai-legacy-cleanup-candidate_development-data"
+    },
+    "development-documents": {
+      "name": "trading-ai-legacy-cleanup-candidate_development-documents"
+    },
+    "scraper-data": {
+      "name": "trading-ai-legacy-cleanup-candidate_scraper-data"
+    }
+  },
+  "x-core-runtime-configs": [
+    {
+      "source": "runtime_identity_core",
+      "target": "/run/trading-ai/runtime-identity.json"
+    },
+    {
+      "source": "runtime_store_sentinel",
+      "target": "/data/.trading_ai_runtime_identity.json"
+    },
+    {
+      "source": "runtime_core_documents_sentinel",
+      "target": "/data/snapshots/.trading_ai_runtime_identity.json"
+    }
+  ],
+  "x-development-environment": {
+    "DOCUMENT_MIN_FREE_BYTES": "0",
+    "DOCUMENT_MIN_FREE_PERCENT": "0",
+    "DOCUMENT_REQUIRE_SENTINEL": "0",
+    "DOCUMENT_STORE_REQUIRE_CAPACITY_FILE": "0",
+    "SCRAPER_DB_PATH": "/development-data/scraper.db",
+    "SCRAPER_DOCUMENT_STORE_PATH": "/development-documents",
+    "SCRAPER_STORE_PATH": "/development-data",
+    "TRADING_AI_ENV": "development",
+    "TRADING_AI_RUNTIME_IDENTITY_FILE": ""
+  },
+  "x-development-service": {
+    "build": {
+      "context": "."
+    },
+    "environment": {
+      "DOCUMENT_MIN_FREE_BYTES": "0",
+      "DOCUMENT_MIN_FREE_PERCENT": "0",
+      "DOCUMENT_REQUIRE_SENTINEL": "0",
+      "DOCUMENT_STORE_REQUIRE_CAPACITY_FILE": "0",
+      "SCRAPER_DB_PATH": "/development-data/scraper.db",
+      "SCRAPER_DOCUMENT_STORE_PATH": "/development-documents",
+      "SCRAPER_STORE_PATH": "/development-data",
+      "TRADING_AI_ENV": "development",
+      "TRADING_AI_RUNTIME_IDENTITY_FILE": ""
+    },
+    "image": "trading-ai-c052-development:local"
+  },
+  "x-document-runtime-configs": [
+    {
+      "source": "runtime_identity_documents",
+      "target": "/run/trading-ai/runtime-identity.json"
+    },
+    {
+      "source": "runtime_store_sentinel",
+      "target": "/data/.trading_ai_runtime_identity.json"
+    }
+  ],
+  "x-production-environment": {
+    "TRADING_AI_ENV": "production",
+    "TRADING_AI_RUNTIME_IDENTITY_FILE": "/run/trading-ai/runtime-identity.json"
+  },
+  "x-runtime-image": "trading-ai-c053-release@sha256:44da7074157fd2a946c41d064a91ef3f729ebd31ab3bcdf2aa09233c5a794b6b"
+}

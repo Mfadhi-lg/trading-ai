@@ -6,6 +6,8 @@ import json
 import sqlite3
 from pathlib import Path
 
+from .writers import write_json_payload
+
 
 def build_mf_workbook_export(conn: sqlite3.Connection, import_file_id: int) -> dict:
     imported = conn.execute(
@@ -356,7 +358,5 @@ def write_mf_workbook_export(
     payload = build_mf_workbook_export(conn, import_file_id)
     output = Path(output)
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(
-        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
-    )
+    write_json_payload(payload, output)
     return output

@@ -1,0 +1,70 @@
+{
+  "release_status": "PREPARED_VERIFIED",
+  "baseline_review": "ACCEPT_REUSED",
+  "image_reference": "trading-ai-ar02-period-release@sha256:a7025c3e70ea14939874aa2c1337a41845e3311ba9b5a4fc1a1004c6d6f4c16d",
+  "release_manifest": "ops/docker/release/ar02-period-20261008/release-manifest.json",
+  "package_verification": "PASS",
+  "packaged_tests": "139 PASS",
+  "production_activation": "NSE_AND_BSE_BOUNDED_INGESTION_SUCCEEDED",
+  "production_activation_authorized": true,
+  "selected_role_preparation": "nse-results",
+  "scheduler": "ACQUISITION_FINANCIAL_AND_CAP_LAUNCHAGENT_INSTALLED",
+  "unrelated_roles": "DISABLED",
+  "BSE": "VISIBLE_CHROME_SCHEDULED_API_HOLDS_PRESERVED",
+  "baseline_sealed_package_modified": false,
+  "date_driven_release": "PACKAGED_VERIFIED",
+  "live_execution_gate": "READY_FOR_BOUNDED_NSE_RUN_WITH_EXISTING_AUTOMATIC_CHECKS",
+  "live_acceptance": "PRIOR_BOUNDED_NSE_AND_BSE_RUNS_REUSED",
+  "migrations_repeated": false,
+  "recovery_rehearsals_repeated": false,
+  "automatic_scheduling": {
+    "timezone": "Asia/Kolkata",
+    "NSE": "Mon\u2013Sat 19:30",
+    "BSE": [
+      "Daily 09:00",
+      "Daily 18:00"
+    ],
+    "no_retries": true,
+    "no_backlog_dispatch": "NO_UNRESTRICTED_DISPATCH; FINANCIAL_P3_MAX4_PER_DAY; CAP_OLDEST_DUE_MAX40_PER_SLOT",
+    "workers_enabled": false,
+    "desktop_required": true,
+    "first_unattended_source_run": "ACTUAL_ATTEMPTS_RECORDED_SEE_VERIFICATION"
+  },
+  "verification": "artifacts/automatic-acquisition/verification.json",
+  "financial_processing": "STEP3_THREE_PRIORITY_AUTOMATIC_OPERATIONAL",
+  "step3_findings": "ops/activation/STEP3_FINANCIAL_READINESS.md",
+  "step3_verification": "artifacts/step3-financial-readiness/verification.json",
+  "first_unattended_attempt_verification": "artifacts/automatic-acquisition/first-unattended-verification.json",
+  "step3_canary_verification": "artifacts/step3-financial-canary-2026-10-09/verification.json",
+  "automatic_financial_scheduling_ready": "INSTALLED_AND_VERIFIED_UNATTENDED",
+  "screener_updated_session_check": "artifacts/screener-supplemental-access/20261009T130848688842Z/verification.json",
+  "step3_retry_verification": "artifacts/step3-financial-retry-2026-10-09/verification.json",
+  "automatic_financial_scheduling_enabled": true,
+  "cap_monitor_scheduling_enabled": true,
+  "step3_operational": "COMPLETE",
+  "step3_activation_verification": "artifacts/step3-operational-activation/verification.json",
+  "phase3": "COMPLETE",
+  "phase3_report": "ops/activation/PHASE3_COMPLETION.md",
+  "phase3_verification": "artifacts/phase3-completion/verification.json",
+  "next_phase": "PHASE4_AUTOMATIC_DOCUMENT_DISCOVERY_DOWNLOADING_PROCESSING",
+  "financial_priority_policy": "three-priority-v1",
+  "historical_financial_budget": {
+    "per_reserved_slot": 1,
+    "per_day": 4,
+    "slots_ist": [
+      "00:45",
+      "06:45",
+      "12:45",
+      "18:45"
+    ],
+    "within_total_companies_per_slot": 2
+  },
+  "phase3_unattended_financial_runs": 4,
+  "phase3_unattended_financial_acceptances": 8,
+  "cap_overdue_snapshot": {
+    "count": 5240,
+    "at_ist": "2026-10-11 19:35:04"
+  },
+  "heg_source_mapping": "VERIFIED_HEGAM_SOURCE1301_CORRECTED",
+  "phase3_completed_on": "2026-10-11"
+}

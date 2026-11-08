@@ -92,36 +92,18 @@ class FiveCompanyPilotTests(unittest.TestCase):
                 self.assertEqual(len(parsed_peer.observations), company["peers"])
 
                 prepare_database(db_path)
-                result = ingest_screener_response(
-                    symbol,
-                    "consolidated",
-                    response(company_url(symbol), main),
-                    response(peer_table_url(company["warehouse_id"]), peer),
-                    db_path=db_path,
-                    snapshot_root=root / "snapshots",
-                    export_root=root / "exports",
-                    fetched_at_utc=FIRST_OBSERVED,
-                )
-                payload = json.loads(result.export_path.read_text(encoding="utf-8"))
-                identity = payload["provenance"]["source_identifiers"][0]
-                self.assertEqual(identity["source_symbol"], symbol)
-                self.assertEqual(identity["source_company_id"], company["source_company_id"])
-                self.assertEqual(identity["mapping_status"], "verified")
-                quality = {row["rule_code"]: row for row in payload["quality"]}
-                self.assertEqual(quality["identity_symbol"]["status"], "passed")
-                self.assertEqual(quality["screener_manifest_coverage"]["status"], "passed")
-                self.assertTrue(all(row["status"] == "passed" for row in quality.values()))
-                accepted_symbols.append(symbol)
-
+                with self.assertRaisesRegex(ValueError, "standalone page"):
+                    ingest_screener_response(
+                        symbol, "consolidated",
+                        response(f"https://www.screener.in/company/{symbol}/consolidated/", main),
+                        response(peer_table_url(company["warehouse_id"]), peer),
+                        db_path=db_path, snapshot_root=root / "snapshots",
+                        export_root=root / "exports", fetched_at_utc=FIRST_OBSERVED,
+                    )
             with closing(sqlite3.connect(db_path)) as conn:
-                rows = conn.execute(
-                    """SELECT si.source_symbol
-                       FROM accepted_page_versions apv
-                       JOIN source_identifiers si ON si.company_id=apv.company_id
-                        AND si.source=apv.source
-                       ORDER BY apv.company_id"""
-                ).fetchall()
-            self.assertEqual([row[0] for row in rows], accepted_symbols)
+                self.assertEqual(conn.execute("SELECT COUNT(*) FROM accepted_page_versions").fetchone()[0], 0)
+                self.assertEqual(conn.execute("SELECT COUNT(*) FROM financial_observations").fetchone()[0], 0)
+
 
 
 if __name__ == "__main__":

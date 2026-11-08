@@ -20,26 +20,5 @@ def discover_documents(
     snapshot_root: Path = DOCUMENT_DISCOVERY_SNAPSHOTS.parent,
     observed_at_utc: str | None = None,
 ) -> dict[str, Any]:
-    """Return every candidate; persist only when ``dry_run`` is false."""
-
-    plan = build_discovery_plan(manifest_path, requested_symbol=symbol)
-    payload = plan.to_dict(dry_run=dry_run)
-    if dry_run:
-        payload["persistence"] = {
-            "status": "not_written",
-            "database_exists": db_path.exists(),
-        }
-        return payload
-    conn = connect(db_path)
-    try:
-        init_db(conn)
-        result = persist_discovery_plan(
-            conn,
-            plan,
-            observed_at_utc=observed_at_utc,
-            snapshot_root=snapshot_root,
-        )
-    finally:
-        conn.close()
-    payload["persistence"] = {"status": "stored", **result.to_dict()}
-    return payload
+    from ..workflows.documents.discovery import discover_documents as _owner
+    return _owner(symbol=symbol, manifest_path=manifest_path, dry_run=dry_run, db_path=db_path, snapshot_root=snapshot_root, observed_at_utc=observed_at_utc, build_discovery_plan=build_discovery_plan, connect=connect, init_db=init_db, persist_discovery_plan=persist_discovery_plan)

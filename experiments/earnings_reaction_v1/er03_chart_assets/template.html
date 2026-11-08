@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' file:; script-src 'self' 'unsafe-inline' file:; style-src 'self' 'unsafe-inline' file:; img-src 'self' data: file:; connect-src 'none'">
+<title>__SYMBOL__ · ER-03C Daily</title><link rel="stylesheet" href="assets/chart.css"></head>
+<body><header><a href="index.html">ER-03C</a><h1>__SYMBOL__ <small>Daily · NSE</small></h1><span>Historical analysis · ER-04 paused</span></header>
+<nav id="controls" aria-label="Indicator visibility"></nav>
+<div class="toolbar"><button id="reset">Full history</button><button id="recent">Last 125 sessions</button><button id="prev">Previous candle</button><button id="next">Next candle</button><select id="window" aria-label="Earnings observation window"><option value="">Approximate earnings windows…</option></select><span>Wheel: zoom · Drag: pan · ← →: inspect</span></div>
+<div id="inspection" aria-live="polite"></div>
+<main>
+<section id="price-panel"><div class="panel-title">Price · INR <span>SOURCE_VALIDATED EMA10 blue · EMA20 orange</span></div><div class="chart" id="price"></div><svg id="windows-overlay" aria-hidden="true"></svg><div id="dtr-box"></div></section>
+<section id="dss-panel"><div class="panel-title">DSS_Rajput RVol · lookback 20 · % <span>BEHAVIORALLY_RECONSTRUCTED · original startup unresolved</span></div><div class="chart" id="dss"></div><div id="dss-value" class="readout"></div></section>
+<section id="volume-panel"><div class="panel-title">Simple Volume with Pocket Pivots · provider volume units <span>BEHAVIORALLY_RECONSTRUCTED · PP10 / SMA21 / RVOL21 / U-D20 / turnover50</span></div><div class="chart" id="volume"></div><div id="volume-value" class="readout"></div></section>
+<section id="rs-panel"><div class="panel-title">RS55 vs NSE:NIFTYMIDSML400 · dimensionless <span>SOURCE_VALIDATED · ratio of returns · zero baseline</span></div><div class="chart" id="rs"></div><div id="rs-value" class="readout"></div></section>
+</main>
+<details><summary>Indicator status, volume colors and data limits</summary><div id="provenance"></div><p>Simple Volume: blue PP or supported up high record; orange dry/low record; green above-average up; red above-average down; grey otherwise. Unavailable final colors are omitted, never substituted. PP markers are volume tests, not trade instructions. HVE/HVY/HVQ labels use saved latest-only presentation; event history remains inspectable.</p><p>APPROXIMATE results dates are retained record calendar dates, not verified first-publication timestamps. Window edges show first/last observed sessions. Profile VAH/VAL are final-session ticks, not developing levels. Bull Snort, Power and projected features: UNAVAILABLE.</p></details>
+<footer>Chart rendering: <a href="https://www.tradingview.com/" target="_blank" rel="noreferrer">TradingView Lightweight Charts™</a> 5.0.9 · Apache-2.0 · local assets. Source-derived DTR: © ssksubam; RS: © bharatTrader, MPL-2.0. See INDICATOR_PARITY.md and CHART_VALIDATION.md.</footer>
+<script id="chart-data" type="application/json">__DATA__</script><script src="assets/lightweight-charts-5.0.9.js"></script><script src="assets/chart.js"></script></body></html>

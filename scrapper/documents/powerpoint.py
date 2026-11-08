@@ -67,8 +67,16 @@ def _pptx_slide_elements(slide: Any) -> tuple[DocumentElement, ...]:
             )
         elif getattr(shape, "has_chart", False):
             chart = shape.chart
-            reference["chart_type"] = str(chart.chart_type)
-            reference["series_count"] = len(chart.series)
+            try:
+                reference["chart_type"] = str(chart.chart_type)
+                reference["series_count"] = len(chart.series)
+            except (ValueError, AttributeError, KeyError) as exc:
+                # A plot unsupported by python-pptx must not discard the slide
+                # or its other tables/text. Phase 5 can still read original
+                # OOXML caches; visual interpretation remains unresolved.
+                reference["chart_type"] = "unsupported"
+                reference["series_count"] = None
+                reference["chart_structure_error"] = type(exc).__name__
             elements.append(
                 DocumentElement(
                     position=len(elements),

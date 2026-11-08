@@ -290,7 +290,7 @@ class ParserTests(unittest.TestCase):
         self.assertEqual(parsed.records[0].isin, ALPHA_ISIN)
         self.assertEqual(parsed.records[0].segment, "equity")
 
-    def test_bse_integrated_feed_expands_scopes_and_filters_period(self) -> None:
+    def test_bse_integrated_feed_expands_scopes_and_retains_late_period(self) -> None:
         feed = json.dumps(
             {
                 "Table": [
@@ -318,14 +318,14 @@ class ParserTests(unittest.TestCase):
         parsed = parse_result_filings(
             feed, "bse_financial_results", result_period="2026-06"
         )
-        self.assertEqual(parsed.excluded_row_count, 1)
-        self.assertEqual(len(parsed.filings), 2)
+        self.assertEqual(parsed.excluded_row_count, 0)
+        self.assertEqual(len(parsed.filings), 3)
         self.assertEqual(
             {item.reporting_scope for item in parsed.filings},
             {"standalone", "consolidated"},
         )
-        self.assertTrue(all(item.exchange_key == "500001" for item in parsed.filings))
-        self.assertTrue(all(item.result_period == "2026-06" for item in parsed.filings))
+        self.assertEqual({item.exchange_key for item in parsed.filings},{"500001","500002"})
+        self.assertEqual({item.result_period for item in parsed.filings},{"2026-06","2026-03"})
         self.assertEqual(
             parsed.filings[0].broadcast_at_utc, "2026-08-05T13:00:00+00:00"
         )
@@ -596,6 +596,35 @@ class RegistryTests(ExchangeCase):
 
 
 class ResultDiscoveryTests(ExchangeCase):
+    def test_priority_query_retains_delayed_earlier_filings_and_revisions(self):
+        self.build_universe()
+        late = (
+            "ALPHA,Alpha Industries Limited,Capital Goods,Quarterly,31-MAR-2026,"
+            "Audited,Non-cumulative,Consolidated,05-Oct-2026 18:30:00"
+        )
+        current = late.replace('31-MAR-2026', '30-SEP-2026')
+        first = self.discover('nse_financial_results', nse_results((late, current)),
+                              '2026-10-06', result_period='2026-09')
+        self.assertEqual(first['result_periods'], ['2026-03', '2026-09'])
+        self.assertEqual(first['excluded_row_count'], 0)
+        revision = late.replace('05-Oct-2026', '07-Oct-2026')
+        second = self.discover('nse_financial_results', nse_results((revision,)),
+                               '2026-10-08', result_period='2026-09')
+        self.assertEqual(second['result_periods'], ['2026-03'])
+        rows = self.rows('SELECT result_period, period_end_date, broadcast_at_utc '
+                         'FROM exchange_result_filings ORDER BY broadcast_at_utc, result_period')
+        self.assertEqual(len(rows), 3)
+        self.assertEqual([r['result_period'] for r in rows], ['2026-03', '2026-09', '2026-03'])
+        self.assertEqual(rows[-1]['period_end_date'], '2026-03-31')
+        self.assertEqual(rows[-1]['broadcast_at_utc'], '2026-10-07T13:00:00+00:00')
+        self.discover('nse_financial_results', nse_results((revision,)),
+                      '2026-10-08', result_period='2026-09')
+        self.assertEqual(len(self.rows('SELECT * FROM exchange_result_filings')), 3)
+        malformed = nse_results((late.replace('31-MAR-2026', ''),))
+        parsed = parse_result_filings(malformed, 'nse_financial_results', result_period='2026-09')
+        self.assertEqual(parsed.accepted_row_count, 0)
+        self.assertEqual(parsed.rejected_row_count, 1)
+
     def test_same_period_new_filing_is_reviewed_and_equal_timestamp_collision_kept(self) -> None:
         self.build_universe()
         first_row = (

@@ -1,0 +1,67 @@
+{
+  "apply_now": false,
+  "whole_python_files_to_delete": [],
+  "components": [
+    {
+      "component": "daemon",
+      "files": [
+        "compose.yml",
+        "compose.development.yml"
+      ],
+      "original": "Broad continuous due-company loop",
+      "replacement": "step3 FINANCIAL -> financial_priority.select -> canonical company worker",
+      "proof": "Current dispatcher calls same owner with exact allowed IDs; Compose service is not called by installed schedule",
+      "dependencies": [
+        "legacy launcher start/stop/pause",
+        "saved wake state",
+        "external service-name users"
+      ],
+      "risk": "medium until lifecycle migration; low after",
+      "delete": "two service definitions only"
+    },
+    {
+      "component": "market-cap-monitor",
+      "files": [
+        "compose.yml",
+        "compose.development.yml"
+      ],
+      "original": "Hourly continuous eligibility loop limit40",
+      "replacement": "step3 CAP -> canonical collection_scope.monitor limit40",
+      "proof": "Same monitor owner; approved admitted slots replace always-running loop",
+      "dependencies": [
+        "saved wake state",
+        "external service-name users"
+      ],
+      "risk": "low after state/caller review",
+      "delete": "two service definitions only"
+    },
+    {
+      "component": "trading-ai-june-extraction-worker-1",
+      "files": [],
+      "original": "June quarter_extract shell loop limit10 every60seconds",
+      "replacement": "quarter_processing_role -> same pending_contents selector -> frozen campaign -> canonical extractor",
+      "proof": "Inspected container command; exact selector dependency and passing quarter/campaign regression",
+      "dependencies": [
+        "saved wake state",
+        "claims/mounts/campaign receipts"
+      ],
+      "risk": "medium until ownership inspection",
+      "delete": "named stopped container only after trial; preserve Python module and data"
+    },
+    {
+      "component": "legacy startup in scraper_lifecycle.sh",
+      "files": [
+        "ops/host/scraper_lifecycle.sh"
+      ],
+      "original": "compose up scheduler daemon",
+      "replacement": "explicit refusal; planned approved scheduler lifecycle in same launcher",
+      "proof": "Isolated startup fixture exits2 without Docker; literal CLI and existing wake/shutdown tests pass",
+      "dependencies": [
+        "legacy start CLI users",
+        "post-trial LaunchAgent lifecycle migration"
+      ],
+      "risk": "explicit CLI behavior change; patch is gated",
+      "delete": "obsolete auto-start body and daemon targeting"
+    }
+  ]
+}

@@ -1,0 +1,286 @@
+{
+  "configs": {
+    "runtime_identity_documents": {
+      "file": "./ops/docker/release/c05.3/runtime-identity-documents.json",
+      "name": "trading-ai-legacy-cleanup-candidate_runtime_identity_documents"
+    },
+    "runtime_store_sentinel": {
+      "file": "./ops/docker/release/c05.3/store-sentinel.json",
+      "name": "trading-ai-legacy-cleanup-candidate_runtime_store_sentinel"
+    }
+  },
+  "name": "trading-ai-legacy-cleanup-candidate",
+  "networks": {
+    "default": {
+      "name": "trading-ai-legacy-cleanup-candidate_default"
+    }
+  },
+  "services": {
+    "browser-rating-crisil": {
+      "command": [
+        "--run-id",
+        "${BROWSER_RATING_RUN_ID:?Select an explicitly reviewed browser run}",
+        "--apply",
+        "--operator-authorized",
+        "--host",
+        "www.crisil.com",
+        "--host",
+        "www.crisilratings.com",
+        "--throttle-seconds",
+        "20"
+      ],
+      "configs": [
+        {
+          "source": "runtime_identity_documents",
+          "target": "/run/trading-ai/runtime-identity.json"
+        },
+        {
+          "source": "runtime_store_sentinel",
+          "target": "/data/.trading_ai_runtime_identity.json"
+        }
+      ],
+      "cpus": 0.6,
+      "entrypoint": [
+        "python",
+        "-m",
+        "scrapper.commands.browser_rating_recovery"
+      ],
+      "environment": {
+        "DOCUMENT_MIN_FREE_BYTES": "107374182400",
+        "DOCUMENT_MIN_FREE_PERCENT": "15",
+        "DOCUMENT_REQUIRE_SENTINEL": "1",
+        "DOCUMENT_STORE_REQUIRE_CAPACITY_FILE": "1",
+        "SCRAPER_DB_PATH": "/data/scraper.db",
+        "SCRAPER_DOCUMENT_STORE_PATH": "/documents",
+        "SCRAPER_STORE_PATH": "/data",
+        "TRADING_AI_ENV": "production",
+        "TRADING_AI_RUNTIME_IDENTITY_FILE": "/run/trading-ai/runtime-identity.json"
+      },
+      "image": "trading-ai-c053-release@sha256:44da7074157fd2a946c41d064a91ef3f729ebd31ab3bcdf2aa09233c5a794b6b",
+      "mem_limit": "1536m",
+      "networks": {
+        "default": null
+      },
+      "profiles": [
+        "browser-recovery"
+      ],
+      "restart": "on-failure:3",
+      "stop_grace_period": "180s",
+      "volumes": [
+        {
+          "source": "scraper-data",
+          "target": "/data",
+          "type": "volume",
+          "volume": {}
+        },
+        {
+          "source": "${TRADING_AI_DOCUMENT_HOST_PATH}",
+          "target": "/documents",
+          "type": "volume",
+          "volume": {}
+        }
+      ]
+    },
+    "browser-rating-extract": {
+      "command": [
+        "--run-id",
+        "${BROWSER_RATING_RUN_ID:?Select an explicitly reviewed browser run}",
+        "--process",
+        "--follow",
+        "--operator-authorized"
+      ],
+      "configs": [
+        {
+          "source": "runtime_identity_documents",
+          "target": "/run/trading-ai/runtime-identity.json"
+        },
+        {
+          "source": "runtime_store_sentinel",
+          "target": "/data/.trading_ai_runtime_identity.json"
+        }
+      ],
+      "cpus": 0.6,
+      "entrypoint": [
+        "python",
+        "-m",
+        "scrapper.commands.browser_rating_recovery"
+      ],
+      "environment": {
+        "DOCUMENT_MIN_FREE_BYTES": "107374182400",
+        "DOCUMENT_MIN_FREE_PERCENT": "15",
+        "DOCUMENT_REQUIRE_SENTINEL": "1",
+        "DOCUMENT_STORE_REQUIRE_CAPACITY_FILE": "1",
+        "SCRAPER_DB_PATH": "/data/scraper.db",
+        "SCRAPER_DOCUMENT_STORE_PATH": "/documents",
+        "SCRAPER_STORE_PATH": "/data",
+        "TRADING_AI_ENV": "production",
+        "TRADING_AI_RUNTIME_IDENTITY_FILE": "/run/trading-ai/runtime-identity.json"
+      },
+      "image": "trading-ai-c053-release@sha256:44da7074157fd2a946c41d064a91ef3f729ebd31ab3bcdf2aa09233c5a794b6b",
+      "mem_limit": "1536m",
+      "networks": {
+        "default": null
+      },
+      "profiles": [
+        "browser-recovery"
+      ],
+      "restart": "on-failure:3",
+      "stop_grace_period": "180s",
+      "volumes": [
+        {
+          "source": "scraper-data",
+          "target": "/data",
+          "type": "volume",
+          "volume": {}
+        },
+        {
+          "source": "${TRADING_AI_DOCUMENT_HOST_PATH}",
+          "target": "/documents",
+          "type": "volume",
+          "volume": {}
+        }
+      ]
+    },
+    "browser-rating-icra": {
+      "command": [
+        "--run-id",
+        "${BROWSER_RATING_RUN_ID:?Select an explicitly reviewed browser run}",
+        "--apply",
+        "--operator-authorized",
+        "--host",
+        "www.icra.in"
+      ],
+      "configs": [
+        {
+          "source": "runtime_identity_documents",
+          "target": "/run/trading-ai/runtime-identity.json"
+        },
+        {
+          "source": "runtime_store_sentinel",
+          "target": "/data/.trading_ai_runtime_identity.json"
+        }
+      ],
+      "cpus": 0.6,
+      "entrypoint": [
+        "python",
+        "-m",
+        "scrapper.commands.browser_rating_recovery"
+      ],
+      "environment": {
+        "DOCUMENT_MIN_FREE_BYTES": "107374182400",
+        "DOCUMENT_MIN_FREE_PERCENT": "15",
+        "DOCUMENT_REQUIRE_SENTINEL": "1",
+        "DOCUMENT_STORE_REQUIRE_CAPACITY_FILE": "1",
+        "SCRAPER_DB_PATH": "/data/scraper.db",
+        "SCRAPER_DOCUMENT_STORE_PATH": "/documents",
+        "SCRAPER_STORE_PATH": "/data",
+        "TRADING_AI_ENV": "production",
+        "TRADING_AI_RUNTIME_IDENTITY_FILE": "/run/trading-ai/runtime-identity.json"
+      },
+      "image": "trading-ai-c053-release@sha256:44da7074157fd2a946c41d064a91ef3f729ebd31ab3bcdf2aa09233c5a794b6b",
+      "mem_limit": "1536m",
+      "networks": {
+        "default": null
+      },
+      "profiles": [
+        "browser-recovery"
+      ],
+      "restart": "on-failure:3",
+      "stop_grace_period": "180s",
+      "volumes": [
+        {
+          "source": "scraper-data",
+          "target": "/data",
+          "type": "volume",
+          "volume": {}
+        },
+        {
+          "source": "${TRADING_AI_DOCUMENT_HOST_PATH}",
+          "target": "/documents",
+          "type": "volume",
+          "volume": {}
+        }
+      ]
+    },
+    "browser-rating-other": {
+      "command": [
+        "--run-id",
+        "${BROWSER_RATING_RUN_ID:?Select an explicitly reviewed browser run}",
+        "--apply",
+        "--operator-authorized",
+        "--host",
+        "bcrisp.in",
+        "--host",
+        "www.bcrisp.in",
+        "--host",
+        "www.acuite.in",
+        "--host",
+        "connect.acuite.in",
+        "--host",
+        "www.infomerics.com",
+        "--host",
+        "www.indiaratings.co.in",
+        "--host",
+        "www.brickworkratings.com",
+        "--host",
+        "www.careratings.com"
+      ],
+      "configs": [
+        {
+          "source": "runtime_identity_documents",
+          "target": "/run/trading-ai/runtime-identity.json"
+        },
+        {
+          "source": "runtime_store_sentinel",
+          "target": "/data/.trading_ai_runtime_identity.json"
+        }
+      ],
+      "cpus": 0.6,
+      "entrypoint": [
+        "python",
+        "-m",
+        "scrapper.commands.browser_rating_recovery"
+      ],
+      "environment": {
+        "DOCUMENT_MIN_FREE_BYTES": "107374182400",
+        "DOCUMENT_MIN_FREE_PERCENT": "15",
+        "DOCUMENT_REQUIRE_SENTINEL": "1",
+        "DOCUMENT_STORE_REQUIRE_CAPACITY_FILE": "1",
+        "SCRAPER_DB_PATH": "/data/scraper.db",
+        "SCRAPER_DOCUMENT_STORE_PATH": "/documents",
+        "SCRAPER_STORE_PATH": "/data",
+        "TRADING_AI_ENV": "production",
+        "TRADING_AI_RUNTIME_IDENTITY_FILE": "/run/trading-ai/runtime-identity.json"
+      },
+      "image": "trading-ai-c053-release@sha256:44da7074157fd2a946c41d064a91ef3f729ebd31ab3bcdf2aa09233c5a794b6b",
+      "mem_limit": "1536m",
+      "networks": {
+        "default": null
+      },
+      "profiles": [
+        "browser-recovery"
+      ],
+      "restart": "on-failure:3",
+      "stop_grace_period": "180s",
+      "volumes": [
+        {
+          "source": "scraper-data",
+          "target": "/data",
+          "type": "volume",
+          "volume": {}
+        },
+        {
+          "source": "${TRADING_AI_DOCUMENT_HOST_PATH}",
+          "target": "/documents",
+          "type": "volume",
+          "volume": {}
+        }
+      ]
+    }
+  },
+  "volumes": {
+    "scraper-data": {
+      "name": "trading-ai-legacy-cleanup-candidate_scraper-data"
+    }
+  }
+}

@@ -1,0 +1,145 @@
+--- a/compose.yml
++++ b/compose.yml
+@@ -73,29 +73,6 @@
+       - scraper-data:/data
+     configs: *core-runtime-configs
+ 
+-  market-cap-monitor:
+-    image: *runtime-image
+-    restart: unless-stopped
+-    entrypoint: ["/bin/sh", "-c"]
+-    command:
+-      - |
+-        while true; do
+-          python -m scrapper.commands.collection_scope --monitor --apply --limit 40
+-          sleep 3600
+-        done
+-    environment:
+-      <<: *production-environment
+-      SCRAPER_STORE_PATH: /data
+-      SCRAPER_DB_PATH: /data/scraper.db
+-      SCREENER_SESSION_FILE: /run/secrets/screener_session
+-      SCREENER_THROTTLE_SECONDS: "4"
+-      SCREENER_THROTTLE_JITTER: "1.5"
+-    volumes:
+-      - scraper-data:/data
+-    configs: *core-runtime-configs
+-    secrets:
+-      - screener_session
+-
+   # The manual services stay for one-off operator runs: a dataset whose endpoint
+   # has broken, or a file downloaded by hand. --file still overrides everything.
+   exchange-universe:
+@@ -161,30 +138,6 @@
+     secrets:
+       - screener_session
+     profiles: ["manual-compat"]
+-
+-  daemon:
+-    image: *runtime-image
+-    restart: unless-stopped
+-    entrypoint: ["/bin/sh", "-c"]
+-    command:
+-      - |
+-        echo "Starting continuous scraper daemon..."
+-        while true; do
+-          python -m scrapper.cli screener-company-worker --due --limit 10
+-          sleep 10
+-        done
+-    environment:
+-      <<: *production-environment
+-      SCRAPER_STORE_PATH: /data
+-      SCRAPER_DB_PATH: /data/scraper.db
+-      SCREENER_SESSION_FILE: /run/secrets/screener_session
+-      SCREENER_THROTTLE_SECONDS: "4"
+-      SCREENER_THROTTLE_JITTER: "1.5"
+-    volumes:
+-      - scraper-data:/data
+-    configs: *core-runtime-configs
+-    secrets:
+-      - screener_session
+ 
+   # Result acceptance creates event-backed requirements for presentation,
+   # transcript/concall, recording and credit-rating surfaces.  This reconciler
+--- a/compose.development.yml
++++ b/compose.development.yml
+@@ -40,13 +40,6 @@
+       - development-documents:/development-documents
+       - ./scrapper:/app/scrapper
+ 
+-  market-cap-monitor:
+-    <<: *development-service
+-    volumes: !override
+-      - development-data:/development-data
+-      - development-documents:/development-documents
+-      - ./scrapper:/app/scrapper
+-
+   exchange-universe:
+     <<: *development-service
+     volumes: !override
+@@ -71,13 +64,6 @@
+       - ./scrapper:/app/scrapper
+ 
+   worker:
+-    <<: *development-service
+-    volumes: !override
+-      - development-data:/development-data
+-      - development-documents:/development-documents
+-      - ./scrapper:/app/scrapper
+-
+-  daemon:
+     <<: *development-service
+     volumes: !override
+       - development-data:/development-data
+--- a/ops/host/scraper_lifecycle.sh
++++ b/ops/host/scraper_lifecycle.sh
+@@ -35,10 +35,9 @@
+ }
+ 
+ _find_containers() {
+-    # Usage: _find_containers <status>  — returns container IDs for scheduler+daemon
++    # Usage: _find_containers <status>  — returns container IDs for legacy scheduler
+     local filter_status="$1"
+     docker ps -q --filter "name=scheduler" --filter "status=$filter_status"
+-    docker ps -q --filter "name=daemon"    --filter "status=$filter_status"
+ }
+ 
+ case "${1:-}" in
+@@ -46,7 +45,7 @@
+         echo "⏸️  Pausing pipeline..."
+         CONTAINERS=$(_find_containers running)
+         if [ -z "$CONTAINERS" ]; then
+-            echo "⚠️  No running scheduler/daemon containers found."
++            echo "⚠️  No running legacy scheduler containers found."
+             exit 1
+         fi
+         docker pause $CONTAINERS
+@@ -57,7 +56,7 @@
+         echo "▶️  Resuming pipeline..."
+         CONTAINERS=$(_find_containers paused)
+         if [ -z "$CONTAINERS" ]; then
+-            echo "⚠️  No paused scheduler/daemon containers found."
++            echo "⚠️  No paused legacy scheduler containers found."
+             exit 1
+         fi
+         docker unpause $CONTAINERS
+@@ -66,15 +65,14 @@
+         ;;
+     stop)
+         echo "⏹️  Stopping pipeline..."
+-        docker compose stop scheduler daemon
+-        echo "✅ Pipeline stopped. Use './scraper start' to bring it back up."
++        docker compose stop scheduler
++        echo "Stopped the legacy scheduler. The bounded LaunchAgent is managed separately."
+         exit 0
+         ;;
+     start)
+         echo "🚀 Starting pipeline..."
+-        docker compose up -d scheduler daemon
+-        echo "✅ Pipeline started."
+-        exit 0
++        echo "Legacy continuous startup has been retired. Use ./scraper wake after the approved lifecycle migration."
++        exit 2
+         ;;
+     shutdown)
+         # Graceful stop of every running container in the project, ahead of a

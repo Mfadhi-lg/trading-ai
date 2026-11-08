@@ -1,4 +1,4 @@
-# Finite operator-directed rating recovery, seeded by the 2026-10-01 request.
+# Reusable finite operator-directed rating recovery. Explicit run selection required.
 # These jobs exit when the durable run is drained. They do not seed new links.
 services:
   browser-rating-crisil:
@@ -7,7 +7,7 @@ services:
       service: document-download-worker
     profiles: [browser-recovery]
     entrypoint: [python, -m, scrapper.commands.browser_rating_recovery]
-    command: [--run-id, browser-ratings-20261001, --apply, --operator-authorized, --host, www.crisil.com, --host, www.crisilratings.com, --throttle-seconds, "20"]
+    command: [--run-id, "${BROWSER_RATING_RUN_ID:?Select an explicitly reviewed browser run}", --apply, --operator-authorized, --host, www.crisil.com, --host, www.crisilratings.com, --throttle-seconds, "20"]
     restart: "on-failure:3"
     cpus: 0.6
     mem_limit: 1536m
@@ -19,7 +19,7 @@ services:
       service: document-download-worker
     profiles: [browser-recovery]
     entrypoint: [python, -m, scrapper.commands.browser_rating_recovery]
-    command: [--run-id, browser-ratings-20261001, --apply, --operator-authorized, --host, www.icra.in]
+    command: [--run-id, "${BROWSER_RATING_RUN_ID:?Select an explicitly reviewed browser run}", --apply, --operator-authorized, --host, www.icra.in]
     restart: "on-failure:3"
     cpus: 0.6
     mem_limit: 1536m
@@ -31,7 +31,7 @@ services:
       service: document-download-worker
     profiles: [browser-recovery]
     entrypoint: [python, -m, scrapper.commands.browser_rating_recovery]
-    command: [--run-id, browser-ratings-20261001, --apply, --operator-authorized, --host, bcrisp.in, --host, www.bcrisp.in, --host, www.acuite.in, --host, connect.acuite.in, --host, www.infomerics.com, --host, www.indiaratings.co.in, --host, www.brickworkratings.com, --host, www.careratings.com]
+    command: [--run-id, "${BROWSER_RATING_RUN_ID:?Select an explicitly reviewed browser run}", --apply, --operator-authorized, --host, bcrisp.in, --host, www.bcrisp.in, --host, www.acuite.in, --host, connect.acuite.in, --host, www.infomerics.com, --host, www.indiaratings.co.in, --host, www.brickworkratings.com, --host, www.careratings.com]
     restart: "on-failure:3"
     cpus: 0.6
     mem_limit: 1536m
@@ -43,7 +43,7 @@ services:
       service: document-download-worker
     profiles: [browser-recovery]
     entrypoint: [python, -m, scrapper.commands.browser_rating_recovery]
-    command: [--run-id, browser-ratings-20261001, --process, --follow, --operator-authorized]
+    command: [--run-id, "${BROWSER_RATING_RUN_ID:?Select an explicitly reviewed browser run}", --process, --follow, --operator-authorized]
     restart: "on-failure:3"
     cpus: 0.6
     mem_limit: 1536m

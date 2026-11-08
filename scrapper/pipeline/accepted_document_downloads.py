@@ -9,7 +9,7 @@ from typing import Any
 from ..db.document_download_queue_repo import materialize_download_queue
 from ..db.repo import utc_now
 from .credit_rating_downloads import enqueue_credit_ratings_for_accepted_parse
-from .promote_document_links import promote_document_links
+from ..documents.discovery.promotion import promote_document_links
 
 
 # Screener's concall notes/AI summaries are deliberately absent: they are a
@@ -198,6 +198,7 @@ def enqueue_concall_documents_for_accepted_parse(
         scope_id=AUTOMATIC_CONCALL_SCOPE_ID,
         artifact_ids=artifact_ids,
         include_queue_counts=include_queue_counts,
+        reuse_existing_jobs=True,
     )
     return {
         "parse_id": parse_id,
@@ -262,3 +263,42 @@ def enqueue_documents_for_all_accepted_parses(
         "created_concall_job_count": created_concall,
         "created_credit_rating_job_count": created_credit_rating,
     }
+
+
+def enqueue_discovered_documents(conn, *, epoch, now, limit=2, historical_limit=0):
+    """Repair bounded primary/IR discoveries lacking any canonical URL job.
+
+    No manifest, new identity, terminal requeue, rating or recording acquisition.
+    A URL already queued in another scope is reused, rather than duplicated.
+    """
+    from ..documents.priority import bounded_lanes, current_period
+    bounded_lanes([],limit=limit,historical_limit=historical_limit,epoch=epoch,now=now)
+    common='''SELECT DISTINCT a.artifact_id,a.company_id,a.first_observed_at_utc,a.period_end
+        FROM document_artifacts a JOIN artifact_sources s USING(artifact_id)
+        WHERE a.artifact_type IN ('presentation','transcript') AND s.availability_status='available'
+          AND NOT EXISTS (SELECT 1 FROM artifact_contents c WHERE c.artifact_id=a.artifact_id)
+          AND NOT EXISTS (SELECT 1 FROM artifact_download_queue q
+              WHERE q.artifact_id=a.artifact_id AND q.requested_url=s.document_url)
+          AND EXISTS (SELECT 1 FROM screener_collection_scope sc
+              WHERE sc.company_id=a.company_id AND sc.eligibility='eligible')'''
+    rows=[]
+    for predicate,args,budget in (
+        ('a.first_observed_at_utc>=? AND a.period_end=?',(epoch,current_period(now)),limit),
+        ('a.first_observed_at_utc>=? AND (a.period_end IS NULL OR a.period_end<>?)',(epoch,current_period(now)),limit),
+        ('a.first_observed_at_utc<?',(epoch,),historical_limit),
+    ):
+        if budget:
+            rows.extend(dict(r) for r in conn.execute(common+' AND '+predicate+
+                ' ORDER BY a.first_observed_at_utc,a.artifact_id LIMIT ?',(*args,budget)))
+    selected=bounded_lanes(rows,limit=limit,historical_limit=historical_limit,epoch=epoch,now=now)
+    results=[]
+    for row,lane in selected:
+        aid=row['artifact_id'];cid=row['company_id']
+        # Use the existing incremental system-owned scope. Preserve aliases,
+        # source/page hashes and publisher claims in the canonical repositories.
+        _register_automatic_scope(conn,company_id=cid,company_label=f'company:{cid}',artifact_ids=[aid])
+        result=materialize_download_queue(conn,scope_id=AUTOMATIC_CONCALL_SCOPE_ID,
+            artifact_ids=[aid],priority=lane*10,created_at_utc=now,include_queue_counts=False,
+            reuse_existing_jobs=True)
+        results.append({'artifact_id':aid,'priority':lane,**result})
+    return results

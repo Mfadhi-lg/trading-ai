@@ -1,0 +1,40 @@
+#!/usr/bin/env python3
+"""Update this project's private Screener session without echoing the token."""
+import argparse
+import getpass
+import os
+from pathlib import Path
+import sys
+import tempfile
+
+
+def main():
+    argparse.ArgumentParser(description=__doc__).parse_args()
+    if not sys.stdin.isatty():
+        raise SystemExit("Run ./screener-token directly in your terminal.")
+    try:
+        token = getpass.getpass("Paste Screener sessionid (hidden), then press Enter: ").strip()
+    except (EOFError, KeyboardInterrupt):
+        raise SystemExit("\nCancelled; session unchanged.")
+    token = token.removeprefix("sessionid=")
+    if not token or any(char.isspace() or char == ";" for char in token):
+        raise SystemExit("Paste only the sessionid value; session unchanged.")
+    root = Path(__file__).resolve().parent
+    target = root / ".screener_session"
+    if target.is_symlink():
+        raise SystemExit("Session file is a symlink; session unchanged.")
+    fd, name = tempfile.mkstemp(prefix=".screener-session-update-", dir=root)
+    temporary = Path(name)
+    try:
+        with os.fdopen(fd, "w") as handle:
+            handle.write(token + "\n")
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temporary, target)
+    finally:
+        temporary.unlink(missing_ok=True)
+    print("Screener session updated. No ingestion started.")
+
+
+if __name__ == "__main__":
+    main()

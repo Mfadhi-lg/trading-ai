@@ -182,7 +182,7 @@ def run_period_coverage(*, period, symbols=(), repair=False, refresh=False, limi
                     finish_run(conn, run_id, 'error')
                     raise
         if refresh:
-            from ..pipeline.screener_vertical import scrape_screener_company_path
+            from ..workflows.screener.ingest import scrape_screener_company_path
             from ..core.http import ScreenerHostClient
             from ..sources.screener.urls import company_url
             from urllib.parse import urlsplit

@@ -1,0 +1,4 @@
+#!/bin/bash
+# Live terminal monitor for the current bounded acquisition workflow.
+cd "$(dirname "$0")"
+exec bash ops/host/scraper_lifecycle.sh monitor "$@"

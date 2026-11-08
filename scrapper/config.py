@@ -168,7 +168,7 @@ SCREENER_MIN_MARKET_CAP_CRORE = float(
 # callers importing it, but its value must never select a consolidated URL.
 PREFER_CONSOLIDATED = False
 PARSER_NAME = "screener-company"
-PARSER_VERSION = "1.1.2"
+PARSER_VERSION = "1.1.3"
 PEER_PARSER_NAME = "screener-peer-table"
 PEER_PARSER_VERSION = "0.9.0"
 RESULT_SCREEN_PARSER_NAME = "screener-result-screen"

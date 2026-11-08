@@ -96,7 +96,7 @@ def assert_writable_targets(*, db: Path, store: Path, documents: Path,
             value = _read_json(marker)
             roles = value.get("roles", [value.get("role")])
             if ((value.get("environment"), value.get("path"), value.get("release_id")) !=
-                    ("production", str(core[role]), identity["release_id"]) or role not in roles):
+                    ("production", str(core[role]), identity.get("target_release_ids", {}).get(role, identity["release_id"])) or role not in roles):
                 raise RuntimeError(f"Production sentinel mismatch: {marker}")
     else:
         if identity and identity.get("environment") != environment:

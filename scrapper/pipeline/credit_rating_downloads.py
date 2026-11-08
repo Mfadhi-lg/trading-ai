@@ -2,10 +2,16 @@
 
 from __future__ import annotations
 
+from ..db.document_work_claims import OwnershipLost
+from ..operations.workers.renewal import queue_renewal
+
+from scrapper.core.attempts import claim_attempt, retry_remaining, retry_delay, BROWSER_MAX_INVOCATIONS
+
 import json
 import os
 import socket
 import sqlite3
+import secrets
 import time
 from collections import Counter
 from dataclasses import replace
@@ -48,6 +54,7 @@ def queue_credit_rating_downloads(
         placeholders = ",".join("?" for _ in selected_ids)
         artifact_filter = f" AND artifact.artifact_id IN ({placeholders})"
         parameters.extend(selected_ids)
+    maintenance_filter='' if artifact_ids is None else ' AND artifact_id IN ('+','.join(str(x) for x in selected_ids)+')'
     before = conn.total_changes
     with conn:
         conn.execute(
@@ -71,8 +78,8 @@ def queue_credit_rating_downloads(
         )
         created = conn.total_changes - before
         for row in conn.execute(
-            """SELECT download_job_id, requested_url
-                 FROM credit_rating_download_queue WHERE target_host=''"""
+            f"""SELECT download_job_id, requested_url
+                 FROM credit_rating_download_queue WHERE target_host='' {maintenance_filter}"""
         ).fetchall():
             host = (urlsplit(row["requested_url"]).hostname or "").lower()
             conn.execute(
@@ -80,24 +87,24 @@ def queue_credit_rating_downloads(
                 (host, int(row["download_job_id"])),
             )
         conn.execute(
-            """UPDATE credit_rating_download_queue
+            f"""UPDATE credit_rating_download_queue
                   SET status='SUCCEEDED', last_result_status='CONTENT_ALREADY_PRESENT',
                       next_attempt_at_utc=NULL, lease_owner=NULL,
                       lease_expires_at_utc=NULL, updated_at_utc=?
-                WHERE status <> 'SUCCEEDED' AND EXISTS (
+                WHERE status <> 'SUCCEEDED' {maintenance_filter} AND EXISTS (
                   SELECT 1 FROM artifact_contents AS content
                    WHERE content.artifact_id=credit_rating_download_queue.artifact_id
                 )""",
             (created_at_utc,),
         )
         conn.execute(
-            """UPDATE credit_rating_download_queue
+            f"""UPDATE credit_rating_download_queue
                   SET status='SKIPPED_POLICY', next_attempt_at_utc=NULL,
                       lease_owner=NULL, lease_expires_at_utc=NULL,
                       last_result_status='PUBLISHER_TERMS_BLOCK_AUTOMATION',
                       last_error='Automated acquisition disabled by reviewed publisher terms',
                       updated_at_utc=?
-                WHERE EXISTS (
+                WHERE 1=1 {maintenance_filter} AND EXISTS (
                   SELECT 1 FROM credit_rating_host_policy AS policy
                    WHERE policy.automation_status='BLOCKED_TERMS'
                      AND (
@@ -166,8 +173,8 @@ def enqueue_credit_ratings_for_accepted_parse(
 ) -> dict[str, Any]:
     """Promote and enqueue only links from the just-accepted company parse."""
 
-    from ..db.document_recovery_repo import build_recovery_targets
-    from .promote_document_links import promote_document_links
+    from ..db.documents.recovery.targets import build_recovery_targets
+    from ..documents.discovery.promotion import promote_document_links
 
     promotion = promote_document_links(
         conn, document_type="credit_rating", parse_id=parse_id
@@ -197,16 +204,22 @@ def _claim_job(
     now: str,
     lease_seconds: int = 600,
     allowed_hosts: tuple[str, ...] = (),
+    allowed_job_ids: tuple[int, ...] | None = None,
 ) -> sqlite3.Row | None:
+    if allowed_job_ids is not None:
+        if not allowed_job_ids: return None
+        if len(allowed_job_ids)>2 or any(type(x) is not int or x<=0 for x in allowed_job_ids):
+            raise ValueError('Automatic rating claims require at most two positive IDs')
+    selection='' if allowed_job_ids is None else ' AND download_job_id IN ('+','.join('?' for _ in allowed_job_ids)+')'
     conn.execute("BEGIN IMMEDIATE")
     try:
         # A dead worker's lease is safely reclaimable.
         conn.execute(
-            """UPDATE credit_rating_download_queue
+            f"""UPDATE credit_rating_download_queue
                   SET status='RETRYABLE_FAILURE', lease_owner=NULL,
                       lease_expires_at_utc=NULL, updated_at_utc=?
-                WHERE status='LEASED' AND lease_expires_at_utc < ?""",
-            (now, now),
+                WHERE status='LEASED' AND lease_expires_at_utc < ? {selection}""",
+            (now, now, *(allowed_job_ids or ())),
         )
         host_filter = ""
         parameters: list[Any] = [now]
@@ -214,6 +227,9 @@ def _claim_job(
             placeholders = ",".join("?" for _ in allowed_hosts)
             host_filter = f" AND target_host IN ({placeholders})"
             parameters.extend(allowed_hosts)
+        if allowed_job_ids is not None:
+            host_filter += selection
+            parameters.extend(allowed_job_ids)
         parameters.append(now)
         row = conn.execute(
             f"""SELECT * FROM credit_rating_download_queue
@@ -257,15 +273,16 @@ def _claim_job(
         conn.execute(
             """UPDATE credit_rating_download_queue
                   SET status='LEASED', attempt_count=attempt_count+1,
-                      lease_owner=?, lease_expires_at_utc=?, updated_at_utc=?
+                      lease_owner=?, lease_expires_at_utc=?, updated_at_utc=?, claim_token=?
                 WHERE download_job_id=?""",
-            (worker, _iso_after(lease_seconds), now, int(row["download_job_id"])),
+            (worker, _iso_after(lease_seconds), now, secrets.token_hex(16), int(row["download_job_id"])),
         )
-        conn.commit()
-        return conn.execute(
+        claimed = conn.execute(
             "SELECT * FROM credit_rating_download_queue WHERE download_job_id=?",
             (int(row["download_job_id"]),),
         ).fetchone()
+        conn.commit()
+        return claimed
     except Exception:
         conn.rollback()
         raise
@@ -275,6 +292,9 @@ def _finish_job(
     conn: sqlite3.Connection,
     *,
     job_id: int,
+    worker: str,
+    claim_attempt_count: int,
+    claim_token: str,
     status: str,
     result_status: str,
     error: str | None,
@@ -282,12 +302,13 @@ def _finish_job(
 ) -> None:
     now = utc_now()
     with conn:
-        conn.execute(
+        cursor = conn.execute(
             """UPDATE credit_rating_download_queue
                   SET status=?, next_attempt_at_utc=?, lease_owner=NULL,
                       lease_expires_at_utc=NULL, last_result_status=?,
                       last_error=?, updated_at_utc=?
-                WHERE download_job_id=?""",
+                WHERE download_job_id=? AND status='LEASED'
+                  AND lease_owner=? AND attempt_count=? AND claim_token=?""",
             (
                 status,
                 _iso_after(retry_seconds) if retry_seconds is not None else None,
@@ -295,8 +316,13 @@ def _finish_job(
                 error,
                 now,
                 job_id,
+                worker,
+                claim_attempt_count,
+                claim_token,
             ),
         )
+        if cursor.rowcount != 1:
+            raise RuntimeError("Rating job lease is no longer owned by this claim")
 
 
 def _source_ids(conn: sqlite3.Connection, artifact_id: int, url: str) -> tuple[int, ...]:
@@ -433,12 +459,24 @@ def run_credit_rating_download_worker(
     throttle_seconds: float = THROTTLE_SECONDS,
     allowed_hosts: Iterable[str] = (),
     sleep: Callable[[float], None] = time.sleep,
+    lifecycle: Any = None,
+    shared_permits: bool = False,
+    allowed_job_ids: tuple[int, ...] | None = None,
+    browser_request_limit: int = 12,
 ) -> dict[str, Any]:
     """Claim and resolve a bounded batch; another invocation resumes safely."""
 
+    from ..operations.workers.host_requests import HostSession, AdministrativeDefer
+    from ..db.host_request_defer import defer_job, require_shared_schema
+
     if limit < 1:
         raise ValueError("limit must be positive")
+    if shared_permits:
+        require_shared_schema(conn)
     health = assert_document_store_ready(document_store)
+    if lifecycle is not None and not lifecycle.is_set():
+        from scrapper.operations.workers.health import bind_role_health
+        bind_role_health(lifecycle, conn, "rating", dependencies={"document_store": lambda: bool(assert_document_store_ready(document_store))})
     policy = policy or DownloadPolicy()
     worker = worker or f"{socket.gethostname()}:{os.getpid()}"
     hosts = tuple(sorted({host.strip().lower() for host in allowed_hosts if host.strip()}))
@@ -458,61 +496,116 @@ def run_credit_rating_download_worker(
     outcomes: Counter[str] = Counter()
     processed = 0
     for position in range(limit):
+        if lifecycle is not None:
+            lifecycle.beat("READY")
+            if lifecycle.is_set():
+                break
         job = _claim_job(
-            conn, worker=worker, now=utc_now(), allowed_hosts=hosts
+            conn, worker=worker, now=utc_now(), allowed_hosts=hosts, allowed_job_ids=allowed_job_ids
         )
         if job is None:
+            if lifecycle is not None:
+                lifecycle.beat("IDLE")
             break
-        started = utc_now()
-        try:
-            with requests.Session() as session:
-                resolution = resolve_credit_rating(
-                    job["requested_url"], policy=policy, session=session
+        if lifecycle is not None:
+            lifecycle.claimed(int(job["download_job_id"]))
+        with queue_renewal(conn, "rating", job, now=utc_now) as renewal:
+            started = utc_now()
+            shared_session = None
+            from ..documents.rating_browser import uses_rating_browser, resolve_rating_browser
+            browser_job = shared_permits and uses_rating_browser(job['requested_url'])
+            invocation_limit = 3 if allowed_job_ids is not None else BROWSER_MAX_INVOCATIONS if browser_job else None
+            try:
+                if shared_permits:
+                    shared_session = HostSession(conn, mode="rating", owner=worker,
+                        policy=policy, check=lambda: renewal.check(conn))
+                with shared_session if shared_session is not None else requests.Session() as session:
+                    if browser_job:
+                        resolution = resolve_rating_browser(conn, job, session=session, policy=policy,
+                                                            request_limit=browser_request_limit)
+                    else:
+                        resolution = resolve_credit_rating(
+                            job["requested_url"], policy=policy, session=session,
+                            **({"browser_fallback": False} if shared_permits else {}),
+                            **({"max_requests":2} if allowed_job_ids is not None else {})
+                        )
+                renewal.check(conn)
+                if shared_session is not None and resolution.status == "SKIPPED_POLICY" and not shared_session.dispatched:
+                    from ..db.host_permits import Decision
+                    raise AdministrativeDefer(Decision("PUBLISHER_POLICY_BLOCKED", retry_at=time.time()+3600))
+                content_id = _persist_resolution(
+                    conn, job=job, resolution=resolution, started_at_utc=started,
+                    snapshot_root=snapshot_root, policy=policy,
                 )
-            content_id = _persist_resolution(
-                conn, job=job, resolution=resolution, started_at_utc=started,
-                snapshot_root=snapshot_root, policy=policy,
-            )
-            blocked_status = _host_block_status(resolution)
-            if content_id is not None:
-                queue_status = "SUCCEEDED"
-                retry = None
-            elif resolution.status == "SKIPPED_POLICY":
-                queue_status = "SKIPPED_POLICY"
-                retry = None
-            elif blocked_status is not None:
-                _record_host_block(
-                    conn, host=job["target_host"], http_status=blocked_status,
-                    result_status=resolution.status,
+                blocked_status = _host_block_status(resolution)
+                if content_id is not None:
+                    queue_status = "SUCCEEDED"
+                    retry = None
+                elif resolution.status == "SKIPPED_POLICY":
+                    queue_status = "SKIPPED_POLICY"
+                    retry = None
+                elif blocked_status is not None:
+                    _record_host_block(
+                        conn, host=job["target_host"], http_status=blocked_status,
+                        result_status=resolution.status,
+                    )
+                    queue_status = "RETRYABLE_FAILURE"
+                    retry = 24 * 60 * 60 if blocked_status in {401, 403} else 6 * 60 * 60
+                elif resolution.status == "INTERACTION_REQUIRED":
+                    queue_status = "INTERACTION_REQUIRED"
+                    retry = None
+                elif resolution.status == "TERMINAL_INVALID_CONTENT":
+                    queue_status = "TERMINAL_FAILURE"
+                    retry = None
+                else:
+                    queue_status = "RETRYABLE_FAILURE"
+                    retry = retry_delay(claim_attempt(job, "rating"), offset=1, maximum_seconds=57600)
+                renewal.check(conn)
+                if queue_status=='RETRYABLE_FAILURE' and not retry_remaining(claim_attempt(job,'rating'), invocation_limit):
+                    queue_status='TERMINAL_FAILURE';retry=None
+                _finish_job(
+                    conn, job_id=int(job["download_job_id"]), worker=worker,
+                    claim_attempt_count=claim_attempt(job, "rating"), claim_token=job["claim_token"], status=queue_status,
+                    result_status=resolution.status, error=resolution.error,
+                    retry_seconds=retry,
                 )
-                queue_status = "RETRYABLE_FAILURE"
-                retry = 24 * 60 * 60 if blocked_status in {401, 403} else 6 * 60 * 60
-            elif resolution.status == "INTERACTION_REQUIRED":
-                queue_status = "INTERACTION_REQUIRED"
-                retry = None
-            elif resolution.status == "TERMINAL_INVALID_CONTENT":
-                queue_status = "TERMINAL_FAILURE"
-                retry = None
-            else:
-                queue_status = "RETRYABLE_FAILURE"
-                retry = min(86400, 900 * (2 ** min(int(job["attempt_count"]), 6)))
-            _finish_job(
-                conn, job_id=int(job["download_job_id"]), status=queue_status,
-                result_status=resolution.status, error=resolution.error,
-                retry_seconds=retry,
-            )
-            outcomes[resolution.status] += 1
-        except Exception as exc:
-            retry = min(86400, 900 * (2 ** min(int(job["attempt_count"]), 6)))
-            _finish_job(
-                conn, job_id=int(job["download_job_id"]), status="RETRYABLE_FAILURE",
-                result_status="WORKER_EXCEPTION", error=f"{type(exc).__name__}: {exc}",
-                retry_seconds=retry,
-            )
-            outcomes["WORKER_EXCEPTION"] += 1
+                outcomes[resolution.status] += 1
+            except AdministrativeDefer as exc:
+                renewal.check(conn)
+                if shared_session.dispatched:
+                    from ..documents.credit_rating_resolver import CreditRatingResolution, ResolutionStep
+                    deferred_step = ResolutionStep("shared_host_defer", "HTTP", job["requested_url"],
+                        shared_session.deferred_result(job["requested_url"], exc.reason), False,
+                        {"permit_wait_reason": exc.reason, "dispatched_requests": shared_session.dispatched})
+                    _persist_resolution(conn, job=job,
+                        resolution=CreditRatingResolution("SHARED_HOST_DEFERRED",
+                            job["requested_url"], None, (*exc.steps, deferred_step), exc.reason),
+                        started_at_utc=started, snapshot_root=snapshot_root, policy=policy)
+                defer_job(conn, "rating", job, now=utc_now(), retry_at=exc.retry_at,
+                    dispatched=bool(shared_session.dispatched), reason=exc.reason)
+                outcomes[exc.reason] += 1
+            except OwnershipLost:
+                raise
+            except Exception as exc:
+                if isinstance(exc, sqlite3.DatabaseError) or (isinstance(exc, OSError) and not isinstance(exc, requests.RequestException)):
+                    raise
+                retry = retry_delay(claim_attempt(job, "rating"), offset=1, maximum_seconds=57600)
+                renewal.check(conn)
+                _finish_job(
+                    conn, job_id=int(job["download_job_id"]), worker=worker,
+                    claim_attempt_count=claim_attempt(job, "rating"), claim_token=job["claim_token"], status=("TERMINAL_FAILURE" if not retry_remaining(claim_attempt(job,"rating"), invocation_limit) else "RETRYABLE_FAILURE"),
+                    result_status="WORKER_EXCEPTION", error=f"{type(exc).__name__}: {exc}",
+                    retry_seconds=retry,
+                )
+                outcomes["WORKER_EXCEPTION"] += 1
         processed += 1
+        if lifecycle is not None:
+            lifecycle.finished()
         if position + 1 < limit and throttle_seconds > 0:
-            sleep(throttle_seconds)
+            if lifecycle is None:
+                sleep(throttle_seconds)
+            else:
+                lifecycle.wait(throttle_seconds, state="THROTTLED")
     queue_counts = {
         row["status"]: int(row["count"])
         for row in conn.execute(

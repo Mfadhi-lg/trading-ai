@@ -1,0 +1,5 @@
+{
+  "compose.yml": "0f7a3d81fc5ab389d8c243c9b7ee7dd79dbae544ec31e0f023464ac12265a5f4",
+  "compose.development.yml": "eb04a579611d88bfe9af121d82cdc7fd0f19090f5b4dc22ed4bde7cab51feec5",
+  "ops/host/scraper_lifecycle.sh": "99e657a19f3a5272b79ea721dbc3cc93a40a2f0f0ae78cd0676794875ecab09d"
+}

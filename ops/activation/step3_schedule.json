@@ -1,0 +1,35 @@
+{
+  "timezone": "Asia/Kolkata",
+  "financial_enabled": true,
+  "financial_minutes": "5,15,25,35,45,55",
+  "financial_max_companies": 10,
+  "cap_enabled": true,
+  "cap_minute": 0,
+  "cap_hours": "0-8,10-17,19-23",
+  "cap_max_checks": 40,
+  "runtime_deadline_seconds": 600,
+  "exchange_reservation_seconds": 780,
+  "calendar_catchup": false,
+  "cap_selection": "oldest due scope first; no historical-financial priority gate",
+  "historical_financial_claims": true,
+  "initial_overdue_reference": 4366,
+  "cap_canary_evidence": "artifacts/step3-financial-readiness/prepared-scope-monitor/outcome.json",
+  "financial_canary_evidence": "artifacts/step3-financial-retry-2026-10-09/verification.json",
+  "historical_max_per_slot": 1,
+  "historical_max_per_day": 4,
+  "historical_slots_ist": [
+    "00:45",
+    "06:45",
+    "12:45",
+    "18:45"
+  ],
+  "priority_activated_at": "2026-10-09T00:00:00+00:00",
+  "priority_policy": "three-priority-v1",
+  "throughput_authorization": "7 November user: at least 2x download throughput; 30 paired documents per existing companion slot",
+  "paired_downloads_enabled": true,
+  "paired_download_minutes": [
+    15,
+    45
+  ],
+  "paired_download_limit": 30
+}

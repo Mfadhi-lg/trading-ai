@@ -285,9 +285,8 @@ def _parse_bse_integrated(
     for row in table.rows:
         try:
             period_end = _bse_quarter_end(row.value("quarter_code"))
-            if result_period is not None and period_from_date(period_end) != result_period:
-                excluded += 1
-                continue
+            # Query period is a priority hint. Source fiscal-quarter metadata
+            # remains authoritative for newly published late/revised filings.
             scopes: list[str] = []
             if clean_text(row.value("standalone_content")):
                 scopes.append("standalone")
@@ -316,8 +315,10 @@ def _parse_bse_integrated(
                 seen[filing.filing_key] = row.row_position
                 filings.append(filing)
         except SourceRowError as exc:
-            if result_period is not None and exc.reason_code == "unsupported_period_code":
-                excluded += 1
+            nonquarter=re.fullmatch(r"(?:[JSDM]C|[SM]H|[SD]N)(\d{4})-(\d{4})",clean_text(row.value("quarter_code")).upper())
+            if (exc.reason_code == "unsupported_period_code" and nonquarter
+                    and int(nonquarter[2])==int(nonquarter[1])+1):
+                excluded += 1  # Explicit non-quarterly records, never converted into quarters.
                 continue
             rejected.append(
                 RejectedRow(row.row_position, exc.reason_code, exc.detail, row.cells)
@@ -376,9 +377,8 @@ def parse_result_filings(
         except SourceRowError as exc:
             rejected.append(RejectedRow(row.row_position, exc.reason_code, exc.detail, row.cells))
             continue
-        if result_period is not None and filing.result_period != result_period:
-            excluded += 1
-            continue
+        # Query priority is not an acceptance filter on either exchange.
+        # Preserve actual source periods and publication times for late/revised work.
         previous = seen.get(filing.filing_key)
         if previous is not None:
             rejected.append(

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>PATH</key>
+		<string>/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+		<key>PYTHONDONTWRITEBYTECODE</key>
+		<string>1</string>
+		<key>PYTHONPATH</key>
+		<string>/Users/mohamedfadhi/.cache/uv/archive-v0/4GTYw8_mNnscx89r/lib/python3.13/site-packages</string>
+	</dict>
+	<key>Label</key>
+	<string>com.trading-ai.automatic-acquisition</string>
+	<key>LimitLoadToSessionType</key>
+	<string>Aqua</string>
+	<key>ProcessType</key>
+	<string>Interactive</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/Users/mohamedfadhi/.cache/uv/archive-v0/-WyGD_mChAFVX11K/bin/python</string>
+		<string>/Users/mohamedfadhi/Fadhi/trading-ai/ops/activation/automatic_acquisition.py</string>
+		<string>--tick</string>
+	</array>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>StandardErrorPath</key>
+	<string>/Users/mohamedfadhi/Fadhi/trading-ai/artifacts/automatic-acquisition/launchd.err</string>
+	<key>StandardOutPath</key>
+	<string>/Users/mohamedfadhi/Fadhi/trading-ai/artifacts/automatic-acquisition/launchd.log</string>
+	<key>StartInterval</key>
+	<integer>60</integer>
+	<key>WorkingDirectory</key>
+	<string>/Users/mohamedfadhi/Fadhi/trading-ai</string>
+</dict>
+</plist>

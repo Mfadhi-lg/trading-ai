@@ -3,22 +3,79 @@ OLD/
 
 # Python
 __pycache__/
+.pytest_cache/
 *.py[cod]
 *.egg-info/
 .venv/
 venv/
-
 # Scraped data and local stores
 scrapper/store/
 *.db
 *.sqlite
 *.sqlite3
 exchange-inbox/
-
 # Secrets
 .screener_session
+.screener-session-update-*
+.screener_csrf
 .env
 .env.*
-
 # macOS
 .DS_Store
+# Recorded by ./scraper shutdown so ./scraper wake can restore the same set
+.scraper_shutdown_state
+# Local recovery downloads, browser environments and runtime state
+artifacts/icra-download-test/
+*.pid
+# C26.4 retained generated audit export
+/artifacts/b2-discovery-2026-10-01/B2_EXISTING_BACKUP_EXPORT.jsonl
+# Share snapshots belong outside their own active checkout.
+/trading-ai-share-*.zip
+# Operational recovery: credentials, live state, stores and generated archives.
+# Existing tracked copies/history still require a separate audit; ignores do
+# not remove them and must never be treated as evidence that a push is safe.
+*.db-wal
+*.db-shm
+*.db-journal
+*.sqlite-wal
+*.sqlite-shm
+*.sqlite3-wal
+*.sqlite3-shm
+.scraper_shutdown_state*
+ops/activation/.*.lock
+artifacts/operational-recovery/
+artifacts/automatic-acquisition/
+artifacts/acquisition-readiness/operations/
+artifacts/phase4/
+artifacts/phase5/
+sample_files/
+sample_files-2/
+sample_files-*.zip
+trading-ai-code-review-*.zip
+*.oci.tar
+cookies*.json
+storage_state*.json
+playwright/.auth/
+*.log
+*.pdf
+*.zip
+*.tar
+*.tar.gz
+/github-source-candidate-20261023/
+
+# Keep generated data out of this source snapshot.
+/artifacts/
+/docs/github-readiness/
+/docs/audits/acquisition-blackbox/
+/docs/acquisition-readiness/baselines/
+/docs/cleanup/baselines/*
+!/docs/cleanup/baselines/C03.1/
+!/docs/cleanup/baselines/C22.3/
+/docs/cleanup/baselines/C03.1/*
+!/docs/cleanup/baselines/C03.1/A2.tar.gz
+/docs/cleanup/baselines/C22.3/*
+!/docs/cleanup/baselines/C22.3/migration-manifest.json
+
+# Required checked-in test inputs.
+!/scrapper/tests/fixtures/**/*.pdf
+!/scrapper/tests/fixtures/**/*.zip

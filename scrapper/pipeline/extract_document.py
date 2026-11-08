@@ -10,7 +10,9 @@ from typing import Any, Callable
 from ..config import DB_PATH, DOCUMENT_EXTRACTION_EXPORTS
 from ..db.database import connect, init_db
 from ..db.document_extraction_repo import extraction_payload, persist_extraction
-from ..db.document_recovery_repo import (
+from ..db.document_work_claims import claim_extraction, release_extraction, assert_extraction_owned
+from ..operations.workers.renewal import extraction_renewal
+from ..db.documents.recovery.reconciliation import (
     classify_direct_rating_evidence,
     reconcile_recovery_for_source,
 )
@@ -85,18 +87,7 @@ def _default_output_path(artifact_id: int, content_id: int) -> Path:
     return DOCUMENT_EXTRACTION_EXPORTS / str(artifact_id) / f"content-{content_id}.json"
 
 
-def extract_document(
-    *,
-    artifact_id: int,
-    content_id: int | None = None,
-    db_path: Path = DB_PATH,
-    output: Path | None = None,
-    ocr_engine: OcrEngine | None = None,
-    now_utc: Callable[[], str] = utc_now,
-) -> dict[str, Any]:
-    """Extract a downloaded document without any network access."""
-
-    engine = ocr_engine or TesseractOcr()
+def processing_version(engine):
     engine_version = engine.version
     engine_options = (
         engine.options() if callable(getattr(engine, "options", None)) else {
@@ -107,13 +98,42 @@ def extract_document(
         "ocr": engine_options,
         "native_usability_rule": "alphanumeric_3_replacement_ratio_0_05_v1",
     }
-    options_json = canonical_json(options)
-    conn = connect(db_path)
+    from ..db.documents.processing import ProcessingVersion
+    return ProcessingVersion.create(parser_name=DOCUMENT_PARSER_NAME,
+        parser_version=DOCUMENT_PARSER_VERSION, ocr_engine=engine.name,
+        ocr_engine_version=engine_version, options=options)
+
+
+def extract_document(
+    *,
+    artifact_id: int,
+    content_id: int | None = None,
+    db_path: Path = DB_PATH,
+    output: Path | None = None,
+    ocr_engine: OcrEngine | None = None,
+    now_utc: Callable[[], str] = utc_now,
+    extraction_claim: dict | None = None,
+    initialize_schema: bool = True,
+    connection_factory=connect,
+) -> dict[str, Any]:
+    """Extract a downloaded document without any network access."""
+
+    engine = ocr_engine or TesseractOcr()
+    version = processing_version(engine)
+    engine_version = version.ocr_engine_version
+    options_json = version.options_json
+    options = json.loads(options_json)
+    conn = connection_factory(db_path)
     try:
-        init_db(conn)
+        if initialize_schema:
+            init_db(conn)
         content = _load_content(
             conn, artifact_id=artifact_id, content_id=content_id
         )
+        if extraction_claim is not None:
+            if extraction_claim['resource_key'] != version.key(int(content['content_id'])):
+                raise ValueError('Captured claim does not match processing version')
+            assert_extraction_owned(conn, extraction_claim)
         body = _verified_bytes(content)
         existing = conn.execute(
             """SELECT extraction_id FROM document_extractions
@@ -132,33 +152,44 @@ def extract_document(
         if reused:
             extraction_id = int(existing["extraction_id"])
         else:
-            started_at = now_utc()
-            extracted = None
-            error: dict[str, Any] = {}
+            resource_key = canonical_json([int(content['content_id']), DOCUMENT_PARSER_NAME,
+                DOCUMENT_PARSER_VERSION, engine.name, engine_version, options_json])
+            claim = extraction_claim or claim_extraction(conn, resource_key)
             try:
-                if content["media_type"] == PDF:
-                    extracted = extract_pdf(body, ocr_engine=engine)
-                elif content["media_type"] == HTML:
-                    extracted = extract_rating_html(body)
-                else:
-                    extracted = extract_powerpoint(
-                        body, media_type=content["media_type"], ocr_engine=engine
+                with extraction_renewal(conn, claim) as renewal:
+                    started_at = now_utc()
+                    extracted = None
+                    error: dict[str, Any] = {}
+                    try:
+                        if content["media_type"] == PDF:
+                            extracted = extract_pdf(body, ocr_engine=engine)
+                        elif content["media_type"] == HTML:
+                            extracted = extract_rating_html(body)
+                        else:
+                            extracted = extract_powerpoint(
+                                body, media_type=content["media_type"], ocr_engine=engine
+                            )
+                    except Exception as exc:  # recorded failure, never partial success
+                        error = {"type": type(exc).__name__, "message": str(exc)}
+                    completed_at = now_utc()
+                    renewal.check()
+                    persisted = persist_extraction(
+                        conn,
+                        content_id=int(content["content_id"]),
+                        extracted=extracted,
+                        ocr_engine=engine.name,
+                        ocr_engine_version=engine_version,
+                        options=options,
+                        started_at_utc=started_at,
+                        completed_at_utc=completed_at,
+                        error=error,
+                        claim=claim,
                     )
-            except Exception as exc:  # recorded failure, never partial success
-                error = {"type": type(exc).__name__, "message": str(exc)}
-            completed_at = now_utc()
-            persisted = persist_extraction(
-                conn,
-                content_id=int(content["content_id"]),
-                extracted=extracted,
-                ocr_engine=engine.name,
-                ocr_engine_version=engine_version,
-                options=options,
-                started_at_utc=started_at,
-                completed_at_utc=completed_at,
-                error=error,
-            )
-            extraction_id = persisted.extraction_id
+                    extraction_id = persisted.extraction_id
+            finally:
+                conn.rollback()
+                with conn:
+                    release_extraction(conn, claim)
         document = extraction_payload(conn, extraction_id)
         classify_direct_rating_evidence(
             conn,
@@ -178,6 +209,9 @@ def extract_document(
                 content_id=int(content["content_id"]),
                 reconciled_at_utc=str(document["completed_at_utc"]),
             )
+        from ..documents.discovery.promotion import fill_stored_artifact_period
+        fill_stored_artifact_period(conn, artifact_id,
+                                   corrected_at_utc=str(document['completed_at_utc']))
         artifact = conn.execute(
             """SELECT artifact.artifact_id, artifact.artifact_type,
                       artifact.title_raw, artifact.publisher, artifact.event_date,

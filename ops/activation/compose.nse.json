@@ -1,0 +1,94 @@
+{
+  "name": "trading-ai-nse",
+  "services": {
+    "nse-results": {
+      "image": "trading-ai-ar02-period-release@sha256:a7025c3e70ea14939874aa2c1337a41845e3311ba9b5a4fc1a1004c6d6f4c16d",
+      "pull_policy": "never",
+      "profiles": [
+        "nse"
+      ],
+      "restart": "no",
+      "entrypoint": [
+        "python",
+        "/activation/nse_results_runtime.py"
+      ],
+      "command": [],
+      "healthcheck": {
+        "disable": true
+      },
+      "read_only": true,
+      "cap_drop": [
+        "ALL"
+      ],
+      "security_opt": [
+        "no-new-privileges:true"
+      ],
+      "cpus": 0.5,
+      "mem_limit": "1536m",
+      "stop_grace_period": "180s",
+      "environment": {
+        "TRADING_AI_ENV": "production",
+        "TRADING_AI_RUNTIME_IDENTITY_FILE": "/run/trading-ai/runtime-identity.json",
+        "SCRAPER_DB_PATH": "/data/scraper.db",
+        "SCRAPER_STORE_PATH": "/data",
+        "SCRAPER_DOCUMENT_STORE_PATH": "/data/snapshots"
+      },
+      "tmpfs": [
+        "/tmp:rw,noexec,nosuid,size=32m"
+      ],
+      "volumes": [
+        {
+          "type": "volume",
+          "source": "production-data",
+          "target": "/data"
+        },
+        {
+          "type": "volume",
+          "source": "production-data",
+          "target": "/physical",
+          "read_only": true
+        },
+        {
+          "type": "bind",
+          "source": ".",
+          "target": "/activation",
+          "read_only": true,
+          "bind": {
+            "create_host_path": false
+          }
+        }
+      ],
+      "configs": [
+        {
+          "source": "nse_identity",
+          "target": "/run/trading-ai/runtime-identity.json"
+        },
+        {
+          "source": "nse_store",
+          "target": "/data/.trading_ai_runtime_identity.json"
+        },
+        {
+          "source": "nse_snapshots",
+          "target": "/data/snapshots/.trading_ai_runtime_identity.json"
+        }
+      ]
+    }
+  },
+  "configs": {
+    "nse_identity": {
+      "file": "./runtime-identity-nse-results.json"
+    },
+    "nse_store": {
+      "file": "../docker/release/ar02-period-20261008/store-sentinel.json"
+    },
+    "nse_snapshots": {
+      "file": "../docker/release/ar02-period-20261008/core-documents-sentinel.json"
+    }
+  },
+  "volumes": {
+    "production-data": {
+      "external": true,
+      "name": "trading-ai_scraper-data"
+    }
+  }
+}

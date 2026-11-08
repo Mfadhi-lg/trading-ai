@@ -1,0 +1,170 @@
+{
+  "source_sha256": "7ed9acaec3a58c63fa1bdc78a8c69dc30f84fb9bfbfc85d48d32189a19781156",
+  "canonical_sha256": "91c1f3185e9354ffeb51a86a7f231871b0d7fb8456cabac76edc57f79684704d",
+  "candidates": [
+    {
+      "atomic_key": "A24.cycle-fy23",
+      "parent_claim_id": "610fb97ea79b5eec7d7a1f070404dec2c02c6dff1e0bcb1a8486af7f5850d174",
+      "parent_candidate_sha256": "c6c544e01eb7dae757c928357bb6ea262fe162bb282ad3958e0bbc7baf764d22",
+      "fields": [
+        "assessment.working_capital_intensity"
+      ],
+      "statement": "Operating cycle was 99 days in FY23.",
+      "value": "99",
+      "unit": "days",
+      "period": "FY23",
+      "period_kind": "financial_year",
+      "accounting_scope": null,
+      "attribution": "CARE Ratings",
+      "statement_kind": "reported_fact",
+      "qualifications": [],
+      "conditions": [],
+      "derivation_basis": "retained_candidate_split",
+      "disclosure_category": "working_capital",
+      "support": [
+        {
+          "page": 2,
+          "kind": "page_text",
+          "element": null,
+          "start": 5096,
+          "end": 5269,
+          "quote": "The operating cycle of the company has improved to\n99 days in FY23 from 122 days in FY21 mainly due to realisation of debtor which was elongated by end-FY21 due to Covid-19.",
+          "text_origin": "native",
+          "bbox": null
+        }
+      ]
+    },
+    {
+      "atomic_key": "A24.cycle-fy21",
+      "parent_claim_id": "610fb97ea79b5eec7d7a1f070404dec2c02c6dff1e0bcb1a8486af7f5850d174",
+      "parent_candidate_sha256": "c6c544e01eb7dae757c928357bb6ea262fe162bb282ad3958e0bbc7baf764d22",
+      "fields": [
+        "assessment.working_capital_intensity"
+      ],
+      "statement": "Operating cycle was 122 days in FY21.",
+      "value": "122",
+      "unit": "days",
+      "period": "FY21",
+      "period_kind": "financial_year",
+      "accounting_scope": null,
+      "attribution": "CARE Ratings",
+      "statement_kind": "reported_fact",
+      "qualifications": [],
+      "conditions": [],
+      "derivation_basis": "retained_candidate_split",
+      "disclosure_category": "working_capital",
+      "support": [
+        {
+          "page": 2,
+          "kind": "page_text",
+          "element": null,
+          "start": 5096,
+          "end": 5269,
+          "quote": "The operating cycle of the company has improved to\n99 days in FY23 from 122 days in FY21 mainly due to realisation of debtor which was elongated by end-FY21 due to Covid-19.",
+          "text_origin": "native",
+          "bbox": null
+        }
+      ]
+    },
+    {
+      "atomic_key": "A24.debtor-explanation",
+      "parent_claim_id": "610fb97ea79b5eec7d7a1f070404dec2c02c6dff1e0bcb1a8486af7f5850d174",
+      "parent_candidate_sha256": "c6c544e01eb7dae757c928357bb6ea262fe162bb282ad3958e0bbc7baf764d22",
+      "fields": [
+        "assessment.working_capital_intensity"
+      ],
+      "statement": "CARE attributes the improvement in operating cycle from FY21 to FY23 mainly to debtor realisation; the cycle was elongated by end-FY21 due to Covid-19.",
+      "value": "debtor realisation",
+      "unit": null,
+      "period": "FY21 to FY23",
+      "period_kind": "comparison_window",
+      "accounting_scope": null,
+      "attribution": "CARE Ratings",
+      "statement_kind": "agency_assessment",
+      "qualifications": [
+        "COVID context relates to elongation by end-FY21."
+      ],
+      "conditions": [],
+      "derivation_basis": "retained_candidate_split",
+      "disclosure_category": "working_capital",
+      "support": [
+        {
+          "page": 2,
+          "kind": "page_text",
+          "element": null,
+          "start": 5096,
+          "end": 5269,
+          "quote": "The operating cycle of the company has improved to\n99 days in FY23 from 122 days in FY21 mainly due to realisation of debtor which was elongated by end-FY21 due to Covid-19.",
+          "text_origin": "native",
+          "bbox": null
+        }
+      ]
+    },
+    {
+      "atomic_key": "A18.capex-assumption",
+      "parent_claim_id": "59e668ed5f0f9098a98fa67ad38f17ec6e14fd14a9c892baa17a41aba229290b",
+      "parent_candidate_sha256": "0a0ad163eb11798f614c79f0709b9f43fa7a435356781ea14a67fb3eaf30eb17",
+      "fields": [
+        "assessment.capex_and_execution_risks"
+      ],
+      "statement": "CARE expects TOL/TNW to continue at similar levels in the medium term on the basis of net worth accumulation and absence of significant debt-funded capex.",
+      "value": "conditional assessment",
+      "unit": null,
+      "period": "medium-term",
+      "period_kind": "expectation_horizon",
+      "accounting_scope": "consolidated",
+      "attribution": "CARE Ratings",
+      "statement_kind": "agency_assessment",
+      "qualifications": [
+        "Assumption underpinning the agency assessment; not a company capex plan or management commitment.",
+        "Consolidated scope is established in this capital-structure paragraph; the subsequent standalone expectation is a separate statement."
+      ],
+      "conditions": [
+        "Accumulation in net worth base and absence of any significant debt-funded capex."
+      ],
+      "derivation_basis": "source_review_addition",
+      "disclosure_category": "capital_expenditure",
+      "support": [
+        {
+          "page": 2,
+          "kind": "page_text",
+          "element": null,
+          "start": 3763,
+          "end": 4504,
+          "quote": "Furthermore, the total outside liabilities (TOL)/TNW also remains strong during FY20-FY23 period and stood at\n0.30x as on March 2023, and is expected to continue at similar levels in the medium-term on the back of its accumulation in net\nworth base and absence of any significant debt-funded capex. The company has a healthy cash flow generation which indicates\nless dependency on the external debt, resulting increased net worth base.\nThe Debt coverage indicators remained comfortable marked by PBILDT interest coverage and TDGCA of 36.87x and 0.20x\nduring FY23. On a standalone basis, the capital and debt coverage indicators remains healthy. We expect the capital structure\nto be comfortable in the absence of any major debt-funded capex.",
+          "text_origin": "native",
+          "bbox": null
+        }
+      ]
+    }
+  ],
+  "reviews": {
+    "A24.cycle-fy23": {
+      "candidate_sha256": "cf85603855a615f5e5bbb53b3c480260db1fbf395ec230ac5fd74f1ea98da763",
+      "decision": "SUPPORTED",
+      "reason": "Reviewed complete supporting passage(s) against original PDF; independent literal period, unknown scope where not established, attribution and all material qualifications retained."
+    },
+    "A24.cycle-fy21": {
+      "candidate_sha256": "f388a23e1be01d9af59ebbd435011fd4b09183a3e339df92c38d1f5b985d92ad",
+      "decision": "SUPPORTED",
+      "reason": "Reviewed complete supporting passage(s) against original PDF; independent literal period, unknown scope where not established, attribution and all material qualifications retained."
+    },
+    "A24.debtor-explanation": {
+      "candidate_sha256": "5159f8c44f565539121746da5331fe33f4825d71c6be471310dec9e8240f4594",
+      "decision": "SUPPORTED",
+      "reason": "Reviewed complete supporting passage(s) against original PDF; independent literal period, unknown scope where not established, attribution and all material qualifications retained."
+    },
+    "A18.capex-assumption": {
+      "candidate_sha256": "2b01808e50b63f1c31fc1efd01406a2f18260982f28cf5e9b02d35f1721fdb94",
+      "decision": "SUPPORTED",
+      "reason": "Reviewed complete supporting passage(s) against original PDF; independent literal period, unknown scope where not established, attribution and all material qualifications retained."
+    }
+  },
+  "packet_version": "phase3/1",
+  "review_metadata": {
+    "reviewer": "Codex implementation agent",
+    "date": "2026-10-24",
+    "basis": "Direct hash-verified original PDFs: EKC physical pages 2-3; Vimta physical page 2, compared with retained canonical text and the four original candidates. Not independent human certification.",
+    "distinction": "derivation_basis distinguishes retained statement splits from propositions introduced from source passages; no reference answers used."
+  }
+}

@@ -1,12 +1,12 @@
 # Current status and supersession index
 
-Updated 3 October 2026 for **C08.3**. This index routes readers to dated evidence; it does not authorize another chunk or certify current live health. Later explicit owner instructions and scoped completion records govern over historical status text. Preserve historical reports unchanged.
+Updated 3 October 2026 for **C09.1**. This index routes readers to dated evidence; it does not authorize another chunk or certify current live health. Later explicit owner instructions and scoped completion records govern over historical status text. Preserve historical reports unchanged.
 
 ## Governing documents
 
 | Document | Disposition and use |
 |---|---|
-| [Cleanup execution ledger](../TRADING_AI_CLEANUP_EXECUTION.md) | CURRENT structural sequence and selection boundary. C01–C06 complete within their recorded scopes; C07 complete including C07.1/C07.2/C07.3; C08 complete offline including C08.1/C08.2/C08.3; C09–C27 unstarted. |
+| [Cleanup execution ledger](../TRADING_AI_CLEANUP_EXECUTION.md) | CURRENT structural sequence and selection boundary. C01–C06 complete within their recorded scopes; C07 complete including C07.1/C07.2/C07.3; C08 complete offline including C08.1/C08.2/C08.3; C09 complete offline including C09.1; C10–C27 unstarted. |
 | [Master Roadmap V4](../TRADING_AI_MASTER_ROADMAP_V4_2026-09-29.md) | CURRENT product direction and preservation rules, with scoped later supersession below. Its September runtime/A2 status is historical after C06; its old B2 freeze assignment does not override the B2 supersession record. Cleanup `C07` IDs are distinct from roadmap stream `C0`/`C1` IDs. |
 | [Cleanup blueprint](architecture/cleanup-references/TRADING_AI_DEEP_ARCHITECTURE_CLEANUP_BLUEPRINT_V1.md) and [171-module map](architecture/cleanup-references/TRADING_AI_MODULE_INVENTORY_AND_CLEANUP_MAP.csv) | DESIGN REFERENCES. The ledger resolves snapshot differences and owns execution order; target directories are not all implemented. |
 | [Repository review](architecture/2026-10-01/REPOSITORY_REVIEW.md), [source map](architecture/2026-10-01/source-map.csv), [report index](architecture/2026-10-01/report-index.md) | HISTORICAL 1 October inventory. Embedded status excerpts and absolute paths reflect that snapshot, not fresh runtime validation. |
@@ -31,6 +31,8 @@ Updated 3 October 2026 for **C08.3**. This index routes readers to dated evidenc
 
 | [C08.3](cleanup/chunks/C08.3.md) and [lifecycle state contract](cleanup/lifecycle-state.md) | COMPLETE isolated wrapper state portability and status bridge selection; 42 offline tests passed, patch unactivated. C08 COMPLETE offline; next selectable step C09.1. |
 
+| [C09.1](cleanup/chunks/C09.md) and [reference import contract](cleanup/reference-import.md) | COMPLETE isolated explicit CSV import and inert shell/search bootstrap; 74 tests and all-table fixture equivalence passed, patch unactivated. C09 COMPLETE offline; next selectable step C10.1. |
+
 C06 activated OCI index `sha256:44da7074157fd2a946c41d064a91ef3f729ebd31ab3bcdf2aa09233c5a794b6b`. Root Compose was not overwritten; active configuration remains in the retained isolated release worktree under `/private/tmp`. Backup/OCI retention is local, not offsite. C06's fresh full integrity scan was interrupted; no passing result is claimed for that scan. Its protected-count/read-only compatibility checks and C02 restore proof have distinct scopes.
 
 Earlier per-chunk “next” statements and parent statuses are historical at completion time. Read the current ledger for aggregate progress; do not rewrite old evidence to appear contemporaneous.
@@ -54,4 +56,4 @@ C07.2 moved only the two AMFI/AMC research documents and repaired current
 references; old paths retain forwarding pages. C07.3 completed retention/location
 manifests and build-context tightening. No generated artifact was moved, deleted
 or untracked; local temporary backup/release evidence still needs durable
-retention. C07 is COMPLETE. C08.1 completed isolated path configuration and compatibility checks; its candidate is unactivated. C08.2 subsequently completed isolated host-browser configuration and its locked external environment; that candidate is also unactivated. C08.3 subsequently completed isolated lifecycle state portability. C08 is COMPLETE offline; C09 and later chunks remain unselected.
+retention. C07 is COMPLETE. C08.1 completed isolated path configuration and compatibility checks; its candidate is unactivated. C08.2 subsequently completed isolated host-browser configuration and its locked external environment; that candidate is also unactivated. C08.3 subsequently completed isolated lifecycle state portability. C08 is COMPLETE offline. C09.1 subsequently completed isolated explicit reference import and inert UI bootstrap; its candidate is unactivated. C09 is COMPLETE offline; C10 and later chunks remain unselected.

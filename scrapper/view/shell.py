@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+from contextlib import closing
 import os
 import sqlite3
 import sys
@@ -28,7 +29,7 @@ except ImportError:
     import readline
 
 from ..config import DB_PATH, SCREENER_WORKER_LIMIT
-from ..db.database import connect, init_db
+from ..db.database import connect, check_schema_compatibility
 from .monitor import run_live_monitor
 from .download_monitor import run_download_monitor
 from .render import (
@@ -43,8 +44,9 @@ from .render import (
 from ..pipeline.screener_discovery import (
     requeue_failed_screener_companies,
     requeue_incomplete_metric_screener_companies,
-    run_screener_company_worker,
 )
+
+from ..workflows.screener.company_worker import run_screener_company_worker
 
 SLASH_COMMANDS = [
     ("/monitor", "Launch real-time live scraper pipeline process monitor dashboard"),
@@ -98,52 +100,23 @@ class CompanyCompleter(Completer if HAS_PROMPT_TOOLKIT else object):
                     break
 
 
-def ensure_exchange_securities_seeded(conn: sqlite3.Connection) -> None:
-    """Auto-seed exchange_securities table from exchange_securities_master.csv if table is empty."""
+def exchange_reference_notice(conn: sqlite3.Connection) -> str | None:
+    """Report reference availability without importing or modifying anything."""
     try:
         count = conn.execute("SELECT COUNT(*) FROM exchange_securities").fetchone()[0]
-        if count > 0:
-            return
+    except sqlite3.OperationalError:
+        return "Exchange reference table is uninitialized; run explicit init-db after review."
+    if count == 0:
+        return "Exchange reference table is empty; use exchange-import-reference explicitly with compatible source history."
+    return None
 
-        root_dir = Path(__file__).resolve().parent.parent.parent
-        csv_path = root_dir / "exchange_securities_master.csv"
-        if not csv_path.exists():
-            return
 
-        import csv
+def ensure_exchange_securities_seeded(conn: sqlite3.Connection) -> None:
+    """Compatibility name retained; UI callers no longer bootstrap reference rows.
 
-        with open(csv_path, mode="r", encoding="utf-8") as f:
-            reader = csv.DictReader(f)
-            rows = list(reader)
-            if not rows or not reader.fieldnames:
-                return
-            columns = reader.fieldnames
-            placeholders = ", ".join(["?"] * len(columns))
-            sql = f"INSERT OR REPLACE INTO exchange_securities ({', '.join(columns)}) VALUES ({placeholders})"
-
-            data = []
-            int_cols = {
-                "exchange_security_id",
-                "current_version_id",
-                "is_present",
-                "first_observed_snapshot_id",
-                "last_observed_snapshot_id",
-            }
-            for r in rows:
-                row_vals = []
-                for col in columns:
-                    v = r[col]
-                    if v == "":
-                        v = None
-                    elif v is not None and v.isdigit() and col in int_cols:
-                        v = int(v)
-                    row_vals.append(v)
-                data.append(row_vals)
-
-            with conn:
-                conn.executemany(sql, data)
-    except Exception:
-        pass
+    Use the explicit exchange-import-reference command for validated writes.
+    """
+    exchange_reference_notice(conn)
 
 
 class CompanySlashCompleter(Completer if HAS_PROMPT_TOOLKIT else object):
@@ -156,7 +129,6 @@ class CompanySlashCompleter(Completer if HAS_PROMPT_TOOLKIT else object):
 
     def _load_cache(self) -> None:
         try:
-            ensure_exchange_securities_seeded(self.conn)
             rows = self.conn.execute(
                 """
                 SELECT * FROM (
@@ -381,7 +353,6 @@ def search_companies(conn: sqlite3.Connection, query: str) -> list[dict[str, Any
     if not q:
         return []
 
-    ensure_exchange_securities_seeded(conn)
     like_param = f"%{q.lower()}%"
     rows = conn.execute(
         """
@@ -511,7 +482,14 @@ def get_company_metrics_summary(conn: sqlite3.Connection, company_id: int) -> di
 
 def render_search_view(console: Console, conn: sqlite3.Connection, query: str) -> None:
     """Render rich search results view or detailed company card."""
-    results = search_companies(conn, query)
+    notice = exchange_reference_notice(conn)
+    if notice:
+        console.print(f"[yellow]{notice}[/yellow]")
+    try:
+        results = search_companies(conn, query)
+    except sqlite3.OperationalError as exc:
+        console.print(f"[red]Database is uninitialized or incompatible: {exc}[/red]")
+        return
 
     if not results:
         console.print(f"\n[bold red]❌ No companies found matching '{query}'[/bold red]\n")
@@ -648,11 +626,18 @@ def print_help_banner(console: Console) -> None:
 def run_interactive_shell(db_path: Path = DB_PATH) -> int:
     """Main interactive REPL shell execution loop with real-time autocompletion."""
     console = Console()
-    conn = connect(db_path)
+    conn = None
     try:
-        init_db(conn)
+        conn = connect(db_path, read_only=True)
+        check_schema_compatibility(conn)
     except Exception as exc:
-        console.print(f"[bold red]Database connection error: {exc}[/bold red]")
+        if conn is not None:
+            conn.close()
+        console.print(f"[bold red]Database is uninitialized or incompatible: {exc}[/bold red]")
+        return 2
+    notice = exchange_reference_notice(conn)
+    if notice:
+        console.print(f"[yellow]{notice}[/yellow]")
 
     completer = CompanySlashCompleter(conn)
 
@@ -812,7 +797,9 @@ def run_interactive_shell(db_path: Path = DB_PATH) -> int:
             limit = int(args_str) if args_str.isdigit() else SCREENER_WORKER_LIMIT
             console.print(f"[bold green]Running scraper company worker batch (limit={limit})...[/bold green]")
             try:
-                result = run_screener_company_worker(conn, limit=limit)
+                with closing(connect(db_path)) as writer:
+                    check_schema_compatibility(writer)
+                    result = run_screener_company_worker(writer, limit=limit)
                 console.print(f"[bold cyan]Worker result: {result}[/bold cyan]")
             except Exception as exc:
                 console.print(f"[bold red]Worker error: {exc}[/bold red]")
@@ -820,7 +807,9 @@ def run_interactive_shell(db_path: Path = DB_PATH) -> int:
         elif cmd == "/requeue-failed":
             console.print("[bold green]Requeueing failed Screener companies...[/bold green]")
             try:
-                n = requeue_failed_screener_companies(conn)
+                with closing(connect(db_path)) as writer:
+                    check_schema_compatibility(writer)
+                    n = requeue_failed_screener_companies(writer)
                 console.print(f"[bold cyan]Requeued {n} failed queue items.[/bold cyan]")
             except Exception as exc:
                 console.print(f"[bold red]Requeue error: {exc}[/bold red]")
@@ -830,7 +819,9 @@ def run_interactive_shell(db_path: Path = DB_PATH) -> int:
                 "[bold green]Requeueing Screener companies with incomplete metric observations...[/bold green]"
             )
             try:
-                n = requeue_incomplete_metric_screener_companies(conn)
+                with closing(connect(db_path)) as writer:
+                    check_schema_compatibility(writer)
+                    n = requeue_incomplete_metric_screener_companies(writer)
                 console.print(f"[bold cyan]Requeued {n} incomplete queue items.[/bold cyan]")
             except Exception as exc:
                 console.print(f"[bold red]Requeue error: {exc}[/bold red]")

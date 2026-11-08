@@ -1,0 +1,15 @@
+{
+  "services_before": 17,
+  "services_after": 15,
+  "default_services_before": 11,
+  "default_services_after": 9,
+  "removed": [
+    "daemon",
+    "market-cap-monitor"
+  ],
+  "other_services_identical": true,
+  "volumes_configs_secrets_identical": true,
+  "legacy_start_refuses_before_docker": true,
+  "production_development_browser_compose_render": "PASS",
+  "shell_syntax": "PASS"
+}

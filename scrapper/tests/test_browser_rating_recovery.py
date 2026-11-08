@@ -23,6 +23,7 @@ class BrowserRatingRecoveryTests(unittest.TestCase):
         migration = Path(__file__).parents[1] / 'db/migrations/065_operator_browser_rating_recovery.sql'
         self.conn.executescript(migration.read_text())
         self.conn.executescript((migration.parent / '066_browser_rating_recovery_backoff.sql').read_text())
+        self.conn.execute('ALTER TABLE browser_rating_recovery_jobs ADD COLUMN claim_token TEXT')
 
     def tearDown(self):
         self.conn.close()

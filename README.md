@@ -1,22 +1,45 @@
 # Trading AI
 
+Current acquisition operation: [22 October restart and verified outcomes](artifacts/acquisition-restart-20261022/REPORT.md). Use the installed bounded acquisition dispatcher; the old continuous workers remain stopped. Financial/cap scheduling is active, NSE intake admits at most 100 new jobs per operation, and the document execution window ends 23 October at 14:42 IST. A new CARE-hosted rating PDF was downloaded and its saved size/hash verified; new presentation/transcript downloads remain unproven. [Activation reference](ops/activation/README.md), [practical execution plan](docs/current/TRADING_AI_ACQUISITION_READINESS_EXECUTION.md).
+
 Trading AI preserves source-faithful financial history and supporting documents for research. The existing acquisition system collects Screener and exchange data, imports official AMC workbooks, and discovers, downloads, extracts and recovers documents while retaining original bytes, versions and evidence. The Python package keeps its existing name, `scrapper`.
 
-Start with the [current-status and supersession index](docs/STATUS.md). The [cleanup execution ledger](TRADING_AI_CLEANUP_EXECUTION.md) governs structural cleanup; the [Master Roadmap V4](TRADING_AI_MASTER_ROADMAP_V4_2026-09-29.md) describes product direction subject to later recorded supersession. Execute only an explicitly selected chunk.
+Start with the [current-status and supersession index](docs/STATUS.md). Canonical application source is `scrapper/`; the structural cleanup was integrated into `main` by [C28.1](docs/cleanup/chunks/C28.1.md). The [research and document intelligence master plan](docs/current/TRADING_AI_MASTER_RESEARCH_AND_DOCUMENT_INTELLIGENCE_PLAN.md) describes the proposed next product work. The [cleanup execution ledger](TRADING_AI_CLEANUP_EXECUTION.md) and [Master Roadmap V4](TRADING_AI_MASTER_ROADMAP_V4_2026-09-29.md) retain their root paths for historical evidence readers. Execute only an explicitly selected task.
+
+## Terminal workflow
+
+```sh
+./scraper                         # Interactive slash-command CLI
+./scraper-monitor                 # Live terminal monitor
+./scraper monitor --once           # Fast snapshot; no Docker/database wait
+./scraper status                   # Full readable receipt/schedule snapshot
+./scraper doctor                   # Guarded live queue/drive/dependency inspection
+./scraper search CARERATING        # Name, ticker, BSE code, ISIN or ID
+./scraper company CARERATING       # Financial matrices, queue and documents
+./scraper logs                     # Recent dispatcher log
+./scraper shutdown                 # Drain before Finder drive ejection
+./scraper wake                     # Resume the existing schedule
+```
+
+The web control panel has been removed. The CLI uses the current bounded
+acquisition workflow. See [terminal commands and monitoring](docs/operations/terminal-monitor.md).
 
 ## Runtime and operation
 
-The latest recorded production observation is [C06.1, 3 October 2026](docs/cleanup/chunks/C06.md): 11 continuous roles ran a verified immutable image with no source-code mounts. Manual discovery and browser recovery stayed stopped; BSE access holds remained active. This is a dated observation, not a live health check.
+The current workflow is the bounded host dispatcher documented in
+[operational recovery](docs/operations/operational-recovery-20261022.md). It admits
+finite exchange, financial, market-cap and document batches on its existing
+schedule. The former continuous Docker workers remain legacy/manual roles.
 
-The active release uses retained Compose configuration in an isolated `/private/tmp` release worktree. This checkout's [compose.yml](compose.yml) and [Dockerfile](Dockerfile) are historical operator/build entries and were not replaced during activation. Use the C06 record and [C05.3 release evidence](docs/cleanup/chunks/C05.3.md) to identify the approved release before creating or recreating containers. Temporary release files, backup and OCI exports still need durable retention.
+`./scraper shutdown` pauses admissions and drains existing work; `./scraper wake`
+validates and resumes that same schedule. Shutdown/wake do not restore the old
+continuous worker set. Eject My Passport through Finder after a successful guarded
+shutdown, and reconnect the correct drive before wake.
 
-From this repository root, inspect existing project containers with:
-
-```sh
-./scraper status
-```
-
-The [scraper launcher](scraper) retains shutdown/wake commands: `./scraper shutdown` records and gracefully stops the running set; `./scraper wake` restarts that set after checking the external document store. These change runtime state and are operator actions, not setup instructions. C06 records the successful rehearsal. Keep the external disk mounted at its configured path with its required sentinel before wake. Do not substitute a fresh root Compose startup for restoring the approved set.
+Do not substitute a root Compose startup or rebuild for the pinned acquisition
+images. The historical [C06 record](docs/cleanup/chunks/C06.md) and
+[C05.3 release evidence](docs/cleanup/chunks/C05.3.md) remain dated evidence of the
+previous workflow.
 
 Detailed command and capability reference: [scrapper/README.md](scrapper/README.md). Its older startup/build examples must be read with the active-release distinction above. Preserve command names, aliases and flags during cleanup. Runtime changes and migration application require explicit production authorization; develop outside production mounts with isolated writable targets.
 
@@ -31,7 +54,9 @@ Detailed command and capability reference: [scrapper/README.md](scrapper/README.
 | [cleanup references](docs/architecture/cleanup-references/) | Preserved blueprint and module map; destination design rather than current layout |
 | [artifacts](artifacts/) | Dated campaign, research and audit evidence; status is indexed separately |
 | [experiments](experiments/) | Isolated exploratory work |
-| `a2-review/`, `b1-review/`, `b2-review/` | Preserved copied review trees, not active releases or registered worktrees |
+| [Root hygiene and archive index](docs/cleanup/chunks/ROOT-HYGIENE.md) | Verified external retention of the historical candidate and share snapshot; one canonical application tree in this checkout |
+
+The historical C04–C17.4 candidate now lives in the sibling `../trading-ai-retained-cleanup-archive-2026-10-07/` archive, with original paths and SHA256 manifests. Original per-chunk archives, patches and evidence remain under `docs/cleanup/`. `OLD/` retains inputs still read by the Focus governance command, `artifacts/` retains campaign/research evidence, and `exchange-inbox/` retains its existing Compose input path. Local session and lifecycle state stay at their configured paths. See the hygiene record for exact dispositions and recovery instructions.
 
 Original financial history, raw cells/responses, company/period identity, document content and attempt history remain authoritative evidence. Missing, unavailable, blocked and unknown documents remain distinct; optional documents do not invalidate accepted financials. Do not rerun historical campaign mutation scripts as setup.
 

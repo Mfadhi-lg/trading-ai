@@ -375,7 +375,7 @@ class DiscoveryPersistenceTests(unittest.TestCase):
                 0,
             )
             preview = requeue_failed_screener_companies(
-                statuses=("failed_retryable",), paths=("/company/ALPHA/consolidated/",),
+                statuses=("failed_retryable",), paths=("/company/ALPHA/",),
                 dry_run=True, db_path=db,
                 now_utc=lambda: "2099-01-01T00:00:00+00:00",
             )
@@ -489,7 +489,7 @@ class DiscoveryPersistenceTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             db = self._seeded_queue(Path(directory))
             self._accept_with_metrics(
-                db, "/company/ALPHA/consolidated/",
+                db, "/company/ALPHA/",
                 metric_count=9, fetched_quick_ratios=False,
             )
             self._accept_with_metrics(
@@ -517,7 +517,7 @@ class DiscoveryPersistenceTests(unittest.TestCase):
             self.assertEqual(payload["summary"]["by_metric_count"], {9: 1})
             self.assertEqual(
                 payload["items"][0]["company_path_normalized"],
-                "/company/ALPHA/consolidated/",
+                "/company/ALPHA/",
             )
 
             due = run_screener_company_worker(
@@ -530,7 +530,7 @@ class DiscoveryPersistenceTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             db = self._seeded_queue(Path(directory))
             for path in (
-                "/company/ALPHA/consolidated/", "/company/500002/", "/company/GVT&D/"
+                "/company/ALPHA/", "/company/500002/", "/company/GVT&D/"
             ):
                 self._accept_with_metrics(
                     db, path, metric_count=9, fetched_quick_ratios=False
@@ -562,7 +562,7 @@ class DiscoveryPersistenceTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             db = self._seeded_queue(Path(directory))
             self._accept_with_metrics(
-                db, "/company/ALPHA/consolidated/",
+                db, "/company/ALPHA/",
                 metric_count=9, fetched_quick_ratios=False,
             )
             prepare_database(db)

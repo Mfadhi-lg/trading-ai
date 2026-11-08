@@ -433,9 +433,15 @@ the company scrape.
 
 The Compose workers are partitioned by reviewed hosts and enforce one request
 stream per host with a four-second minimum delay, durable leases and persistent
-circuit breakers. `credit_rating_host_policy` records the review basis. CRISIL
-and ICRA links are retained but marked `SKIPPED_POLICY` because their published
-terms prohibit automated scraping/systematic extraction; no worker claims them.
+circuit breakers. `credit_rating_host_policy` records per-host settings. CRISIL
+and ICRA use automated browser acquisition on the recurring rating queue after migration 076; that migration
+returns jobs skipped solely by the retired terms hold to `PENDING`.
+The scheduled `DOCUMENT_RATING` stage and shared rating workers automatically
+open those publishers' report pages, follow their download/viewer controls and
+validate issuer identity before saving the original PDF or HTML. Each job keeps
+its normal queue lease, retries, publisher pacing and cooldowns; browser requests
+are capped at 12 per invocation and use the stage's byte/time limits. There is
+no campaign to seed or run ID to supply. Other agencies retain the HTTP resolver.
 CARE, India Ratings and the conservative fallback host group run independently,
 which improves aggregate throughput without increasing concurrency against one
 publisher. Validated PDF bytes, temporary-object downloads, and substantial HTML
@@ -464,9 +470,9 @@ python3 -m scrapper.cli trendlyne-pilot-backfill \
 Prior official-source research is retained as background, not as a requirement
 for more feasibility reporting:
 
-- [AMFI/AMC feasibility report](research/amfi_amc_feasibility.md)
+- [AMFI/AMC feasibility report](../docs/research/amfi_amc_feasibility.md)
 - [official-source inventory](research/amfi_amc_source_inventory.json)
-- [proposed mapping architecture](research/amfi_amc_mapping_architecture.md)
+- [proposed mapping architecture](../docs/research/amfi_amc_mapping_architecture.md)
 
 When parser or manifest policy changes after immutable responses were fetched,
 reprocess the saved company and peer blobs without another HTTP request:

@@ -6,6 +6,8 @@ import json
 import sqlite3
 from pathlib import Path
 
+from .writers import write_json_payload
+
 
 def build_mfdata_crosscheck_export(
     conn: sqlite3.Connection, mfdata_crosscheck_run_id: int
@@ -163,7 +165,5 @@ def write_mfdata_crosscheck_export(
     payload = build_mfdata_crosscheck_export(conn, mfdata_crosscheck_run_id)
     output = Path(output)
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(
-        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
-    )
+    write_json_payload(payload, output)
     return output
