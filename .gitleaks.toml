@@ -8,3 +8,14 @@ id = "screener-credential-file"
 description = "Screener session and CSRF files must never enter Git"
 path = '''(^|/)\.screener_(csrf|session)$'''
 regex = '''[A-Za-z0-9_./+=:-]{16,}'''
+
+# SHA-256 of the frozen public migration 068, independently checked against
+# its source bytes. The word "access" in its filename trips generic-api-key.
+# Match this exact digest only in the PostgreSQL provenance manifest.
+[[allowlists]]
+description = "Verified SQLite migration 068 source checksum"
+targetRules = ["generic-api-key"]
+condition = "AND"
+paths = ['''^scrapper/db/postgresql_migrations/manifest\.json$''']
+regexTarget = "secret"
+regexes = ['''^0dcc0f22272f72e816fdb7ad1f03bbb2d63bb74d0086e262ed236b50b4a27c57$''']
