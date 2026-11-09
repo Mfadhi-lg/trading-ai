@@ -46,6 +46,11 @@ previous workflow.
 
 Detailed command and capability reference: [scrapper/README.md](scrapper/README.md). Its older startup/build examples must be read with the active-release distinction above. Preserve command names, aliases and flags during cleanup. Runtime changes and migration application require explicit production authorization; develop outside production mounts with isolated writable targets.
 
+The [PostgreSQL transition](docs/database/POSTGRESQL_BACKEND.md) provides an opt-in
+native connection API and isolated development service. SQLite remains the
+application runtime until repository parity, verified data transfer and operator
+acceptance pass; this transition does not activate a production backend.
+
 ## Repository and evidence
 
 | Location | Purpose |

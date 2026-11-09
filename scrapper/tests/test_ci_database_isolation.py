@@ -7,6 +7,7 @@ ROOT = Path(__file__).resolve().parents[2]
 WORKFLOWS = (
     ROOT / ".github" / "workflows" / "migration-lineage.yml",
     ROOT / ".github" / "workflows" / "ml-readiness.yml",
+    ROOT / ".github" / "workflows" / "postgresql.yml",
 )
 ISOLATED_PATH_KEYS = (
     "SCRAPER_STORE_PATH",

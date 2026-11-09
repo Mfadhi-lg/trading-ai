@@ -1,0 +1,21 @@
+# Standalone development service. Do not combine with production Compose files.
+name: trading-ai-postgresql-development
+services:
+  postgres:
+    image: postgres:16.14-bookworm
+    environment:
+      POSTGRES_USER: trading_ai_dev
+      POSTGRES_DB: trading_ai_dev
+      POSTGRES_PASSWORD: ${TRADING_AI_POSTGRESQL_DEV_PASSWORD:?Set a development-only password}
+    ports:
+      - "127.0.0.1:${TRADING_AI_POSTGRESQL_DEV_PORT:-55432}:5432"
+    volumes:
+      - postgresql-development-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U trading_ai_dev -d trading_ai_dev"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    stop_grace_period: 30s
+volumes:
+  postgresql-development-data:
