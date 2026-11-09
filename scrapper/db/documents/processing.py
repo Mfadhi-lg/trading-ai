@@ -7,6 +7,7 @@ exact parser/OCR/options contract; failed cache entries remain failed.
 from dataclasses import dataclass
 from ..document_work_claims import claim_extraction, ExtractionBusy
 from ...documents.extraction import canonical_json
+from ..repository_backend import is_postgresql
 
 
 @dataclass(frozen=True)
@@ -41,6 +42,9 @@ def reconcile_processing(conn, *, content_ids, version, now):
     Requires explicitly applied 072. One short transaction; no filesystem, OCR,
     network, migration, default version or automatic re-extraction.
     """
+    if is_postgresql(conn):
+        from ..postgresql_workers import reconcile_processing as native
+        return native(conn, content_ids=content_ids, version=version, now=now)
     ids = tuple(dict.fromkeys(content_ids))
     if not 1 <= len(ids) <= 100 or any(type(x) is not int or x <= 0 for x in ids):
         raise ValueError('Select between 1 and 100 positive content IDs')
@@ -90,6 +94,9 @@ def claim_processing(conn, *, work_id, seconds=600, now=None):
     Consumers persist through the existing fenced extraction repository and then
     reconcile the exact version. A crash at either boundary leaves recoverable work.
     """
+    if is_postgresql(conn):
+        from ..postgresql_workers import claim_processing as native
+        return native(conn, work_id=work_id, seconds=seconds, now=now)
     row = conn.execute('SELECT * FROM document_processing_work WHERE work_id=?',
                        (work_id,)).fetchone()
     if row is None:

@@ -2,15 +2,16 @@
 
 Issue #53 introduces an explicit native connection foundation for PostgreSQL 16.
 SQLite remains the application's current runtime backend. PostgreSQL is not
-authoritative until repository parity, schema/data migration and operational
-acceptance pass. This module does not translate SQLite queries or redirect
-existing `scrapper.db.database.connect()` callers.
+authoritative until full repository parity, schema/data migration and operational
+acceptance pass. Explicitly ported repository paths are listed in
+[POSTGRESQL_REPOSITORIES.md](POSTGRESQL_REPOSITORIES.md). Existing
+`scrapper.db.database.connect()` callers retain their SQLite connection lifecycle.
 
 The compatibility audit is in
 [SQLITE_POSTGRESQL_COMPATIBILITY_AUDIT.md](SQLITE_POSTGRESQL_COMPATIBILITY_AUDIT.md).
 SQLite repositories use `?`, `lastrowid`, `INSERT OR IGNORE/REPLACE`, SQLite rows,
 and `BEGIN IMMEDIATE`; a native connection cannot safely replace them. Queue
-claim/fencing and repository ports remain explicit follow-up work. Do not change
+claim/fencing and repository ports must be verified individually. Do not change
 production configuration to PostgreSQL on the strength of connection tests.
 
 ## Isolated development service

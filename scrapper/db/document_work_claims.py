@@ -2,6 +2,7 @@
 from datetime import datetime, timedelta, timezone
 from secrets import token_hex as extraction_token
 from ..core.attempts import claim_attempt
+from .repository_backend import is_postgresql
 
 def utc_now():
     return datetime.now(timezone.utc).isoformat()
@@ -47,6 +48,9 @@ def renew_queue(conn, kind, job, *, seconds, now=None):
 
 
 def claim_extraction(conn, resource_key, *, seconds=600, now=None):
+    if is_postgresql(conn):
+        from .postgresql_workers import claim_extraction as native
+        return native(conn, resource_key, seconds=seconds, now=now)
     now = now or utc_now()
     token = extraction_token(16)
     conn.execute('BEGIN IMMEDIATE')
@@ -70,6 +74,9 @@ def claim_extraction(conn, resource_key, *, seconds=600, now=None):
 
 
 def assert_extraction_owned(conn, claim, *, now=None):
+    if is_postgresql(conn):
+        from .postgresql_workers import assert_extraction_owned as native
+        return native(conn, claim, now=now)
     row = conn.execute("""SELECT 1 FROM document_extraction_claims
         WHERE resource_key=? AND owner=? AND claim_token=? AND status='ACTIVE'
         AND lease_expires_at_utc>?""",
@@ -79,6 +86,9 @@ def assert_extraction_owned(conn, claim, *, now=None):
 
 
 def renew_extraction(conn, claim, *, seconds=600, now=None):
+    if is_postgresql(conn):
+        from .postgresql_workers import renew_extraction as native
+        return native(conn, claim, seconds=seconds, now=now)
     now = now or utc_now()
     with conn:
         result = conn.execute("""UPDATE document_extraction_claims
@@ -91,6 +101,9 @@ def renew_extraction(conn, claim, *, seconds=600, now=None):
 
 
 def release_extraction(conn, claim):
+    if is_postgresql(conn):
+        from .postgresql_workers import release_extraction as native
+        return native(conn, claim)
     # May be called inside the extraction persistence transaction. Do not commit here.
     return conn.execute("""UPDATE document_extraction_claims SET status='RELEASED'
         WHERE resource_key=? AND owner=? AND claim_token=? AND status='ACTIVE'""",

@@ -1,6 +1,6 @@
 """Explicit PostgreSQL-native connection API for the migration transition.
 
-Existing SQLite repositories are intentionally not routed through this module.
+Only explicitly ported repositories support sessions from this module.
 Importing it does not import the optional driver or open a connection.
 """
 
@@ -164,3 +164,21 @@ class PostgreSQLPool:
             with conn.transaction():
                 _transaction_settings(conn, self.settings, read_only)
                 yield conn
+
+
+@contextmanager
+def repository_session(settings=None, *, schema=None, read_only=False):
+    """Open a checked application schema for explicitly ported repositories.
+
+    This never initializes or migrates a schema. Commit the short claim session
+    before doing external work, then use a separate persistence session. The
+    SQLite connection factory and operational authorizers remain unchanged.
+    """
+    from .postgresql_schema import validate_schema_name, check_compatibility
+    schema = schema or os.environ.get("TRADING_AI_POSTGRESQL_SCHEMA", "")
+    validate_schema_name(schema)
+    with connect(settings, read_only=read_only) as conn:
+        from psycopg import sql
+        conn.execute(sql.SQL("SET LOCAL search_path TO {}, pg_catalog, pg_temp").format(sql.Identifier(schema)))
+        check_compatibility(conn, schema)
+        yield conn
