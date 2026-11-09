@@ -1,0 +1,3 @@
+# Optional native PostgreSQL backend. Existing SQLite installs remain unchanged.
+psycopg[binary]==3.3.8
+psycopg-pool==3.3.3

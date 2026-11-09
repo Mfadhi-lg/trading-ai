@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import sqlite3
 from .document_work_claims import OwnershipLost, assert_extraction_owned, release_extraction
+from .repository_backend import execute, generated_id, transaction, commit, is_postgresql, statement
 from dataclasses import dataclass
 from typing import Any
 
@@ -112,7 +113,7 @@ def _existing(
     ocr_engine_version: str,
     options_json: str,
 ) -> sqlite3.Row | None:
-    return conn.execute(
+    return execute(conn,
         """SELECT * FROM document_extractions
            WHERE content_id=? AND parser_name=? AND parser_version=?
              AND ocr_engine=? AND ocr_engine_version=? AND options_json=?""",
@@ -153,17 +154,52 @@ def persist_extraction(
     error: dict[str, Any] | None = None,
     claim: dict[str, Any] | None = None,
 ) -> PersistedExtraction:
+    """Persist atomically; native callers retain ownership of the outer transaction.
+
+    PostgreSQL serializes each exact extraction identity even for legacy callers
+    without a claim, and locks a supplied claim until persistence commits. A
+    failure rolls back this operation's savepoint without closing the connection.
+    """
+    arguments = dict(content_id=content_id, extracted=extracted, ocr_engine=ocr_engine,
+        ocr_engine_version=ocr_engine_version, options=options,
+        started_at_utc=started_at_utc, completed_at_utc=completed_at_utc,
+        error=error, claim=claim)
+    if not is_postgresql(conn):
+        return _persist_extraction(conn, **arguments)
+    with transaction(conn):
+        key = canonical_json([content_id, DOCUMENT_PARSER_NAME, DOCUMENT_PARSER_VERSION,
+                              ocr_engine, ocr_engine_version, canonical_json(options)])
+        conn.execute("""SELECT pg_advisory_xact_lock(hashtextextended(
+            current_schema() || ':document-extraction:' || %s, 0))""", (key,))
+        return _persist_extraction(conn, **arguments)
+
+
+def _persist_extraction(
+    conn: sqlite3.Connection,
+    *,
+    content_id: int,
+    extracted: ExtractedDocument | None,
+    ocr_engine: str,
+    ocr_engine_version: str,
+    options: dict[str, Any],
+    started_at_utc: str,
+    completed_at_utc: str,
+    error: dict[str, Any] | None = None,
+    claim: dict[str, Any] | None = None,
+) -> PersistedExtraction:
     options_json = canonical_json(options)
     if claim is not None:
         expected_key = canonical_json([content_id, DOCUMENT_PARSER_NAME,
             DOCUMENT_PARSER_VERSION, ocr_engine, ocr_engine_version, options_json])
         if claim['resource_key'] != expected_key:
             raise OwnershipLost('Extraction claim does not match content/parser/OCR/options')
-        conn.execute('BEGIN IMMEDIATE')
+        if not is_postgresql(conn):
+            execute(conn, 'BEGIN IMMEDIATE')
         try:
             assert_extraction_owned(conn, claim)
         except BaseException:
-            conn.rollback()
+            if not is_postgresql(conn):
+                conn.rollback()
             raise
     existing = _existing(
         conn,
@@ -175,9 +211,9 @@ def persist_extraction(
     if existing is not None:
         if claim is not None:
             release_extraction(conn, claim)
-            conn.commit()
+            commit(conn)
         return _result(existing, reused=True)
-    content = conn.execute(
+    content = execute(conn,
         """SELECT content.artifact_id, content.media_type, content.extraction_status,
                   content.is_official
            FROM artifact_contents AS content WHERE content.content_id=?""",
@@ -193,8 +229,8 @@ def persist_extraction(
     )
     status = "failed" if extracted is None or blocking_failed else extracted.status
     pages = extracted.pages if extracted is not None else ()
-    with conn:
-        cursor = conn.execute(
+    with transaction(conn):
+        cursor = execute(conn,
             """INSERT INTO document_extractions
                (content_id, parser_name, parser_version, ocr_engine,
                 ocr_engine_version, options_json, started_at_utc, completed_at_utc,
@@ -218,10 +254,11 @@ def persist_extraction(
                 canonical_json(error or {}),
                 completed_at_utc,
             ),
+            returning="extraction_id",
         )
-        extraction_id = int(cursor.lastrowid)
+        extraction_id = generated_id(cursor, "extraction_id")
         for page in pages:
-            conn.execute(
+            execute(conn,
                 """INSERT INTO document_pages
                    (extraction_id, content_id, page_or_slide_number, page_kind,
                     title_raw, native_text, ocr_text, selected_text,
@@ -248,7 +285,7 @@ def persist_extraction(
                 ),
             )
             for element in page.elements:
-                conn.execute(
+                execute(conn,
                     """INSERT INTO document_page_elements
                        (extraction_id, page_or_slide_number, element_position,
                         element_kind, text_origin, text_raw, title_raw, rows_json,
@@ -268,7 +305,7 @@ def persist_extraction(
                     ),
                 )
         for validation in validations:
-            conn.execute(
+            execute(conn,
                 """INSERT INTO document_extraction_validations
                    (extraction_id, rule_code, severity, status, expected_value,
                     actual_value, details_json) VALUES (?, ?, ?, ?, ?, ?, ?)""",
@@ -282,24 +319,26 @@ def persist_extraction(
                     canonical_json(validation["details"]),
                 ),
             )
-        conn.execute(
+        execute(conn,
             "UPDATE artifact_contents SET extraction_status=? WHERE content_id=?",
             (status, content_id),
         )
         if status == "ok":
-            preferred = conn.execute(
-                "SELECT preferred_content_id FROM document_artifacts WHERE artifact_id=?",
+            preferred = execute(conn,
+                statement(conn,
+                    "SELECT preferred_content_id FROM document_artifacts WHERE artifact_id=?",
+                    "SELECT preferred_content_id FROM document_artifacts WHERE artifact_id=? FOR UPDATE"),
                 (int(content["artifact_id"]),),
             ).fetchone()
             if preferred is not None and preferred["preferred_content_id"] is None:
                 transcript_status = "not_applicable"
-                artifact_type = conn.execute(
+                artifact_type = execute(conn,
                     "SELECT artifact_type FROM document_artifacts WHERE artifact_id=?",
                     (int(content["artifact_id"]),),
-                ).fetchone()[0]
+                ).fetchone()["artifact_type"]
                 if artifact_type == "transcript":
                     transcript_status = "official_preferred" if content["is_official"] else "machine_preferred"
-                conn.execute(
+                execute(conn,
                     """UPDATE document_artifacts
                        SET preferred_content_id=?, acquisition_status='validated',
                            transcript_preference_status=? WHERE artifact_id=?""",
@@ -307,7 +346,7 @@ def persist_extraction(
                 )
         if claim is not None:
             release_extraction(conn, claim)
-    row = conn.execute(
+    row = execute(conn,
         "SELECT * FROM document_extractions WHERE extraction_id=?", (extraction_id,)
     ).fetchone()
     if row is None:
@@ -316,19 +355,19 @@ def persist_extraction(
 
 
 def extraction_payload(conn: sqlite3.Connection, extraction_id: int) -> dict[str, Any]:
-    extraction = conn.execute(
+    extraction = execute(conn,
         "SELECT * FROM document_extractions WHERE extraction_id=?", (extraction_id,)
     ).fetchone()
     if extraction is None:
         raise ValueError(f"Unknown extraction: {extraction_id}")
-    pages = conn.execute(
+    pages = execute(conn,
         """SELECT * FROM document_pages WHERE extraction_id=?
            ORDER BY page_or_slide_number""",
         (extraction_id,),
     ).fetchall()
     output_pages: list[dict[str, Any]] = []
     for page in pages:
-        elements = conn.execute(
+        elements = execute(conn,
             """SELECT * FROM document_page_elements
                WHERE extraction_id=? AND page_or_slide_number=?
                ORDER BY element_position""",
@@ -364,7 +403,7 @@ def extraction_payload(conn: sqlite3.Connection, extraction_id: int) -> dict[str
                 ],
             }
         )
-    validations = conn.execute(
+    validations = execute(conn,
         """SELECT rule_code, severity, status, expected_value, actual_value,
                   details_json FROM document_extraction_validations
            WHERE extraction_id=? ORDER BY rule_code""",
