@@ -111,3 +111,6 @@ concurrent worker semantics, production backup/restore or cutover. Issues #54
 and #55 own PostgreSQL schema lineage and verified data transfer; PostgreSQL
 cannot become the primary production backend until these and the repository
 ports are verified. Production cutover requires separate explicit approval.
+
+The reviewed PostgreSQL schema baseline and explicit migration procedure are in
+[POSTGRESQL_SCHEMA.md](POSTGRESQL_SCHEMA.md).

@@ -53,4 +53,4 @@ jobs:
       - name: Install optional native backend
         run: python -m pip install -r scrapper/requirements.postgresql.txt
       - name: Native PostgreSQL contracts
-        run: python -B -m unittest scrapper.tests.test_postgresql_backend -v
+        run: python -B -m unittest scrapper.tests.test_postgresql_backend scrapper.tests.test_postgresql_schema -v
