@@ -88,7 +88,7 @@ still prevent PostgreSQL from becoming authoritative.
 There are no automatic down migrations. A failed application rolls back its
 transaction; an accepted production rollback uses the unchanged verified SQLite
 database and the operator procedure in
-the forthcoming `POSTGRESQL_TRANSFER.md` runbook. Never drop a populated schema as
+[POSTGRESQL_TRANSFER.md](POSTGRESQL_TRANSFER.md). Never drop a populated schema as
 a normal retry operation. Production schema application and cutover each require
 explicit operator authorization.
 

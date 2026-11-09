@@ -114,3 +114,6 @@ ports are verified. Production cutover requires separate explicit approval.
 
 The reviewed PostgreSQL schema baseline and explicit migration procedure are in
 [POSTGRESQL_SCHEMA.md](POSTGRESQL_SCHEMA.md).
+
+Hash-authorized snapshot transfer, failure handling and the operator cutover/rollback
+procedure are documented in [POSTGRESQL_TRANSFER.md](POSTGRESQL_TRANSFER.md).
