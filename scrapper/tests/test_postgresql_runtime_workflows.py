@@ -251,3 +251,34 @@ class RuntimeWorkflowTests(DisposablePostgreSQLTestCase):
     def discovery_ownership(self):
         # The separate exchange test exercises the actual native advisory lock.
         yield True
+
+    def test_fresh_native_shared_transport_preflight_and_idle_permit_io(self):
+        from scrapper.db.host_request_defer import require_shared_schema
+        from scrapper.operations.workers.host_requests import HostSession
+        from scrapper.documents.downloader import DownloadPolicy
+        from scrapper.tests.test_d02_document_downloader import FakeResponse, FakeSession
+        url = 'https://issuer.example/synthetic-native.pdf'
+        body = b'%PDF-synthetic-native-transport-only'
+        with self.session() as conn:
+            self.assertEqual(conn.execute('SELECT count(*) FROM schema_migrations').fetchone()[0], 0)
+            with patch('sys.platform', 'linux'):
+                require_shared_schema(conn)
+            self.assertFalse(conn.in_transaction)
+            checked = []
+            class Offline(FakeSession):
+                def get(fake, requested, **kwargs):
+                    self.assertFalse(conn.in_transaction)
+                    checked.append(requested)
+                    with self.session() as other:
+                        self.assertEqual(other.execute("SELECT count(*) FROM acquisition_host_permits WHERE status='ACTIVE'").fetchone()[0], 1)
+                    return super().get(requested, **kwargs)
+            fake = Offline({url: FakeResponse(body, url=url)})
+            with HostSession(conn, mode='generic', owner='native-offline',
+                    policy=DownloadPolicy(), check=lambda: None,
+                    offline_session=fake, wait_seconds=0) as session:
+                response = session.get(url, allow_redirects=False)
+                self.assertEqual(b''.join(response.iter_content(1024)), body)
+            self.assertEqual(checked, [url])
+            self.assertFalse(conn.in_transaction)
+            self.assertEqual(conn.execute("SELECT count(*) FROM acquisition_host_permits WHERE status='ACTIVE'").fetchone()[0], 0)
+            self.assertEqual(conn.execute('SELECT last_outcome FROM acquisition_host_state').fetchone()[0], 'success')

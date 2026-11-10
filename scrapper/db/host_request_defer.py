@@ -35,5 +35,9 @@ def require_shared_schema(conn):
         raise RuntimeError('Shared HTTP requires Linux parent-death fencing')
     execute(conn, 'SELECT permit_token,publisher_group,host,acquisition_mode,owner,status,acquired_at,lease_expires_at,released_at,policy_version,authorization_json FROM acquisition_host_permits LIMIT 0')
     execute(conn, 'SELECT publisher_group,next_request_at,blocked_until,circuit_until,observed_at,consecutive_failures,retry_after_raw,last_outcome,policy_version FROM acquisition_host_state LIMIT 0')
+    if is_postgresql(conn):
+        from .database import check_schema_compatibility
+        check_schema_compatibility(conn)
+        return
     if execute(conn, "SELECT 1 FROM schema_migrations WHERE version='071_shared_host_permits.sql'").fetchone() is None:
         raise RuntimeError('Shared HTTP requires explicitly applied migration 071')
