@@ -18,6 +18,7 @@ from ...documents.download.derivatives import (
 from ..document_artifact_repo import register_artifact_content
 from .download import store_response_blob
 from ..repo import utc_now
+from scrapper.db.repository_backend import (execute, executemany, generated_id, statement, is_postgresql, atomic_repository, begin_immediate, commit, rollback, transaction as repository_transaction)
 
 
 @dataclass(frozen=True)
@@ -33,6 +34,7 @@ class PersistedHtmlPdfRendering:
 PersistedHtmlPdfRendering.__module__ = 'scrapper.db.html_document_rendering_repo'
 
 
+@atomic_repository('documents')
 def _source_content(
     conn: sqlite3.Connection,
     *,
@@ -40,7 +42,7 @@ def _source_content(
     source_content_id: int,
     allow_browser_snapshot: bool = False,
 ) -> tuple[sqlite3.Row, bytes]:
-    row = conn.execute(
+    row = execute(conn,
         """SELECT content.*,blob.local_path,artifact.title_raw
              FROM artifact_contents AS content
              JOIN response_blobs AS blob USING (blob_id)
@@ -67,6 +69,7 @@ def _source_content(
     return row, body
 
 
+@atomic_repository('documents')
 def render_and_persist_html_pdf(
     conn: sqlite3.Connection,
     *,
@@ -93,7 +96,7 @@ def render_and_persist_html_pdf(
         "render_mode": "visible_text_blocks",
     }
     options_json = json.dumps(options, sort_keys=True, separators=(",", ":"))
-    existing = conn.execute(
+    existing = execute(conn,
         """SELECT * FROM html_document_renderings
             WHERE source_content_id=? AND renderer_name=?
               AND renderer_version=? AND options_json=?""",
@@ -127,7 +130,7 @@ def render_and_persist_html_pdf(
         document_title=str(source["title_raw"] or ""),
     )
     now = created_at_utc or utc_now()
-    with conn:
+    with repository_transaction(conn):
         blob_id, _ = store_response_blob(
             conn,
             body=rendered.body,
@@ -147,7 +150,7 @@ def render_and_persist_html_pdf(
         # A renderer update can leave some reports byte-identical. The physical
         # content and existing rendering are reused rather than inserting a
         # second row against the unique rendered_content_id.
-        identical = conn.execute(
+        identical = execute(conn,
             "SELECT * FROM html_document_renderings WHERE rendered_content_id=?",
             (rendered_content_id,),
         ).fetchone()
@@ -160,14 +163,17 @@ def render_and_persist_html_pdf(
                 reused=True, visible_character_count=rendered.visible_character_count,
                 block_count=rendered.block_count,
             )
-        conn.execute(
-            """INSERT OR IGNORE INTO artifact_content_relationships
+        execute(conn,
+            statement(conn, """INSERT OR IGNORE INTO artifact_content_relationships
                (artifact_id,source_content_id,derived_content_id,
                 relationship_type,created_at_utc)
-               VALUES (?,?,?,'rendered_pdf',?)""",
+               VALUES (?,?,?,'rendered_pdf',?)""", """INSERT INTO artifact_content_relationships
+               (artifact_id,source_content_id,derived_content_id,
+                relationship_type,created_at_utc)
+               VALUES (?,?,?,'rendered_pdf',?) ON CONFLICT DO NOTHING"""),
             (artifact_id, source_content_id, rendered_content_id, now),
         )
-        cursor = conn.execute(
+        cursor = execute(conn,
             """INSERT INTO html_document_renderings
                (artifact_id,source_content_id,rendered_content_id,
                 renderer_name,renderer_version,options_json,
@@ -184,9 +190,9 @@ def render_and_persist_html_pdf(
                 rendered.block_count,
                 now,
             ),
-        )
+         returning='rendering_id')
     return PersistedHtmlPdfRendering(
-        rendering_id=int(cursor.lastrowid),
+        rendering_id=generated_id(cursor, 'rendering_id'),
         artifact_id=artifact_id,
         source_content_id=source_content_id,
         rendered_content_id=rendered_content_id,

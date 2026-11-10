@@ -1,6 +1,7 @@
 """Real-time CLI dashboard for queued document downloads."""
 
 from __future__ import annotations
+from ..db.repository_backend import statement, is_postgresql, execute, generated_id, atomic_repository, begin_immediate
 
 import datetime
 import sqlite3
@@ -142,7 +143,7 @@ def fetch_download_monitor_data(conn: sqlite3.Connection) -> dict[str, Any]:
 
     ready_row = conn.execute(
         ALL_QUEUE_CTE
-        + """SELECT COUNT(*) AS count
+        + statement(conn, """SELECT COUNT(*) AS count
              FROM all_queue AS queue
             WHERE queue.status IN ('PENDING', 'RETRYABLE_FAILURE')
               AND (queue.next_attempt_at_utc IS NULL
@@ -163,7 +164,7 @@ def fetch_download_monitor_data(conn: sqlite3.Connection) -> dict[str, Any]:
                      WHERE health.host=queue.target_host
                        AND health.blocked_until_utc IS NOT NULL
                        AND julianday(health.blocked_until_utc) > julianday('now')
-              ))"""
+              ))""", "SELECT COUNT(*) AS count\n             FROM all_queue AS queue\n            WHERE queue.status IN ('PENDING', 'RETRYABLE_FAILURE')\n              AND (queue.next_attempt_at_utc IS NULL\n                   OR (EXTRACT(EPOCH FROM queue.next_attempt_at_utc::timestamptz) / 86400) <= (EXTRACT(EPOCH FROM CURRENT_TIMESTAMP) / 86400))\n              AND (queue.queue_kind='document' OR NOT EXISTS (\n                    SELECT 1 FROM credit_rating_host_policy AS policy\n                     WHERE policy.host=queue.target_host\n                       AND policy.automation_status='BLOCKED_TERMS'\n              ))\n              AND (queue.queue_kind='credit_rating' OR NOT EXISTS (\n                    SELECT 1 FROM artifact_download_host_health AS health\n                     WHERE health.host=queue.target_host\n                       AND health.blocked_until_utc IS NOT NULL\n                       AND (EXTRACT(EPOCH FROM health.blocked_until_utc::timestamptz) / 86400) > (EXTRACT(EPOCH FROM CURRENT_TIMESTAMP) / 86400)\n              ))\n              AND (queue.queue_kind='document' OR NOT EXISTS (\n                    SELECT 1 FROM credit_rating_host_health AS health\n                     WHERE health.host=queue.target_host\n                       AND health.blocked_until_utc IS NOT NULL\n                       AND (EXTRACT(EPOCH FROM health.blocked_until_utc::timestamptz) / 86400) > (EXTRACT(EPOCH FROM CURRENT_TIMESTAMP) / 86400)\n              ))")
     ).fetchone()
     ready = int(ready_row["count"]) if ready_row else 0
 
@@ -202,7 +203,7 @@ def fetch_download_monitor_data(conn: sqlite3.Connection) -> dict[str, Any]:
 
     host_rows = conn.execute(
         ALL_QUEUE_CTE
-        + """, queue_counts AS (
+        + statement(conn, """, queue_counts AS (
                SELECT target_host AS host,
                       SUM(CASE WHEN status IN ('PENDING', 'RETRYABLE_FAILURE')
                                THEN 1 ELSE 0 END) AS queued,
@@ -239,7 +240,7 @@ def fetch_download_monitor_data(conn: sqlite3.Connection) -> dict[str, Any]:
                  OR COALESCE(queue_counts.succeeded, 0) > 0
                  OR COALESCE(queue_counts.blocked, 0) > 0
               ORDER BY active DESC, queued DESC, hosts.host
-              LIMIT 10"""
+              LIMIT 10""", ", queue_counts AS (\n               SELECT target_host AS host,\n                      SUM(CASE WHEN status IN ('PENDING', 'RETRYABLE_FAILURE')\n                               THEN 1 ELSE 0 END) AS queued,\n                      SUM(CASE WHEN status='LEASED' THEN 1 ELSE 0 END) AS active,\n                      SUM(CASE WHEN status='SUCCEEDED' THEN 1 ELSE 0 END) AS succeeded,\n                      SUM(CASE WHEN status IN (\n                                   'TERMINAL_FAILURE', 'INTERACTION_REQUIRED',\n                                   'SKIPPED_POLICY'\n                               ) THEN 1 ELSE 0 END) AS blocked\n                 FROM all_queue\n                GROUP BY target_host\n             ), hosts AS (\n               SELECT host FROM queue_counts\n               UNION SELECT host FROM credit_rating_host_health\n               UNION SELECT host FROM credit_rating_host_policy\n             )\n             SELECT hosts.host,\n                    COALESCE(queue_counts.queued, 0) AS queued,\n                    COALESCE(queue_counts.active, 0) AS active,\n                    COALESCE(queue_counts.succeeded, 0) AS succeeded,\n                    COALESCE(queue_counts.blocked, 0) AS blocked,\n                    policy.automation_status, policy.max_concurrency,\n                    health.blocked_until_utc, health.last_http_status,\n                    health.consecutive_blocks,\n                    CASE WHEN health.blocked_until_utc IS NOT NULL\n                              AND (EXTRACT(EPOCH FROM health.blocked_until_utc::timestamptz) / 86400) > (EXTRACT(EPOCH FROM CURRENT_TIMESTAMP) / 86400)\n                         THEN 1 ELSE 0 END AS circuit_open\n               FROM hosts\n               LEFT JOIN queue_counts USING (host)\n               LEFT JOIN credit_rating_host_policy AS policy USING (host)\n               LEFT JOIN credit_rating_host_health AS health USING (host)\n              WHERE COALESCE(queue_counts.queued, 0) > 0\n                 OR COALESCE(queue_counts.active, 0) > 0\n                 OR COALESCE(queue_counts.succeeded, 0) > 0\n                 OR COALESCE(queue_counts.blocked, 0) > 0\n              ORDER BY active DESC, queued DESC, hosts.host\n              LIMIT 10")
     ).fetchall()
     hosts = []
     for row in host_rows:

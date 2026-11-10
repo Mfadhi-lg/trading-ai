@@ -11,7 +11,7 @@ from dataclasses import dataclass, replace
 from pathlib import Path
 
 from ...config import AMC_WORKBOOK_SNAPSHOTS, DB_PATH, MF_IMPORT
-from ...db.database import connect, init_db
+from ...db.database import connect, init_db, selected_backend
 from ...db.mutual_funds.changes import refresh_changes_for_accepted_month
 from ...db.mutual_funds.features import generate_stock_month_features
 from ...db.mutual_funds.scheme_acceptance import finalize_ppfas_import
@@ -144,11 +144,11 @@ def _known_inventory(
     db_path: Path,
 ) -> tuple[dict[tuple[str, str], tuple[str, str]], dict[str, str]]:
     db_path = Path(db_path)
-    if not db_path.is_file():
+    if selected_backend() != "postgresql" and not db_path.is_file():
         return {}, {}
     uri = f"file:{db_path.resolve().as_posix()}?mode=ro&immutable=1"
     try:
-        conn = sqlite3.connect(uri, uri=True)
+        conn = connect(db_path, read_only=True)
         conn.row_factory = sqlite3.Row
         rows = conn.execute(
             """SELECT mif.publisher, mif.content_sha256, mif.import_state,
@@ -161,6 +161,8 @@ def _known_inventory(
             "SELECT content_sha256, local_path FROM mf_workbook_blobs"
         ).fetchall()
     except sqlite3.Error:
+        if selected_backend() == "postgresql":
+            raise
         return {}, {}
     finally:
         if "conn" in locals():

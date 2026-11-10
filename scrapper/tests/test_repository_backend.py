@@ -23,6 +23,10 @@ class RepositoryBackendTests(unittest.TestCase):
             with self.subTest(sql=sql), self.assertRaises(ValueError):
                 _parameters(sql)
 
+    def test_native_casts_remain_sql_and_named_parameters_are_rejected(self):
+        self.assertEqual(_parameters('SELECT ?::text, ?::timestamptz'),
+                         'SELECT %s::text, %s::timestamptz')
+
     def test_sqlite_generated_ids_and_transactions_preserve_contract(self):
         with closing(sqlite3.connect(":memory:")) as conn:
             self.assertFalse(is_postgresql(conn))

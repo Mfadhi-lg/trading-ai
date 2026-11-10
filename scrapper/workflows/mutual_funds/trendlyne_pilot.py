@@ -18,6 +18,7 @@ from ...db.repo import utc_now
 from ...db.trendlyne_repo import ensure_trendlyne_company
 from ...sources.trendlyne.urls import monthly_mf_url, source_period_for_url, verified_mapping
 from .trendlyne_vertical import TrendlyneSliceResult, scrape_trendlyne_company
+from ...db.repository_backend import statement
 
 
 PILOT_CODE = "P03"
@@ -205,11 +206,11 @@ def _persist_plan(conn: sqlite3.Connection, plan: TrendlynePilotPlan) -> int:
     plan_json = json.dumps(immutable_plan, sort_keys=True, separators=(",", ":"))
     with conn:
         conn.execute(
-            """INSERT OR IGNORE INTO trendlyne_backfill_plans
+            statement(conn, """INSERT OR IGNORE INTO trendlyne_backfill_plans
                (plan_key, pilot_code, end_source_period, month_count,
                 company_count, request_count, batch_size, plan_json, status,
                 created_at_utc, updated_at_utc)
-               VALUES (?, 'P03', ?, ?, ?, ?, ?, ?, 'pending', ?, ?)""",
+               VALUES (?, 'P03', ?, ?, ?, ?, ?, ?, 'pending', ?, ?)""", "INSERT INTO trendlyne_backfill_plans\n               (plan_key, pilot_code, end_source_period, month_count,\n                company_count, request_count, batch_size, plan_json, status,\n                created_at_utc, updated_at_utc)\n               VALUES (?, 'P03', ?, ?, ?, ?, ?, ?, 'pending', ?, ?) ON CONFLICT DO NOTHING"),
             (
                 plan.plan_key,
                 plan.end_source_period,
@@ -236,11 +237,11 @@ def _persist_plan(conn: sqlite3.Connection, plan: TrendlynePilotPlan) -> int:
             mapping = verified_mapping(request.source_symbol)
             company_id = ensure_trendlyne_company(conn, mapping)
             conn.execute(
-                """INSERT OR IGNORE INTO trendlyne_backfill_items
+                statement(conn, """INSERT OR IGNORE INTO trendlyne_backfill_items
                    (plan_id, request_position, company_id, source_company_id,
                     source_symbol, source_slug, requested_source_period,
                     requested_url, status)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""", 'INSERT INTO trendlyne_backfill_items\n                   (plan_id, request_position, company_id, source_company_id,\n                    source_symbol, source_slug, requested_source_period,\n                    requested_url, status)\n                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT DO NOTHING'),
                 (
                     plan_id,
                     request.position,

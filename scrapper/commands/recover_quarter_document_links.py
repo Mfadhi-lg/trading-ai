@@ -32,7 +32,7 @@ def main():
     args=parser.parse_args()
     if not 1<=args.limit<=200:
         parser.error("Limit must be between 1 and 200")
-    conn=connect(args.db) if args.apply else sqlite3.connect(f"file:{args.db.resolve()}?mode=ro",uri=True)
+    conn=connect(args.db, read_only=not args.apply)
     conn.row_factory=sqlite3.Row
     try:
         if args.apply:

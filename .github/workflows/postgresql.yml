@@ -55,19 +55,6 @@ jobs:
           python -m pip install --require-hashes -r scrapper/requirements.test.lock
           python -m pip install -r scrapper/requirements.postgresql.txt
       - name: Native PostgreSQL contracts
-        run: >-
-          python -B -m unittest
-          scrapper.tests.test_repository_backend
-          scrapper.tests.test_postgresql_backend
-          scrapper.tests.test_postgresql_schema
-          scrapper.tests.test_postgresql_transfer
-          scrapper.tests.test_postgresql_observations
-          scrapper.tests.test_postgresql_exchange_tasks
-          scrapper.tests.test_postgresql_workers
-          scrapper.tests.test_postgresql_extraction
-          scrapper.tests.test_screener_observation_repo
-          scrapper.tests.test_exchange_coordinator
-          scrapper.tests.test_periodic_coordinator
-          scrapper.tests.test_claim_fencing
-          scrapper.tests.test_document_processing_work
-          scrapper.tests.test_ci_database_isolation -v
+        run: |
+          python -B -m unittest discover -s scrapper/tests -t . -p 'test_postgresql*.py' -v
+          python -B -m unittest scrapper.tests.test_repository_backend scrapper.tests.test_screener_observation_repo scrapper.tests.test_exchange_coordinator scrapper.tests.test_periodic_coordinator scrapper.tests.test_claim_fencing scrapper.tests.test_document_processing_work scrapper.tests.test_ci_database_isolation -v

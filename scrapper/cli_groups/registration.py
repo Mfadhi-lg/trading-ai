@@ -45,7 +45,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     shell.add_argument("--db", type=Path, default=DB_PATH)
 
-    init = subcommands.add_parser("init-db", help="Explicitly apply SQLite migrations")
+    init = subcommands.add_parser("init-db", help="Explicitly apply the selected backend's schema migrations")
     init.add_argument("--db", type=Path, default=DB_PATH)
 
     view = subcommands.add_parser(

@@ -4,6 +4,7 @@ from ...db.repo import store_blob,record_fetch,start_run,finish_run,get_or_creat
 from ...sources.screener.company import parse_company_page
 from ...pipeline.accepted_document_downloads import enqueue_concall_documents_for_accepted_parse
 from ...config import MANIFEST_VERSION
+from ...db.repository_backend import statement
 
 
 def ingest_document_response(*, response, company_id, result_period, db_path, snapshot_root,
@@ -29,10 +30,10 @@ def ingest_document_response(*, response, company_id, result_period, db_path, sn
             record_fetch(conn,run,company_id,response,'standalone',now,blob)
             parse,status=get_or_create_parse_artifact(conn,blob,'document-only-links','1.0.1',MANIFEST_VERSION)
             with conn:
-                conn.executemany('''INSERT OR IGNORE INTO document_links
+                conn.executemany(statement(conn, '''INSERT OR IGNORE INTO document_links
                     (parse_id,reporting_scope,document_type,period_label_raw,title_raw,position,source_url,publisher,
                      availability_status,first_observed_at_utc,available_at_utc,availability_basis)
-                    VALUES (?,'standalone',?,?,?,?,?,?,?,?,?,'first_observed')''',
+                    VALUES (?,'standalone',?,?,?,?,?,?,?,?,?,'first_observed')''', "INSERT INTO document_links\n                    (parse_id,reporting_scope,document_type,period_label_raw,title_raw,position,source_url,publisher,\n                     availability_status,first_observed_at_utc,available_at_utc,availability_basis)\n                    VALUES (?,'standalone',?,?,?,?,?,?,?,?,?,'first_observed') ON CONFLICT DO NOTHING"),
                     [(parse,l.document_type,l.period_label_raw,l.title_raw,l.position,l.source_url,l.publisher,l.availability_status,now,now) for l in parsed.document_links])
                 conn.execute("UPDATE parse_artifacts SET parse_status='ok',validation_status='passed' WHERE parse_id=?",(parse,))
             enqueue_concall_documents_for_accepted_parse(conn,parse_id=parse,verified_company_id=company_id,

@@ -1,6 +1,7 @@
 """Deterministic source, normalized, registry, and acceptance workbook export."""
 
 from __future__ import annotations
+from ..db.repository_backend import statement
 
 import json
 import sqlite3
@@ -55,7 +56,7 @@ def build_mf_workbook_export(conn: sqlite3.Connection, import_file_id: int) -> d
         (import_file_id,),
     ).fetchall()
     registry = conn.execute(
-        """SELECT s.scheme_id, s.publisher, s.scheme_code, s.current_name,
+        statement(conn, """SELECT s.scheme_id, s.publisher, s.scheme_code, s.current_name,
                   c.scheme_classification_id, c.scheme_management_type,
                   c.is_equity_scheme, c.scheme_category, c.valid_from_month,
                   c.valid_to_month, c.classification_source,
@@ -76,7 +77,7 @@ def build_mf_workbook_export(conn: sqlite3.Connection, import_file_id: int) -> d
              ON av.publisher=h.publisher AND av.scheme_id=h.scheme_id
             AND av.disclosure_month=h.disclosure_month
            GROUP BY s.scheme_id
-           ORDER BY s.scheme_code""",
+           ORDER BY s.scheme_code""", 'SELECT s.scheme_id, s.publisher, s.scheme_code, s.current_name,\n                  c.scheme_classification_id, c.scheme_management_type,\n                  c.is_equity_scheme, c.scheme_category, c.valid_from_month,\n                  c.valid_to_month, c.classification_source,\n                  c.classification_rule_version,\n                  CASE WHEN av.import_file_id=? THEN 1 ELSE 0 END AS is_current_accepted_version\n           FROM mf_schemes AS s\n           JOIN mf_holdings AS h\n             ON h.scheme_id=s.scheme_id AND h.import_file_id=?\n           JOIN mf_scheme_classifications AS c\n             ON c.scheme_classification_id=(\n               SELECT MAX(c2.scheme_classification_id)\n               FROM mf_scheme_classifications AS c2\n               WHERE c2.scheme_id=s.scheme_id\n                 AND c2.valid_from_month<=h.disclosure_month\n                 AND (c2.valid_to_month IS NULL OR c2.valid_to_month>=h.disclosure_month)\n             )\n           LEFT JOIN mf_accepted_versions AS av\n             ON av.publisher=h.publisher AND av.scheme_id=h.scheme_id\n            AND av.disclosure_month=h.disclosure_month\n           GROUP BY s.scheme_id,c.scheme_classification_id,av.import_file_id\n           ORDER BY s.scheme_code'),
         (import_file_id, import_file_id),
     ).fetchall()
     state_events = conn.execute(
@@ -148,7 +149,7 @@ def build_mf_workbook_export(conn: sqlite3.Connection, import_file_id: int) -> d
     ).fetchall()
     stock_feature_lineage: dict[int, list[dict]] = {}
     for row in conn.execute(
-        """SELECT feature.stock_month_feature_id,
+        statement(conn, """SELECT feature.stock_month_feature_id,
                   change.scheme_security_change_id, change.change_set_id,
                   change.scheme_id, scheme.scheme_code,
                   classification.scheme_management_type,
@@ -173,7 +174,7 @@ def build_mf_workbook_export(conn: sqlite3.Connection, import_file_id: int) -> d
            WHERE input.previous_import_file_id=? OR input.current_import_file_id=?
            GROUP BY feature.stock_month_feature_id,
                     change.scheme_security_change_id
-           ORDER BY feature.stock_month_feature_id, change.scheme_id""",
+           ORDER BY feature.stock_month_feature_id, change.scheme_id""", 'SELECT DISTINCT feature.stock_month_feature_id,\n                  change.scheme_security_change_id, change.change_set_id,\n                  change.scheme_id, scheme.scheme_code,\n                  classification.scheme_management_type,\n                  classification.is_equity_scheme,\n                  classification.classification_rule_version,\n                  change.change_class, change.quantity_change_decimal,\n                  change.portfolio_weight_change_decimal,\n                  change.previous_import_file_id,\n                  change.current_import_file_id,\n                  lineage.previous_content_sha256,\n                  lineage.current_content_sha256\n           FROM mf_current_stock_monthly_features AS feature\n           JOIN mf_stock_month_feature_lineage AS lineage\n             ON lineage.stock_month_feature_id=feature.stock_month_feature_id\n           JOIN mf_scheme_security_month_changes AS change\n             ON change.scheme_security_change_id=lineage.scheme_security_change_id\n           JOIN mf_schemes AS scheme ON scheme.scheme_id=change.scheme_id\n           JOIN mf_scheme_classifications AS classification\n             ON classification.scheme_classification_id=lineage.scheme_classification_id\n           JOIN mf_stock_month_feature_inputs AS input\n             ON input.feature_set_id=feature.feature_set_id\n           WHERE input.previous_import_file_id=? OR input.current_import_file_id=?\n           \n           ORDER BY feature.stock_month_feature_id, change.scheme_id'),
         (import_file_id, import_file_id),
     ):
         stock_feature_lineage.setdefault(

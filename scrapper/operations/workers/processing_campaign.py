@@ -5,7 +5,7 @@ import json
 import sqlite3
 
 from ...config import assert_configured_writable_targets
-from ...db.database import connect
+from ...db.database import connect, selected_backend
 from ...db.documents.processing import ProcessingVersion, reconcile_processing
 from ...db.repo import utc_now
 from ...pipeline.extract_document import processing_version
@@ -13,6 +13,10 @@ from .document_processing import run_processing
 
 
 def read_connection(db_path):
+    if selected_backend() == 'postgresql':
+        conn = connect(db_path, read_only=True)
+        conn.execute('BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY')
+        return conn
     conn = sqlite3.connect(db_path.resolve().as_uri() + '?mode=ro', uri=True)
     conn.row_factory = sqlite3.Row
     conn.execute("BEGIN")  # Stable read-only inventory/preflight snapshot.

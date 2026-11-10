@@ -1,6 +1,10 @@
 """Exact M06 stock-month features and workbook/change lineage."""
 
 from __future__ import annotations
+from ..repository_backend import (
+    atomic_repository, begin_immediate, commit, execute, executemany, generated_id,
+    is_postgresql, rollback, statement, transaction,
+)
 
 import hashlib
 import json
@@ -42,7 +46,7 @@ def _json(value: object) -> str:
 def _effective_classification(
     conn: sqlite3.Connection, scheme_id: int, month: str
 ) -> sqlite3.Row | None:
-    return conn.execute(
+    return execute(conn,
         """SELECT * FROM mf_scheme_classifications
            WHERE scheme_id=? AND valid_from_month<=?
              AND (valid_to_month IS NULL OR valid_to_month>=?)
@@ -56,7 +60,7 @@ def _pair_inputs(
 ) -> tuple[list[dict], list[dict], bool]:
     scheme_ids = [
         int(row["scheme_id"])
-        for row in conn.execute(
+        for row in execute(conn,
             """SELECT previous.scheme_id
                FROM mf_accepted_versions AS previous
                WHERE previous.publisher=? AND previous.disclosure_month=?
@@ -79,14 +83,14 @@ def _pair_inputs(
     evidence: list[dict] = []
     complete_inputs: list[dict] = []
     for scheme_id in scheme_ids:
-        latest = conn.execute(
+        latest = execute(conn,
             """SELECT * FROM mf_scheme_month_change_sets
                WHERE publisher=? AND scheme_id=?
                  AND previous_month=? AND current_month=?
                ORDER BY change_set_id DESC LIMIT 1""",
             (publisher, scheme_id, previous_month, current_month),
         ).fetchone()
-        current = conn.execute(
+        current = execute(conn,
             """SELECT * FROM mf_current_scheme_month_change_sets
                WHERE publisher=? AND scheme_id=?
                  AND previous_month=? AND current_month=?""",
@@ -122,7 +126,7 @@ def _pair_inputs(
             continue
         previous_import_id = int(current["previous_import_file_id"])
         current_import_id = int(current["current_import_file_id"])
-        hashes = conn.execute(
+        hashes = execute(conn,
             """SELECT
                  (SELECT content_sha256 FROM mf_import_files WHERE import_file_id=?)
                    AS previous_hash,
@@ -154,20 +158,20 @@ def _pair_inputs(
 
 
 def _summary(conn: sqlite3.Connection, feature_set_id: int) -> FeatureGenerationSummary:
-    feature_set = conn.execute(
+    feature_set = execute(conn,
         "SELECT * FROM mf_stock_month_feature_sets WHERE feature_set_id=?",
         (feature_set_id,),
     ).fetchone()
     counts = {
         str(row["feature_scope"]): int(row["count"])
-        for row in conn.execute(
+        for row in execute(conn,
             """SELECT feature_scope, COUNT(*) AS count
                FROM mf_stock_monthly_features WHERE feature_set_id=?
                GROUP BY feature_scope""",
             (feature_set_id,),
         )
     }
-    lineage_count = int(conn.execute(
+    lineage_count = int(execute(conn,
         """SELECT COUNT(*) FROM mf_stock_month_feature_lineage AS lineage
            JOIN mf_stock_monthly_features AS feature
              ON feature.stock_month_feature_id=lineage.stock_month_feature_id
@@ -182,6 +186,7 @@ def _summary(conn: sqlite3.Connection, feature_set_id: int) -> FeatureGeneration
     )
 
 
+@atomic_repository('financial-repositories')
 def _persist_validations(
     conn: sqlite3.Connection, feature_set_id: int, *, complete: bool,
     classification_complete: bool, expected_counts: dict[str, int] | None = None,
@@ -220,14 +225,13 @@ def _persist_validations(
             {"scope_rule": "active_and_equity_only"},
         ),
     )
-    conn.executemany(
-        """INSERT OR IGNORE INTO mf_stock_month_feature_validations
-           (feature_set_id, rule_code, severity, validation_status, details_json)
-           VALUES (?, ?, 'error', ?, ?)""",
+    executemany(conn,
+        statement(conn, "INSERT OR IGNORE INTO mf_stock_month_feature_validations\n           (feature_set_id, rule_code, severity, validation_status, details_json)\n           VALUES (?, ?, 'error', ?, ?)", "INSERT INTO mf_stock_month_feature_validations\n           (feature_set_id, rule_code, severity, validation_status, details_json)\n           VALUES (?, ?, 'error', ?, ?) ON CONFLICT DO NOTHING"),
         ((feature_set_id, code, status, _json(details)) for code, status, details in rules),
     )
 
 
+@atomic_repository('financial-repositories')
 def generate_stock_month_features(
     conn: sqlite3.Connection, *, publisher: str, current_month: str,
     generated_at_utc: str,
@@ -255,13 +259,9 @@ def generate_stock_month_features(
     fingerprint = hashlib.sha256(
         _json(fingerprint_payload).encode("utf-8")
     ).hexdigest()
-    with conn:
-        conn.execute(
-            """INSERT OR IGNORE INTO mf_stock_month_feature_sets
-               (publisher, previous_month, current_month, aggregation_status,
-                reason_code, completeness_evidence_json, engine_version,
-                input_fingerprint, generated_at_utc)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+    with transaction(conn):
+        execute(conn,
+            statement(conn, 'INSERT OR IGNORE INTO mf_stock_month_feature_sets\n               (publisher, previous_month, current_month, aggregation_status,\n                reason_code, completeness_evidence_json, engine_version,\n                input_fingerprint, generated_at_utc)\n               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', 'INSERT INTO mf_stock_month_feature_sets\n               (publisher, previous_month, current_month, aggregation_status,\n                reason_code, completeness_evidence_json, engine_version,\n                input_fingerprint, generated_at_utc)\n               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT DO NOTHING'),
             (
                 publisher, previous_month, current_month,
                 "generated" if complete else "skipped", reason,
@@ -269,7 +269,7 @@ def generate_stock_month_features(
                 FEATURE_ENGINE_VERSION, fingerprint, generated_at_utc,
             ),
         )
-        feature_set_id = int(conn.execute(
+        feature_set_id = int(execute(conn,
             """SELECT feature_set_id FROM mf_stock_month_feature_sets
                WHERE input_fingerprint=?""", (fingerprint,)
         ).fetchone()[0])
@@ -279,14 +279,14 @@ def generate_stock_month_features(
                 classification_complete=classification_complete,
             )
             return _summary(conn, feature_set_id)
-        existing = conn.execute(
+        existing = execute(conn,
             """SELECT 1 FROM mf_stock_month_feature_inputs
                WHERE feature_set_id=? LIMIT 1""", (feature_set_id,)
         ).fetchone()
         if existing is not None:
             return _summary(conn, feature_set_id)
         for item in inputs:
-            conn.execute(
+            execute(conn,
                 """INSERT INTO mf_stock_month_feature_inputs
                    (feature_set_id, change_set_id, scheme_id,
                     scheme_classification_id, previous_import_file_id,
@@ -300,7 +300,7 @@ def generate_stock_month_features(
                     item["current_content_sha256"],
                 ),
             )
-        rows = conn.execute(
+        rows = execute(conn,
             """SELECT change.*
                FROM mf_current_scheme_security_month_changes AS change
                JOIN mf_stock_month_feature_inputs AS input
@@ -341,7 +341,7 @@ def generate_stock_month_features(
                 )
                 columns = tuple(metrics)
                 placeholders = ", ".join("?" for _ in columns)
-                cursor = conn.execute(
+                cursor = execute(conn,
                     f"""INSERT INTO mf_stock_monthly_features
                         (feature_set_id, publisher, security_id, isin_normalized,
                          disclosure_month, feature_scope, {', '.join(columns)},
@@ -351,11 +351,11 @@ def generate_stock_month_features(
                         feature_set_id, publisher, security_id, isin, current_month,
                         scope, *(metrics[key] for key in columns), generated_at_utc,
                     ),
-                )
-                feature_id = int(cursor.lastrowid)
+                 returning='stock_month_feature_id')
+                feature_id = int(generated_id(cursor, 'stock_month_feature_id'))
                 for row in scoped_rows:
                     item = classifications[int(row["scheme_id"])]
-                    conn.execute(
+                    execute(conn,
                         """INSERT INTO mf_stock_month_feature_lineage
                            (stock_month_feature_id, scheme_security_change_id,
                             scheme_classification_id, previous_content_sha256,
@@ -370,14 +370,14 @@ def generate_stock_month_features(
                     )
                     expected_lineage += 1
         actual_counts = {
-            scope: int(conn.execute(
+            scope: int(execute(conn,
                 """SELECT COUNT(*) FROM mf_stock_monthly_features
                    WHERE feature_set_id=? AND feature_scope=?""",
                 (feature_set_id, scope),
             ).fetchone()[0])
             for scope in FEATURE_SCOPES
         }
-        actual_lineage = int(conn.execute(
+        actual_lineage = int(execute(conn,
             """SELECT COUNT(*) FROM mf_stock_month_feature_lineage AS lineage
                JOIN mf_stock_monthly_features AS feature
                  ON feature.stock_month_feature_id=lineage.stock_month_feature_id
@@ -400,7 +400,7 @@ def derive_stock_month_features_through(
 ) -> tuple[FeatureGenerationSummary, ...]:
     months = [
         str(row["current_month"])
-        for row in conn.execute(
+        for row in execute(conn,
             """SELECT DISTINCT current_month FROM mf_scheme_month_change_sets
                WHERE publisher=? AND current_month<=? ORDER BY current_month""",
             (publisher, through_month),

@@ -12,8 +12,9 @@ def main():
     parser.add_argument('--host', action='append', required=True)
     parser.add_argument('--artifact-id', type=int)
     args = parser.parse_args()
-    conn = sqlite3.connect('file:/data/scraper.db?mode=ro', uri=True)
-    conn.row_factory = sqlite3.Row
+    from ..config import DB_PATH
+    from ..db.database import connect
+    conn = connect(DB_PATH, read_only=True)
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         for host in args.host:
@@ -21,7 +22,7 @@ def main():
                 FROM credit_rating_download_queue q JOIN document_artifacts a USING(artifact_id)
                 JOIN companies c USING(company_id) WHERE q.target_host=?
                 AND NOT EXISTS(SELECT 1 FROM artifact_contents ac WHERE ac.artifact_id=q.artifact_id)
-                AND (? IS NULL OR q.artifact_id=?)
+                AND (CAST(? AS integer) IS NULL OR q.artifact_id=?)
                 ORDER BY q.download_job_id LIMIT 1''', (host, args.artifact_id, args.artifact_id)).fetchone()
             if row is None:
                 continue

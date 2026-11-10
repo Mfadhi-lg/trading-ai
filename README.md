@@ -29,6 +29,12 @@ acquisition workflow. See [terminal commands and monitoring](docs/operations/ter
 
 ## Runtime and operation
 
+PostgreSQL 16 is the primary backend target for new configured deployments. The
+[application database setup](docs/database/POSTGRESQL_APPLICATION.md) covers
+explicit backend selection, restricted logins, target identity and verification.
+Existing installations retain SQLite unless deliberately configured otherwise;
+this does not change the pinned acquisition deployment below.
+
 The current workflow is the bounded host dispatcher documented in
 [operational recovery](docs/operations/operational-recovery-20261022.md). It admits
 finite exchange, financial, market-cap and document batches on its existing

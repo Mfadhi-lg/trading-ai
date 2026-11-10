@@ -3,7 +3,9 @@ from __future__ import annotations
 import sqlite3
 from ...documents.download.contracts import DownloadResult
 from ...documents.download.retry import _iso_after, _retry_after_seconds
+from scrapper.db.repository_backend import (execute, executemany, generated_id, statement, is_postgresql, atomic_repository, begin_immediate, commit, rollback, transaction as repository_transaction)
 
+@atomic_repository('documents')
 def _record_host_block(
     conn: sqlite3.Connection,
     *,
@@ -23,8 +25,8 @@ def _record_host_block(
     seconds = _retry_after_seconds(result, now_utc=now_utc) or default_seconds
     blocked_until = _iso_after(now_utc, seconds)
     raw_retry_after = result.response_headers.get("retry-after")
-    with conn:
-        conn.execute(
+    with repository_transaction(conn):
+        execute(conn,
             """INSERT INTO artifact_download_host_health
                (host, blocked_until_utc, last_http_status, consecutive_blocks,
                 last_result_status, retry_after_raw, updated_at_utc)
@@ -48,11 +50,12 @@ def _record_host_block(
     return blocked_until
 
 
+@atomic_repository('documents')
 def _record_host_success(
     conn: sqlite3.Connection, *, host: str, result: DownloadResult, now_utc: str
 ) -> None:
-    with conn:
-        conn.execute(
+    with repository_transaction(conn):
+        execute(conn,
             """UPDATE artifact_download_host_health
                   SET blocked_until_utc=NULL, last_http_status=?,
                       consecutive_blocks=0, last_result_status=?,
@@ -62,6 +65,7 @@ def _record_host_success(
         )
 
 
+@atomic_repository('documents')
 def _record_transport_host_failure(
     conn: sqlite3.Connection,
     *,
@@ -76,7 +80,7 @@ def _record_transport_host_failure(
 
     if threshold < 1:
         raise ValueError("Host failure threshold must be positive")
-    current = conn.execute(
+    current = execute(conn,
         "SELECT consecutive_blocks,last_result_status FROM artifact_download_host_health WHERE host=?",
         (host,),
     ).fetchone()
@@ -92,8 +96,8 @@ def _record_transport_host_failure(
     )
     failures = previous + 1
     blocked_until = _iso_after(now_utc, 60 * 60) if failures >= threshold else None
-    with conn:
-        conn.execute(
+    with repository_transaction(conn):
+        execute(conn,
             """INSERT INTO artifact_download_host_health
                (host,blocked_until_utc,last_http_status,consecutive_blocks,
                 last_result_status,retry_after_raw,updated_at_utc)

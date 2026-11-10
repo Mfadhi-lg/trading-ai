@@ -1,8 +1,10 @@
 """Read-only selection of saved rejected-page link repair candidates."""
+from scrapper.db.repository_backend import (execute, executemany, generated_id, statement, is_postgresql, atomic_repository, begin_immediate, commit, rollback, transaction as repository_transaction)
 
+@atomic_repository('documents')
 def list_repair_candidates(conn, *, period, limit, months, promoter_version):
     placeholders = ",".join("?" for _ in months)
-    rows = conn.execute(f"""WITH ranked AS (
+    rows = execute(conn, f"""WITH ranked AS (
       SELECT f.company_id,p.parse_id,max(f.fetched_at_utc) fetched_at_utc,
              row_number() OVER (PARTITION BY f.company_id
                ORDER BY max(f.fetched_at_utc) DESC,p.parse_id DESC) rn

@@ -1,5 +1,9 @@
 """Scheme registry, classification and auditable workbook acceptance."""
 from __future__ import annotations
+from ..repository_backend import (
+    atomic_repository, begin_immediate, commit, execute, executemany, generated_id,
+    is_postgresql, rollback, statement, transaction,
+)
 import sqlite3
 from dataclasses import dataclass
 from ...sources.amc_workbook.adapters import adapter_for_parsed
@@ -47,7 +51,7 @@ M04_VALIDATION_RULES = (
 def _resolved_classification(
     conn: sqlite3.Connection, scheme_id: int, disclosure_month: str
 ) -> sqlite3.Row | None:
-    return conn.execute(
+    return execute(conn,
         """SELECT * FROM mf_scheme_classifications
            WHERE scheme_id=? AND valid_from_month<=?
              AND (valid_to_month IS NULL OR valid_to_month>=?)
@@ -55,6 +59,7 @@ def _resolved_classification(
         (scheme_id, disclosure_month, disclosure_month),
     ).fetchone()
 
+@atomic_repository('financial-repositories')
 def persist_scheme_registry(
     conn: sqlite3.Connection,
     *,
@@ -66,7 +71,7 @@ def persist_scheme_registry(
     manifest = adapter.load_manifest()
     registry = manifest["scheme_registry"]
     declared = registry["schemes"]
-    observed_at = conn.execute(
+    observed_at = execute(conn,
         "SELECT first_observed_at_utc FROM mf_import_files WHERE import_file_id=?",
         (import_file_id,),
     ).fetchone()
@@ -74,38 +79,34 @@ def persist_scheme_registry(
         raise RuntimeError("Cannot classify schemes for a missing import")
     created_at = str(observed_at["first_observed_at_utc"])
     resolved: dict[str, tuple[int, sqlite3.Row]] = {}
-    with conn:
+    with transaction(conn):
         for sheet in parsed.sheets:
             policy = declared.get(sheet.scheme_code)
             if policy is None:
                 continue
-            scheme = conn.execute(
+            scheme = execute(conn,
                 "SELECT scheme_id, current_name FROM mf_schemes WHERE publisher=? AND scheme_code=?",
                 (parsed.detected_publisher, sheet.scheme_code),
             ).fetchone()
             if scheme is None:
-                cursor = conn.execute(
+                cursor = execute(conn,
                     """INSERT INTO mf_schemes(publisher, scheme_code, current_name)
                        VALUES (?, ?, ?)""",
                     (
                         parsed.detected_publisher, sheet.scheme_code,
                         sheet.scheme_name_raw,
                     ),
-                )
-                scheme_id = int(cursor.lastrowid)
+                 returning='scheme_id')
+                scheme_id = int(generated_id(cursor, 'scheme_id'))
             else:
                 scheme_id = int(scheme["scheme_id"])
                 if str(scheme["current_name"]) != sheet.scheme_name_raw:
-                    conn.execute(
+                    execute(conn,
                         "UPDATE mf_schemes SET current_name=? WHERE scheme_id=?",
                         (sheet.scheme_name_raw, scheme_id),
                     )
-            conn.execute(
-                """INSERT OR IGNORE INTO mf_scheme_name_versions
-                   (scheme_id, scheme_name_raw, valid_from_month, valid_to_month,
-                    naming_source, naming_rule_version, first_seen_import_file_id,
-                    created_at_utc)
-                   VALUES (?, ?, ?, NULL, ?, ?, ?, ?)""",
+            execute(conn,
+                statement(conn, 'INSERT OR IGNORE INTO mf_scheme_name_versions\n                   (scheme_id, scheme_name_raw, valid_from_month, valid_to_month,\n                    naming_source, naming_rule_version, first_seen_import_file_id,\n                    created_at_utc)\n                   VALUES (?, ?, ?, NULL, ?, ?, ?, ?)', 'INSERT INTO mf_scheme_name_versions\n                   (scheme_id, scheme_name_raw, valid_from_month, valid_to_month,\n                    naming_source, naming_rule_version, first_seen_import_file_id,\n                    created_at_utc)\n                   VALUES (?, ?, ?, NULL, ?, ?, ?, ?) ON CONFLICT DO NOTHING'),
                 (
                     scheme_id, sheet.scheme_name_raw,
                     parsed.detected_disclosure_month,
@@ -113,13 +114,8 @@ def persist_scheme_registry(
                     registry["naming_rule_version"], import_file_id, created_at,
                 ),
             )
-            conn.execute(
-                """INSERT OR IGNORE INTO mf_scheme_classifications
-                   (scheme_id, scheme_management_type, is_equity_scheme,
-                    scheme_category, valid_from_month, valid_to_month,
-                    classification_source, classification_rule_version,
-                    first_seen_import_file_id, created_at_utc)
-                   VALUES (?, ?, ?, ?, ?, NULL, ?, ?, ?, ?)""",
+            execute(conn,
+                statement(conn, 'INSERT OR IGNORE INTO mf_scheme_classifications\n                   (scheme_id, scheme_management_type, is_equity_scheme,\n                    scheme_category, valid_from_month, valid_to_month,\n                    classification_source, classification_rule_version,\n                    first_seen_import_file_id, created_at_utc)\n                   VALUES (?, ?, ?, ?, ?, NULL, ?, ?, ?, ?)', 'INSERT INTO mf_scheme_classifications\n                   (scheme_id, scheme_management_type, is_equity_scheme,\n                    scheme_category, valid_from_month, valid_to_month,\n                    classification_source, classification_rule_version,\n                    first_seen_import_file_id, created_at_utc)\n                   VALUES (?, ?, ?, ?, ?, NULL, ?, ?, ?, ?) ON CONFLICT DO NOTHING'),
                 (
                     scheme_id, policy["scheme_management_type"],
                     int(policy["is_equity_scheme"]), policy["scheme_category"],
@@ -134,7 +130,7 @@ def persist_scheme_registry(
             )
             if classification is not None:
                 resolved[sheet.scheme_code] = (scheme_id, classification)
-                conn.execute(
+                execute(conn,
                     """UPDATE mf_holdings
                        SET scheme_id=?, scheme_category=?
                        WHERE import_file_id=? AND scheme_code=?""",
@@ -150,17 +146,15 @@ def persist_scheme_registry(
         if classification["scheme_management_type"] == "active"
         and int(classification["is_equity_scheme"]) == 1
     }
-    holding_counts = conn.execute(
-        """SELECT COUNT(*) AS total,
-                  SUM(scheme_id IS NOT NULL AND scheme_category IS NOT NULL) AS classified
-           FROM mf_holdings WHERE import_file_id=?""",
+    holding_counts = execute(conn,
+        statement(conn, 'SELECT COUNT(*) AS total,\n                  SUM(scheme_id IS NOT NULL AND scheme_category IS NOT NULL) AS classified\n           FROM mf_holdings WHERE import_file_id=?', 'SELECT COUNT(*) AS total,\n                  SUM(CAST((scheme_id IS NOT NULL AND scheme_category IS NOT NULL) AS integer)) AS classified\n           FROM mf_holdings WHERE import_file_id=?'),
         (import_file_id,),
     ).fetchone()
     active_holding_count = 0
     if active_codes:
         placeholders = ",".join("?" for _ in active_codes)
         active_holding_count = int(
-            conn.execute(
+            execute(conn,
                 f"""SELECT COUNT(*) FROM mf_holdings
                      WHERE import_file_id=? AND scheme_code IN ({placeholders})""",
                 (import_file_id, *sorted(active_codes)),
@@ -174,6 +168,7 @@ def persist_scheme_registry(
         classification_rule_version=str(registry["classification_rule_version"]),
     )
 
+@atomic_repository('financial-repositories')
 def _transition_import_state(
     conn: sqlite3.Connection,
     *,
@@ -183,7 +178,7 @@ def _transition_import_state(
     changed_by: str,
     reason: dict,
 ) -> bool:
-    current = conn.execute(
+    current = execute(conn,
         "SELECT import_state FROM mf_import_files WHERE import_file_id=?",
         (import_file_id,),
     ).fetchone()
@@ -201,14 +196,14 @@ def _transition_import_state(
     if to_state not in allowed[from_state]:
         raise RuntimeError(f"Invalid mutual-fund import transition: {from_state}->{to_state}")
     reason_json = _json(reason)
-    conn.execute(
+    execute(conn,
         """UPDATE mf_import_files
            SET import_state=?, accepted_at_utc=CASE WHEN ?='accepted' THEN ? ELSE NULL END,
                state_reason_json=?
            WHERE import_file_id=?""",
         (to_state, to_state, changed_at_utc, reason_json, import_file_id),
     )
-    conn.execute(
+    execute(conn,
         """INSERT INTO mf_import_state_events
            (import_file_id, from_state, to_state, changed_at_utc, changed_by,
             reason_json)
@@ -220,6 +215,7 @@ def _transition_import_state(
     )
     return True
 
+@atomic_repository('financial-repositories')
 def finalize_ppfas_import(
     conn: sqlite3.Connection,
     *,
@@ -233,7 +229,7 @@ def finalize_ppfas_import(
         conn, import_file_id=import_file_id, parsed=parsed
     )
     expected_prior = set(adapter.structure_validation_rules) | set(M03_VALIDATION_RULES)
-    prior_rows = conn.execute(
+    prior_rows = execute(conn,
         """SELECT rule_code, severity, passed
            FROM mf_workbook_validation_results
            WHERE import_file_id=? AND rule_code NOT LIKE 'm04_%'""",
@@ -247,7 +243,7 @@ def finalize_ppfas_import(
     )
     sheet_codes = {
         str(row["detected_scheme_code"])
-        for row in conn.execute(
+        for row in execute(conn,
             """SELECT detected_scheme_code FROM mf_workbook_sheets
                WHERE import_file_id=? AND sheet_classification='portfolio'""",
             (import_file_id,),
@@ -259,7 +255,7 @@ def finalize_ppfas_import(
         adapter.expected_scheme_codes(manifest, parsed.detected_disclosure_month)
     )
     holding_count = int(
-        conn.execute(
+        execute(conn,
             "SELECT COUNT(*) FROM mf_holdings WHERE import_file_id=?",
             (import_file_id,),
         ).fetchone()[0]
@@ -270,7 +266,7 @@ def finalize_ppfas_import(
     links_complete = (
         holding_count > 0
         and registry_summary.classified_holding_count == holding_count
-        and conn.execute(
+        and execute(conn,
             """SELECT COUNT(*) FROM mf_holdings
                WHERE import_file_id=? AND scheme_id IS NULL""",
             (import_file_id,),
@@ -291,7 +287,7 @@ def finalize_ppfas_import(
         ("m04_scheme_classifications_complete", classifications_complete),
         ("m04_holdings_scheme_links_complete", links_complete),
     )
-    with conn:
+    with transaction(conn):
         for rule_code, passed in rules:
             _upsert_m03_validation(
                 conn, import_file_id, rule_code, severity="error",
@@ -300,7 +296,7 @@ def finalize_ppfas_import(
 
     failed_errors = tuple(
         str(row["rule_code"])
-        for row in conn.execute(
+        for row in execute(conn,
             """SELECT rule_code FROM mf_workbook_validation_results
                WHERE import_file_id=? AND severity='error' AND passed=0
                ORDER BY rule_code""",
@@ -309,7 +305,7 @@ def finalize_ppfas_import(
     )
     failed_warnings = tuple(
         str(row["rule_code"])
-        for row in conn.execute(
+        for row in execute(conn,
             """SELECT rule_code FROM mf_workbook_validation_results
                WHERE import_file_id=? AND severity='warning' AND passed=0
                ORDER BY rule_code""",
@@ -322,7 +318,7 @@ def finalize_ppfas_import(
             "failed_error_rules": list(failed_errors),
             "failed_warning_rules": list(failed_warnings),
         }
-        with conn:
+        with transaction(conn):
             _transition_import_state(
                 conn, import_file_id=import_file_id, to_state="rejected",
                 changed_at_utc=decided_at_utc, changed_by="m04_acceptance_workflow",
@@ -334,7 +330,7 @@ def finalize_ppfas_import(
         )
 
     validation_status = "passed_with_warnings" if failed_warnings else "passed"
-    imported = conn.execute(
+    imported = execute(conn,
         """SELECT publisher, detected_disclosure_month, import_state
            FROM mf_import_files WHERE import_file_id=?""",
         (import_file_id,),
@@ -343,13 +339,13 @@ def finalize_ppfas_import(
         raise RuntimeError("Accepted workbook is missing detected source identity")
     publisher = str(imported["publisher"])
     disclosure_month = str(imported["detected_disclosure_month"])
-    schemes = conn.execute(
+    schemes = execute(conn,
         """SELECT DISTINCT scheme_id FROM mf_holdings
            WHERE import_file_id=? ORDER BY scheme_id""",
         (import_file_id,),
     ).fetchall()
     superseded: set[int] = set()
-    with conn:
+    with transaction(conn):
         if str(imported["import_state"]) != "accepted":
             for scheme_row in schemes:
                 scheme_id = int(scheme_row["scheme_id"])
@@ -358,7 +354,7 @@ def finalize_ppfas_import(
                 )
                 if classification is None:
                     raise RuntimeError("Scheme classification disappeared during acceptance")
-                previous = conn.execute(
+                previous = execute(conn,
                     """SELECT import_file_id FROM mf_accepted_versions
                        WHERE publisher=? AND scheme_id=? AND disclosure_month=?""",
                     (publisher, scheme_id, disclosure_month),
@@ -366,20 +362,15 @@ def finalize_ppfas_import(
                 previous_id = int(previous["import_file_id"]) if previous else None
                 if previous_id is not None and previous_id != import_file_id:
                     superseded.add(previous_id)
-                conn.execute(
-                    """INSERT OR IGNORE INTO mf_accepted_version_events
-                       (publisher, scheme_id, disclosure_month, import_file_id,
-                        previous_import_file_id, scheme_classification_id,
-                        accepted_at_utc, accepted_by, acceptance_mode)
-                       VALUES (?, ?, ?, ?, ?, ?, ?, 'm04_acceptance_workflow',
-                               'automatic_complete_contract')""",
+                execute(conn,
+                    statement(conn, "INSERT OR IGNORE INTO mf_accepted_version_events\n                       (publisher, scheme_id, disclosure_month, import_file_id,\n                        previous_import_file_id, scheme_classification_id,\n                        accepted_at_utc, accepted_by, acceptance_mode)\n                       VALUES (?, ?, ?, ?, ?, ?, ?, 'm04_acceptance_workflow',\n                               'automatic_complete_contract')", "INSERT INTO mf_accepted_version_events\n                       (publisher, scheme_id, disclosure_month, import_file_id,\n                        previous_import_file_id, scheme_classification_id,\n                        accepted_at_utc, accepted_by, acceptance_mode)\n                       VALUES (?, ?, ?, ?, ?, ?, ?, 'm04_acceptance_workflow',\n                               'automatic_complete_contract') ON CONFLICT DO NOTHING"),
                     (
                         publisher, scheme_id, disclosure_month, import_file_id,
                         previous_id, int(classification["scheme_classification_id"]),
                         decided_at_utc,
                     ),
                 )
-                conn.execute(
+                execute(conn,
                     """INSERT INTO mf_accepted_versions
                        (publisher, scheme_id, disclosure_month, import_file_id,
                         accepted_at_utc, accepted_by, acceptance_mode)
@@ -407,12 +398,12 @@ def finalize_ppfas_import(
                 changed_at_utc=decided_at_utc, changed_by="m04_acceptance_workflow",
                 reason=reason,
             )
-            conn.execute(
+            execute(conn,
                 """UPDATE mf_holdings SET accepted_at_utc=?
                    WHERE import_file_id=?""",
                 (decided_at_utc, import_file_id),
             )
-            conn.execute(
+            execute(conn,
                 """INSERT INTO mf_workbook_acceptance_events
                    (import_file_id, decided_at_utc, decided_by, acceptance_mode,
                     validation_status, scheme_count,

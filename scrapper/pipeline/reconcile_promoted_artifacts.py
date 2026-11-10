@@ -9,6 +9,7 @@ from collections import Counter
 from typing import Any
 
 from ..db.repo import utc_now
+from ..db.repository_backend import statement
 
 
 PROMOTED_RECONCILER_VERSION = "1.0.0"
@@ -176,12 +177,12 @@ def reconcile_promoted_artifacts(
             continue
         with conn:
             cursor = conn.execute(
-                """INSERT OR IGNORE INTO artifact_check_events
+                statement(conn, """INSERT OR IGNORE INTO artifact_check_events
                    (expectation_id,checked_at_utc,source,requested_url,
                     result_status,evidence_json,discovered_artifact_id,
                     error_json,retryable,next_check_at_utc,claim_token)
                    VALUES (?,?,'promoted_artifact_reconciliation',NULL,'available',
-                           ?,?,'{}',0,NULL,?)""",
+                           ?,?,'{}',0,NULL,?)""", "INSERT INTO artifact_check_events\n                   (expectation_id,checked_at_utc,source,requested_url,\n                    result_status,evidence_json,discovered_artifact_id,\n                    error_json,retryable,next_check_at_utc,claim_token)\n                   VALUES (?,?,'promoted_artifact_reconciliation',NULL,'available',\n                           ?,?,'{}',0,NULL,?) ON CONFLICT DO NOTHING"),
                 (
                     expectation["expectation_id"],
                     checked,
