@@ -1,6 +1,7 @@
 {
   "migrations": {
-    "001_baseline.sql": "b71488c921d837d4379f878e76558246012cf01558ef528941165748d24f1331"
+    "001_baseline.sql": "b71488c921d837d4379f878e76558246012cf01558ef528941165748d24f1331",
+    "002_acceptance_history_index.sql": "1371e27e73a734d94791e339940436d858a6a1277636848decbf9d251b67b5ed"
   },
   "objects": {
     "index": [
