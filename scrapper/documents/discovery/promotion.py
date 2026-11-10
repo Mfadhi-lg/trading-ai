@@ -1,6 +1,7 @@
 """Promote accepted Screener document-link metadata into D01 artifacts."""
 
 from __future__ import annotations
+from scrapper.db.postgresql_source_text import decode_source_text
 from ...db.repository_backend import statement, is_postgresql, execute, generated_id, atomic_repository, begin_immediate
 
 import hashlib
@@ -128,7 +129,7 @@ def stored_artifact_period_evidence(conn, artifact_id, *, extra_texts=()):
                                      'WHERE extraction_id=? AND page_or_slide_number<=3 ORDER BY page_or_slide_number',
                                      (extraction['extraction_id'],)):
                 texts.append((f'extraction:{extraction["extraction_id"]}:page:{page["page_or_slide_number"]}',
-                              page['selected_text'][:16000]))
+                              decode_source_text(page['selected_text'])[:16000]))
     texts.extend(extra_texts)
     period, evidence = explicit_reporting_period(texts, call_labels=labels)
     if period:

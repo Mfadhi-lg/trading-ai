@@ -1,7 +1,9 @@
 {
   "migrations": {
     "001_baseline.sql": "b71488c921d837d4379f878e76558246012cf01558ef528941165748d24f1331",
-    "002_acceptance_history_index.sql": "1371e27e73a734d94791e339940436d858a6a1277636848decbf9d251b67b5ed"
+    "002_acceptance_history_index.sql": "1371e27e73a734d94791e339940436d858a6a1277636848decbf9d251b67b5ed",
+    "003_screener_queue_identities.sql": "8787bf3b3e359f803db158b27998bf804eaf982d8d75649e58b238e6e28299ff",
+    "004_document_source_text.sql": "0e868b8f96d1c26f8c28aac50c3aac2c74226f6d77c00a468c639053ac5aea45"
   },
   "objects": {
     "index": [

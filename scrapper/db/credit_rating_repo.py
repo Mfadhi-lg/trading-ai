@@ -15,6 +15,7 @@ from ..documents.credit_rating import (
     RatingEvidence,
     canonical_json,
 )
+from scrapper.db.postgresql_source_text import bind_source_text, decode_source_text
 from scrapper.db.repository_backend import (execute, executemany, generated_id, statement, is_postgresql, atomic_repository, begin_immediate, commit, rollback, transaction as repository_transaction)
 
 
@@ -202,7 +203,7 @@ def persist_credit_rating(
                     passage.passage_position,
                     passage.element_position,
                     passage.passage_kind,
-                    passage.text_raw,
+                    bind_source_text(conn, passage.text_raw),
                     passage.text_origin,
                     canonical_json(passage.bbox) if passage.bbox is not None else None,
                 ),
@@ -443,7 +444,7 @@ def credit_rating_payload(
                 "passage_position": row["passage_position"],
                 "element_position": row["element_position"],
                 "passage_kind": row["passage_kind"],
-                "text_raw": row["text_raw"],
+                "text_raw": decode_source_text(row["text_raw"]),
                 "text_origin": row["text_origin"],
                 "bbox": json.loads(row["bbox_json"]) if row["bbox_json"] else None,
             }

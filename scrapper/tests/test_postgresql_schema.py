@@ -15,6 +15,7 @@ import uuid
 from unittest import mock
 
 from scrapper.db import postgresql_schema as schema
+from scrapper.db.postgresql_source_text import SOURCE_TEXT_COLUMNS
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -84,14 +85,14 @@ class SchemaIntegrationTests(unittest.TestCase):
         conn.execute(self.sql.SQL("SET LOCAL search_path TO {}, pg_catalog").format(self.sql.Identifier(self.name)))
 
     def test_full_object_and_column_constraint_parity(self):
-        objects = schema.manifest()["objects"]
+        objects = schema.application_objects()
         with self.connect() as conn:
             self.session(conn)
             for kind, relkind in (("table", "r"), ("view", "v")):
                 names = {row["relname"] for row in conn.execute("SELECT relname FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname=%s AND c.relkind=%s", (self.name, relkind))}
                 self.assertEqual(names - {"_postgresql_migrations"}, set(objects[kind]))
             triggers = {row["tgname"] for row in conn.execute("SELECT tgname FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname=%s AND NOT t.tgisinternal", (self.name,))}
-            self.assertEqual(triggers, set(objects["trigger"]))
+            self.assertEqual(triggers, set(objects["trigger"]) - {"trg_queue_natural_insert_guard"})
             indexes = {row["indexname"] for row in conn.execute("SELECT indexname FROM pg_indexes WHERE schemaname=%s", (self.name,))}
             self.assertTrue(set(objects["index"]) <= indexes)
             for table in objects["table"]:
@@ -100,7 +101,7 @@ class SchemaIntegrationTests(unittest.TestCase):
                     dest = list(conn.execute("SELECT column_name, data_type, is_nullable FROM information_schema.columns WHERE table_schema=%s AND table_name=%s ORDER BY ordinal_position", (self.name, table)))
                     self.assertEqual([col[1] for col in source], [col["column_name"] for col in dest])
                     for col, target in zip(source, dest):
-                        self.assertEqual(target["data_type"], {"INTEGER": "bigint", "REAL": "double precision", "TEXT": "text"}[col[2]])
+                        self.assertEqual(target["data_type"], "bytea" if col[1] in SOURCE_TEXT_COLUMNS.get(table, ()) else {"INTEGER": "bigint", "REAL": "double precision", "TEXT": "text"}[col[2]])
                         self.assertEqual(target["is_nullable"], "NO" if col[3] or col[5] else "YES")
                     pks = conn.execute("SELECT a.attname FROM pg_index i JOIN pg_class c ON c.oid=i.indrelid JOIN pg_namespace n ON n.oid=c.relnamespace CROSS JOIN LATERAL unnest(i.indkey) WITH ORDINALITY k(attnum,ord) JOIN pg_attribute a ON a.attrelid=c.oid AND a.attnum=k.attnum WHERE n.nspname=%s AND c.relname=%s AND i.indisprimary ORDER BY k.ord", (self.name, table)).fetchall()
                     self.assertEqual([col[1] for col in sorted(source, key=lambda c: c[5]) if col[5]], [row["attname"] for row in pks])

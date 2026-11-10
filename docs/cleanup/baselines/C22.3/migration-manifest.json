@@ -309,6 +309,10 @@
     {
       "filename": "076_retire_crisil_icra_terms_holds.sql",
       "sha256": "3f94543a4af7c1d02742c0a6db8274546d9f98ef1cc83b8f5bc493d7e18d163f"
+    },
+    {
+      "filename": "077_screener_queue_identities.sql",
+      "sha256": "971743ca3f471add760d3551c256af14968d36fcba86553c82d4e3e5909413f0"
     }
   ],
   "historical_identities": [
@@ -404,7 +408,8 @@
         "073_exchange_coordinator_tasks.sql",
         "074_collection_scope_tasks.sql",
         "075_periodic_dispatch.sql",
-        "076_retire_crisil_icra_terms_holds.sql"
+        "076_retire_crisil_icra_terms_holds.sql",
+        "077_screener_queue_identities.sql"
       ]
     },
     "c043_preparation": {
@@ -484,7 +489,8 @@
         "073_exchange_coordinator_tasks.sql",
         "074_collection_scope_tasks.sql",
         "075_periodic_dispatch.sql",
-        "076_retire_crisil_icra_terms_holds.sql"
+        "076_retire_crisil_icra_terms_holds.sql",
+        "077_screener_queue_identities.sql"
       ]
     },
     "c192_preparation": {
@@ -565,7 +571,8 @@
         "073_exchange_coordinator_tasks.sql",
         "074_collection_scope_tasks.sql",
         "075_periodic_dispatch.sql",
-        "076_retire_crisil_icra_terms_holds.sql"
+        "076_retire_crisil_icra_terms_holds.sql",
+        "077_screener_queue_identities.sql"
       ]
     },
     "c192_disposable_new": {
@@ -645,7 +652,8 @@
         "073_exchange_coordinator_tasks.sql",
         "074_collection_scope_tasks.sql",
         "075_periodic_dispatch.sql",
-        "076_retire_crisil_icra_terms_holds.sql"
+        "076_retire_crisil_icra_terms_holds.sql",
+        "077_screener_queue_identities.sql"
       ]
     },
     "c193_preparation": {
@@ -727,7 +735,8 @@
         "073_exchange_coordinator_tasks.sql",
         "074_collection_scope_tasks.sql",
         "075_periodic_dispatch.sql",
-        "076_retire_crisil_icra_terms_holds.sql"
+        "076_retire_crisil_icra_terms_holds.sql",
+        "077_screener_queue_identities.sql"
       ]
     },
     "c193_disposable_new": {
@@ -808,7 +817,8 @@
         "073_exchange_coordinator_tasks.sql",
         "074_collection_scope_tasks.sql",
         "075_periodic_dispatch.sql",
-        "076_retire_crisil_icra_terms_holds.sql"
+        "076_retire_crisil_icra_terms_holds.sql",
+        "077_screener_queue_identities.sql"
       ]
     },
     "c201_preparation": {
@@ -891,7 +901,8 @@
         "073_exchange_coordinator_tasks.sql",
         "074_collection_scope_tasks.sql",
         "075_periodic_dispatch.sql",
-        "076_retire_crisil_icra_terms_holds.sql"
+        "076_retire_crisil_icra_terms_holds.sql",
+        "077_screener_queue_identities.sql"
       ]
     },
     "c201_disposable_new": {
@@ -973,7 +984,8 @@
         "073_exchange_coordinator_tasks.sql",
         "074_collection_scope_tasks.sql",
         "075_periodic_dispatch.sql",
-        "076_retire_crisil_icra_terms_holds.sql"
+        "076_retire_crisil_icra_terms_holds.sql",
+        "077_screener_queue_identities.sql"
       ]
     }
   },

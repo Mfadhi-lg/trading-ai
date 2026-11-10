@@ -16,6 +16,15 @@ def manifest():
     return json.loads((MIGRATIONS / "manifest.json").read_text())
 
 
+def source_profile():
+    """The new source lineage is separate from the frozen PG001 baseline."""
+    return json.loads((MIGRATIONS / "sqlite_077_profile.json").read_text())
+
+
+def application_objects():
+    return source_profile()["objects"]
+
+
 def migration_files():
     expected = manifest()["migrations"]
     found = {path.name: path for path in MIGRATIONS.glob("*.sql")}
