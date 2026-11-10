@@ -53,6 +53,32 @@ The headline distinguishes **RUNNING** (observed batch process), **WAITING**
 heartbeat/process observation), and **PAUSED** (new batches disabled).
 BSE and other stage blockers remain visible even while other stages run.
 
+The candle section refreshes local backfill receipts on each monitor refresh.
+It shows source rows by timeframe, companies with nonempty history, companies
+with all four planned native histories versus the campaign target, and successful
+requests versus planned requests with failures separate. These are lifetime
+candle counts, independent of the selected financial reporting quarter. The
+campaign state and inventory timestamp remain visible, including while paused.
+Counts are batch snapshots, updated by acquisition after each configured batch
+and on exit; they are not a per-request archive census or a count of unique,
+validated candles. Missing or malformed inventory is shown as unavailable.
+The monitor reads only repository JSON receipts and never opens the Passport
+archive or issues candle provider requests. `monitor --once --json` includes the
+same summary under `feed.historical_candles`.
+
+On patched workers, execution receipts also report saved-data verification:
+requests checked in the current manifest, reused requests, activity and its
+observation time. Progress is saved at request boundaries at most once per ten
+seconds during reuse, so one slow file can delay an update. This is a saved
+observation, not proof the worker is still alive. Older workers omit this detail.
+The authorized full campaign resumes completed requests from durable SUCCESS
+rows in its exclusively owned index, without rereading their files on every
+wake. Resumed counts do not certify checksums. Interrupted responses still use
+checksum recovery, and uncertain provider delivery still stops without another
+GET. The full campaign checks all saved response and Parquet hashes during final
+verification before reporting completion. Consequently, damage to a previously
+completed file may be detected at that final audit rather than during startup.
+
 `/coverage` refreshes the guarded census and prints a scrollable overview:
 stored quarterly result coverage by date and reporting scope, Indian fiscal
 quarter labels, collection eligibility, financial work by result period, and
@@ -161,6 +187,10 @@ The terminal exit can therefore briefly wait for an existing read-only check.
 These remain the current guarded shutdown/wake commands. The CLI shell's typed
 `/wake` and `/shutdown` invoke those same commands. Continuous legacy workers,
 queue resets and requeue shortcuts are not restored as automatic workflow steps.
+Repeating `wake` while the dispatcher is loaded and admissions are enabled
+returns `already_awake` without draining active scheduled work, provided candle
+workers are already running or are not configured. Resuming paused acquisition
+still requires the ownership locks and all existing safety checks.
 `./scraper dashboard` explains that the web panel was removed.
 
 Source and financial/document backup guidance is preserved in

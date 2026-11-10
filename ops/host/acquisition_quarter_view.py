@@ -4,6 +4,7 @@ from rich.panel import Panel
 from rich.text import Text
 from rich.table import Table
 from reporting_quarters import label
+from candle_monitor import summary_lines
 
 
 def render_details(feed, inspection, view='all', compact=False):
@@ -21,6 +22,7 @@ def render_details(feed, inspection, view='all', compact=False):
         return t
     parts = [Text('Reporting Quarter: ['+title+']',style='bold cyan'),
              Text('March FY convention for shared labels; explicit company fiscal metadata remains authoritative.',style='dim')]
+    parts.extend(Text(value, style='cyan') for value in summary_lines(feed.get('historical_candles'), str))
     if inspection.get('quarter_error'):
         parts.append(Text('Refresh deferred: '+inspection['quarter_error'],style='yellow'))
     parts.append(Text('Database observed: '+str(inspection.get('quarter_at') or 'not yet observed')+' · r refresh · [ older · ] newer · a all · u unassigned · q quarter picker',style='dim'))

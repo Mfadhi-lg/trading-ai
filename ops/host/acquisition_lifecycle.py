@@ -406,10 +406,12 @@ def wake():
         # repository-digest aliases (for example after Docker save/load).
         run(['docker', 'image', 'inspect', IMAGE, nse_release['oci_index_digest']])
         candle_status=candles.status()
-        if (not PAUSE.exists() and loaded() and candle_status.get('status')=='RUNNING'
-                and candle_status.get('workers',{}).get('acquisition')):
-            # No activation occurs on an already-running wake. Its own known
-            # Passport writer must not be mistaken for an unrelated blocker.
+        candles_already_awake = (candle_status.get('status') == 'NOT_CONFIGURED' or
+            (candle_status.get('status') == 'RUNNING' and
+             candle_status.get('workers', {}).get('acquisition')))
+        if not PAUSE.exists() and loaded() and candles_already_awake:
+            # No activation occurs here. A running scheduler or known candle
+            # writer does not need to drain for an idempotent wake request.
             return {'status':'PASS','already_awake':True,'schedule':schedule_status(),
                     'storage':capacity,'historical_candles':candle_status}
         with lock(ACTIVATION / '.scheduler-admission.lock'):
