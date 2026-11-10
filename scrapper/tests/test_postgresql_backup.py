@@ -125,6 +125,8 @@ class BackupRestoreTests(unittest.TestCase):
                 self.assertGreater(archive.stat().st_size, 0)
                 client('pg_restore', restored, '--dbname=' + database, '--exit-on-error',
                        '--no-owner', '--no-privileges', str(archive))
+                with connect(restored,read_only=True) as conn:
+                    check_compatibility(conn,schema)
                 ddl_args = ('--schema-only', '--no-owner', '--no-privileges', '--schema=' + schema)
                 self.assertEqual(portable_ddl(client('pg_dump', settings, *ddl_args)),
                                  portable_ddl(client('pg_dump', restored, *ddl_args)))
