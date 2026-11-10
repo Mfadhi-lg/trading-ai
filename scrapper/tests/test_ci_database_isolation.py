@@ -34,6 +34,17 @@ class CiDatabaseIsolationTests(unittest.TestCase):
                 for key in ISOLATED_PATH_KEYS:
                     self.assertIn(f'echo "{key}=$test_root/', content)
 
+    def test_postgresql_service_and_backup_drill_are_disposable(self):
+        content = (ROOT / ".github/workflows/postgresql.yml").read_text()
+        self.assertIn("image: postgres:16.14-bookworm", content)
+        self.assertIn("TRADING_AI_POSTGRESQL_TEST_DSN: postgresql://postgres:postgres@127.0.0.1:5432/trading_ai_test", content)
+        self.assertIn("POSTGRES_DB: trading_ai_test", content)
+        self.assertIn("postgresql-client-16", content)
+        self.assertIn("-p 'test_postgresql*.py'", content)
+        self.assertNotIn("secrets.", content)
+        self.assertNotIn("volumes:", content)
+        self.assertNotIn("DATABASE_URL:", content)
+
     def test_ml_readiness_initializes_the_configured_database(self):
         workflow = (ROOT / ".github" / "workflows" / "ml-readiness.yml").read_text(
             encoding="utf-8"
