@@ -11,12 +11,12 @@ import tempfile
 import unittest
 import uuid
 
-from scrapper.db.postgresql_transfer import export_snapshot, file_sha256, read_snapshot, transfer
+from scrapper.db.postgresql_transfer import export_snapshot, file_sha256, read_snapshot, source_tables, transfer
 from scrapper.tests.test_postgresql_schema import synthetic_sqlite
 
 
-def make_source(path, *, wal=False):
-    source = synthetic_sqlite()
+def make_source(path, *, wal=False, formatted=False):
+    source = formatted_sqlite() if formatted else synthetic_sqlite()
     with closing(sqlite3.connect(path)) as disk:
         source.backup(disk)
     source.close()
@@ -39,6 +39,116 @@ def make_source(path, *, wal=False):
     conn.execute("UPDATE document_artifacts SET preferred_content_id=61 WHERE artifact_id=51")
     conn.commit()
     return conn
+
+
+def formatted_sqlite():
+    """Normal ledger bootstrap plus the three observed DDL formatting variants."""
+    with closing(synthetic_sqlite()) as baseline:
+        statements = list(baseline.iterdump())
+    conn = sqlite3.connect(":memory:")
+    conn.execute("CREATE TABLE schema_migrations (version TEXT PRIMARY KEY, applied_at_utc TEXT NOT NULL)")
+    formatted = []
+    for statement in statements:
+        if statement.startswith("CREATE TABLE schema_migrations"):
+            continue
+        if statement.startswith('CREATE TABLE "exchange_source_snapshots"'):
+            statement = statement.replace('"exchange_source_snapshots"', 'exchange_source_snapshots', 1)
+            statement = statement.replace("\n    ", "\n        ")
+        if statement.startswith("CREATE INDEX idx_exchange_source_excluded_class"):
+            statement = statement.replace("\n", " ")
+        formatted.append(statement)
+    conn.executescript("\n".join(formatted))
+    return conn
+
+
+class SourceSchemaTests(unittest.TestCase):
+    def test_runtime_bootstrap_and_observed_formatting_are_accepted(self):
+        with closing(formatted_sqlite()) as conn:
+            before = list(conn.execute("SELECT type,name,sql FROM sqlite_master ORDER BY name"))
+            self.assertEqual(len(source_tables(conn)), 157)
+            self.assertEqual(before, list(conn.execute("SELECT type,name,sql FROM sqlite_master ORDER BY name")))
+
+    def test_real_drift_is_rejected_even_with_formatting_variants(self):
+        replacements = (
+            ("excluded_row_count >= 0", "excluded_row_count >= -1"),
+            ("header_json TEXT NOT NULL DEFAULT '[]'", "header_json TEXT NOT NULL DEFAULT '[ ]'"),
+            ("source_label TEXT NOT NULL", "source_label TEXT"),
+            ("source_encoding TEXT NOT NULL", "source_encoding BLOB NOT NULL"),
+            ("REFERENCES response_blobs(blob_id)", "REFERENCES response_blobs(blob_id) ON DELETE CASCADE"),
+            ("UNIQUE(dataset, effective_date, blob_id, parser_name, parser_version)",
+             "UNIQUE(dataset, effective_date, blob_id, parser_name)"),
+        )
+        with closing(formatted_sqlite()) as baseline:
+            dump = "\n".join(baseline.iterdump())
+        for old, new in replacements:
+            with self.subTest(change=new), closing(sqlite3.connect(":memory:")) as conn:
+                self.assertIn(old, dump)
+                conn.executescript(dump.replace(old, new, 1))
+                with self.assertRaisesRegex(RuntimeError, "schema differs"):
+                    source_tables(conn)
+
+    def test_object_inventory_and_definitions_are_enforced(self):
+        changes = (
+            "DROP INDEX idx_exchange_source_excluded_class",
+            "DROP INDEX idx_exchange_source_excluded_class; CREATE INDEX idx_exchange_source_excluded_class ON exchange_source_excluded_rows(snapshot_id)",
+            "CREATE TABLE unexpected (id INTEGER PRIMARY KEY)",
+        )
+        with closing(formatted_sqlite()) as sample:
+            for kind in ("trigger", "view"):
+                name = sample.execute("SELECT name FROM sqlite_master WHERE type=? LIMIT 1", (kind,)).fetchone()[0]
+                changes += (f'DROP {kind} "{name}"',)
+        for ddl in changes:
+            with self.subTest(ddl=ddl), closing(formatted_sqlite()) as conn:
+                conn.executescript(ddl)
+                with self.assertRaisesRegex(RuntimeError, "schema differs"):
+                    source_tables(conn)
+
+    def test_token_boundaries_literals_comments_and_expression_quotes_are_preserved(self):
+        from scrapper.db.postgresql_transfer import _catalog_tokens
+        normalize = lambda ddl: _catalog_tokens([("view", "example", ddl)])
+        pairs = (
+            ("SELECT 'a b'", "SELECT 'ab'"),
+            ("SELECT 'a'' b'", "SELECT 'a''b'"),
+            ('SELECT "a b"', 'SELECT "ab"'),
+            ('SELECT "label"', "SELECT label"),
+            ("SELECT 1 <= 2", "SELECT 1 < = 2"),
+            ("SELECT a || b", "SELECT a | | b"),
+            ("SELECT 1e2", "SELECT 1 e2"),
+            ("SELECT ab", "SELECT a b"),
+            ("SELECT 1 -- comment\n+ 2", "SELECT 1 -- comment + 2"),
+        )
+        for before, after in pairs:
+            with self.subTest(before=before):
+                self.assertNotEqual(normalize(before), normalize(after))
+        self.assertEqual(normalize("SELECT\n 1 + 2"), normalize("SELECT 1+2"))
+
+    def test_fallback_requires_pinned_migration_bytes_and_original_catalog_hash(self):
+        from unittest import mock
+        from scrapper.db.postgresql_schema import manifest
+        for corrupt in ("migration", "catalog"):
+            expected = manifest()
+            if corrupt == "migration":
+                expected["sqlite_sources"][next(iter(expected["sqlite_sources"]))] = "0" * 64
+            else:
+                expected["sqlite_schema_sha256"] = "0" * 64
+            with self.subTest(corrupt=corrupt), closing(formatted_sqlite()) as conn:
+                with mock.patch("scrapper.db.postgresql_transfer.manifest", return_value=expected):
+                    with self.assertRaises(RuntimeError):
+                        source_tables(conn)
+
+    def test_formatted_snapshot_exports_and_restores_without_schema_rewrite(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            original, snapshot, restored = (root / name for name in ("source.db", "snapshot.db", "restored.db"))
+            with closing(formatted_sqlite()) as source, closing(sqlite3.connect(original)) as disk:
+                source.backup(disk)
+            before = file_sha256(original)
+            first = export_snapshot(original, snapshot)
+            second = export_snapshot(snapshot, restored)
+            self.assertEqual(first["status"], "verified_snapshot")
+            self.assertEqual(first["tables"], second["tables"])
+            self.assertEqual(len(first["tables"]), 157)
+            self.assertEqual(file_sha256(original), before)
 
 
 class SnapshotTests(unittest.TestCase):
@@ -117,7 +227,7 @@ class TransferIntegrationTests(unittest.TestCase):
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
         self.source = self.root / "source.db"
-        writer = make_source(self.source)
+        writer = make_source(self.source, formatted=True)
         writer.close()
         self.snapshot = self.root / "snapshot.db"
         self.backup = export_snapshot(self.source, self.snapshot, batch_size=2)
