@@ -181,11 +181,11 @@ def provision_policy(conn, schema, role, authorizer):
     comments or source tables. The operator configures authentication separately.
     Unsafe ambient PUBLIC privileges make provisioning roll back and fail closed.
     """
-    from psycopg import sql
-    from psycopg.pq import TransactionStatus
     validate_schema_name(schema)
     _role_name(role)
     _callback(authorizer)
+    from psycopg import sql
+    from psycopg.pq import TransactionStatus
     if conn.info.transaction_status != TransactionStatus.INTRANS:
         raise PermissionPolicyError('Role provisioning requires a managed administrator transaction')
     check_compatibility(conn, schema)
