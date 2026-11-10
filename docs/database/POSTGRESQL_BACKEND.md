@@ -119,3 +119,7 @@ The reviewed PostgreSQL schema baseline and explicit migration procedure are in
 
 Hash-authorized snapshot transfer, failure handling and the operator cutover/rollback
 procedure are documented in [POSTGRESQL_TRANSFER.md](POSTGRESQL_TRANSFER.md).
+
+Backup policy, the disposable CI recovery drill, restore ownership and incident
+procedures are in [PostgreSQL recovery](POSTGRESQL_RECOVERY.md). A passing drill
+does not install production backups or authorize cutover.
