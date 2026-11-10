@@ -5,7 +5,7 @@ from pathlib import Path
 import re
 
 ROOT = Path(__file__).resolve().parents[2]
-OUTPUT = ROOT / 'docs/database/migration-inventory-2026-11-08.json'
+OUTPUT = ROOT / 'docs/database/migration-inventory.json'
 DECLARATION = re.compile(r'^\s*(CREATE\s+(?:UNIQUE\s+)?(?:TABLE|VIEW|INDEX|TRIGGER)|ALTER\s+TABLE|DROP\s+(?:TABLE|VIEW|INDEX|TRIGGER))\b', re.I)
 
 
@@ -25,8 +25,9 @@ def inventory():
                 declarations.append({'line': number, 'text': line.strip()})
         migrations.append({'path': str(path.relative_to(ROOT)), 'sha256': hashlib.sha256(raw).hexdigest(),
                            'lines': len(lines), 'declarations': declarations})
-    return {'format_version': 1, 'audited_commit': 'd2502db890fa5f361c0e32d2c636e795f4496632',
-            'generated_at': '2026-11-08', 'source_manifest': 'docs/cleanup/baselines/C22.3/migration-manifest.json',
+    return {'format_version': 2, 'kind': 'current_source_inventory',
+            'source_manifest_sha256': hashlib.sha256((ROOT / 'docs/cleanup/baselines/C22.3/migration-manifest.json').read_bytes()).hexdigest(),
+            'source_manifest': 'docs/cleanup/baselines/C22.3/migration-manifest.json',
             'migration_count': len(migrations), 'declaration_entry_count': sum(counts.values()),
             'declaration_counts': counts, 'migrations': migrations}
 
