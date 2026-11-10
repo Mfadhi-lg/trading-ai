@@ -3,6 +3,8 @@ import importlib.util
 import os
 from pathlib import Path
 import re
+import subprocess
+import sys
 import hashlib
 import json
 import shutil
@@ -31,8 +33,20 @@ class BaselineTests(unittest.TestCase):
         spec.loader.exec_module(generator)
         sql, manifest = generator.generate()
         self.assertEqual(sql, (schema.MIGRATIONS / "001_baseline.sql").read_text())
-        self.assertEqual(manifest, schema.manifest())
-        self.assertEqual(len(list(schema.migration_files())), 1)
+        committed = schema.manifest()
+        # The generated catalog certifies frozen PG001, not later migrations.
+        self.assertEqual(manifest['migrations']['001_baseline.sql'], committed['migrations']['001_baseline.sql'])
+        self.assertEqual({k: v for k, v in manifest.items() if k != 'migrations'},
+                         {k: v for k, v in committed.items() if k != 'migrations'})
+        self.assertEqual(len(list(schema.migration_files())), len(committed['migrations']))
+
+    def test_generator_cannot_overwrite_later_lineage(self):
+        before = {path.name: path.read_bytes() for path in schema.MIGRATIONS.iterdir() if path.is_file()}
+        result = subprocess.run([sys.executable, '-B', str(ROOT / 'scripts/audit/generate_postgresql_baseline.py')],
+                                capture_output=True, text=True, check=False)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('PG001 is frozen', result.stderr)
+        self.assertEqual(before, {path.name: path.read_bytes() for path in schema.MIGRATIONS.iterdir() if path.is_file()})
 
     def test_schema_name_rejects_shared_or_unsafe_schemas(self):
         for name in ("public", "pg_catalog", "information_schema", "a;drop", "A", "", "x" * 64):
@@ -106,7 +120,7 @@ class SchemaIntegrationTests(unittest.TestCase):
             schema.migrate(conn, self.name)
             schema.check_compatibility(conn, self.name)
             self.session(conn)
-            self.assertEqual(conn.execute("SELECT count(*) AS n FROM _postgresql_migrations").fetchone()["n"], 1)
+            self.assertEqual(conn.execute("SELECT count(*) AS n FROM _postgresql_migrations").fetchone()["n"], len(schema.manifest()["migrations"]))
             conn.execute("UPDATE _postgresql_migrations SET sha256='drift'")
         with self.assertRaisesRegex(RuntimeError, "lineage"):
             with self.connect() as conn:
@@ -124,21 +138,23 @@ class SchemaIntegrationTests(unittest.TestCase):
     def test_sequential_upgrade_and_transactional_failure(self):
         with tempfile.TemporaryDirectory() as root:
             migrations = Path(root)
-            shutil.copy(schema.MIGRATIONS / "001_baseline.sql", migrations)
+            for path in schema.MIGRATIONS.glob("*.sql"):
+                shutil.copy(path, migrations)
             info = schema.manifest()
+            initial_count = len(info["migrations"])
             content = "CREATE TABLE upgrade_probe(id bigint PRIMARY KEY);"
-            (migrations / "002_probe.sql").write_text(content)
-            info["migrations"]["002_probe.sql"] = hashlib.sha256(content.encode()).hexdigest()
+            (migrations / "900_probe.sql").write_text(content)
+            info["migrations"]["900_probe.sql"] = hashlib.sha256(content.encode()).hexdigest()
             (migrations / "manifest.json").write_text(json.dumps(info))
             with mock.patch.object(schema, "MIGRATIONS", migrations):
                 with self.connect() as conn:
                     schema.migrate(conn, self.name)
                     schema.check_compatibility(conn, self.name)
                     self.session(conn)
-                    self.assertEqual(conn.execute("SELECT count(*) AS n FROM _postgresql_migrations").fetchone()["n"], 2)
+                    self.assertEqual(conn.execute("SELECT count(*) AS n FROM _postgresql_migrations").fetchone()["n"], initial_count + 1)
                 bad = "CREATE TABLE rollback_probe(id bigint); SELECT nonexistent_column;"
-                (migrations / "003_failure.sql").write_text(bad)
-                info["migrations"]["003_failure.sql"] = hashlib.sha256(bad.encode()).hexdigest()
+                (migrations / "901_failure.sql").write_text(bad)
+                info["migrations"]["901_failure.sql"] = hashlib.sha256(bad.encode()).hexdigest()
                 (migrations / "manifest.json").write_text(json.dumps(info))
                 import psycopg
                 with self.assertRaises(psycopg.errors.UndefinedColumn):
@@ -147,7 +163,32 @@ class SchemaIntegrationTests(unittest.TestCase):
                 with self.connect() as conn:
                     self.session(conn)
                     self.assertIsNone(conn.execute("SELECT to_regclass('rollback_probe') AS n").fetchone()["n"])
-                    self.assertEqual(conn.execute("SELECT count(*) AS n FROM _postgresql_migrations").fetchone()["n"], 2)
+                    self.assertEqual(conn.execute("SELECT count(*) AS n FROM _postgresql_migrations").fetchone()["n"], initial_count + 1)
+
+    def test_upgrade_from_frozen_baseline_adds_only_history_index(self):
+        from scrapper.db.postgresql import PostgreSQLSettings, connect
+        target = self.name + "_v1"
+        settings = PostgreSQLSettings(os.environ["TRADING_AI_POSTGRESQL_TEST_DSN"])
+        try:
+            with tempfile.TemporaryDirectory() as root:
+                migrations = Path(root)
+                shutil.copy(schema.MIGRATIONS / "001_baseline.sql", migrations)
+                info = schema.manifest()
+                info["migrations"] = {"001_baseline.sql": info["migrations"]["001_baseline.sql"]}
+                (migrations / "manifest.json").write_text(json.dumps(info))
+                with mock.patch.object(schema, "MIGRATIONS", migrations):
+                    with connect(settings) as conn:
+                        schema.migrate(conn, target)
+                        conn.execute(self.sql.SQL("INSERT INTO {}.companies(current_legal_name) VALUES ('0001.2300')").format(self.sql.Identifier(target)))
+            with connect(settings) as conn:
+                schema.migrate(conn, target)
+                schema.check_compatibility(conn, target)
+                self.assertEqual(conn.execute(self.sql.SQL("SELECT current_legal_name FROM {}.companies").format(self.sql.Identifier(target))).fetchone()["current_legal_name"], "0001.2300")
+                definition = conn.execute("SELECT indexdef FROM pg_indexes WHERE schemaname=%s AND indexname='idx_acceptance_events_company_scope'", (target,)).fetchone()["indexdef"]
+                self.assertIn("(company_id, reporting_scope)", definition)
+        finally:
+            with connect(settings) as conn:
+                conn.execute(self.sql.SQL("DROP SCHEMA IF EXISTS {} CASCADE").format(self.sql.Identifier(target)))
 
     def test_temporary_tables_cannot_shadow_trigger_guards(self):
         import psycopg

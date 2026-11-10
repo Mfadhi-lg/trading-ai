@@ -144,6 +144,9 @@ def generate():
 
 
 if __name__ == "__main__":
+    existing = OUTPUT / "manifest.json"
+    if existing.exists() and set(json.loads(existing.read_text())["migrations"]) != {"001_baseline.sql"}:
+        raise RuntimeError("PG001 is frozen; add reviewed migrations instead of regenerating the baseline")
     sql, manifest = generate()
     OUTPUT.mkdir(exist_ok=True)
     (OUTPUT / "001_baseline.sql").write_text(sql)

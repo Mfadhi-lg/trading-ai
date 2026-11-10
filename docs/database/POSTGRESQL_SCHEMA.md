@@ -72,11 +72,10 @@ rewrite the ledger to silence a drift error.
 
 ## Maintenance and rollback
 
-The development generator reads only synthetic SQLite migrations 001–076:
-
-```sh
-python -B scripts/audit/generate_postgresql_baseline.py
-```
+The development generator's pure `generate()` reads only synthetic SQLite
+migrations 001–076; the schema tests compare those bytes with frozen PG001.
+Its command-line writer refuses regeneration once later PostgreSQL migrations
+exist, preventing accidental deletion of their manifest identities.
 
 Generated SQL and its source/SQL hashes are committed for review. The runtime
 runner executes committed PostgreSQL SQL; it never translates SQLite DDL.
@@ -98,3 +97,10 @@ CHECK counts, view resolution, representative trigger guards, generated IDs,
 exact strings, migration idempotency, checksum/drift rejection, sequential
 upgrade failure and rollback. It does not certify production records or worker
 repository parity.
+
+## Measured query index (PG002)
+
+`002_acceptance_history_index.sql` adds the measured company/scope index on
+acceptance history. No existing schema types, queries or SQLite migration bytes
+change. See [performance workload and evidence](POSTGRESQL_PERFORMANCE.md) for
+reproduction, plans, concurrency, rollout and rollback limits.
