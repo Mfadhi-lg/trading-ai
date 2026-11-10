@@ -3,10 +3,11 @@
 No implicit production access, schema application, destructive destination reset,
 upsert, type coercion, source mutation or application-runtime activation.
 """
-from contextlib import contextmanager
+from contextlib import closing, contextmanager
 import hashlib
 import json
 import os
+import re
 from pathlib import Path
 import sqlite3
 from urllib.parse import quote
@@ -39,11 +40,62 @@ def file_sha256(path):
     return digest.hexdigest()
 
 
-def source_tables(conn):
-    catalog = list(conn.execute("SELECT type, name, sql FROM sqlite_master WHERE sql IS NOT NULL AND name NOT LIKE 'sqlite_%' ORDER BY name"))
-    checksum = hashlib.sha256(json.dumps(catalog, ensure_ascii=True, separators=(",", ":")).encode()).hexdigest()
-    if checksum != manifest()["sqlite_schema_sha256"]:
+# Keep quoted values, comments, identifiers, numbers and compound operators
+# atomic. Only SQLite whitespace *between* tokens may be ignored. In particular,
+# never collapse whitespace inside literals or merge distinct SQL tokens.
+_SQL_TOKEN = re.compile(
+    r"'(?:''|[^'])*'"
+    + r'|"(?:""|[^"])*"|`(?:``|[^`])*`|\[[^\]]*\]'
+    + r"|--[^\n]*|/\*.*?\*/"
+    + r"|->>|->|==|!=|<>|<=|>=|<<|>>|\|\|"
+    + r"|[A-Za-z_][A-Za-z_0-9$]*|[0-9]+(?:\.[0-9]*)?(?:[eE][+-]?[0-9]+)?"
+    + r"|[^ \t\n\r\f\v]",
+    re.DOTALL,
+)
+
+
+def _catalog(conn):
+    return list(conn.execute("SELECT type, name, sql FROM sqlite_master WHERE sql IS NOT NULL AND name NOT LIKE 'sqlite_%' ORDER BY name"))
+
+
+def _catalog_sha256(catalog):
+    return hashlib.sha256(json.dumps(catalog, ensure_ascii=True, separators=(",", ":")).encode()).hexdigest()
+
+
+def _catalog_tokens(catalog):
+    normalized = []
+    for kind, name, ddl in catalog:
+        tokens = _SQL_TOKEN.findall(ddl)
+        # Only the declared CREATE TABLE name is interchangeable with its
+        # double-quoted spelling. Quoted expressions elsewhere remain exact.
+        if kind == "table" and tokens[:2] == ["CREATE", "TABLE"] and tokens[2] == sqlite_identifier(name):
+            tokens[2] = name
+        normalized.append((kind, name, tokens))
+    return normalized
+
+
+def _check_source_catalog(conn):
+    expected = manifest()
+    catalog = _catalog(conn)
+    if _catalog_sha256(catalog) == expected["sqlite_schema_sha256"]:
+        return
+    # Reconstruct only the checksum-pinned frozen lineage in memory, never in
+    # the source. Anchor its exact catalog to the existing reviewed manifest
+    # before using its token representation as the formatting fallback.
+    with closing(sqlite3.connect(":memory:")) as baseline:
+        for name, checksum in sorted(expected["sqlite_sources"].items()):
+            content = Path(__file__).with_name("migrations").joinpath(name).read_bytes()
+            if hashlib.sha256(content).hexdigest() != checksum:
+                raise RuntimeError("SQLite baseline migration checksum mismatch")
+            baseline.executescript(content.decode())
+        reviewed = _catalog(baseline)
+    if (_catalog_sha256(reviewed) != expected["sqlite_schema_sha256"]
+            or _catalog_tokens(catalog) != _catalog_tokens(reviewed)):
         raise RuntimeError("SQLite schema differs from the reviewed PostgreSQL baseline")
+
+
+def source_tables(conn):
+    _check_source_catalog(conn)
     if conn.execute("PRAGMA integrity_check").fetchall() != [("ok",)]:
         raise RuntimeError("SQLite integrity check failed")
     if conn.execute("PRAGMA foreign_key_check").fetchone() is not None:

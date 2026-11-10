@@ -12,6 +12,16 @@ non-null primary keys. Unsupported schema drift, dynamically mistyped values,
 NUL characters PostgreSQL cannot store, invalid constraints or oversized integer
 values fail explicitly; records are never repaired, skipped or truncated.
 
+The catalog check first accepts the original exact SQL fingerprint. For normal
+SQLite initialization/rebuild formatting variants, it reconstructs the frozen
+001–076 lineage in memory from checksum-verified files and requires its catalog
+to match the existing manifest. It then compares SQL tokens, ignoring only
+whitespace between tokens and optional double quotes around the declared
+`CREATE TABLE` name. Literals, quoted expressions, comments, token boundaries,
+object inventories and all schema definitions remain significant. The source
+schema and frozen manifests are never rewritten. This deliberately conservative
+comparison does not accept arbitrary semantically equivalent SQL.
+
 The source is opened with `mode=ro` and `query_only`. SQLite's backup API
 captures committed WAL data into a newly created private snapshot. Only the new
 snapshot is switched to rollback-journal mode. The source file, source journal
