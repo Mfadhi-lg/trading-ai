@@ -29,6 +29,24 @@ def isolated(tmp_path, monkeypatch):
     monkeypatch.setattr(lifecycle, 'PAUSE', state / 'lifecycle-paused.json')
     monkeypatch.setattr(lifecycle, 'PREVIOUS', state / 'previous.json')
     monkeypatch.setattr(lifecycle, 'ACTIVATION', activation)
+    # Synthetic prerequisites: never read the developer's credentials or rely
+    # on a macOS desktop/Chrome installation in an isolated checkout or CI.
+    monkeypatch.setattr(lifecycle, 'ROOT', tmp_path)
+    (tmp_path / '.screener_session').write_text('synthetic-test-session')
+    original_stat = lifecycle.os.stat
+    def fixture_stat(path, *args, **kwargs):
+        if str(path) == '/dev/console':
+            return SimpleNamespace(st_uid=lifecycle.os.getuid())
+        return original_stat(path, *args, **kwargs)
+    monkeypatch.setattr(lifecycle.os, 'stat', fixture_stat)
+    original_is_file = Path.is_file
+    def fixture_is_file(path):
+        if str(path) == '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome':
+            return True
+        return original_is_file(path)
+    monkeypatch.setattr(Path, 'is_file', fixture_is_file)
+    import nse_results
+    monkeypatch.setattr(nse_results, 'check_configuration', lambda: {'oci_index_digest': 'fixture-index'})
     monkeypatch.setattr(lifecycle, 'config', lambda: {'manifest': 'reviewed'})
     monkeypatch.setattr(lifecycle, 'loaded', lambda: True)
     monkeypatch.setattr(lifecycle, 'quiescent', lambda: {'database': {'leases': {'status': 'PASS'}}})
@@ -90,6 +108,20 @@ def test_already_running_candle_wake_does_not_require_its_writer_to_be_idle(isol
     def active():raise AssertionError('Already-awake owner must not drain itself')
     monkeypatch.setattr(lifecycle,'quiescent',active)
     assert lifecycle.wake()['already_awake']
+
+
+@pytest.mark.parametrize('owner_lock', ['.scheduler-admission.lock', '.nse-owner.lock'])
+def test_already_awake_without_candles_does_not_drain_active_owner(isolated, monkeypatch, owner_lock):
+    monkeypatch.setattr(lifecycle.candles, 'status', lambda: {'status': 'NOT_CONFIGURED'})
+    def unexpected_start():
+        pytest.fail('An already-awake dispatcher must not start candle workers')
+    monkeypatch.setattr(lifecycle.candles, 'wake', unexpected_start)
+    with (lifecycle.ACTIVATION / owner_lock).open('rb') as owner:
+        fcntl.flock(owner, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        result = lifecycle.wake()
+    assert result['status'] == 'PASS' and result['already_awake']
+    assert not lifecycle.PAUSE.exists()
+    assert not any(c[:2] == ['launchctl', 'bootstrap'] for c in isolated)
 
 
 def test_wake_uses_sealed_local_image_without_repository_alias(isolated, monkeypatch):

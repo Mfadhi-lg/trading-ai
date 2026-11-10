@@ -10,6 +10,7 @@ from rich.text import Text
 
 from reporting_quarters import default_quarter, label
 from scrapper.view.monitor import _clean_path, _display_outcome
+from candle_monitor import summary_lines
 
 
 def when(value):
@@ -132,6 +133,7 @@ class Monitor:
         parts.append(line(f"Documents · links {number(ac, 'document_links_discovered')} · stored {number(ac, 'documents_already_stored')} · processed {number(ac, 'document_processing_completed')}", 'cyan'))
         processing = data.get('processing')
         parts.append(line('Processing · ' + (' · '.join(f"{r['state'].replace('_', ' ')} {r['n']:,}" for r in processing) if processing else 'no content states observed'), 'dim'))
+        parts.extend(line(value, 'cyan') for value in summary_lines(feed.get('historical_candles'), when, short))
         if not data:
             parts.append(line('Quarter data unavailable; no lifetime counts substituted.', 'yellow'))
         unknown = ac.get('unknown_period_documents_for_quarter_companies', 0)

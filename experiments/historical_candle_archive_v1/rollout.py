@@ -161,7 +161,9 @@ def recover(a, q):
     return False, old
 
 
-def execute(kind='defect', batch_size=200, authorize=None, interrupt_after_raw_save=False):
+def execute(kind='defect', batch_size=200, authorize=None, interrupt_after_raw_save=False, fast_resume=False):
+    if fast_resume and kind not in ('full', 'special-full'):
+        raise ValueError('Fast resume requires the full campaign final audit')
     path = EVIDENCE / f'{kind}-manifest.json' if kind != 'full' else OUT / 'full-universe-manifest.json'
     manifest = json.loads(path.read_text())
     if kind == 'full':
@@ -189,7 +191,7 @@ def execute(kind='defect', batch_size=200, authorize=None, interrupt_after_raw_s
         started_at=now(), manifest_sha256=sha(path.read_bytes()), runs=[], schedules_enabled=False)
     if state['manifest_sha256'] != sha(path.read_bytes()):
         raise RuntimeError('STOP_EXECUTION_MANIFEST_CHANGED')
-    run = dict(started_at=now(), successful=0, failed=0, reused=0, batches=0)
+    run = dict(started_at=now(), successful=0, failed=0, reused=0, resumed=0, batches=0)
     state['runs'].append(run)
     if state.get('reason'):
         state.setdefault('stop_history',[]).append(dict(reason=state.pop('reason'),at=state.get('updated_at')))
@@ -201,13 +203,34 @@ def execute(kind='defect', batch_size=200, authorize=None, interrupt_after_raw_s
     elif kind=='special-full':
         state.update(full_session_supplement_authorized=True,owner_authorized_manifest_sha256=authorize,
                      automatic_resumable_batches_authorized=True)
+    state.update(stage='VERIFYING_SAVED_DATA', manifest_requests=len(manifest['requests']),
+                 requests_checked=0, current_request=None, updated_at=now())
     dump(state_path, state)
+    progress_saved = time.monotonic()
     recent = list(state.get('provider_attempt_times', []))
     blocked = set()
     consecutive_stock_failures=0
     try:
-        for q in manifest['requests']:
+        # The finite full campaign audits every saved raw/Parquet checksum in
+        # finalize(). Resume durable SUCCESS rows from its exclusively owned
+        # index rather than rereading the entire archive on each wake. Partial
+        # or uncertain requests still use recover() and its fail-closed rules.
+        # Most rows are complete. The status index is not covering and would
+        # cause one random table-page read per result on the external drive.
+        completed = ({row[0] for row in a.db.execute(
+            "SELECT request_id FROM requests NOT INDEXED WHERE status='SUCCESS'")}
+            if fast_resume else set())
+        for position, q in enumerate(manifest['requests']):
             checkpoint()
+            state.update(stage='RESUMING_COMPLETED' if q['request_id'] in completed else 'VERIFYING_SAVED_DATA', requests_checked=position,
+                         current_request=q['request_id'])
+            if time.monotonic() - progress_saved >= 10:
+                state['updated_at'] = now()
+                dump(state_path, state)
+                progress_saved = time.monotonic()
+            if q['request_id'] in completed:
+                run['resumed'] += 1
+                continue
             a.guard()
             if q['company_id'] in blocked:
                 continue
@@ -226,6 +249,7 @@ def execute(kind='defect', batch_size=200, authorize=None, interrupt_after_raw_s
                 pause_aware_wait(min(30, max(.1, recent[0] + 1800 - time.time())))
                 recent = [t for t in recent if time.time() - t < 1800]
             started = time.monotonic()
+            state['stage'] = 'ACQUIRING'
             a.db.execute('''INSERT INTO requests(request_id,company_id,instrument_key,unit,interval,from_date,to_date,status,attempts)
                 VALUES(?,?,?,?,?,?,?,'IN_FLIGHT',1) ON CONFLICT(request_id) DO UPDATE SET status='IN_FLIGHT',attempts=attempts+1''',
                 (q['request_id'],q['company_id'],q['instrument_key'],q['unit'],q['interval'],q['from_date'],q['to_date']))
@@ -235,6 +259,7 @@ def execute(kind='defect', batch_size=200, authorize=None, interrupt_after_raw_s
             reserved = [time.time()] * 6
             recent.extend(reserved)
             state['provider_attempt_times'] = recent
+            state['updated_at'] = now()
             dump(state_path, state)
             raw, status = acquire.fetch(q, token,retain_error_body=True)
             transport = json.loads((EVIDENCE/'transport-receipts'/(q['request_id']+'.json')).read_text())
@@ -296,7 +321,8 @@ def execute(kind='defect', batch_size=200, authorize=None, interrupt_after_raw_s
                     # corrupt source records remain held for their repair list.
                     a.db.execute("UPDATE requests SET error_kind='EXCESSIVE_SOURCE_ROWS_QUARANTINED' WHERE request_id=?",(q['request_id'],))
                     a.db.commit()
-            state.update(updated_at=now(), current_request=q['request_id'], blocked_companies=sorted(blocked))
+            state.update(updated_at=now(), current_request=q['request_id'], blocked_companies=sorted(blocked),
+                         requests_checked=position + 1)
             if (run['successful'] + run['failed']) % batch_size == 0:
                 run['batches'] += 1
                 from .repair_queue import refresh
@@ -307,6 +333,7 @@ def execute(kind='defect', batch_size=200, authorize=None, interrupt_after_raw_s
                   company_id=q['company_id'],timeframe=q['timeframe'],http_status=status)), flush=True)
             # Conservative sustained quota: reserve all three transport attempts.
             pause_aware_wait(max(0, 1.1 - (time.monotonic() - started)))
+        state['requests_checked'] = len(manifest['requests'])
         state['status'] = 'MANIFEST_PASS_FINISHED' if not blocked else 'FINISHED_WITH_ISOLATED_FAILURES'
     except BaseException as error:
         state.update(status='STOPPED', reason=str(error) if isinstance(error,RuntimeError) and str(error).startswith('STOP_') else type(error).__name__)
@@ -328,7 +355,7 @@ def execute(kind='defect', batch_size=200, authorize=None, interrupt_after_raw_s
             free_bytes=shutil.disk_usage(a.mount).free
         except (OSError,RuntimeError):
             free_bytes=None
-        state.update(updated_at=now(), free_bytes=free_bytes)
+        state.update(updated_at=now(), free_bytes=free_bytes, stage=state['status'])
         run['finished_at'] = now()
         dump(state_path, state)
         try:

@@ -72,6 +72,8 @@ def log_records(path):
 
 class ReceiptFeed:
     def __init__(self):
+        from candle_monitor import CandleFeed
+        self.candles = CandleFeed()
         self.cache = {}
 
     def sample(self):
@@ -154,6 +156,7 @@ class ReceiptFeed:
         return observations.redact(dict(observed_at_utc=datetime.now(timezone.utc).isoformat(),
             paused=lifecycle.PAUSE.exists(), tick=tick, jobs=jobs, companies=companies,
             document_receipt=document_receipt, document_receipts=document_receipts,
+            historical_candles=self.candles.sample(),
             blockers=blockers, schedule=schedule))
 
 
