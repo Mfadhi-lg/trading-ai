@@ -1,5 +1,11 @@
 # Current status and supersession index
 
+Runtime freshness: this index preserves dated project evidence, not live health.
+Use [read-only runtime verification](operations/runtime-verification.md) and
+`python3 -B scripts/runtime-status`. The latest operator observation belongs at
+`artifacts/runtime-verification/latest.json`; absent, stale or unperformed probes
+remain unknown. No production runtime was verified by adding this workflow.
+
 Updated 3 October 2026 for **C09.1**. This index routes readers to dated evidence; it does not authorize another chunk or certify current live health. Later explicit owner instructions and scoped completion records govern over historical status text. Preserve historical reports unchanged.
 
 ## Governing documents
