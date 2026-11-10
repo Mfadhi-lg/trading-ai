@@ -54,7 +54,7 @@ def build_artifact_coverage_report(
                    identifier.identifier_value AS symbol
             FROM artifact_expectations AS expectation
             JOIN artifact_events AS event USING (event_id)
-            JOIN companies AS company USING (company_id)
+            JOIN companies AS company ON company.company_id=expectation.company_id
             LEFT JOIN security_identifiers AS identifier
               ON identifier.company_id=company.company_id
              AND identifier.identifier_type='NSE' AND identifier.is_current=1

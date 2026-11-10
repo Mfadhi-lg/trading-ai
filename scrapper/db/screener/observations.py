@@ -18,7 +18,7 @@ from ...core.http import FetchResponse
 from ...sources.screener.company import ParsedCompany
 from ...sources.screener.peers import ParsedPeerTable
 from ..repository_backend import (
-    commit, execute, executemany, generated_id, is_postgresql, require_transaction, statement, transaction,
+    commit, execute, executemany, generated_id, is_postgresql, require_transaction, statement, transaction, lock_write,
 )
 
 def ensure_source_identifier(conn: sqlite3.Connection, company_id: int, parsed: ParsedCompany, canonical_url: str, *, utc_now) -> None:
@@ -61,6 +61,7 @@ def record_fetch(conn: sqlite3.Connection, run_id: int, company_id: int | None, 
 def get_or_create_parse_artifact(conn: sqlite3.Connection, blob_id: int, parser_name: str, parser_version: str, manifest_version: str, *, utc_now) -> tuple[int, str]:
     require_transaction(conn)
     if is_postgresql(conn):
+        lock_write(conn)
         # The lock covers this lookup and insertion until the caller commits.
         # JSON avoids ambiguous concatenated identity components.
         import json

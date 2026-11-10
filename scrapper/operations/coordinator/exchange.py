@@ -17,7 +17,7 @@ import uuid
 
 from ...config import DB_PATH, SNAPSHOTS
 from ...core.http import fetch_exchange_dataset
-from ...db.database import connect, init_db
+from ...db.database import connect, init_db, selected_backend
 from ...db.exchange import tasks
 from ...db.repo import utc_now
 from ...operations.workers.lifecycle import WorkerLifecycle
@@ -27,6 +27,19 @@ from ...workflows.exchange import schedule
 @contextmanager
 def ownership(db_path, role):
     # DB identity/schema must be checked by the caller before creating the lock.
+    if selected_backend() == 'postgresql':
+        conn = connect(db_path)
+        try:
+            key = ':coordinator:' + role
+            acquired = conn.execute('SELECT pg_try_advisory_lock(hashtextextended(current_schema() || %s,0))', (key,)).fetchone()[0]
+            try:
+                yield bool(acquired)
+            finally:
+                if acquired:
+                    conn.execute('SELECT pg_advisory_unlock(hashtextextended(current_schema() || %s,0))', (key,))
+        finally:
+            conn.close()
+        return
     path = Path(str(Path(db_path).resolve()) + '.exchange-' + role + '.lock')
     with path.open('a') as handle:
         try:

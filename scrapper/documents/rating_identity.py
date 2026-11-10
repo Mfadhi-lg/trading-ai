@@ -2,6 +2,7 @@
 import json
 import re
 from pathlib import Path
+from ..db.repository_backend import statement
 
 
 def name_key(text):
@@ -19,7 +20,9 @@ def company_names(conn, artifact_id):
         raise ValueError('Rating artifact has no verified company identity')
     company_id, current_name = row['company_id'], row['current_legal_name']
     result = [{'name': current_name, 'basis': 'current_company_identity'}]
-    tables = {r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+    tables = {r[0] for r in conn.execute(statement(conn,
+        "SELECT name FROM sqlite_master WHERE type='table'",
+        "SELECT c.relname AS name FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname=current_schema() AND c.relkind IN ('r','p')"))}
     if {'exchange_company_registry', 'exchange_company_links', 'exchange_security_versions',
             'exchange_security_events', 'exchange_source_snapshots'} <= tables:
         # The registry and exchange link are joined through ISIN, rather than text similarity.

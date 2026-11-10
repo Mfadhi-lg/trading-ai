@@ -15,6 +15,7 @@ from urllib.parse import urlsplit
 from ...config import DOCUMENT_CONTENT_SNAPSHOTS
 from ...documents.download.contracts import DownloadPolicy, DownloadResult
 from ..document_artifact_repo import register_artifact_content
+from scrapper.db.repository_backend import (execute, executemany, generated_id, statement, is_postgresql, atomic_repository, begin_immediate, commit, rollback, transaction as repository_transaction)
 
 
 MEDIA_SUFFIXES = {
@@ -87,6 +88,7 @@ class PersistedDownload:
 PersistedDownload.__module__ = 'scrapper.db.document_download_repo'
 
 
+@atomic_repository('documents')
 def _store_response_blob(
     conn: sqlite3.Connection,
     *,
@@ -97,7 +99,7 @@ def _store_response_blob(
     MEDIA_SUFFIXES=MEDIA_SUFFIXES,
 ) -> tuple[int, str]:
     digest = hashlib.sha256(body).hexdigest()
-    existing = conn.execute(
+    existing = execute(conn,
         "SELECT blob_id, byte_size, local_path FROM response_blobs WHERE content_sha256=?",
         (digest,),
     ).fetchone()
@@ -132,7 +134,7 @@ def _store_response_blob(
         finally:
             if temporary.exists():
                 temporary.unlink()
-    cursor = conn.execute(
+    cursor = execute(conn,
         """INSERT INTO response_blobs
            (content_sha256, content_type, encoding, byte_size, local_path,
             first_observed_at_utc, created_at_utc)
@@ -145,10 +147,11 @@ def _store_response_blob(
             observed_at_utc,
             observed_at_utc,
         ),
-    )
-    return int(cursor.lastrowid), digest
+     returning='blob_id')
+    return generated_id(cursor, 'blob_id'), digest
 
 
+@atomic_repository('documents')
 def _store_streamed_response_blob(
     conn: sqlite3.Connection,
     *,
@@ -173,7 +176,7 @@ def _store_streamed_response_blob(
             digest.update(chunk)
     if digest.hexdigest() != content_sha256:
         raise RuntimeError("Durable streamed recording hash mismatch")
-    existing = conn.execute(
+    existing = execute(conn,
         "SELECT blob_id,byte_size,local_path FROM response_blobs WHERE content_sha256=?",
         (content_sha256,),
     ).fetchone()
@@ -184,7 +187,7 @@ def _store_streamed_response_blob(
         if existing_path.resolve() != resolved:
             raise RuntimeError("Content hash resolves to a different immutable path")
         return int(existing["blob_id"]), content_sha256
-    cursor = conn.execute(
+    cursor = execute(conn,
         """INSERT INTO response_blobs
            (content_sha256,content_type,encoding,byte_size,local_path,
             first_observed_at_utc,created_at_utc)
@@ -197,10 +200,11 @@ def _store_streamed_response_blob(
             observed_at_utc,
             observed_at_utc,
         ),
-    )
-    return int(cursor.lastrowid), content_sha256
+     returning='blob_id')
+    return generated_id(cursor, 'blob_id'), content_sha256
 
 
+@atomic_repository('documents')
 def store_response_blob(
     conn: sqlite3.Connection,
     *,
@@ -221,6 +225,7 @@ def store_response_blob(
     )
 
 
+@atomic_repository('documents')
 def _validated_sources(
     conn: sqlite3.Connection,
     *,
@@ -232,7 +237,7 @@ def _validated_sources(
     if not source_ids:
         raise ValueError("At least one artifact source is required")
     placeholders = ",".join("?" for _ in source_ids)
-    rows = conn.execute(
+    rows = execute(conn,
         f"""SELECT artifact_source_id, artifact_id, discovered_from_source,
                    discovery_page_url, document_url, is_primary_source,
                    document_originator, retrieval_source_type
@@ -262,6 +267,7 @@ def _is_official_retrieval(source: sqlite3.Row) -> bool:
     )
 
 
+@atomic_repository('documents')
 def persist_download_result(
     conn: sqlite3.Connection,
     *,
@@ -292,7 +298,7 @@ def persist_download_result(
     blob_id: int | None = None
     content_id: int | None = None
     digest: str | None = None
-    with conn:
+    with repository_transaction(conn):
         if body is not None:
             blob_id, digest = _store_response_blob(
                 conn,
@@ -342,7 +348,7 @@ def persist_download_result(
             sort_keys=True,
             separators=(",", ":"),
         )
-        cursor = conn.execute(
+        cursor = execute(conn,
             """INSERT INTO artifact_download_attempts
                (artifact_id, requested_url, final_url, started_at_utc,
                 fetched_at_utc, elapsed_ms, http_status, response_headers_json,
@@ -374,9 +380,9 @@ def persist_download_result(
                 json.dumps(policy.to_dict(), sort_keys=True, separators=(",", ":")),
                 error_json,
             ),
-        )
-        attempt_id = int(cursor.lastrowid)
-        conn.executemany(
+         returning='download_attempt_id')
+        attempt_id = generated_id(cursor, 'download_attempt_id')
+        executemany(conn,
             """INSERT INTO artifact_download_attempt_sources
                (download_attempt_id, artifact_source_id) VALUES (?, ?)""",
             [(attempt_id, int(row["artifact_source_id"])) for row in sources],
@@ -394,12 +400,12 @@ def persist_download_result(
             else None
         )
         if source_status is None:
-            conn.executemany(
+            executemany(conn,
                 "UPDATE artifact_sources SET last_checked_at_utc=? WHERE artifact_source_id=?",
                 [(fetched_at_utc, int(row["artifact_source_id"])) for row in sources],
             )
         else:
-            conn.executemany(
+            executemany(conn,
                 """UPDATE artifact_sources
                    SET last_checked_at_utc=?, availability_status=?
                    WHERE artifact_source_id=?""",
@@ -409,13 +415,13 @@ def persist_download_result(
                 ],
             )
         if result.is_validated:
-            conn.execute(
+            execute(conn,
                 """UPDATE document_artifacts SET acquisition_status='downloaded'
                    WHERE artifact_id=? AND acquisition_status <> 'validated'""",
                 (artifact_id,),
             )
         else:
-            existing_content = conn.execute(
+            existing_content = execute(conn,
                 "SELECT 1 FROM artifact_contents WHERE artifact_id=? LIMIT 1",
                 (artifact_id,),
             ).fetchone()
@@ -425,7 +431,7 @@ def persist_download_result(
                     if inaccessible_result
                     else "failed"
                 )
-                conn.execute(
+                execute(conn,
                     "UPDATE document_artifacts SET acquisition_status=? WHERE artifact_id=?",
                     (status, artifact_id),
                 )

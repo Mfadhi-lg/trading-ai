@@ -1,6 +1,7 @@
 """Build transcript availability and exact recording-fallback ledgers."""
 
 from __future__ import annotations
+from ..db.repository_backend import statement
 
 import argparse
 import json
@@ -92,14 +93,19 @@ def _labels(conn: Any, artifact_types: tuple[str, ...]) -> dict[int, tuple[str, 
     placeholders = ",".join("?" for _ in artifact_types)
     values: dict[int, set[str]] = defaultdict(set)
     for row in conn.execute(
-        f"""SELECT artifact.artifact_id,
+        statement(conn, f"""SELECT artifact.artifact_id,
                    json_extract(source.classification_evidence_json,
                                 '$.period_label_raw') AS label
               FROM document_artifacts artifact
               JOIN artifact_sources source USING(artifact_id)
              WHERE artifact.artifact_type IN ({placeholders})
                AND json_extract(source.classification_evidence_json,
-                                '$.period_label_raw') IS NOT NULL""",
+                                '$.period_label_raw') IS NOT NULL""", f"""SELECT artifact.artifact_id,
+                   (source.classification_evidence_json::jsonb ->> 'period_label_raw') AS label
+              FROM document_artifacts artifact
+              JOIN artifact_sources source USING(artifact_id)
+             WHERE artifact.artifact_type IN ({placeholders})
+               AND (source.classification_evidence_json::jsonb ->> 'period_label_raw') IS NOT NULL"""),
         artifact_types,
     ):
         values[int(row["artifact_id"])].add(str(row["label"]))

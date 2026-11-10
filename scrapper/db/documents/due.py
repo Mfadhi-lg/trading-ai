@@ -10,6 +10,7 @@ from ...domain.artifact_reconciliation import ClaimedExpectation, ScreenerRefres
 from ...documents.availability import ArtifactCheckResult, parse_utc, format_utc
 from .expectations import canonical_json
 from .readiness import _accepted_artifact
+from scrapper.db.repository_backend import (execute, executemany, generated_id, statement, is_postgresql, atomic_repository, begin_immediate, commit, rollback, transaction as repository_transaction)
 
 _DUE_SELECT = """SELECT expectation.*, event.event_key, event.event_type,
                          event.event_date, event.period_end, event.fiscal_year,
@@ -30,7 +31,10 @@ _DUE_SELECT = """SELECT expectation.*, event.event_key, event.event_type,
                            expectation.expectation_id
                   LIMIT ?"""
 
+_DUE_SELECT_NATIVE = "SELECT expectation.*, event.event_key, event.event_type,\n                         event.event_date, event.period_end, event.fiscal_year,\n                         event.fiscal_quarter\n                  FROM artifact_expectations AS expectation\n                  JOIN artifact_events AS event USING (event_id)\n                  WHERE expectation.next_check_at_utc IS NOT NULL\n                    AND CAST(expectation.next_check_at_utc AS timestamptz) <= CAST(? AS timestamptz)\n                    AND (expectation.claim_token IS NULL\n                         OR CAST(expectation.claim_expires_at_utc AS timestamptz) <= CAST(? AS timestamptz))\n                  ORDER BY CASE\n                             WHEN expectation.artifact_type IN\n                                  ('presentation', 'transcript') THEN 0\n                             ELSE 1\n                           END,\n                           expectation.next_check_at_utc,\n                           expectation.event_id,\n                           expectation.expectation_id\n                  LIMIT ?"
 
+
+@atomic_repository('documents')
 def preview_due_expectations(
     conn: sqlite3.Connection, *, now_utc: str, limit: int,
     ClaimedExpectation=ClaimedExpectation, _DUE_SELECT=_DUE_SELECT, parse_utc=parse_utc,
@@ -40,10 +44,11 @@ def preview_due_expectations(
     parse_utc(now_utc)
     return tuple(
         ClaimedExpectation.from_row(row)
-        for row in conn.execute(_DUE_SELECT, (now_utc, now_utc, limit)).fetchall()
+        for row in execute(conn, statement(conn, _DUE_SELECT, _DUE_SELECT_NATIVE) if _DUE_SELECT == globals()['_DUE_SELECT'] else _DUE_SELECT, (now_utc, now_utc, limit)).fetchall()
     )
 
 
+@atomic_repository('documents')
 def claim_due_expectations(
     conn: sqlite3.Connection,
     *,
@@ -60,27 +65,27 @@ def claim_due_expectations(
         raise ValueError("Worker id is required")
     now = parse_utc(now_utc)
     claimed: list[ClaimedExpectation] = []
-    conn.execute("BEGIN IMMEDIATE")
+    begin_immediate(conn, lock='documents')
     try:
-        rows = conn.execute(_DUE_SELECT, (now_utc, now_utc, limit)).fetchall()
+        rows = execute(conn, statement(conn, _DUE_SELECT, _DUE_SELECT_NATIVE) if _DUE_SELECT == globals()['_DUE_SELECT'] else _DUE_SELECT, (now_utc, now_utc, limit)).fetchall()
         for row in rows:
             persisted_policy = ClaimedExpectation.from_row(row).retry_policy()
             expires = format_utc(
                 now + timedelta(seconds=persisted_policy.claim_lease_seconds)
             )
             token = f"{worker_id}:{uuid.uuid4().hex}"
-            changed = conn.execute(
-                """UPDATE artifact_expectations
+            changed = execute(conn,
+                statement(conn, """UPDATE artifact_expectations
                    SET claim_token=?, claimed_at_utc=?, claim_expires_at_utc=?,
                        updated_at_utc=?
                    WHERE expectation_id=?
-                     AND (claim_token IS NULL OR claim_expires_at_utc <= ?)""",
+                     AND (claim_token IS NULL OR claim_expires_at_utc <= ?)""", 'UPDATE artifact_expectations\n                   SET claim_token=?, claimed_at_utc=?, claim_expires_at_utc=?,\n                       updated_at_utc=?\n                   WHERE expectation_id=?\n                     AND (claim_token IS NULL OR CAST(claim_expires_at_utc AS timestamptz) <= CAST(? AS timestamptz))'),
                 (token, now_utc, expires, now_utc, int(row["expectation_id"]), now_utc),
             ).rowcount
             if changed:
                 claimed.append(
                     ClaimedExpectation.from_row(
-                        conn.execute(
+                        execute(conn,
                             """SELECT expectation.*, event.event_key,
                                       event.event_type, event.event_date,
                                       event.period_end, event.fiscal_year,
@@ -92,13 +97,14 @@ def claim_due_expectations(
                         ).fetchone()
                     )
                 )
-        conn.commit()
+        commit(conn)
     except Exception:
-        conn.rollback()
+        rollback(conn)
         raise
     return tuple(claimed)
 
 
+@atomic_repository('documents')
 def complete_artifact_check(
     conn: sqlite3.Connection,
     *,
@@ -119,8 +125,8 @@ def complete_artifact_check(
         retryable=result.retryable,
         checked_at_utc=checked_at_utc,
     )
-    with conn:
-        current = conn.execute(
+    with repository_transaction(conn):
+        current = execute(conn,
             "SELECT claim_token FROM artifact_expectations WHERE expectation_id=?",
             (expectation.expectation_id,),
         ).fetchone()
@@ -128,7 +134,7 @@ def complete_artifact_check(
             raise RuntimeError(
                 f"Lost reconciliation claim for expectation {expectation.expectation_id}"
             )
-        cursor = conn.execute(
+        cursor = execute(conn,
             """INSERT INTO artifact_check_events
                (expectation_id, checked_at_utc, source, requested_url,
                 result_status, evidence_json, discovered_artifact_id,
@@ -147,8 +153,8 @@ def complete_artifact_check(
                 next_check,
                 expectation.claim_token,
             ),
-        )
-        conn.execute(
+         returning='check_id')
+        execute(conn,
             """UPDATE artifact_expectations
                SET availability_status=?,
                    first_checked_at_utc=COALESCE(first_checked_at_utc, ?),
@@ -170,9 +176,10 @@ def complete_artifact_check(
                 expectation.claim_token,
             ),
         )
-    return int(cursor.lastrowid)
+    return generated_id(cursor, 'check_id')
 
 
+@atomic_repository('documents')
 def release_claims(
     conn: sqlite3.Connection,
     expectations: Iterable[ClaimedExpectation],
@@ -181,11 +188,11 @@ def release_claims(
 ) -> None:
     """Release unprocessed leases after an orderly worker interruption."""
 
-    with conn:
+    with repository_transaction(conn):
         for row in expectations:
             if row.claim_token is None:
                 continue
-            conn.execute(
+            execute(conn,
                 """UPDATE artifact_expectations
                    SET claim_token=NULL, claimed_at_utc=NULL,
                        claim_expires_at_utc=NULL, updated_at_utc=?
@@ -194,6 +201,7 @@ def release_claims(
             )
 
 
+@atomic_repository('documents')
 def _source_refresh_targets(
     conn: sqlite3.Connection,
     due_rows: tuple[ClaimedExpectation, ...],
@@ -214,7 +222,7 @@ def _source_refresh_targets(
 
     targets: list[ScreenerRefreshTarget] = []
     for (company_id, event_id), expectations in grouped.items():
-        state = conn.execute(
+        state = execute(conn,
             """SELECT company_path_normalized, reporting_scope,
                       latest_accepted_result_period
                  FROM screener_company_collection_state
@@ -226,7 +234,7 @@ def _source_refresh_targets(
             continue
         # Identity-verified canonical URLs survive ticker/slug changes; the
         # financial collection state can retain an obsolete path indefinitely.
-        mapping = conn.execute("""SELECT canonical_url FROM source_identifiers
+        mapping = execute(conn, """SELECT canonical_url FROM source_identifiers
             WHERE company_id=? AND source='screener' AND mapping_status='verified'""",
             (company_id,)).fetchone()
         company_path = str(state["company_path_normalized"])
@@ -263,9 +271,10 @@ def _source_refresh_targets(
     return tuple(targets)
 
 
+@atomic_repository('documents')
 def checked_expectation_state(conn: sqlite3.Connection, expectation: ClaimedExpectation) -> sqlite3.Row:
     """Read persisted counters after successful completion; no transaction added."""
-    return conn.execute(
+    return execute(conn,
         """SELECT availability_status, attempt_count, next_check_at_utc,
                   terminal_reason FROM artifact_expectations
            WHERE expectation_id=?""",

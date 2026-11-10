@@ -1,6 +1,10 @@
 """Transactional workbook inventory, source-cell lineage and parse outcomes."""
 
 from __future__ import annotations
+from ..repository_backend import (
+    atomic_repository, begin_immediate, commit, execute, executemany, generated_id,
+    is_postgresql, rollback, statement, transaction,
+)
 
 import json
 import sqlite3
@@ -31,6 +35,7 @@ M02_PASSING_RULES = (
     "ppfas_formulas_preserved",
 )
 
+@atomic_repository('financial-repositories')
 def persist_inventory(
     conn: sqlite3.Connection,
     inspection: WorkbookInspection,
@@ -41,7 +46,7 @@ def persist_inventory(
     observed_at_utc: str,
 ) -> PersistedImport:
     """Persist one complete inventory or quarantine decision atomically."""
-    existing = conn.execute(
+    existing = execute(conn,
         """SELECT import_file_id, workbook_blob_id, import_state
            FROM mf_import_files WHERE publisher=? AND content_sha256=?""",
         (publisher, inspection.content_sha256),
@@ -53,8 +58,8 @@ def persist_inventory(
         "inventory_status": inspection.inventory_status,
     }
     if existing is not None:
-        with conn:
-            cursor = conn.execute(
+        with transaction(conn):
+            cursor = execute(conn,
                 """INSERT INTO mf_import_observations
                    (import_file_id, observed_at_utc, submitted_path, original_filename,
                     requested_publisher, requested_disclosure_month,
@@ -65,22 +70,18 @@ def persist_inventory(
                     inspection.original_filename, publisher, disclosure_month,
                     json.dumps(decision, sort_keys=True, separators=(",", ":")),
                 ),
-            )
+             returning='import_observation_id')
         return PersistedImport(
             int(existing["import_file_id"]), int(existing["workbook_blob_id"]),
-            int(cursor.lastrowid), str(existing["import_state"]), True,
+            int(generated_id(cursor, 'import_observation_id')), str(existing["import_state"]), True,
         )
 
     state = inspection.proposed_state
     observation_result = "inventoried" if state == "inbox" else "quarantined"
     state_reason = json.dumps(decision, sort_keys=True, separators=(",", ":"))
-    with conn:
-        conn.execute(
-            """INSERT OR IGNORE INTO mf_workbook_blobs
-               (content_sha256, workbook_type, byte_size, local_path,
-                first_observed_at_utc, created_at_utc, safety_status,
-                safety_report_json)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+    with transaction(conn):
+        execute(conn,
+            statement(conn, 'INSERT OR IGNORE INTO mf_workbook_blobs\n               (content_sha256, workbook_type, byte_size, local_path,\n                first_observed_at_utc, created_at_utc, safety_status,\n                safety_report_json)\n               VALUES (?, ?, ?, ?, ?, ?, ?, ?)', 'INSERT INTO mf_workbook_blobs\n               (content_sha256, workbook_type, byte_size, local_path,\n                first_observed_at_utc, created_at_utc, safety_status,\n                safety_report_json)\n               VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT DO NOTHING'),
             (
                 inspection.content_sha256, inspection.workbook_type,
                 inspection.byte_size, immutable_path, observed_at_utc,
@@ -88,14 +89,14 @@ def persist_inventory(
                 safety_report_json(inspection),
             ),
         )
-        blob = conn.execute(
+        blob = execute(conn,
             """SELECT workbook_blob_id FROM mf_workbook_blobs
                WHERE content_sha256=?""",
             (inspection.content_sha256,),
         ).fetchone()
         if blob is None:
             raise RuntimeError("Failed to persist immutable workbook blob")
-        cursor = conn.execute(
+        cursor = execute(conn,
             """INSERT INTO mf_import_files
                (publisher, requested_disclosure_month, detected_disclosure_month,
                 original_filename, submitted_path, content_sha256, workbook_blob_id,
@@ -108,10 +109,10 @@ def persist_inventory(
                 inspection.workbook_type, inspection.byte_size, state,
                 observed_at_utc, state_reason,
             ),
-        )
-        import_file_id = int(cursor.lastrowid)
+         returning='import_file_id')
+        import_file_id = int(generated_id(cursor, 'import_file_id'))
         for sheet in inspection.sheets:
-            conn.execute(
+            execute(conn,
                 """INSERT INTO mf_workbook_sheets
                    (import_file_id, sheet_position, sheet_name_raw,
                     visibility_state, package_part, detection_evidence_json,
@@ -122,14 +123,14 @@ def persist_inventory(
                     sheet.visibility_state, sheet.package_part,
                 ),
             )
-        conn.execute(
+        execute(conn,
             """INSERT INTO mf_import_state_events
                (import_file_id, from_state, to_state, changed_at_utc,
                 changed_by, reason_json)
                VALUES (?, NULL, ?, ?, 'm01_importer', ?)""",
             (import_file_id, state, observed_at_utc, state_reason),
         )
-        observation = conn.execute(
+        observation = execute(conn,
             """INSERT INTO mf_import_observations
                (import_file_id, observed_at_utc, submitted_path, original_filename,
                 requested_publisher, requested_disclosure_month,
@@ -140,10 +141,10 @@ def persist_inventory(
                 inspection.original_filename, publisher, disclosure_month,
                 observation_result, state_reason,
             ),
-        )
+         returning='import_observation_id')
     return PersistedImport(
         import_file_id, int(blob["workbook_blob_id"]),
-        int(observation.lastrowid), state, False,
+        int(generated_id(observation, 'import_observation_id')), state, False,
     )
 
 def _json(value: object) -> str:
@@ -155,6 +156,7 @@ def _table_position(parsed_sheet, row_position: int) -> int | None:
             return table.position
     return None
 
+@atomic_repository('financial-repositories')
 def persist_ppfas_structure(
     conn: sqlite3.Connection,
     *,
@@ -163,7 +165,7 @@ def persist_ppfas_structure(
 ) -> None:
     """Persist one complete structural parse atomically; formulas stay unevaluated."""
     adapter = adapter_for_parsed(parsed)
-    existing_cells = conn.execute(
+    existing_cells = execute(conn,
         """SELECT COUNT(*) FROM mf_workbook_cells AS c
            JOIN mf_workbook_sheets AS s ON s.sheet_id=c.sheet_id
            WHERE s.import_file_id=?""",
@@ -173,8 +175,8 @@ def persist_ppfas_structure(
         # Later manifest revisions may add normalized contracts without changing
         # immutable source cells. Advance only the manifest metadata; never
         # duplicate or rewrite the M02 source-faithful inventory.
-        with conn:
-            conn.execute(
+        with transaction(conn):
+            execute(conn,
                 """UPDATE mf_import_files
                    SET detected_publisher=?, detected_disclosure_month=?,
                        workbook_manifest_version=?
@@ -184,14 +186,14 @@ def persist_ppfas_structure(
                     parsed.manifest_version, import_file_id,
                 ),
             )
-            conn.execute(
+            execute(conn,
                 """UPDATE mf_workbook_sheets SET manifest_version=?
                    WHERE import_file_id=?""",
                 (parsed.manifest_version, import_file_id),
             )
         return
-    with conn:
-        conn.execute(
+    with transaction(conn):
+        execute(conn,
             """UPDATE mf_import_files
                SET detected_publisher=?, detected_disclosure_month=?,
                    workbook_manifest_version=?, state_reason_json=?
@@ -211,7 +213,7 @@ def persist_ppfas_structure(
             ),
         )
         for parsed_sheet in parsed.sheets:
-            row = conn.execute(
+            row = execute(conn,
                 """SELECT sheet_id FROM mf_workbook_sheets
                    WHERE import_file_id=? AND sheet_position=?""",
                 (import_file_id, parsed_sheet.source.position),
@@ -226,7 +228,7 @@ def persist_ppfas_structure(
                 ),
                 None,
             )
-            conn.execute(
+            execute(conn,
                 """UPDATE mf_workbook_sheets
                    SET detected_scheme_code=?, detected_scheme_name_raw=?,
                        detection_evidence_json=?, parse_status='ok',
@@ -248,7 +250,7 @@ def persist_ppfas_structure(
                     parsed_sheet.classification, parsed.manifest_version, sheet_id,
                 ),
             )
-            conn.executemany(
+            executemany(conn,
                 """INSERT INTO mf_workbook_cells
                    (sheet_id, row_position, column_position, coordinate,
                     raw_value, display_value, formula, data_type, number_format,
@@ -273,7 +275,7 @@ def persist_ppfas_structure(
                     for position, item in enumerate(parsed_sheet.cells)
                 ),
             )
-            conn.executemany(
+            executemany(conn,
                 """INSERT INTO mf_workbook_merged_ranges
                    (sheet_id, merge_position, range_reference, start_row,
                     start_column, end_row, end_column)
@@ -286,7 +288,7 @@ def persist_ppfas_structure(
                     for position, item in enumerate(parsed_sheet.source.merged_ranges)
                 ),
             )
-            conn.executemany(
+            executemany(conn,
                 """INSERT INTO mf_workbook_tables
                    (sheet_id, table_position, table_kind, heading_raw,
                     start_row, end_row, start_column, end_column,
@@ -315,7 +317,7 @@ def persist_ppfas_structure(
             "merged_range_count": inventory["merged_range_count"],
             "formula_count": inventory["formula_count"],
         }
-        conn.executemany(
+        executemany(conn,
             """INSERT INTO mf_workbook_validation_results
                (import_file_id, rule_code, severity, passed, details_json)
                VALUES (?, ?, 'error', 1, ?)""",
@@ -325,27 +327,22 @@ def persist_ppfas_structure(
             ),
         )
 
+@atomic_repository('financial-repositories')
 def persist_ppfas_structure_failure(
     conn: sqlite3.Connection,
     *,
     import_file_id: int,
     error: PPFASStructureError,
 ) -> None:
-    imported = conn.execute(
+    imported = execute(conn,
         "SELECT publisher FROM mf_import_files WHERE import_file_id=?",
         (import_file_id,),
     ).fetchone()
     publisher = "workbook" if imported is None else str(imported["publisher"])
     rule_code = f"{publisher}_structure_complete"
-    with conn:
-        conn.execute(
-            """INSERT OR REPLACE INTO mf_workbook_validation_results
-               (validation_id, import_file_id, rule_code, severity, passed, details_json)
-               VALUES (
-                 (SELECT validation_id FROM mf_workbook_validation_results
-                  WHERE import_file_id=? AND rule_code=?),
-                 ?, ?, 'error', 0, ?
-               )""",
+    with transaction(conn):
+        execute(conn,
+            statement(conn, "INSERT OR REPLACE INTO mf_workbook_validation_results\n               (validation_id, import_file_id, rule_code, severity, passed, details_json)\n               VALUES (\n                 (SELECT validation_id FROM mf_workbook_validation_results\n                  WHERE import_file_id=? AND rule_code=?),\n                 ?, ?, 'error', 0, ?\n               )", "WITH identity_parameters AS (SELECT ? AS import_file_id, ? AS rule_code)\n            INSERT INTO mf_workbook_validation_results\n              (import_file_id,rule_code,severity,passed,details_json)\n            SELECT ?,?,'error',0,? FROM identity_parameters WHERE true\n            ON CONFLICT(import_file_id,rule_code) DO UPDATE SET\n              severity=excluded.severity,passed=excluded.passed,\n              details_json=excluded.details_json"),
             (
                 import_file_id, rule_code, import_file_id, rule_code,
                 _json({"error_code": error.code, "message": str(error), **error.details}),

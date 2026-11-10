@@ -14,6 +14,7 @@ from dataclasses import dataclass
 from typing import Any, Iterable, Mapping
 
 from ..db.repo import utc_now
+from ..db.repository_backend import atomic_repository
 
 
 P0_ARTIFACT_TYPES = ("transcript", "presentation", "credit_rating")
@@ -84,6 +85,7 @@ def _validate_p0(
         )
 
 
+@atomic_repository('download-scope')
 def register_download_scope(
     conn: sqlite3.Connection,
     *,

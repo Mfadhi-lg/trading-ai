@@ -1,6 +1,7 @@
 """Promote accepted Screener document-link metadata into D01 artifacts."""
 
 from __future__ import annotations
+from ...db.repository_backend import statement, is_postgresql, execute, generated_id, atomic_repository, begin_immediate
 
 import hashlib
 import json
@@ -135,7 +136,7 @@ def stored_artifact_period_evidence(conn, artifact_id, *, extra_texts=()):
     # The transcript, presentation and recording links in one saved Screener
     # call group share an event. Transfer only an unambiguous existing reporting
     # quarter within that exact parse, scope, company and original group label.
-    peers = list(conn.execute('''SELECT DISTINCT mine.parse_id,mine.period_label_raw,
+    peers = list(conn.execute(statement(conn, '''SELECT DISTINCT mine.parse_id,mine.period_label_raw,
         sibling.artifact_id,sibling.period_end FROM artifact_sources source
         JOIN document_links mine ON mine.document_link_id=json_extract(source.classification_evidence_json,'$.document_link_id')
         JOIN document_links peer ON peer.parse_id=mine.parse_id
@@ -146,7 +147,7 @@ def stored_artifact_period_evidence(conn, artifact_id, *, extra_texts=()):
         WHERE source.artifact_id=? AND mine.document_type LIKE 'concall_%'
           AND peer.document_type LIKE 'concall_%' AND mine.period_label_raw<>''
           AND sibling.company_id=target.company_id AND sibling.period_end IS NOT NULL
-          AND sibling.artifact_type<>'credit_rating' ''', (artifact_id,)))
+          AND sibling.artifact_type<>'credit_rating' ''', "SELECT DISTINCT mine.parse_id,mine.period_label_raw,\n        sibling.artifact_id,sibling.period_end FROM artifact_sources source\n        JOIN document_links mine ON mine.document_link_id=(CASE WHEN jsonb_typeof(source.classification_evidence_json::jsonb -> 'document_link_id')='number' THEN (source.classification_evidence_json::jsonb ->> 'document_link_id')::numeric END)\n        JOIN document_links peer ON peer.parse_id=mine.parse_id\n          AND peer.reporting_scope=mine.reporting_scope AND peer.period_label_raw=mine.period_label_raw\n        JOIN document_link_promotions promotion ON promotion.document_link_id=peer.document_link_id\n        JOIN document_artifacts sibling ON sibling.artifact_id=promotion.artifact_id\n        JOIN document_artifacts target ON target.artifact_id=source.artifact_id\n        WHERE source.artifact_id=? AND mine.document_type LIKE 'concall_%'\n          AND peer.document_type LIKE 'concall_%' AND mine.period_label_raw<>''\n          AND sibling.company_id=target.company_id AND sibling.period_end IS NOT NULL\n          AND sibling.artifact_type<>'credit_rating' "), (artifact_id,)))
     peer_periods = {p['period_end'] for p in peers}
     if len(peer_periods) == 1:
         period = next(iter(peer_periods))
@@ -157,6 +158,7 @@ def stored_artifact_period_evidence(conn, artifact_id, *, extra_texts=()):
     return None, evidence
 
 
+@atomic_repository('consumer-persistence')
 def fill_stored_artifact_period(conn, artifact_id, *, corrected_at_utc=None, extra_texts=()):
     period, evidence = stored_artifact_period_evidence(conn, artifact_id, extra_texts=extra_texts)
     if period is None:
@@ -165,9 +167,9 @@ def fill_stored_artifact_period(conn, artifact_id, *, corrected_at_utc=None, ext
         cursor = conn.execute('UPDATE document_artifacts SET period_end=? WHERE artifact_id=? AND period_end IS NULL',
                               (period, artifact_id))
         if cursor.rowcount:
-            conn.execute('''INSERT OR IGNORE INTO artifact_period_corrections
+            conn.execute(statement(conn, '''INSERT OR IGNORE INTO artifact_period_corrections
                 (artifact_id,old_period_end,new_period_end,reason,evidence_json,corrected_at_utc)
-                VALUES (?,'',?,'explicit_document_quarter_recovered',?,?)''',
+                VALUES (?,'',?,'explicit_document_quarter_recovered',?,?)''', "INSERT INTO artifact_period_corrections\n                (artifact_id,old_period_end,new_period_end,reason,evidence_json,corrected_at_utc)\n                VALUES (?,'',?,'explicit_document_quarter_recovered',?,?) ON CONFLICT DO NOTHING"),
                 (artifact_id, period, json.dumps({'old_period_end': None, 'evidence': evidence}, sort_keys=True),
                  corrected_at_utc or utc_now()))
     return bool(cursor.rowcount)
@@ -253,14 +255,14 @@ def _accepted_links(
         sql = """SELECT link.*, ? AS company_id, NULL AS accepted_at_utc,
                         parse.blob_id, parse.parser_name AS source_parser_name,
                         parse.parser_version AS source_parser_version,
-                        COALESCE(fetch.final_url,fetch.requested_url) AS discovery_page_url
+                        COALESCE(fetched.final_url,fetched.requested_url) AS discovery_page_url
                    FROM parse_artifacts parse JOIN document_links link USING (parse_id)
-                   JOIN fetch_observations fetch ON fetch.blob_id=parse.blob_id
-                    AND fetch.company_id=? AND fetch.source='screener'
-                    AND fetch.resource_kind='company_page'
+                   JOIN fetch_observations fetched ON fetched.blob_id=parse.blob_id
+                    AND fetched.company_id=? AND fetched.source='screener'
+                    AND fetched.resource_kind='company_page'
                   WHERE parse.parse_id=? AND parse.parse_status='ok'
                     AND link.document_type=?
-                  ORDER BY fetch.fetch_id DESC,link.document_link_id"""
+                  ORDER BY fetched.fetch_id DESC,link.document_link_id"""
         rows = list(conn.execute(sql,(verified_company_id,verified_company_id,parse_id,document_type)))
         # The same immutable blob may have several fetch events. Preserve each
         # document link once, using the most recent verified fetch URL.
@@ -276,18 +278,18 @@ def _accepted_links(
                parse.blob_id, parse.parser_name AS source_parser_name,
                parse.parser_version AS source_parser_version,
                COALESCE(
-                 (SELECT fetch.final_url
-                    FROM fetch_observations AS fetch
-                   WHERE fetch.company_id=accepted.company_id
-                     AND fetch.source='screener'
-                     AND fetch.blob_id=parse.blob_id
-                   ORDER BY fetch.fetch_id DESC LIMIT 1),
-                 (SELECT fetch.requested_url
-                    FROM fetch_observations AS fetch
-                   WHERE fetch.company_id=accepted.company_id
-                     AND fetch.source='screener'
-                     AND fetch.blob_id=parse.blob_id
-                   ORDER BY fetch.fetch_id DESC LIMIT 1)
+                 (SELECT fetched.final_url
+                    FROM fetch_observations AS fetched
+                   WHERE fetched.company_id=accepted.company_id
+                     AND fetched.source='screener'
+                     AND fetched.blob_id=parse.blob_id
+                   ORDER BY fetched.fetch_id DESC LIMIT 1),
+                 (SELECT fetched.requested_url
+                    FROM fetch_observations AS fetched
+                   WHERE fetched.company_id=accepted.company_id
+                     AND fetched.source='screener'
+                     AND fetched.blob_id=parse.blob_id
+                   ORDER BY fetched.fetch_id DESC LIMIT 1)
                ) AS discovery_page_url
           FROM accepted_page_versions AS accepted
           JOIN parse_artifacts AS parse ON parse.parse_id=accepted.parse_id
@@ -343,6 +345,7 @@ def _record_promotion(
     )
 
 
+@atomic_repository('consumer-persistence')
 def promote_document_links(
     conn: sqlite3.Connection,
     *,
@@ -355,7 +358,7 @@ def promote_document_links(
     verified_company_id: int | None = None,
     Counter=Counter, PROMOTABLE=PROMOTABLE, PROMOTER_VERSION=PROMOTER_VERSION, _accepted_links=_accepted_links, _exact_event_date=_exact_event_date, _normalized_http_url=_normalized_http_url, _record_promotion=_record_promotion, _result_period_end=_result_period_end, call_matches_result_window=call_matches_result_window, hashlib=hashlib, json=json, url_fiscal_year_conflicts=url_fiscal_year_conflicts, urlsplit=urlsplit, utc_now=utc_now,
 ) -> dict[str, Any]:
-    """Promote accepted links or document-only links from a verified fetch."""
+    """Promote accepted links or document-only links from a verified fetched."""
 
     if document_type not in PROMOTABLE:
         raise ValueError(f"Unsupported promotable document type: {document_type}")
@@ -443,11 +446,11 @@ def promote_document_links(
                 continue
 
             conn.execute(
-                """INSERT OR IGNORE INTO artifact_discovery_pages
+                statement(conn, """INSERT OR IGNORE INTO artifact_discovery_pages
                    (company_id, discovered_from_source, discovery_page_url,
                     publisher_claim, blob_id, parser_name, parser_version,
                     first_observed_at_utc)
-                   VALUES (?, 'screener', ?, NULL, ?, ?, ?, ?)""",
+                   VALUES (?, 'screener', ?, NULL, ?, ?, ?, ?)""", "INSERT INTO artifact_discovery_pages\n                   (company_id, discovered_from_source, discovery_page_url,\n                    publisher_claim, blob_id, parser_name, parser_version,\n                    first_observed_at_utc)\n                   VALUES (?, 'screener', ?, NULL, ?, ?, ?, ?) ON CONFLICT DO NOTHING"),
                 (
                     int(row["company_id"]), discovery_url, int(row["blob_id"]),
                     "screener-document-link-promotion", PROMOTER_VERSION,
@@ -476,7 +479,7 @@ def promote_document_links(
                 (int(row["company_id"]), artifact_type, artifact_key, normalized),
             ).fetchone()
             if existing is None:
-                cursor = conn.execute(
+                cursor = execute(conn,
                     """INSERT INTO document_artifacts
                        (company_id, artifact_key, artifact_type, publisher,
                         title_raw, event_date, period_end, published_at_utc, first_observed_at_utc,
@@ -486,9 +489,8 @@ def promote_document_links(
                         int(row["company_id"]), artifact_key, artifact_type,
                         row["publisher"], row["title_raw"], event_date, period_end,
                         row["source_published_at_utc"], row["first_observed_at_utc"],
-                    ),
-                )
-                artifact_id = int(cursor.lastrowid)
+                    ), returning='artifact_id')
+                artifact_id = generated_id(cursor, 'artifact_id')
                 counts["created_artifact"] += 1
             else:
                 artifact_id = int(existing["artifact_id"])
@@ -537,15 +539,14 @@ def promote_document_links(
                 sort_keys=True,
                 separators=(",", ":"),
             )
-            before = conn.total_changes
-            conn.execute(
-                """INSERT OR IGNORE INTO artifact_sources
+            source_cursor = conn.execute(
+                statement(conn, """INSERT OR IGNORE INTO artifact_sources
                    (artifact_id, discovery_page_id, discovered_from_source,
                     discovery_page_url, document_url, publisher_claim,
                     source_position, source_title_raw,
                     classification_evidence_json, is_primary_source,
                     first_observed_at_utc, last_checked_at_utc, availability_status)
-                   VALUES (?, ?, 'screener', ?, ?, ?, ?, ?, ?, 0, ?, ?, 'available')""",
+                   VALUES (?, ?, 'screener', ?, ?, ?, ?, ?, ?, 0, ?, ?, 'available')""", "INSERT INTO artifact_sources\n                   (artifact_id, discovery_page_id, discovered_from_source,\n                    discovery_page_url, document_url, publisher_claim,\n                    source_position, source_title_raw,\n                    classification_evidence_json, is_primary_source,\n                    first_observed_at_utc, last_checked_at_utc, availability_status)\n                   VALUES (?, ?, 'screener', ?, ?, ?, ?, ?, ?, 0, ?, ?, 'available') ON CONFLICT DO NOTHING"),
                 (
                     artifact_id, int(page["discovery_page_id"]), discovery_url,
                     normalized, row["publisher"], int(row["position"]),
@@ -553,7 +554,7 @@ def promote_document_links(
                     promoted_at_utc,
                 ),
             )
-            counts["created_source" if conn.total_changes > before else "reused_source"] += 1
+            counts["created_source" if source_cursor.rowcount > 0 else "reused_source"] += 1
             source = conn.execute(
                 """SELECT artifact_source_id FROM artifact_sources
                    WHERE artifact_id=? AND discovered_from_source='screener'

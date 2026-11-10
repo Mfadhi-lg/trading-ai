@@ -10,6 +10,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any
 from ....documents.recovery import RecoveryTarget
 from .targets import load_recovery_target
+from scrapper.db.repository_backend import (execute, executemany, generated_id, statement, is_postgresql, atomic_repository, begin_immediate, commit, rollback, transaction as repository_transaction)
 
 RECOVERY_SOURCE_GROUPS = ("nse", "bse", "issuer-ir")
 
@@ -27,11 +28,12 @@ def _recovery_source_group(source_type: str, *, _hooks: Any = None) -> str | Non
     return None
 
 
+@atomic_repository('documents')
 def _remaining_source_status(conn: sqlite3.Connection, target_id: int, *, _hooks: Any = None) -> str:
     RECOVERY_SOURCE_GROUPS = getattr(_hooks, "RECOVERY_SOURCE_GROUPS", globals()["RECOVERY_SOURCE_GROUPS"])
     completed_sources = {
         str(row["source_type"])
-        for row in conn.execute(
+        for row in execute(conn,
             """SELECT DISTINCT source_type FROM artifact_recovery_attempts
                 WHERE recovery_target_id=? AND status IN (
                   'CANDIDATE_FOUND','AMBIGUOUS','NO_OFFICIAL_SOURCE_FOUND',
@@ -56,6 +58,7 @@ def _after(value: str, seconds: int, *, _hooks: Any = None) -> str:
     return (parsed + timedelta(seconds=seconds)).isoformat()
 
 
+@atomic_repository('documents')
 def claim_recovery_target(
     conn: sqlite3.Connection,
     *,
@@ -74,17 +77,17 @@ def claim_recovery_target(
         raise ValueError(f"Unsupported recovery source: {source}")
     if lease_seconds < 1:
         raise ValueError("lease_seconds must be positive")
-    conn.execute("BEGIN IMMEDIATE")
+    begin_immediate(conn, lock='documents')
     try:
-        conn.execute(
-            """UPDATE artifact_recovery_targets
+        execute(conn,
+            statement(conn, """UPDATE artifact_recovery_targets
                   SET status='RETRYABLE_FAILURE',lease_owner=NULL,
                       lease_expires_at_utc=NULL,updated_at_utc=?
-                WHERE status='SEARCHING' AND lease_expires_at_utc<=?""",
+                WHERE status='SEARCHING' AND lease_expires_at_utc<=?""", "UPDATE artifact_recovery_targets\n                  SET status='RETRYABLE_FAILURE',lease_owner=NULL,\n                      lease_expires_at_utc=NULL,updated_at_utc=?\n                WHERE status='SEARCHING' AND CAST(lease_expires_at_utc AS timestamptz) <= CAST(? AS timestamptz)"),
             (now_utc, now_utc),
         )
-        row = conn.execute(
-            """SELECT target.recovery_target_id
+        row = execute(conn,
+            statement(conn, """SELECT target.recovery_target_id
                  FROM artifact_recovery_targets AS target
                 WHERE target.status IN (
                   'PENDING','AMBIGUOUS','RETRYABLE_FAILURE','NO_OFFICIAL_SOURCE_FOUND'
@@ -100,42 +103,43 @@ def claim_recovery_target(
                          'TERMINAL_FAILURE','INTERACTION_REQUIRED'
                        )
                   )
-                ORDER BY target.attempt_count,target.recovery_target_id LIMIT 1""",
+                ORDER BY target.attempt_count,target.recovery_target_id LIMIT 1""", "SELECT target.recovery_target_id\n                 FROM artifact_recovery_targets AS target\n                WHERE target.status IN (\n                  'PENDING','AMBIGUOUS','RETRYABLE_FAILURE','NO_OFFICIAL_SOURCE_FOUND'\n                )\n                  AND (target.next_attempt_at_utc IS NULL\n                       OR CAST(target.next_attempt_at_utc AS timestamptz) <= CAST(? AS timestamptz))\n                  AND NOT EXISTS (\n                    SELECT 1 FROM artifact_recovery_attempts AS attempt\n                     WHERE attempt.recovery_target_id=target.recovery_target_id\n                       AND attempt.source_type=?\n                       AND attempt.status IN (\n                         'CANDIDATE_FOUND','AMBIGUOUS','NO_OFFICIAL_SOURCE_FOUND',\n                         'TERMINAL_FAILURE','INTERACTION_REQUIRED'\n                       )\n                  )\n                ORDER BY target.attempt_count,target.recovery_target_id LIMIT 1"),
             (now_utc, source),
         ).fetchone()
         if row is None:
-            conn.commit()
+            commit(conn)
             return None
         target_id = int(row["recovery_target_id"])
         attempt_number = int(
-            conn.execute(
+            execute(conn,
                 """SELECT COALESCE(MAX(attempt_number),0)+1
                     FROM artifact_recovery_attempts
                     WHERE recovery_target_id=? AND source_type=?""",
                 (target_id, source),
             ).fetchone()[0]
         )
-        cursor = conn.execute(
+        cursor = execute(conn,
             """INSERT INTO artifact_recovery_attempts
                (recovery_target_id,source_type,attempt_number,status,started_at_utc)
                VALUES (?,?,?,'SEARCHING',?)""",
             (target_id, source, attempt_number, now_utc),
-        )
-        attempt_id = int(cursor.lastrowid)
-        conn.execute(
+         returning='recovery_attempt_id')
+        attempt_id = generated_id(cursor, 'recovery_attempt_id')
+        execute(conn,
             """UPDATE artifact_recovery_targets
                   SET status='SEARCHING',attempt_count=attempt_count+1,
                       lease_owner=?,lease_expires_at_utc=?,updated_at_utc=?
                 WHERE recovery_target_id=?""",
             (worker, _after(now_utc, lease_seconds), now_utc, target_id),
         )
-        conn.commit()
+        commit(conn)
         return load_recovery_target(conn, target_id), attempt_id
     except Exception:
-        conn.rollback()
+        rollback(conn)
         raise
 
 
+@atomic_repository('documents')
 def finish_recovery_attempt(
     conn: sqlite3.Connection,
     *,
@@ -157,7 +161,7 @@ def finish_recovery_attempt(
     }
     if status not in allowed:
         raise ValueError(f"Unsupported recovery attempt status: {status}")
-    attempt = conn.execute(
+    attempt = execute(conn,
         """SELECT recovery_target_id,source_type FROM artifact_recovery_attempts
             WHERE recovery_attempt_id=?""",
         (recovery_attempt_id,),
@@ -165,8 +169,8 @@ def finish_recovery_attempt(
     if attempt is None:
         raise ValueError(f"Unknown recovery attempt: {recovery_attempt_id}")
     target_id = int(attempt["recovery_target_id"])
-    with conn:
-        cursor = conn.execute(
+    with repository_transaction(conn):
+        cursor = execute(conn,
             """UPDATE artifact_recovery_attempts
                   SET status=?,completed_at_utc=?,result_evidence_json=?,error_json=?
                 WHERE recovery_attempt_id=? AND status='SEARCHING'""",
@@ -180,7 +184,7 @@ def finish_recovery_attempt(
         )
         if cursor.rowcount != 1:
             raise RuntimeError("Recovery attempt is no longer active")
-        target = conn.execute(
+        target = execute(conn,
             "SELECT status,lease_owner FROM artifact_recovery_targets WHERE recovery_target_id=?",
             (target_id,),
         ).fetchone()
@@ -197,7 +201,7 @@ def finish_recovery_attempt(
         else:
             completed_sources = {
                 str(row["source_type"])
-                for row in conn.execute(
+                for row in execute(conn,
                     """SELECT DISTINCT source_type FROM artifact_recovery_attempts
                         WHERE recovery_target_id=? AND status IN (
                           'CANDIDATE_FOUND','AMBIGUOUS','NO_OFFICIAL_SOURCE_FOUND',
@@ -214,7 +218,7 @@ def finish_recovery_attempt(
                 target_status = "TERMINAL_FAILURE"
             else:
                 target_status = "NO_OFFICIAL_SOURCE_FOUND"
-        conn.execute(
+        execute(conn,
             """UPDATE artifact_recovery_targets
                   SET status=?,next_attempt_at_utc=?,lease_owner=NULL,
                       lease_expires_at_utc=NULL,updated_at_utc=?

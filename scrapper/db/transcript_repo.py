@@ -14,6 +14,7 @@ from ..documents.transcript import (
     OfficialTranscript,
     canonical_json,
 )
+from scrapper.db.repository_backend import (execute, executemany, generated_id, statement, is_postgresql, atomic_repository, begin_immediate, commit, rollback, transaction as repository_transaction)
 
 
 @dataclass(frozen=True)
@@ -38,10 +39,11 @@ class PersistedTranscript:
         }
 
 
+@atomic_repository('documents')
 def _existing(
     conn: sqlite3.Connection, *, content_id: int, options_json: str
 ) -> sqlite3.Row | None:
-    return conn.execute(
+    return execute(conn,
         """SELECT * FROM transcripts
            WHERE content_id=? AND origin='official' AND engine=?
              AND model_version=? AND options_json=?""",
@@ -54,10 +56,11 @@ def _existing(
     ).fetchone()
 
 
+@atomic_repository('documents')
 def _result(
     conn: sqlite3.Connection, row: sqlite3.Row, *, reused: bool
 ) -> PersistedTranscript:
-    preferred = conn.execute(
+    preferred = execute(conn,
         """SELECT transcript_id FROM preferred_transcripts
            WHERE artifact_id=?""",
         (row["artifact_id"],),
@@ -75,6 +78,7 @@ def _result(
     )
 
 
+@atomic_repository('documents')
 def persist_official_transcript(
     conn: sqlite3.Connection,
     *,
@@ -88,8 +92,8 @@ def persist_official_transcript(
     existing = _existing(conn, content_id=content_id, options_json=options_json)
     if existing is not None:
         if existing["validation_status"] == "accepted":
-            with conn:
-                conn.execute(
+            with repository_transaction(conn):
+                execute(conn,
                     """INSERT INTO preferred_transcripts
                        (artifact_id, transcript_id, updated_at_utc)
                        VALUES (?, ?, ?)
@@ -98,7 +102,7 @@ def persist_official_transcript(
                          updated_at_utc=excluded.updated_at_utc""",
                     (artifact_id, int(existing["transcript_id"]), created_at_utc),
                 )
-                conn.execute(
+                execute(conn,
                     """UPDATE document_artifacts
                        SET preferred_content_id=?, acquisition_status='validated',
                            transcript_preference_status='official_preferred'
@@ -123,8 +127,8 @@ def persist_official_transcript(
     unknown_count = sum(
         segment.section_kind == "unknown" for segment in parsed.segments
     )
-    with conn:
-        cursor = conn.execute(
+    with repository_transaction(conn):
+        cursor = execute(conn,
             """INSERT INTO transcripts
                (artifact_id, content_id, extraction_id, origin,
                 source_media_content_id, language, engine, model_version,
@@ -151,10 +155,10 @@ def persist_official_transcript(
                 qa_count,
                 unknown_count,
             ),
-        )
-        transcript_id = int(cursor.lastrowid)
+         returning='transcript_id')
+        transcript_id = generated_id(cursor, 'transcript_id')
         for boundary in parsed.boundaries:
-            conn.execute(
+            execute(conn,
                 """INSERT INTO transcript_section_boundaries
                    (transcript_id, boundary_position, section_kind, page_number,
                     element_position, start_ms, label_raw, text_origin, bbox_json)
@@ -171,7 +175,7 @@ def persist_official_transcript(
                 ),
             )
         for segment in parsed.segments:
-            conn.execute(
+            execute(conn,
                 """INSERT INTO transcript_segments
                    (transcript_id, segment_position, page_start, page_end,
                     element_start, element_end, start_ms, end_ms, speaker_raw,
@@ -196,7 +200,7 @@ def persist_official_transcript(
                 ),
             )
         for validation in parsed.validations:
-            conn.execute(
+            execute(conn,
                 """INSERT INTO transcript_validations
                    (transcript_id, rule_code, severity, status, expected_value,
                     actual_value, details_json)
@@ -212,7 +216,7 @@ def persist_official_transcript(
                 ),
             )
         if parsed.status == "accepted":
-            conn.execute(
+            execute(conn,
                 """INSERT INTO preferred_transcripts
                    (artifact_id, transcript_id, updated_at_utc)
                    VALUES (?, ?, ?)
@@ -221,7 +225,7 @@ def persist_official_transcript(
                      updated_at_utc=excluded.updated_at_utc""",
                 (artifact_id, transcript_id, created_at_utc),
             )
-            conn.execute(
+            execute(conn,
                 """UPDATE document_artifacts
                    SET preferred_content_id=?, acquisition_status='validated',
                        transcript_preference_status='official_preferred'
@@ -229,13 +233,13 @@ def persist_official_transcript(
                 (content_id, artifact_id),
             )
         else:
-            preferred = conn.execute(
+            preferred = execute(conn,
                 """SELECT transcript_id FROM preferred_transcripts
                    WHERE artifact_id=?""",
                 (artifact_id,),
             ).fetchone()
             if preferred is None:
-                conn.execute(
+                execute(conn,
                     """UPDATE document_artifacts
                        SET preferred_content_id=CASE
                              WHEN preferred_content_id=? THEN NULL
@@ -244,7 +248,7 @@ def persist_official_transcript(
                        WHERE artifact_id=?""",
                     (content_id, artifact_id),
                 )
-    row = conn.execute(
+    row = execute(conn,
         "SELECT * FROM transcripts WHERE transcript_id=?", (transcript_id,)
     ).fetchone()
     if row is None:
@@ -252,27 +256,28 @@ def persist_official_transcript(
     return _result(conn, row, reused=False)
 
 
+@atomic_repository('documents')
 def transcript_payload(conn: sqlite3.Connection, transcript_id: int) -> dict[str, Any]:
-    transcript = conn.execute(
+    transcript = execute(conn,
         "SELECT * FROM transcripts WHERE transcript_id=?", (transcript_id,)
     ).fetchone()
     if transcript is None:
         raise ValueError(f"Unknown transcript: {transcript_id}")
-    preferred = conn.execute(
+    preferred = execute(conn,
         "SELECT transcript_id FROM preferred_transcripts WHERE artifact_id=?",
         (transcript["artifact_id"],),
     ).fetchone()
-    boundaries = conn.execute(
+    boundaries = execute(conn,
         """SELECT * FROM transcript_section_boundaries WHERE transcript_id=?
            ORDER BY boundary_position""",
         (transcript_id,),
     ).fetchall()
-    segments = conn.execute(
+    segments = execute(conn,
         """SELECT * FROM transcript_segments WHERE transcript_id=?
            ORDER BY segment_position""",
         (transcript_id,),
     ).fetchall()
-    validations = conn.execute(
+    validations = execute(conn,
         """SELECT * FROM transcript_validations WHERE transcript_id=?
            ORDER BY rule_code""",
         (transcript_id,),

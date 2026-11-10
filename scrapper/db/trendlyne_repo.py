@@ -1,6 +1,10 @@
 """Persistence helpers for the Trendlyne monthly-page slices."""
 
 from __future__ import annotations
+from .repository_backend import (
+    atomic_repository, begin_immediate, commit, execute, executemany, generated_id,
+    is_postgresql, rollback, statement, transaction,
+)
 
 import hashlib
 import json
@@ -15,40 +19,39 @@ from ..sources.trendlyne.urls import TrendlyneMapping
 from .repo import utc_now
 
 
+@atomic_repository('financial-repositories')
 def ensure_trendlyne_company(
     conn: sqlite3.Connection, mapping: TrendlyneMapping
 ) -> int:
-    row = conn.execute(
+    row = execute(conn,
         """SELECT company_id FROM security_identifiers
            WHERE identifier_type='NSE' AND identifier_value=? AND is_current=1""",
         (mapping.source_symbol,),
     ).fetchone()
     if row:
         company_id = int(row["company_id"])
-        conn.execute(
+        execute(conn,
             "UPDATE companies SET current_legal_name=? WHERE company_id=?",
             (mapping.company_name, company_id),
         )
     else:
-        cursor = conn.execute(
+        cursor = execute(conn,
             "INSERT INTO companies(current_legal_name, status) VALUES (?, 'active')",
             (mapping.company_name,),
-        )
-        company_id = int(cursor.lastrowid)
-        conn.execute(
+         returning='company_id')
+        company_id = int(generated_id(cursor, 'company_id'))
+        execute(conn,
             """INSERT INTO security_identifiers
                (company_id, identifier_type, identifier_value, is_current)
                VALUES (?, 'NSE', ?, 1)""",
             (company_id, mapping.source_symbol),
         )
     if mapping.bse_code:
-        conn.execute(
-            """INSERT OR IGNORE INTO security_identifiers
-               (company_id, identifier_type, identifier_value, is_current)
-               VALUES (?, 'BSE', ?, 1)""",
+        execute(conn,
+            statement(conn, "INSERT OR IGNORE INTO security_identifiers\n               (company_id, identifier_type, identifier_value, is_current)\n               VALUES (?, 'BSE', ?, 1)", "INSERT INTO security_identifiers\n               (company_id, identifier_type, identifier_value, is_current)\n               VALUES (?, 'BSE', ?, 1) ON CONFLICT DO NOTHING"),
             (company_id, mapping.bse_code),
         )
-    conn.execute(
+    execute(conn,
         """INSERT INTO source_identifiers
            (company_id, source, source_company_id, source_symbol, source_slug,
             canonical_url, mapping_status, verified_at_utc)
@@ -69,10 +72,11 @@ def ensure_trendlyne_company(
             utc_now(),
         ),
     )
-    conn.commit()
+    commit(conn)
     return company_id
 
 
+@atomic_repository('financial-repositories')
 def store_trendlyne_blob(
     conn: sqlite3.Connection,
     response: FetchResponse,
@@ -93,11 +97,8 @@ def store_trendlyne_blob(
         temporary = destination.with_suffix(".html.tmp")
         temporary.write_bytes(response.content)
         os.replace(temporary, destination)
-    conn.execute(
-        """INSERT OR IGNORE INTO response_blobs
-           (content_sha256, content_type, encoding, byte_size, local_path,
-            first_observed_at_utc, created_at_utc)
-           VALUES (?, ?, ?, ?, ?, ?, ?)""",
+    execute(conn,
+        statement(conn, 'INSERT OR IGNORE INTO response_blobs\n           (content_sha256, content_type, encoding, byte_size, local_path,\n            first_observed_at_utc, created_at_utc)\n           VALUES (?, ?, ?, ?, ?, ?, ?)', 'INSERT INTO response_blobs\n           (content_sha256, content_type, encoding, byte_size, local_path,\n            first_observed_at_utc, created_at_utc)\n           VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT DO NOTHING'),
         (
             sha256,
             response.content_type,
@@ -108,15 +109,16 @@ def store_trendlyne_blob(
             utc_now(),
         ),
     )
-    row = conn.execute(
+    row = execute(conn,
         "SELECT blob_id FROM response_blobs WHERE content_sha256=?", (sha256,)
     ).fetchone()
     if row is None:
         raise RuntimeError("Failed to persist Trendlyne response blob")
-    conn.commit()
+    commit(conn)
     return int(row["blob_id"])
 
 
+@atomic_repository('financial-repositories')
 def record_trendlyne_fetch(
     conn: sqlite3.Connection,
     run_id: int,
@@ -127,7 +129,7 @@ def record_trendlyne_fetch(
     fetched_at_utc: str,
     blob_id: int,
 ) -> int:
-    cursor = conn.execute(
+    cursor = execute(conn,
         """INSERT INTO fetch_observations
            (run_id, company_id, source, reporting_scope,
             requested_source_period, resolved_source_period,
@@ -150,15 +152,32 @@ def record_trendlyne_fetch(
             blob_id,
             response.fetch_status,
         ),
-    )
-    conn.commit()
-    return int(cursor.lastrowid)
+     returning='fetch_id')
+    commit(conn)
+    return int(generated_id(cursor, 'fetch_id'))
 
 
-def store_parsed_trendlyne_page(
+def store_parsed_trendlyne_page(conn: sqlite3.Connection, parse_id: int, parsed: ParsedMonthlyMfPage) -> None:
+    if not is_postgresql(conn):
+        return _store_parsed_trendlyne_page(conn, parse_id, parsed)
+    failure = None
+    with transaction(conn):
+        from .repository_backend import lock_write
+        lock_write(conn)
+        try:
+            _store_parsed_trendlyne_page(conn, parse_id, parsed)
+        except Exception as error:
+            # The inner savepoint rolls back partial observations and records
+            # the failed parse. Commit that audit before reporting refusal.
+            failure = error
+    if failure is not None:
+        raise failure
+
+
+def _store_parsed_trendlyne_page(
     conn: sqlite3.Connection, parse_id: int, parsed: ParsedMonthlyMfPage
 ) -> None:
-    artifact = conn.execute(
+    artifact = execute(conn,
         """SELECT pa.parse_status, rb.first_observed_at_utc
            FROM parse_artifacts AS pa
            JOIN response_blobs AS rb ON rb.blob_id=pa.blob_id
@@ -169,45 +188,45 @@ def store_parsed_trendlyne_page(
         raise ValueError("Only a pending Trendlyne parse can receive observations")
     first_observed_at_utc = str(artifact["first_observed_at_utc"])
     try:
-        with conn:
-            identity_cursor = conn.execute(
+        with transaction(conn):
+            identity_cursor = execute(conn,
                 """INSERT INTO source_sections
                    (parse_id, section_code, heading_raw, position, parse_status)
                    VALUES (?, 'trendlyne_identity', 'Company identity', 0, 'ok')""",
                 (parse_id,),
-            )
-            period_cursor = conn.execute(
+             returning='section_id')
+            period_cursor = execute(conn,
                 """INSERT INTO source_sections
                    (parse_id, section_code, heading_raw, position, parse_status)
                    VALUES (?, 'trendlyne_selected_month', 'Selected month', 1, 'ok')""",
                 (parse_id,),
-            )
-            summary_cursor = conn.execute(
+             returning='section_id')
+            summary_cursor = execute(conn,
                 """INSERT INTO source_sections
                    (parse_id, section_code, heading_raw, position, parse_status)
                    VALUES (?, 'trendlyne_monthly_summary',
                            'Mutual fund monthly summary', 3, 'ok')""",
                 (parse_id,),
-            )
-            history_cursor = conn.execute(
+             returning='section_id')
+            history_cursor = execute(conn,
                 """INSERT INTO source_sections
                    (parse_id, section_code, heading_raw, position, parse_status)
                    VALUES (?, 'trendlyne_month_history', 'Choose Month', 2, 'ok')""",
                 (parse_id,),
-            )
-            fund_cursor = conn.execute(
+             returning='section_id')
+            fund_cursor = execute(conn,
                 """INSERT INTO source_sections
                    (parse_id, section_code, heading_raw, position, parse_status)
                    VALUES (?, 'trendlyne_fund_table', 'Mutual fund holdings', 4,
                            'ok')""",
                 (parse_id,),
-            )
+             returning='section_id')
             for section_id, fields in (
-                (int(identity_cursor.lastrowid), parsed.identity_fields),
-                (int(period_cursor.lastrowid), parsed.period_fields),
-                (int(summary_cursor.lastrowid), parsed.summary_fields),
+                (int(generated_id(identity_cursor, 'section_id')), parsed.identity_fields),
+                (int(generated_id(period_cursor, 'section_id')), parsed.period_fields),
+                (int(generated_id(summary_cursor, 'section_id')), parsed.summary_fields),
                 (
-                    int(history_cursor.lastrowid),
+                    int(generated_id(history_cursor, 'section_id')),
                     tuple(
                         SourceField(
                             link.position,
@@ -221,7 +240,7 @@ def store_parsed_trendlyne_page(
                     ),
                 ),
             ):
-                conn.executemany(
+                executemany(conn,
                     """INSERT INTO source_fields
                        (section_id, field_position, field_key_raw, raw_text,
                         normalized_display_text, link_url, field_role,
@@ -241,7 +260,7 @@ def store_parsed_trendlyne_page(
                         for field in fields
                     ],
                 )
-            conn.executemany(
+            executemany(conn,
                 """INSERT INTO trendlyne_month_links
                    (parse_id, link_position, period_label_raw, source_period,
                     source_url, source_url_period_raw, source_company_id,
@@ -268,8 +287,8 @@ def store_parsed_trendlyne_page(
                     for link in parsed.month_links
                 ],
             )
-            fund_section_id = int(fund_cursor.lastrowid)
-            conn.executemany(
+            fund_section_id = int(generated_id(fund_cursor, 'section_id'))
+            executemany(conn,
                 """INSERT INTO source_table_cells
                    (section_id, table_position, row_position, column_position,
                     row_label_raw, column_label_raw, raw_text,
@@ -294,7 +313,7 @@ def store_parsed_trendlyne_page(
                     for cell in parsed.fund_cells
                 ],
             )
-            conn.executemany(
+            executemany(conn,
                 """INSERT INTO trendlyne_fund_source_rows
                    (parse_id, table_position, row_position, source_scheme_id,
                     scheme_name_raw, source_url)
@@ -310,7 +329,7 @@ def store_parsed_trendlyne_page(
                     for row in parsed.fund_rows
                 ],
             )
-            conn.executemany(
+            executemany(conn,
                 """INSERT INTO trendlyne_fund_observations
                    (parse_id, reporting_scope, table_position, row_position,
                     column_position, source_scheme_id, scheme_name_raw,
@@ -347,7 +366,7 @@ def store_parsed_trendlyne_page(
                 ],
             )
             summary = parsed.summary
-            conn.execute(
+            execute(conn,
                 """INSERT INTO trendlyne_mf_page_summaries
                    (parse_id, reporting_scope, period_label_raw, source_period,
                     period_end, headline_raw, headline_display_text,
@@ -399,7 +418,7 @@ def store_parsed_trendlyne_page(
                     first_observed_at_utc,
                 ),
             )
-            conn.execute(
+            execute(conn,
                 """INSERT INTO trendlyne_monthly_pages
                    (parse_id, reporting_scope, source_company_id, source_symbol,
                     source_slug, company_name_raw, bse_code, canonical_url,
@@ -429,16 +448,16 @@ def store_parsed_trendlyne_page(
                     parsed.resolved_source_period,
                 ),
             )
-            conn.execute(
+            execute(conn,
                 "UPDATE parse_artifacts SET parse_status='ok' WHERE parse_id=?",
                 (parse_id,),
             )
     except Exception:
-        conn.execute(
+        execute(conn,
             """UPDATE parse_artifacts
                SET parse_status='failed', validation_status='failed'
                WHERE parse_id=?""",
             (parse_id,),
         )
-        conn.commit()
+        commit(conn)
         raise

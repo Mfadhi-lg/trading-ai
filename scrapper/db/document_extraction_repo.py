@@ -167,6 +167,8 @@ def persist_extraction(
     if not is_postgresql(conn):
         return _persist_extraction(conn, **arguments)
     with transaction(conn):
+        from .repository_backend import lock_write
+        lock_write(conn)
         key = canonical_json([content_id, DOCUMENT_PARSER_NAME, DOCUMENT_PARSER_VERSION,
                               ocr_engine, ocr_engine_version, canonical_json(options)])
         conn.execute("""SELECT pg_advisory_xact_lock(hashtextextended(

@@ -20,6 +20,7 @@ from ..sources.documents.discovery import (
     DiscoveryPage,
     DiscoveryPlan,
 )
+from scrapper.db.repository_backend import (execute, executemany, generated_id, statement, is_postgresql, atomic_repository, begin_immediate, commit, rollback, transaction as repository_transaction)
 
 
 @dataclass(frozen=True)
@@ -46,22 +47,23 @@ class DiscoveryPersistenceResult:
         }
 
 
+@atomic_repository('documents')
 def _ensure_company(
     conn: sqlite3.Connection, *, symbol: str, company_name: str
 ) -> int:
-    row = conn.execute(
+    row = execute(conn,
         """SELECT company_id FROM security_identifiers
            WHERE identifier_type='NSE' AND identifier_value=? AND is_current=1""",
         (symbol.upper(),),
     ).fetchone()
     if row is not None:
         return int(row["company_id"])
-    cursor = conn.execute(
+    cursor = execute(conn,
         "INSERT INTO companies(current_legal_name, status) VALUES (?, 'active')",
         (company_name,),
-    )
-    company_id = int(cursor.lastrowid)
-    conn.execute(
+     returning='company_id')
+    company_id = generated_id(cursor, 'company_id')
+    execute(conn,
         """INSERT INTO security_identifiers
            (company_id, identifier_type, identifier_value, is_current)
            VALUES (?, 'NSE', ?, 1)""",
@@ -70,6 +72,7 @@ def _ensure_company(
     return company_id
 
 
+@atomic_repository('documents')
 def _store_discovery_blob(
     conn: sqlite3.Connection,
     *,
@@ -99,11 +102,14 @@ def _store_discovery_blob(
         temporary = destination.with_suffix(destination.suffix + ".tmp")
         temporary.write_bytes(page.content)
         os.replace(temporary, destination)
-    conn.execute(
-        """INSERT OR IGNORE INTO response_blobs
+    execute(conn,
+        statement(conn, """INSERT OR IGNORE INTO response_blobs
            (content_sha256, content_type, encoding, byte_size, local_path,
             first_observed_at_utc, created_at_utc)
-           VALUES (?, ?, 'utf-8', ?, ?, ?, ?)""",
+           VALUES (?, ?, 'utf-8', ?, ?, ?, ?)""", """INSERT INTO response_blobs
+           (content_sha256, content_type, encoding, byte_size, local_path,
+            first_observed_at_utc, created_at_utc)
+           VALUES (?, ?, 'utf-8', ?, ?, ?, ?) ON CONFLICT DO NOTHING"""),
         (
             sha256,
             'application/json' if suffix=='.json' else 'text/html',
@@ -113,7 +119,7 @@ def _store_discovery_blob(
             observed_at_utc,
         ),
     )
-    row = conn.execute(
+    row = execute(conn,
         "SELECT blob_id FROM response_blobs WHERE content_sha256=?", (sha256,)
     ).fetchone()
     if row is None:
@@ -121,6 +127,7 @@ def _store_discovery_blob(
     return int(row["blob_id"])
 
 
+@atomic_repository('documents')
 def _persist_page(
     conn: sqlite3.Connection,
     *,
@@ -129,12 +136,16 @@ def _persist_page(
     blob_id: int,
     observed_at_utc: str,
 ) -> int:
-    conn.execute(
-        """INSERT OR IGNORE INTO artifact_discovery_pages
+    execute(conn,
+        statement(conn, """INSERT OR IGNORE INTO artifact_discovery_pages
            (company_id, discovered_from_source, discovery_page_url,
             publisher_claim, blob_id, parser_name, parser_version,
             first_observed_at_utc)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""", """INSERT INTO artifact_discovery_pages
+           (company_id, discovered_from_source, discovery_page_url,
+            publisher_claim, blob_id, parser_name, parser_version,
+            first_observed_at_utc)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT DO NOTHING"""),
         (
             company_id,
             page.source,
@@ -146,7 +157,7 @@ def _persist_page(
             observed_at_utc,
         ),
     )
-    row = conn.execute(
+    row = execute(conn,
         """SELECT discovery_page_id FROM artifact_discovery_pages
            WHERE company_id=? AND discovered_from_source=?
              AND discovery_page_url=? AND blob_id=?
@@ -165,6 +176,7 @@ def _persist_page(
     return int(row["discovery_page_id"])
 
 
+@atomic_repository('documents')
 def _existing_artifact_for_candidate(
     conn: sqlite3.Connection,
     *,
@@ -173,7 +185,7 @@ def _existing_artifact_for_candidate(
     artifact_key: str,
     document_url: str,
 ) -> int | None:
-    row = conn.execute(
+    row = execute(conn,
         """SELECT artifact_id FROM document_artifacts
            WHERE company_id=? AND artifact_type=? AND artifact_key=?""",
         (company_id, artifact_type, artifact_key),
@@ -182,7 +194,7 @@ def _existing_artifact_for_candidate(
         return int(row["artifact_id"])
     # An exact document URL is strong identity evidence even when two source
     # pages phrase the title differently. Never merge across artifact types.
-    row = conn.execute(
+    row = execute(conn,
         """SELECT artifact.artifact_id
            FROM document_artifacts AS artifact
            JOIN artifact_sources AS source
@@ -195,13 +207,14 @@ def _existing_artifact_for_candidate(
     return int(row["artifact_id"]) if row is not None else None
 
 
+@atomic_repository('documents')
 def _validate_existing_artifact_identity(
     conn: sqlite3.Connection,
     *,
     artifact_id: int,
     candidate: DiscoveredArtifactCandidate,
 ) -> None:
-    existing = conn.execute(
+    existing = execute(conn,
         """SELECT artifact_type, event_date, period_end, fiscal_year,
                   fiscal_quarter
            FROM document_artifacts WHERE artifact_id=?""",
@@ -225,6 +238,7 @@ def _validate_existing_artifact_identity(
             )
 
 
+@atomic_repository('documents')
 def persist_discovery_plan(
     conn: sqlite3.Connection,
     plan: DiscoveryPlan,
@@ -243,12 +257,12 @@ def persist_discovery_plan(
     page_ids: dict[int, int] = {}
     artifact_ids: list[int] = []
     source_ids: list[int] = []
-    with conn:
+    with repository_transaction(conn):
         if verified_company_id is None:
             company_id = _ensure_company(conn, symbol=plan.symbol, company_name=plan.company_name)
         else:
             company_id = verified_company_id
-            if not conn.execute('SELECT 1 FROM companies WHERE company_id=?', (company_id,)).fetchone():
+            if not execute(conn, 'SELECT 1 FROM companies WHERE company_id=?', (company_id,)).fetchone():
                 raise ValueError('Unknown verified discovery company')
         for page in plan.pages:
             blob_id = _store_discovery_blob(
@@ -280,7 +294,7 @@ def persist_discovery_plan(
                     transcript_status = "official_candidate"
                 elif candidate.artifact_type == "recording":
                     transcript_status = "recording_fallback_candidate"
-                cursor = conn.execute(
+                cursor = execute(conn,
                     """INSERT INTO document_artifacts
                        (company_id, artifact_key, artifact_type, publisher,
                         title_raw, event_date, period_end, fiscal_year,
@@ -301,8 +315,8 @@ def persist_discovery_plan(
                         observed_at_utc,
                         transcript_status,
                     ),
-                )
-                artifact_id = int(cursor.lastrowid)
+                 returning='artifact_id')
+                artifact_id = generated_id(cursor, 'artifact_id')
                 created_artifacts += 1
             else:
                 _validate_existing_artifact_identity(
@@ -324,16 +338,22 @@ def persist_discovery_plan(
                 sort_keys=True,
                 separators=(",", ":"),
             )
-            before = conn.total_changes
-            conn.execute(
-                """INSERT OR IGNORE INTO artifact_sources
+            source_cursor = execute(conn,
+                statement(conn, """INSERT OR IGNORE INTO artifact_sources
                    (artifact_id, discovery_page_id, discovered_from_source,
                     discovery_page_url, document_url, publisher_claim,
                     exchange_announcement_id, source_position, source_title_raw,
                     classification_evidence_json, is_primary_source,
                     first_observed_at_utc, last_checked_at_utc,
                     availability_status)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'available')""",
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'available')""", """INSERT INTO artifact_sources
+                   (artifact_id, discovery_page_id, discovered_from_source,
+                    discovery_page_url, document_url, publisher_claim,
+                    exchange_announcement_id, source_position, source_title_raw,
+                    classification_evidence_json, is_primary_source,
+                    first_observed_at_utc, last_checked_at_utc,
+                    availability_status)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'available') ON CONFLICT DO NOTHING"""),
                 (
                     artifact_id,
                     page_ids[candidate.page_position],
@@ -350,11 +370,11 @@ def persist_discovery_plan(
                     observed_at_utc,
                 ),
             )
-            if conn.total_changes > before:
+            if source_cursor.rowcount == 1:
                 created_sources += 1
             else:
                 reused_sources += 1
-            row = conn.execute(
+            row = execute(conn,
                 """SELECT artifact_source_id FROM artifact_sources
                    WHERE artifact_id=? AND discovered_from_source=?
                      AND discovery_page_url=? AND document_url=?""",
@@ -386,6 +406,7 @@ def persist_discovery_plan(
     )
 
 
+@atomic_repository('documents')
 def register_artifact_content(
     conn: sqlite3.Connection,
     *,
@@ -398,20 +419,20 @@ def register_artifact_content(
 ) -> int:
     """Register already-validated immutable bytes (the D02 handoff surface)."""
 
-    blob = conn.execute(
+    blob = execute(conn,
         """SELECT content_sha256, byte_size FROM response_blobs WHERE blob_id=?""",
         (blob_id,),
     ).fetchone()
     if blob is None:
         raise ValueError(f"Unknown response blob: {blob_id}")
-    existing = conn.execute(
+    existing = execute(conn,
         """SELECT content_id FROM artifact_contents
             WHERE artifact_id=? AND blob_id=?""",
         (artifact_id, blob_id),
     ).fetchone()
     if existing is not None:
         return int(existing["content_id"])
-    cursor = conn.execute(
+    cursor = execute(conn,
         """INSERT INTO artifact_contents
            (artifact_id, blob_id, media_type, content_sha256, byte_size,
             extraction_status, is_official, content_origin, created_at_utc)
@@ -426,23 +447,24 @@ def register_artifact_content(
             content_origin,
             created_at_utc or utc_now(),
         ),
-    )
-    return int(cursor.lastrowid)
+     returning='content_id')
+    return generated_id(cursor, 'content_id')
 
 
+@atomic_repository('documents')
 def set_preferred_artifact_content(
     conn: sqlite3.Connection, *, artifact_id: int, content_id: int
 ) -> None:
     """Move only the preferred pointer; immutable content rows are untouched."""
 
-    content = conn.execute(
+    content = execute(conn,
         """SELECT is_official FROM artifact_contents
            WHERE content_id=? AND artifact_id=?""",
         (content_id, artifact_id),
     ).fetchone()
     if content is None:
         raise ValueError("Preferred content must belong to the logical artifact")
-    transcript_status = conn.execute(
+    transcript_status = execute(conn,
         "SELECT artifact_type FROM document_artifacts WHERE artifact_id=?",
         (artifact_id,),
     ).fetchone()
@@ -451,8 +473,8 @@ def set_preferred_artifact_content(
     preference = "not_applicable"
     if transcript_status["artifact_type"] == "transcript":
         preference = "official_preferred" if content["is_official"] else "machine_preferred"
-    with conn:
-        conn.execute(
+    with repository_transaction(conn):
+        execute(conn,
             """UPDATE document_artifacts
                SET preferred_content_id=?, acquisition_status='validated',
                    transcript_preference_status=?

@@ -28,7 +28,7 @@ from ...config import (
 )
 from ...core.http import FetchResponse
 from ...sources.exchange.transport import fetch_exchange_dataset
-from ...db.database import connect, init_db
+from ...db.database import selected_backend, connect, init_db
 from ...db.exchange.filings import (
     ingest_result_filings,
     preview_filing_decisions,
@@ -300,9 +300,9 @@ def _guard(
 
 
 def _readonly(db_path: Path, *, sqlite3=sqlite3) -> sqlite3.Connection | None:
-    if not db_path.exists():
+    if selected_backend() != "postgresql" and not db_path.exists():
         return None
-    connection = sqlite3.connect(f"file:{db_path.resolve()}?mode=ro", uri=True)
+    connection = connect(db_path, read_only=True)
     connection.row_factory = sqlite3.Row
     return connection
 

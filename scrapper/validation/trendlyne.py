@@ -1,6 +1,7 @@
 """Focused Trendlyne identity, month, and source-table validation."""
 
 from __future__ import annotations
+from ..db.repository_backend import atomic_repository, is_postgresql
 
 import json
 import re
@@ -47,6 +48,7 @@ def _insert_rule(
     )
 
 
+@atomic_repository('validation')
 def validate_trendlyne_parse(
     conn: sqlite3.Connection,
     parse_id: int,
@@ -888,6 +890,21 @@ def accept_trendlyne_parse(
     parse_id: int,
     mapping: TrendlyneMapping,
 ) -> str:
+    if not is_postgresql(conn):
+        return _accept_trendlyne_parse(conn, company_id, parse_id, mapping)
+    result = _accept_trendlyne_native(conn, company_id, parse_id, mapping)
+    # Rejection is durable evidence; raise only after its short unit commits.
+    if isinstance(result, ValueError):
+        raise result
+    return result
+
+
+@atomic_repository('trendlyne-acceptance')
+def _accept_trendlyne_native(conn, company_id, parse_id, mapping):
+    return _accept_trendlyne_parse(conn, company_id, parse_id, mapping, defer_error=True)
+
+
+def _accept_trendlyne_parse(conn, company_id, parse_id, mapping, *, defer_error=False):
     artifact = conn.execute(
         "SELECT parse_status, validation_status FROM parse_artifacts WHERE parse_id=?",
         (parse_id,),
@@ -944,7 +961,10 @@ def accept_trendlyne_parse(
                         ),
                     ),
                 )
-        raise ValueError("Trendlyne parse does not satisfy automatic acceptance rules")
+        error = ValueError("Trendlyne parse does not satisfy automatic acceptance rules")
+        if defer_error:
+            return error
+        raise error
 
     current = conn.execute(
         """SELECT parse_id FROM accepted_page_versions

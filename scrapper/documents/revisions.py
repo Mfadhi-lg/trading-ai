@@ -3,12 +3,14 @@
 A changed indicator permits a bounded GET, never proves changed contents.
 The canonical content hash decides whether a new inbox/version is created.
 """
+from ..db.repository_backend import statement, is_postgresql, execute, generated_id, atomic_repository, begin_immediate
 import hashlib
 import json
 from urllib.parse import urlsplit
 from ..core.access_policy import is_blocked_terms_target
 
 
+@atomic_repository('document-revision')
 def enqueue_revision(conn, *, artifact_id, url, indicator, now):
     if not indicator or not isinstance(indicator, dict):
         raise ValueError('Revision requires source metadata or validator evidence')
@@ -25,15 +27,15 @@ def enqueue_revision(conn, *, artifact_id, url, indicator, now):
     encoded = json.dumps(policy,sort_keys=True,separators=(',',':'))
     scope = 'document-revision-' + hashlib.sha256(encoded.encode()).hexdigest()
     with conn:
-        conn.execute('''INSERT OR IGNORE INTO artifact_download_scopes
-            VALUES (?, 'custom', 'Evidence-backed immutable document revision', ?, ?, ?, ?)''',
+        conn.execute(statement(conn, '''INSERT OR IGNORE INTO artifact_download_scopes
+            VALUES (?, 'custom', 'Evidence-backed immutable document revision', ?, ?, ?, ?)''', "INSERT INTO artifact_download_scopes\n            VALUES (?, 'custom', 'Evidence-backed immutable document revision', ?, ?, ?, ?) ON CONFLICT DO NOTHING"),
             (scope,json.dumps([artifact['artifact_type']]),encoded,now,now))
-        conn.execute('INSERT OR IGNORE INTO artifact_download_scope_companies(scope_id,company_id,symbol) VALUES (?,?,?)',
+        conn.execute(statement(conn, 'INSERT OR IGNORE INTO artifact_download_scope_companies(scope_id,company_id,symbol) VALUES (?,?,?)', 'INSERT INTO artifact_download_scope_companies(scope_id,company_id,symbol) VALUES (?,?,?) ON CONFLICT DO NOTHING'),
             (scope,artifact['company_id'],f"company:{artifact['company_id']}"))
-        conn.execute('INSERT OR IGNORE INTO artifact_download_scope_artifacts VALUES (?,?)',(scope,artifact_id))
+        conn.execute(statement(conn, 'INSERT OR IGNORE INTO artifact_download_scope_artifacts VALUES (?,?)', 'INSERT INTO artifact_download_scope_artifacts VALUES (?,?) ON CONFLICT DO NOTHING'),(scope,artifact_id))
         # One URL only. Never rearm or mutate a succeeded/terminal canonical job.
-        conn.execute('''INSERT OR IGNORE INTO artifact_download_queue
+        conn.execute(statement(conn, '''INSERT OR IGNORE INTO artifact_download_queue
             (artifact_id,requested_url,target_host,priority,scope_id,status,created_at_utc,updated_at_utc)
-            VALUES (?,?,?,20,?,'PENDING',?,?)''',(artifact_id,url,host,scope,now,now))
+            VALUES (?,?,?,20,?,'PENDING',?,?)''', "INSERT INTO artifact_download_queue\n            (artifact_id,requested_url,target_host,priority,scope_id,status,created_at_utc,updated_at_utc)\n            VALUES (?,?,?,20,?,'PENDING',?,?) ON CONFLICT DO NOTHING"),(artifact_id,url,host,scope,now,now))
     row=conn.execute('SELECT download_job_id,status FROM artifact_download_queue WHERE scope_id=?',(scope,)).fetchone()
     return dict(row)

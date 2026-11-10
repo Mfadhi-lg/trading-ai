@@ -17,7 +17,7 @@ from ..sources.screener.peers import ParsedPeerTable
 
 
 from .screener import observations as _observations
-from .repository_backend import execute, generated_id, commit, is_postgresql, statement, require_transaction
+from .repository_backend import execute, generated_id, commit, is_postgresql, statement, require_transaction, lock_write
 
 
 def utc_now() -> str:
@@ -47,6 +47,7 @@ def finish_run(conn: sqlite3.Connection, run_id: int, status: str) -> None:
 def ensure_company(conn: sqlite3.Connection, parsed: ParsedCompany) -> int:
     if is_postgresql(conn):
         require_transaction(conn)
+        lock_write(conn)
         # Serialize all company identity decisions. Source/NSE/BSE aliases may
         # overlap across independent workers; a per-source lock is insufficient.
         conn.execute("SELECT pg_advisory_xact_lock(hashtextextended(%s, 0))",

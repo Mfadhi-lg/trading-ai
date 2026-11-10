@@ -1,5 +1,9 @@
 """Effective-dated exchange securities, corporate changes and identity decisions."""
 from __future__ import annotations
+from ..repository_backend import (
+    atomic_repository, begin_immediate, commit, execute, executemany, generated_id,
+    is_postgresql, rollback, statement, transaction,
+)
 
 import json
 import sqlite3
@@ -64,7 +68,7 @@ def absence_preview(
     for exchange, segment in sweep_scope(parsed, authoritative_segments):
         would_absent = 0
         present = 0
-        for row in conn.execute(
+        for row in execute(conn,
             """SELECT exchange_key, last_observed_date FROM exchange_securities
                WHERE exchange=? AND segment=? AND is_present=1""",
             (exchange, segment),
@@ -87,6 +91,7 @@ def absence_preview(
     return tuple(measured)
 
 
+@atomic_repository('financial-repositories')
 def _record_event(
     conn: sqlite3.Connection,
     *,
@@ -100,7 +105,7 @@ def _record_event(
     now_utc: str,
     _json=_json,
 ) -> None:
-    conn.execute(
+    execute(conn,
         """INSERT INTO exchange_security_events
            (exchange_security_id, snapshot_id, event_date, event_type,
             from_value, to_value, evidence_json, recorded_at_utc)
@@ -112,6 +117,7 @@ def _record_event(
     )
 
 
+@atomic_repository('financial-repositories')
 def _insert_version(
     conn: sqlite3.Connection,
     *,
@@ -122,7 +128,7 @@ def _insert_version(
     now_utc: str,
     _json=_json,
 ) -> int:
-    conn.execute(
+    execute(conn,
         """INSERT INTO exchange_security_versions
            (exchange_security_id, snapshot_id, isin, name_raw, status, status_raw,
             series_or_group, instrument_raw, face_value_raw, listing_date,
@@ -145,13 +151,13 @@ def _insert_version(
         ),
     )
     version_id = int(
-        conn.execute(
+        execute(conn,
             """SELECT version_id FROM exchange_security_versions
                WHERE exchange_security_id=? AND valid_from_date=?""",
             (exchange_security_id, effective_date),
         ).fetchone()["version_id"]
     )
-    conn.execute(
+    execute(conn,
         """UPDATE exchange_security_versions SET valid_to_date=?
            WHERE exchange_security_id=? AND valid_to_date IS NULL AND version_id<>?""",
         (effective_date, exchange_security_id, version_id),
@@ -159,6 +165,7 @@ def _insert_version(
     return version_id
 
 
+@atomic_repository('financial-repositories')
 def _open_conflict(
     conn: sqlite3.Connection,
     *,
@@ -177,12 +184,8 @@ def _open_conflict(
     The same disagreement seen on a later snapshot is the same open question,
     not a new one, so re-ingesting a file cannot inflate the conflict queue.
     """
-    cursor = conn.execute(
-        """INSERT OR IGNORE INTO exchange_identity_conflicts
-           (snapshot_id, exchange_security_id, conflict_type, exchange, exchange_key,
-            existing_value, incoming_value, existing_source_type, resolution,
-            detected_at_utc)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'open', ?)""",
+    cursor = execute(conn,
+        statement(conn, "INSERT OR IGNORE INTO exchange_identity_conflicts\n           (snapshot_id, exchange_security_id, conflict_type, exchange, exchange_key,\n            existing_value, incoming_value, existing_source_type, resolution,\n            detected_at_utc)\n           VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'open', ?)", "INSERT INTO exchange_identity_conflicts\n           (snapshot_id, exchange_security_id, conflict_type, exchange, exchange_key,\n            existing_value, incoming_value, existing_source_type, resolution,\n            detected_at_utc)\n           VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'open', ?) ON CONFLICT DO NOTHING"),
         (
             snapshot_id, exchange_security_id, conflict_type, exchange, exchange_key,
             existing_value, incoming_value, existing_source_type, now_utc,
@@ -227,6 +230,7 @@ def _link_isin(
     )
 
 
+@atomic_repository('financial-repositories')
 def _link_isin_value(
     conn: sqlite3.Connection,
     *,
@@ -237,18 +241,12 @@ def _link_isin_value(
     effective_date: str,
     now_utc: str,
 ) -> int:
-    conn.execute(
-        """INSERT INTO exchange_company_registry
-           (isin, canonical_name_raw, first_observed_date, last_observed_date,
-            created_at_utc, updated_at_utc)
-           VALUES (?, ?, ?, ?, ?, ?)
-           ON CONFLICT(isin) DO UPDATE SET
-             last_observed_date=MAX(last_observed_date, excluded.last_observed_date),
-             updated_at_utc=excluded.updated_at_utc""",
+    execute(conn,
+        statement(conn, 'INSERT INTO exchange_company_registry\n           (isin, canonical_name_raw, first_observed_date, last_observed_date,\n            created_at_utc, updated_at_utc)\n           VALUES (?, ?, ?, ?, ?, ?)\n           ON CONFLICT(isin) DO UPDATE SET\n             last_observed_date=MAX(last_observed_date, excluded.last_observed_date),\n             updated_at_utc=excluded.updated_at_utc', 'INSERT INTO exchange_company_registry\n           (isin, canonical_name_raw, first_observed_date, last_observed_date,\n            created_at_utc, updated_at_utc)\n           VALUES (?, ?, ?, ?, ?, ?)\n           ON CONFLICT(isin) DO UPDATE SET\n             last_observed_date=GREATEST(exchange_company_registry.last_observed_date, excluded.last_observed_date),\n             updated_at_utc=excluded.updated_at_utc'),
         (isin, name_raw, effective_date, effective_date, now_utc, now_utc),
     )
     registry_company_id = int(
-        conn.execute(
+        execute(conn,
             "SELECT registry_company_id FROM exchange_company_registry WHERE isin=?",
             (isin,),
         ).fetchone()["registry_company_id"]
@@ -256,12 +254,12 @@ def _link_isin_value(
     if exchange == "NSE":
         # The NSE master carries the security's registered company name; BSE
         # rows carry an abbreviated security name, so they never overwrite it.
-        conn.execute(
+        execute(conn,
             """UPDATE exchange_company_registry SET canonical_name_raw=?, updated_at_utc=?
                WHERE registry_company_id=?""",
             (name_raw, now_utc, registry_company_id),
         )
-    current = conn.execute(
+    current = execute(conn,
         """SELECT link_id, registry_company_id FROM exchange_company_links
            WHERE exchange_security_id=? AND is_current=1""",
         (exchange_security_id,),
@@ -269,16 +267,13 @@ def _link_isin_value(
     if current is not None and int(current["registry_company_id"]) == registry_company_id:
         return registry_company_id
     if current is not None:
-        conn.execute(
+        execute(conn,
             """UPDATE exchange_company_links
                SET is_current=0, unlinked_from_date=? WHERE link_id=?""",
             (effective_date, int(current["link_id"])),
         )
-    conn.execute(
-        """INSERT OR IGNORE INTO exchange_company_links
-           (registry_company_id, exchange_security_id, link_basis, linked_from_date,
-            is_current, created_at_utc)
-           VALUES (?, ?, 'isin', ?, 1, ?)""",
+    execute(conn,
+        statement(conn, "INSERT OR IGNORE INTO exchange_company_links\n           (registry_company_id, exchange_security_id, link_basis, linked_from_date,\n            is_current, created_at_utc)\n           VALUES (?, ?, 'isin', ?, 1, ?)", "INSERT INTO exchange_company_links\n           (registry_company_id, exchange_security_id, link_basis, linked_from_date,\n            is_current, created_at_utc)\n           VALUES (?, ?, 'isin', ?, 1, ?) ON CONFLICT DO NOTHING"),
         (registry_company_id, exchange_security_id, effective_date, now_utc),
     )
     return registry_company_id
@@ -290,13 +285,14 @@ def _already_absent_on(
     """True when the streak was last advanced by a file of this same date."""
     if last_absent_snapshot_id is None:
         return False
-    row = conn.execute(
+    row = execute(conn,
         "SELECT effective_date FROM exchange_source_snapshots WHERE snapshot_id=?",
         (int(last_absent_snapshot_id),),
     ).fetchone()
     return row is not None and str(row["effective_date"]) == effective_date
 
 
+@atomic_repository('financial-repositories')
 def _link_or_conflict(
     conn: sqlite3.Connection,
     *,
@@ -314,7 +310,7 @@ def _link_or_conflict(
     the same file claiming one ISIN is a conflict, and neither is linked.
     """
     if record.isin:
-        for row in conn.execute(
+        for row in execute(conn,
             """SELECT exchange_security_id, exchange_key, source_type
                FROM exchange_securities
                WHERE exchange=? AND segment=? AND current_isin=?
@@ -331,7 +327,7 @@ def _link_or_conflict(
                 incoming_value=record.isin,
                 existing_source_type=str(row["source_type"]), now_utc=now_utc,
             )
-            conn.execute(
+            execute(conn,
                 """UPDATE exchange_securities SET verification_status='conflict',
                    updated_at_utc=? WHERE exchange_security_id=?""",
                 (now_utc, exchange_security_id),
@@ -344,6 +340,7 @@ def _link_or_conflict(
     return registry_company_id, False
 
 
+@atomic_repository('financial-repositories')
 def apply_security_master(
     conn: sqlite3.Connection,
     parsed: ParsedSecurityMaster,
@@ -377,17 +374,17 @@ def apply_security_master(
     }
     seen: set[tuple[str, str, str]] = set()
     keys_in_file = {(record.segment, record.exchange_key) for record in parsed.records}
-    with conn:
+    with transaction(conn):
         for record in parsed.records:
             key = (record.exchange, record.segment, record.exchange_key)
             seen.add(key)
-            existing = conn.execute(
+            existing = execute(conn,
                 """SELECT * FROM exchange_securities
                    WHERE exchange=? AND segment=? AND exchange_key=?""",
                 key,
             ).fetchone()
             if existing is None:
-                cursor = conn.execute(
+                cursor = execute(conn,
                     """INSERT INTO exchange_securities
                        (exchange, segment, exchange_key, nse_symbol, bse_scrip_code,
                         current_isin, current_name_raw, current_status, is_present,
@@ -406,13 +403,13 @@ def apply_security_master(
                         "verified" if official else "unverified",
                         now_utc, now_utc,
                     ),
-                )
-                security_id = int(cursor.lastrowid)
+                 returning='exchange_security_id')
+                security_id = int(generated_id(cursor, 'exchange_security_id'))
                 version_id = _insert_version(
                     conn, exchange_security_id=security_id, snapshot_id=snapshot_id,
                     record=record, effective_date=effective_date, now_utc=now_utc,
                 )
-                conn.execute(
+                execute(conn,
                     "UPDATE exchange_securities SET current_version_id=? WHERE exchange_security_id=?",
                     (version_id, security_id),
                 )
@@ -461,7 +458,7 @@ def apply_security_master(
                     now_utc=now_utc,
                 ):
                     counts["conflicts"] += 1
-                conn.execute(
+                execute(conn,
                     """UPDATE exchange_securities
                        SET verification_status='conflict', official_presence='confirmed',
                            is_present=1, absence_streak=0, first_absent_date=NULL,
@@ -471,7 +468,7 @@ def apply_security_master(
                     (effective_date, snapshot_id, now_utc, security_id),
                 )
                 continue
-            current_version = conn.execute(
+            current_version = execute(conn,
                 """SELECT * FROM exchange_security_versions
                    WHERE exchange_security_id=? ORDER BY valid_from_date DESC, version_id DESC
                    LIMIT 1""",
@@ -539,7 +536,7 @@ def apply_security_master(
                     evidence={"dataset": parsed.dataset}, now_utc=now_utc,
                 )
                 counts["verified"] += 1
-            conn.execute(
+            execute(conn,
                 """UPDATE exchange_securities SET current_isin=?, current_name_raw=?,
                    current_status=?, current_version_id=?, is_present=1,
                    last_observed_date=?, last_observed_snapshot_id=?,
@@ -567,7 +564,7 @@ def apply_security_master(
         # a confirmation that the security has left the master. The sweep runs
         # only where this file is authoritative.
         for exchange, segment in sweep_scope(parsed, authoritative_segments):
-            for row in conn.execute(
+            for row in execute(conn,
                 """SELECT exchange_security_id, exchange_key, last_observed_date,
                           absence_streak, first_absent_date, last_absent_snapshot_id
                    FROM exchange_securities
@@ -586,7 +583,7 @@ def apply_security_master(
                     continue
                 streak = int(row["absence_streak"] or 0) + 1
                 first_absent = str(row["first_absent_date"] or effective_date)
-                conn.execute(
+                execute(conn,
                     """UPDATE exchange_securities SET absence_streak=?,
                        first_absent_date=?, last_absent_snapshot_id=?,
                        official_presence='not_confirmed', updated_at_utc=?
@@ -608,7 +605,7 @@ def apply_security_master(
                 counts["absence_observed"] += 1
                 if streak < EXCHANGE_ABSENCE_CONFIRMATIONS:
                     continue
-                conn.execute(
+                execute(conn,
                     """UPDATE exchange_securities SET is_present=0,
                        current_status='absent_from_master', updated_at_utc=?
                        WHERE exchange_security_id=?""",
@@ -638,9 +635,10 @@ def open_identity_conflicts(
     if exchange_security_id is not None:
         query += " AND exchange_security_id=?"
         parameters = (exchange_security_id,)
-    return [dict(row) for row in conn.execute(query + " ORDER BY conflict_id", parameters)]
+    return [dict(row) for row in execute(conn, query + " ORDER BY conflict_id", parameters)]
 
 
+@atomic_repository('financial-repositories')
 def resolve_identity_conflict(
     conn: sqlite3.Connection,
     *,
@@ -659,7 +657,7 @@ def resolve_identity_conflict(
         raise ValueError(
             f"resolution must be one of {list(CONFLICT_RESOLUTIONS)}: {resolution!r}"
         )
-    row = conn.execute(
+    row = execute(conn,
         "SELECT * FROM exchange_identity_conflicts WHERE conflict_id=?", (conflict_id,)
     ).fetchone()
     if row is None:
@@ -672,14 +670,14 @@ def resolve_identity_conflict(
         int(row["exchange_security_id"]) if row["exchange_security_id"] is not None else None
     )
     applied = False
-    with conn:
-        conn.execute(
+    with transaction(conn):
+        execute(conn,
             """UPDATE exchange_identity_conflicts
                SET resolution=?, resolved_at_utc=? WHERE conflict_id=?""",
             (resolution, now_utc, conflict_id),
         )
         if security_id is not None:
-            security = conn.execute(
+            security = execute(conn,
                 "SELECT * FROM exchange_securities WHERE exchange_security_id=?",
                 (security_id,),
             ).fetchone()
@@ -690,7 +688,7 @@ def resolve_identity_conflict(
                 and row["incoming_value"]
             ):
                 incoming = str(row["incoming_value"])
-                conn.execute(
+                execute(conn,
                     """UPDATE exchange_securities SET current_isin=?, updated_at_utc=?
                        WHERE exchange_security_id=?""",
                     (incoming, now_utc, security_id),
@@ -721,7 +719,7 @@ def resolve_identity_conflict(
                 },
                 now_utc=now_utc,
             )
-            remaining = conn.execute(
+            remaining = execute(conn,
                 """SELECT COUNT(*) AS open_count FROM exchange_identity_conflicts
                    WHERE exchange_security_id=? AND resolution='open'""",
                 (security_id,),
@@ -729,7 +727,7 @@ def resolve_identity_conflict(
             if not int(remaining):
                 # `dismissed` records no judgement about the identity, so the
                 # security is unblocked but not asserted to be verified.
-                conn.execute(
+                execute(conn,
                     """UPDATE exchange_securities SET verification_status=?,
                        updated_at_utc=? WHERE exchange_security_id=?""",
                     (
@@ -748,6 +746,7 @@ def resolve_identity_conflict(
     }
 
 
+@atomic_repository('financial-repositories')
 def apply_corporate_changes(
     conn: sqlite3.Connection,
     parsed: ParsedCorporateChanges,
@@ -756,11 +755,11 @@ def apply_corporate_changes(
     now_utc: str,
 ) -> dict[str, int]:
     counts = {"applied": 0, "unmatched": 0, "reused": 0}
-    with conn:
+    with transaction(conn):
         for change in parsed.changes:
             security = None
             for hint in change.key_hints:
-                security = conn.execute(
+                security = execute(conn,
                     """SELECT exchange_security_id FROM exchange_securities
                        WHERE exchange=? AND exchange_key=?
                        ORDER BY is_present DESC, exchange_security_id LIMIT 1""",
@@ -770,12 +769,8 @@ def apply_corporate_changes(
                     break
             security_id = int(security["exchange_security_id"]) if security else None
             status = "applied" if security_id is not None else "unmatched"
-            cursor = conn.execute(
-                """INSERT OR IGNORE INTO exchange_symbol_changes
-                   (snapshot_id, exchange, change_kind, company_name_raw, old_value,
-                    new_value, effective_date, applied_status, exchange_security_id,
-                    recorded_at_utc)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            cursor = execute(conn,
+                statement(conn, 'INSERT OR IGNORE INTO exchange_symbol_changes\n                   (snapshot_id, exchange, change_kind, company_name_raw, old_value,\n                    new_value, effective_date, applied_status, exchange_security_id,\n                    recorded_at_utc)\n                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', 'INSERT INTO exchange_symbol_changes\n                   (snapshot_id, exchange, change_kind, company_name_raw, old_value,\n                    new_value, effective_date, applied_status, exchange_security_id,\n                    recorded_at_utc)\n                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT DO NOTHING'),
                 (
                     snapshot_id, change.exchange, change.change_kind,
                     change.company_name_raw, change.old_value, change.new_value,

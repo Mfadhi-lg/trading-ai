@@ -13,6 +13,7 @@ The normal scheduler-driven flow (enqueue_result_filings) remains standard going
 forward: it only enqueues when a company publishes a new result and advances.
 """
 from __future__ import annotations
+from ..db.repository_backend import statement, is_postgresql, execute, generated_id, atomic_repository, begin_immediate
 
 import json
 import sqlite3
@@ -25,6 +26,7 @@ def _now_utc() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
+@atomic_repository('consumer-persistence')
 def run_bulk_enqueue(conn: sqlite3.Connection, *, dry_run: bool = False) -> dict:
     """Enqueue all registry companies not yet in the screener queue.
 
@@ -120,13 +122,13 @@ def run_bulk_enqueue(conn: sqlite3.Connection, *, dry_run: bool = False) -> dict
                 filing_key = f"bulk_{scope}_{isin}"
 
                 # 2. Insert placeholder filing
-                conn.execute("""
+                conn.execute(statement(conn, """
                     INSERT OR IGNORE INTO exchange_result_filings
                     (snapshot_id, exchange, filing_key, exchange_key, isin,
                      company_name_raw, result_period, period_end_date, reporting_scope,
                      broadcast_raw, broadcast_at_utc, raw_row_json, discovered_at_utc)
                     VALUES (?, ?, ?, ?, ?, ?, '1970-01', '1970-01-01', ?, '', ?, '{}', ?)
-                """, (snapshot_id, exchange, filing_key, exchange_key, isin, company_name, scope, now, now))
+                """, "\n                    INSERT INTO exchange_result_filings\n                    (snapshot_id, exchange, filing_key, exchange_key, isin,\n                     company_name_raw, result_period, period_end_date, reporting_scope,\n                     broadcast_raw, broadcast_at_utc, raw_row_json, discovered_at_utc)\n                    VALUES (?, ?, ?, ?, ?, ?, '1970-01', '1970-01-01', ?, '', ?, '{}', ?) ON CONFLICT DO NOTHING"), (snapshot_id, exchange, filing_key, exchange_key, isin, company_name, scope, now, now))
 
                 filing = conn.execute(
                     "SELECT filing_id FROM exchange_result_filings WHERE exchange=? AND filing_key=?",
@@ -135,7 +137,7 @@ def run_bulk_enqueue(conn: sqlite3.Connection, *, dry_run: bool = False) -> dict
                 filing_id = int(filing["filing_id"])
 
                 # 3. Enqueue the company with origin='exchange_filing'
-                cursor = conn.execute("""
+                cursor = execute(conn, statement(conn, """
                     INSERT OR IGNORE INTO screener_company_queue
                     (origin, candidate_id, exchange_filing_id,
                      company_path_normalized, reporting_scope, result_period,
@@ -143,10 +145,10 @@ def run_bulk_enqueue(conn: sqlite3.Connection, *, dry_run: bool = False) -> dict
                      next_attempt_at_utc, created_at_utc, updated_at_utc)
                     VALUES ('exchange_filing', NULL, ?, ?, ?, '1970-01',
                             'new_company', 'pending', 0, ?, ?, ?)
-                """, (filing_id, path, scope, now, now, now))
+                """, "\n                    INSERT INTO screener_company_queue\n                    (origin, candidate_id, exchange_filing_id,\n                     company_path_normalized, reporting_scope, result_period,\n                     queue_reason, status, attempt_count,\n                     next_attempt_at_utc, created_at_utc, updated_at_utc)\n                    VALUES ('exchange_filing', NULL, ?, ?, ?, '1970-01',\n                            'new_company', 'pending', 0, ?, ?, ?) ON CONFLICT DO NOTHING"), (filing_id, path, scope, now, now, now), returning='queue_item_id')
 
                 if cursor.rowcount == 1:
-                    queue_item_id = int(cursor.lastrowid)
+                    queue_item_id = generated_id(cursor, 'queue_item_id')
 
                     # 4. Add queue event
                     conn.execute("""
@@ -166,13 +168,13 @@ def run_bulk_enqueue(conn: sqlite3.Connection, *, dry_run: bool = False) -> dict
                     ))
 
                     # 5. Add to exchange_screener_enqueues to align decision state
-                    conn.execute("""
+                    conn.execute(statement(conn, """
                         INSERT OR IGNORE INTO exchange_screener_enqueues
                         (filing_id, decision, decision_reason, company_path_normalized,
                          reporting_scope, result_period, path_basis, registry_company_id,
                          queue_item_id, created_at_utc)
                         VALUES (?, 'queued', 'bulk_enqueue', ?, ?, '1970-01', ?, ?, ?, ?)
-                    """, (filing_id, path, scope, path_basis, registry_company_id, queue_item_id, now))
+                    """, "\n                        INSERT INTO exchange_screener_enqueues\n                        (filing_id, decision, decision_reason, company_path_normalized,\n                         reporting_scope, result_period, path_basis, registry_company_id,\n                         queue_item_id, created_at_utc)\n                        VALUES (?, 'queued', 'bulk_enqueue', ?, ?, '1970-01', ?, ?, ?, ?) ON CONFLICT DO NOTHING"), (filing_id, path, scope, path_basis, registry_company_id, queue_item_id, now))
 
                     counts["queued"] += 1
                 else:

@@ -1,5 +1,9 @@
 """Exchange result filing provenance, identity resolution and Screener enqueues."""
 from __future__ import annotations
+from ..repository_backend import (
+    atomic_repository, begin_immediate, commit, execute, executemany, generated_id,
+    is_postgresql, rollback, statement, transaction,
+)
 
 import hashlib
 import json
@@ -12,6 +16,7 @@ from ...sources.screener.result_screen import canonical_company_path
 def _json(value: Any) -> str:
     return json.dumps(value, sort_keys=True, separators=(",", ":"))
 
+@atomic_repository('financial-repositories')
 def ingest_result_filings(
     conn: sqlite3.Connection,
     parsed: ParsedResultFilings,
@@ -20,23 +25,23 @@ def ingest_result_filings(
     now_utc: str,
 ) -> dict[str, Any]:
     """Store filings idempotently and advance the broadcast watermark."""
-    previous = conn.execute(
+    previous = execute(conn,
         """SELECT last_broadcast_at_utc FROM exchange_result_watermarks
            WHERE exchange=? AND dataset=?""",
         (parsed.exchange, parsed.dataset),
     ).fetchone()
     watermark = str(previous["last_broadcast_at_utc"]) if previous else None
+    if is_postgresql(conn):
+        from datetime import datetime
+        timestamp_key = datetime.fromisoformat
+    else:
+        timestamp_key = str
     counts = {"stored": 0, "already_stored": 0, "identity_collisions": 0,
               "after_watermark": 0, "at_or_before_watermark": 0}
-    with conn:
+    with transaction(conn):
         for filing in parsed.filings:
-            cursor = conn.execute(
-                """INSERT OR IGNORE INTO exchange_result_filings
-                   (snapshot_id, exchange, filing_key, exchange_key, isin,
-                    company_name_raw, result_period, period_end_date, reporting_scope,
-                    audited_raw, cumulative_raw, relating_to_raw, broadcast_raw,
-                    broadcast_at_utc, raw_row_json, discovered_at_utc)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            cursor = execute(conn,
+                statement(conn, 'INSERT OR IGNORE INTO exchange_result_filings\n                   (snapshot_id, exchange, filing_key, exchange_key, isin,\n                    company_name_raw, result_period, period_end_date, reporting_scope,\n                    audited_raw, cumulative_raw, relating_to_raw, broadcast_raw,\n                    broadcast_at_utc, raw_row_json, discovered_at_utc)\n                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', 'INSERT INTO exchange_result_filings\n                   (snapshot_id, exchange, filing_key, exchange_key, isin,\n                    company_name_raw, result_period, period_end_date, reporting_scope,\n                    audited_raw, cumulative_raw, relating_to_raw, broadcast_raw,\n                    broadcast_at_utc, raw_row_json, discovered_at_utc)\n                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT DO NOTHING'),
                 (
                     snapshot_id, filing.exchange, filing.filing_key, filing.exchange_key,
                     filing.isin, filing.company_name_raw, filing.result_period,
@@ -47,29 +52,27 @@ def ingest_result_filings(
             )
             counts["stored" if cursor.rowcount == 1 else "already_stored"] += 1
             if cursor.rowcount == 0:
-                existing = conn.execute(
+                existing = execute(conn,
                     """SELECT filing_id, raw_row_json FROM exchange_result_filings
                        WHERE exchange=? AND filing_key=?""",
                     (filing.exchange, filing.filing_key),
                 ).fetchone()
                 if existing is not None and str(existing["raw_row_json"]) != filing.raw_row_json:
-                    collision = conn.execute(
-                        """INSERT OR IGNORE INTO exchange_result_filing_collisions
-                           (exchange, filing_key, existing_filing_id, snapshot_id,
-                            raw_sha256, raw_row_json, first_seen_at_utc)
-                           VALUES (?, ?, ?, ?, ?, ?, ?)""",
+                    collision = execute(conn,
+                        statement(conn, 'INSERT OR IGNORE INTO exchange_result_filing_collisions\n                           (exchange, filing_key, existing_filing_id, snapshot_id,\n                            raw_sha256, raw_row_json, first_seen_at_utc)\n                           VALUES (?, ?, ?, ?, ?, ?, ?)', 'INSERT INTO exchange_result_filing_collisions\n                           (exchange, filing_key, existing_filing_id, snapshot_id,\n                            raw_sha256, raw_row_json, first_seen_at_utc)\n                           VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT DO NOTHING'),
                         (filing.exchange, filing.filing_key, int(existing["filing_id"]),
                          snapshot_id, hashlib.sha256(filing.raw_row_json.encode()).hexdigest(),
                          filing.raw_row_json, now_utc),
                     )
                     counts["identity_collisions"] += collision.rowcount
-            if watermark is None or filing.broadcast_at_utc > watermark:
+            if watermark is None or timestamp_key(filing.broadcast_at_utc) > timestamp_key(watermark):
                 counts["after_watermark"] += 1
             else:
                 counts["at_or_before_watermark"] += 1
-        newest = parsed.max_broadcast_at_utc
-        if newest is not None and (watermark is None or newest > watermark):
-            conn.execute(
+        newest = (max((filing.broadcast_at_utc for filing in parsed.filings), key=timestamp_key, default=None)
+                  if is_postgresql(conn) else parsed.max_broadcast_at_utc)
+        if newest is not None and (watermark is None or timestamp_key(newest) > timestamp_key(watermark)):
+            execute(conn,
                 """INSERT INTO exchange_result_watermarks
                    (exchange, dataset, last_broadcast_at_utc, last_snapshot_id, updated_at_utc)
                    VALUES (?, ?, ?, ?, ?)
@@ -81,7 +84,7 @@ def ingest_result_filings(
             )
     return {
         "previous_watermark_utc": watermark,
-        "watermark_utc": max(filter(None, (watermark, parsed.max_broadcast_at_utc)), default=None),
+        "watermark_utc": max(filter(None, (watermark, newest)), key=timestamp_key, default=None),
         **counts,
     }
 
@@ -97,7 +100,7 @@ def resolve_screener_path(
     ISIN-keyed registry so a BSE filing for a dual-listed company still collects
     the NSE company page.
     """
-    security = conn.execute(
+    security = execute(conn,
         """SELECT * FROM exchange_securities WHERE exchange=? AND exchange_key=?
            ORDER BY is_present DESC, exchange_security_id LIMIT 1""",
         (exchange, exchange_key),
@@ -108,7 +111,7 @@ def resolve_screener_path(
             "reason": "security_not_in_registry",
             "registry_company_id": None,
         }
-    link = conn.execute(
+    link = execute(conn,
         """SELECT registry_company_id FROM exchange_company_links
            WHERE exchange_security_id=? AND is_current=1""",
         (int(security["exchange_security_id"]),),
@@ -116,7 +119,7 @@ def resolve_screener_path(
     registry_company_id = int(link["registry_company_id"]) if link else None
     candidates = [security]
     if registry_company_id is not None:
-        candidates = conn.execute(
+        candidates = execute(conn,
             """SELECT security.* FROM exchange_securities AS security
                JOIN exchange_company_links AS link USING (exchange_security_id)
                WHERE link.registry_company_id=? AND link.is_current=1
@@ -163,6 +166,7 @@ def resolve_screener_path(
     }
 
 
+@atomic_repository('financial-repositories')
 def _decide(
     conn: sqlite3.Connection, filing: sqlite3.Row, *, now_utc: str, _json=_json
 ) -> dict[str, Any]:
@@ -180,7 +184,7 @@ def _decide(
     if resolution["decision"] != "resolved":
         return {**resolution, "queue_item_id": None, "result_period": period}
     path = str(resolution["company_path_normalized"])
-    state = conn.execute(
+    state = execute(conn,
         """SELECT latest_accepted_result_period FROM screener_company_collection_state
            WHERE company_path_normalized=? AND reporting_scope=?""",
         (path, scope),
@@ -189,7 +193,7 @@ def _decide(
         str(state["latest_accepted_result_period"])
         if state and state["latest_accepted_result_period"] else None
     )
-    prior = conn.execute(
+    prior = execute(conn,
         """SELECT earlier.filing_id FROM exchange_result_filings earlier
            JOIN exchange_screener_enqueues decision ON decision.filing_id=earlier.filing_id
            WHERE earlier.exchange=? AND earlier.exchange_key=?
@@ -199,17 +203,8 @@ def _decide(
         (filing["exchange"], filing["exchange_key"], filing["reporting_scope"],
          period, filing["filing_id"]),
     ).fetchone()
-    conn.execute(
-        """INSERT INTO screener_company_collection_state
-           (company_path_normalized, reporting_scope, latest_discovered_result_period,
-            updated_at_utc)
-           VALUES (?, ?, ?, ?)
-           ON CONFLICT(company_path_normalized, reporting_scope) DO UPDATE SET
-             latest_discovered_result_period=CASE
-               WHEN excluded.latest_discovered_result_period > latest_discovered_result_period
-               THEN excluded.latest_discovered_result_period
-               ELSE latest_discovered_result_period END,
-             updated_at_utc=excluded.updated_at_utc""",
+    execute(conn,
+        statement(conn, 'INSERT INTO screener_company_collection_state\n           (company_path_normalized, reporting_scope, latest_discovered_result_period,\n            updated_at_utc)\n           VALUES (?, ?, ?, ?)\n           ON CONFLICT(company_path_normalized, reporting_scope) DO UPDATE SET\n             latest_discovered_result_period=CASE\n               WHEN excluded.latest_discovered_result_period > latest_discovered_result_period\n               THEN excluded.latest_discovered_result_period\n               ELSE latest_discovered_result_period END,\n             updated_at_utc=excluded.updated_at_utc', 'INSERT INTO screener_company_collection_state\n           (company_path_normalized, reporting_scope, latest_discovered_result_period,\n            updated_at_utc)\n           VALUES (?, ?, ?, ?)\n           ON CONFLICT(company_path_normalized, reporting_scope) DO UPDATE SET\n             latest_discovered_result_period=CASE\n               WHEN excluded.latest_discovered_result_period > screener_company_collection_state.latest_discovered_result_period\n               THEN excluded.latest_discovered_result_period\n               ELSE screener_company_collection_state.latest_discovered_result_period END,\n             updated_at_utc=excluded.updated_at_utc'),
         (path, scope, period, now_utc),
     )
     from ..screener_discovery_repo import has_accepted_quarter
@@ -228,20 +223,16 @@ def _decide(
         return {**resolution, "decision": "already_accepted", "reason": "period_already_accepted",
                 "queue_item_id": None, "result_period": period}
     reason = "new_company" if accepted is None else "result_period_advanced"
-    cursor = conn.execute(
-        """INSERT OR IGNORE INTO screener_company_queue
-           (origin, candidate_id, exchange_filing_id, company_path_normalized,
-            reporting_scope, result_period, queue_reason, status, attempt_count,
-            next_attempt_at_utc, created_at_utc, updated_at_utc)
-           VALUES ('exchange_filing', NULL, ?, ?, ?, ?, ?, 'pending', 0, ?, ?, ?)""",
+    cursor = execute(conn,
+        statement(conn, "INSERT OR IGNORE INTO screener_company_queue\n           (origin, candidate_id, exchange_filing_id, company_path_normalized,\n            reporting_scope, result_period, queue_reason, status, attempt_count,\n            next_attempt_at_utc, created_at_utc, updated_at_utc)\n           VALUES ('exchange_filing', NULL, ?, ?, ?, ?, ?, 'pending', 0, ?, ?, ?)", "INSERT INTO screener_company_queue\n           (origin, candidate_id, exchange_filing_id, company_path_normalized,\n            reporting_scope, result_period, queue_reason, status, attempt_count,\n            next_attempt_at_utc, created_at_utc, updated_at_utc)\n           VALUES ('exchange_filing', NULL, ?, ?, ?, ?, ?, 'pending', 0, ?, ?, ?) ON CONFLICT DO NOTHING"),
         (
             int(filing["filing_id"]), path, scope, period, reason,
             now_utc, now_utc, now_utc,
         ),
-    )
+     returning='queue_item_id')
     if cursor.rowcount == 1:
-        queue_item_id = int(cursor.lastrowid)
-        conn.execute(
+        queue_item_id = int(generated_id(cursor, 'queue_item_id'))
+        execute(conn,
             """INSERT INTO screener_company_queue_events
                (queue_item_id, event_at_utc, from_status, to_status, evidence_json)
                VALUES (?, ?, NULL, 'pending', ?)""",
@@ -262,7 +253,7 @@ def _decide(
         )
         decision = "queued"
     else:
-        existing = conn.execute(
+        existing = execute(conn,
             """SELECT queue_item_id FROM screener_company_queue
                WHERE company_path_normalized=? AND reporting_scope=? AND result_period=?""",
             (path, scope, period),
@@ -301,7 +292,7 @@ def preview_filing_decisions(
             "standalone",
             filing.result_period,
         )
-        state = conn.execute(
+        state = execute(conn,
             """SELECT latest_accepted_result_period FROM screener_company_collection_state
                WHERE company_path_normalized=? AND reporting_scope=?""",
             key[:2],
@@ -310,12 +301,12 @@ def preview_filing_decisions(
             str(state["latest_accepted_result_period"])
             if state and state["latest_accepted_result_period"] else None
         )
-        existing = conn.execute(
+        existing = execute(conn,
             """SELECT 1 FROM screener_company_queue
                WHERE company_path_normalized=? AND reporting_scope=? AND result_period=?""",
             key,
         ).fetchone()
-        prior = conn.execute(
+        prior = execute(conn,
             """SELECT 1 FROM exchange_result_filings earlier
                JOIN exchange_screener_enqueues decision ON decision.filing_id=earlier.filing_id
                WHERE earlier.exchange=? AND earlier.exchange_key=?
@@ -337,6 +328,7 @@ def preview_filing_decisions(
     return counts
 
 
+@atomic_repository('financial-repositories')
 def enqueue_result_filings(
     conn: sqlite3.Connection, *, snapshot_id: int | None = None, now_utc: str,
     max_new_queue_entries: int | None = None, filing_keys: tuple[str, ...] | None = None,
@@ -365,8 +357,8 @@ def enqueue_result_filings(
         "queued": 0, "reused": 0, "unchanged": 0, "stale": 0,
         "already_accepted": 0, "manual_review": 0,
     }
-    with conn:
-        rows = conn.execute(query, parameters).fetchall()
+    with transaction(conn):
+        rows = execute(conn, query, parameters).fetchall()
         for position, filing in enumerate(rows):
             if max_new_queue_entries is not None and counts['queued'] >= max_new_queue_entries:
                 # Leave remaining filings undecided, so a later bounded intake
@@ -376,12 +368,8 @@ def enqueue_result_filings(
             outcome = _decide(conn, filing, now_utc=now_utc)
             decision = str(outcome["decision"])
             counts[decision] = counts.get(decision, 0) + 1
-            conn.execute(
-                """INSERT OR IGNORE INTO exchange_screener_enqueues
-                   (filing_id, decision, decision_reason, company_path_normalized,
-                    reporting_scope, result_period, path_basis, registry_company_id,
-                    queue_item_id, created_at_utc)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            execute(conn,
+                statement(conn, 'INSERT OR IGNORE INTO exchange_screener_enqueues\n                   (filing_id, decision, decision_reason, company_path_normalized,\n                    reporting_scope, result_period, path_basis, registry_company_id,\n                    queue_item_id, created_at_utc)\n                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', 'INSERT INTO exchange_screener_enqueues\n                   (filing_id, decision, decision_reason, company_path_normalized,\n                    reporting_scope, result_period, path_basis, registry_company_id,\n                    queue_item_id, created_at_utc)\n                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT DO NOTHING'),
                 (
                     int(filing["filing_id"]), decision, str(outcome["reason"]),
                     outcome.get("company_path_normalized"),
@@ -390,25 +378,8 @@ def enqueue_result_filings(
                     outcome.get("queue_item_id"), now_utc,
                 ),
             )
-            conn.execute(
-                """INSERT INTO exchange_company_result_state
-                   (exchange, exchange_key, reporting_scope, latest_filed_result_period,
-                    latest_broadcast_at_utc, latest_filing_id, latest_queued_result_period,
-                    updated_at_utc)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                   ON CONFLICT(exchange, exchange_key, reporting_scope) DO UPDATE SET
-                     latest_filed_result_period=MAX(latest_filed_result_period, excluded.latest_filed_result_period),
-                     latest_broadcast_at_utc=MAX(latest_broadcast_at_utc, excluded.latest_broadcast_at_utc),
-                     latest_filing_id=CASE
-                       WHEN excluded.latest_broadcast_at_utc >= latest_broadcast_at_utc
-                       THEN excluded.latest_filing_id ELSE latest_filing_id END,
-                     latest_queued_result_period=CASE
-                       WHEN excluded.latest_queued_result_period IS NOT NULL
-                        AND (latest_queued_result_period IS NULL
-                             OR excluded.latest_queued_result_period > latest_queued_result_period)
-                       THEN excluded.latest_queued_result_period
-                       ELSE latest_queued_result_period END,
-                     updated_at_utc=excluded.updated_at_utc""",
+            execute(conn,
+                statement(conn, 'INSERT INTO exchange_company_result_state\n                   (exchange, exchange_key, reporting_scope, latest_filed_result_period,\n                    latest_broadcast_at_utc, latest_filing_id, latest_queued_result_period,\n                    updated_at_utc)\n                   VALUES (?, ?, ?, ?, ?, ?, ?, ?)\n                   ON CONFLICT(exchange, exchange_key, reporting_scope) DO UPDATE SET\n                     latest_filed_result_period=MAX(latest_filed_result_period, excluded.latest_filed_result_period),\n                     latest_broadcast_at_utc=MAX(latest_broadcast_at_utc, excluded.latest_broadcast_at_utc),\n                     latest_filing_id=CASE\n                       WHEN excluded.latest_broadcast_at_utc >= latest_broadcast_at_utc\n                       THEN excluded.latest_filing_id ELSE latest_filing_id END,\n                     latest_queued_result_period=CASE\n                       WHEN excluded.latest_queued_result_period IS NOT NULL\n                        AND (latest_queued_result_period IS NULL\n                             OR excluded.latest_queued_result_period > latest_queued_result_period)\n                       THEN excluded.latest_queued_result_period\n                       ELSE latest_queued_result_period END,\n                     updated_at_utc=excluded.updated_at_utc', 'INSERT INTO exchange_company_result_state\n                   (exchange, exchange_key, reporting_scope, latest_filed_result_period,\n                    latest_broadcast_at_utc, latest_filing_id, latest_queued_result_period,\n                    updated_at_utc)\n                   VALUES (?, ?, ?, ?, ?, ?, ?, ?)\n                   ON CONFLICT(exchange, exchange_key, reporting_scope) DO UPDATE SET\n                     latest_filed_result_period=CASE WHEN exchange_company_result_state.latest_filed_result_period IS NULL OR excluded.latest_filed_result_period IS NULL THEN NULL ELSE GREATEST(exchange_company_result_state.latest_filed_result_period, excluded.latest_filed_result_period) END,\n                     latest_broadcast_at_utc=CASE WHEN exchange_company_result_state.latest_broadcast_at_utc IS NULL OR excluded.latest_broadcast_at_utc IS NULL THEN NULL WHEN exchange_company_result_state.latest_broadcast_at_utc::timestamptz >= excluded.latest_broadcast_at_utc::timestamptz THEN exchange_company_result_state.latest_broadcast_at_utc ELSE excluded.latest_broadcast_at_utc END,\n                     latest_filing_id=CASE\n                       WHEN CAST(excluded.latest_broadcast_at_utc AS timestamptz) >= CAST(exchange_company_result_state.latest_broadcast_at_utc AS timestamptz)\n                       THEN excluded.latest_filing_id ELSE exchange_company_result_state.latest_filing_id END,\n                     latest_queued_result_period=CASE\n                       WHEN excluded.latest_queued_result_period IS NOT NULL\n                        AND (exchange_company_result_state.latest_queued_result_period IS NULL\n                             OR excluded.latest_queued_result_period > exchange_company_result_state.latest_queued_result_period)\n                       THEN excluded.latest_queued_result_period\n                       ELSE exchange_company_result_state.latest_queued_result_period END,\n                     updated_at_utc=excluded.updated_at_utc'),
                 (
                     str(filing["exchange"]), str(filing["exchange_key"]),
                     str(filing["reporting_scope"]), str(filing["result_period"]),

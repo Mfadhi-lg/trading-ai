@@ -1,6 +1,7 @@
 """Deterministic exchange universe, change and result-discovery coverage."""
 
 from __future__ import annotations
+from ..db.repository_backend import statement
 
 import json
 import sqlite3
@@ -24,7 +25,7 @@ def build_exchange_universe_coverage(conn: sqlite3.Connection) -> dict[str, Any]
     snapshots = [
         dict(row)
         for row in conn.execute(
-            """SELECT snapshot.dataset, snapshot.exchange,
+            statement(conn, """SELECT snapshot.dataset, snapshot.exchange,
                       COUNT(*) AS snapshot_count,
                       MIN(snapshot.effective_date) AS first_effective_date,
                       MAX(snapshot.effective_date) AS latest_effective_date,
@@ -33,7 +34,7 @@ def build_exchange_universe_coverage(conn: sqlite3.Connection) -> dict[str, Any]
                       SUM(snapshot.validation_status = 'failed') AS failed_snapshots
                FROM exchange_source_snapshots AS snapshot
                GROUP BY snapshot.dataset, snapshot.exchange
-               ORDER BY snapshot.dataset"""
+               ORDER BY snapshot.dataset""", "SELECT snapshot.dataset, snapshot.exchange,\n                      COUNT(*) AS snapshot_count,\n                      MIN(snapshot.effective_date) AS first_effective_date,\n                      MAX(snapshot.effective_date) AS latest_effective_date,\n                      SUM(snapshot.accepted_row_count) AS accepted_rows,\n                      SUM(snapshot.rejected_row_count) AS rejected_rows,\n                      SUM(CASE WHEN snapshot.validation_status = 'failed' THEN 1 ELSE 0 END) AS failed_snapshots\n               FROM exchange_source_snapshots AS snapshot\n               GROUP BY snapshot.dataset, snapshot.exchange\n               ORDER BY snapshot.dataset")
         )
     ]
     present_datasets = {item["dataset"] for item in snapshots}

@@ -151,7 +151,10 @@ def run_inventory(args, *, build_inventory=build_inventory, repair_period_tags=r
     from ...config import assert_configured_writable_targets
     assert_configured_writable_targets(args.output, db_path=args.db)
     mode='rw' if args.prioritize or args.repair_period_tags else 'ro'
-    conn=sqlite3.connect(f'file:{args.db.resolve()}?mode={mode}',uri=True,timeout=30); conn.row_factory=sqlite3.Row
+    from ...db.database import connect, selected_backend
+    conn = (connect(args.db, read_only=mode == 'ro') if selected_backend() == 'postgresql' else
+            sqlite3.connect(f'file:{args.db.resolve()}?mode={mode}',uri=True,timeout=30))
+    conn.row_factory=sqlite3.Row
     try:
         report=snapshot_inventory(conn,period=args.period,build_inventory=build_inventory)
         if args.repair_period_tags:

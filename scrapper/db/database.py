@@ -3,6 +3,7 @@
 import fcntl
 import sqlite3
 import threading
+import os
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
@@ -16,6 +17,14 @@ _IN_PROCESS_MIGRATION_LOCK = threading.Lock()
 # copy, but intentionally absent from the current canonical migration directory.
 # Identity is the full filename; this does not alias or replace browser 065.
 HISTORICAL_MIGRATION_IDENTITIES = frozenset({"065_exchange_source_access.sql"})
+
+
+def selected_backend(environ=None):
+    env = os.environ if environ is None else environ
+    backend = env.get("TRADING_AI_DB_BACKEND", "sqlite")
+    if backend not in {"sqlite", "postgresql"}:
+        raise ValueError("TRADING_AI_DB_BACKEND must be sqlite or postgresql")
+    return backend
 
 
 @contextmanager
@@ -44,6 +53,17 @@ def connect(db_path: Path = DB_PATH, *, read_only: bool = False) -> sqlite3.Conn
     and never create configured store directories or switch journal mode.
     """
 
+    if selected_backend() == "postgresql":
+        from .postgresql import PostgreSQLSettings
+        from .postgresql_schema import validate_schema_name
+        from .postgresql_application import open_application
+        settings = PostgreSQLSettings.from_env()
+        schema = os.environ.get("TRADING_AI_POSTGRESQL_SCHEMA", "")
+        validate_schema_name(schema)
+        if not read_only:
+            assert_configured_writable_targets(db_path=Path(db_path))
+            ensure_dirs()
+        return open_application(settings, schema=schema, read_only=read_only)
     db_path = Path(db_path)
     if read_only:
         if not db_path.is_file():
@@ -73,6 +93,14 @@ def check_schema_compatibility(conn: sqlite3.Connection) -> None:
     ledger, applies SQL, takes a filesystem lock, or writes database state.
     """
 
+    from .repository_backend import is_postgresql
+    if is_postgresql(conn):
+        from .postgresql_schema import check_compatibility
+        raw = getattr(conn, "raw", conn)
+        schema = getattr(conn, "schema", os.environ.get("TRADING_AI_POSTGRESQL_SCHEMA", ""))
+        with raw.transaction():
+            check_compatibility(raw, schema)
+        return
     exists = conn.execute(
         "SELECT 1 FROM sqlite_master WHERE type='table' AND name='schema_migrations'"
     ).fetchone()
@@ -99,6 +127,9 @@ def check_schema_compatibility(conn: sqlite3.Connection) -> None:
 def apply_migrations(conn: sqlite3.Connection) -> None:
     """Apply visible migrations only when called through an explicit action."""
 
+    from .repository_backend import is_postgresql
+    if is_postgresql(conn):
+        raise RuntimeError("Use the explicit PostgreSQL schema/admin setup command; runtime roles cannot migrate")
     if conn.execute("PRAGMA query_only").fetchone()[0]:
         raise RuntimeError("Cannot apply migrations through a read-only connection")
     with _migration_lock(conn):

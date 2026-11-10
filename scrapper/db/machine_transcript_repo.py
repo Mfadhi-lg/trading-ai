@@ -12,8 +12,10 @@ from ..documents.transcription import ValidatedMachineTranscript, canonical_json
 from .document_artifact_repo import register_artifact_content
 from .document_download_repo import store_response_blob
 from .transcript_repo import transcript_payload
+from scrapper.db.repository_backend import (execute, executemany, generated_id, statement, is_postgresql, atomic_repository, begin_immediate, commit, rollback, transaction as repository_transaction)
 
 
+@atomic_repository('documents')
 def existing_machine_run(
     conn: sqlite3.Connection,
     *,
@@ -23,7 +25,7 @@ def existing_machine_run(
     model_version: str,
     options: dict[str, Any],
 ) -> sqlite3.Row | None:
-    return conn.execute(
+    return execute(conn,
         """SELECT * FROM machine_transcription_runs
            WHERE source_media_content_id=? AND engine=? AND engine_version=?
              AND model_version=? AND options_json=?""",
@@ -71,6 +73,7 @@ def _generated_payload(
     }
 
 
+@atomic_repository('documents')
 def persist_machine_transcript(
     conn: sqlite3.Connection,
     *,
@@ -117,7 +120,7 @@ def persist_machine_transcript(
     )
     transcript_id: int | None = None
     error: dict[str, Any] = {}
-    with conn:
+    with repository_transaction(conn):
         blob_id, _ = store_response_blob(
             conn,
             body=body,
@@ -136,7 +139,7 @@ def persist_machine_transcript(
         )
         if structurally_storable:
             transcript_engine = f"{engine}@{engine_version}"
-            cursor = conn.execute(
+            cursor = execute(conn,
                 """INSERT INTO transcripts
                    (artifact_id, content_id, extraction_id, origin,
                     source_media_content_id, language, engine, model_version,
@@ -159,9 +162,9 @@ def persist_machine_transcript(
                     len(parsed.segments),
                     len(parsed.segments),
                 ),
-            )
-            transcript_id = int(cursor.lastrowid)
-            conn.executemany(
+             returning='transcript_id')
+            transcript_id = generated_id(cursor, 'transcript_id')
+            executemany(conn,
                 """INSERT INTO transcript_segments
                    (transcript_id, segment_position, page_start, page_end,
                     element_start, element_end, start_ms, end_ms, speaker_raw,
@@ -182,7 +185,7 @@ def persist_machine_transcript(
                     for position, row in enumerate(parsed.segments)
                 ],
             )
-            conn.executemany(
+            executemany(conn,
                 """INSERT INTO transcript_validations
                    (transcript_id, rule_code, severity, status, expected_value,
                     actual_value, details_json)
@@ -205,7 +208,7 @@ def persist_machine_transcript(
                 "type": "InvalidSegmentStructure",
                 "message": "Engine output cannot satisfy transcript segment constraints",
             }
-        cursor = conn.execute(
+        cursor = execute(conn,
             """INSERT INTO machine_transcription_runs
                (transcript_artifact_id, recording_artifact_id, normalization_id,
                 source_media_content_id, source_media_sha256,
@@ -242,14 +245,14 @@ def persist_machine_transcript(
                 transcript_id,
                 canonical_json(error),
             ),
-        )
-        run_id = int(cursor.lastrowid)
+         returning='transcription_run_id')
+        run_id = generated_id(cursor, 'transcription_run_id')
         if (
             transcript_id is not None
             and parsed.status == "accepted"
             and not comparison_requested
         ):
-            conn.execute(
+            execute(conn,
                 """INSERT INTO preferred_transcripts
                    (artifact_id, transcript_id, updated_at_utc)
                    VALUES (?, ?, ?)
@@ -258,7 +261,7 @@ def persist_machine_transcript(
                      updated_at_utc=excluded.updated_at_utc""",
                 (transcript_artifact_id, transcript_id, completed_at_utc),
             )
-            conn.execute(
+            execute(conn,
                 """UPDATE document_artifacts
                    SET preferred_content_id=?, acquisition_status='validated',
                        transcript_preference_status='machine_preferred'
@@ -268,6 +271,7 @@ def persist_machine_transcript(
     return run_id
 
 
+@atomic_repository('documents')
 def persist_machine_transcription_failure(
     conn: sqlite3.Connection,
     *,
@@ -288,8 +292,8 @@ def persist_machine_transcription_failure(
     completed_at_utc: str,
     error: dict[str, Any],
 ) -> int:
-    with conn:
-        cursor = conn.execute(
+    with repository_transaction(conn):
+        cursor = execute(conn,
             """INSERT INTO machine_transcription_runs
                (transcript_artifact_id, recording_artifact_id, normalization_id,
                 source_media_content_id, source_media_sha256,
@@ -317,12 +321,13 @@ def persist_machine_transcription_failure(
                 completed_at_utc,
                 canonical_json(error),
             ),
-        )
-    return int(cursor.lastrowid)
+         returning='transcription_run_id')
+    return generated_id(cursor, 'transcription_run_id')
 
 
+@atomic_repository('documents')
 def machine_run_payload(conn: sqlite3.Connection, run_id: int) -> dict[str, Any]:
-    row = conn.execute(
+    row = execute(conn,
         "SELECT * FROM machine_transcription_runs WHERE transcription_run_id=?",
         (run_id,),
     ).fetchone()
@@ -330,7 +335,7 @@ def machine_run_payload(conn: sqlite3.Connection, run_id: int) -> dict[str, Any]
         raise ValueError(f"Unknown machine transcription run: {run_id}")
 
     def content(content_id: int) -> dict[str, Any]:
-        item = conn.execute(
+        item = execute(conn,
             """SELECT content.*, blob.local_path FROM artifact_contents AS content
                JOIN response_blobs AS blob USING (blob_id)
                WHERE content.content_id=?""",

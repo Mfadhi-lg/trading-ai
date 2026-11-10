@@ -23,7 +23,7 @@ from ...config import (
 )
 from ...core.log import get_logger, log_event
 from ...core.http import FetchResponse, ScreenerHostClient, fetch_screener_result_screen
-from ...db.database import connect, init_db
+from ...db.database import connect, init_db, selected_backend
 from ...db.repo import finish_run, record_fetch, start_run, store_blob, utc_now
 from ...db.screener_discovery_repo import (
     ClaimedCompany,
@@ -72,8 +72,8 @@ def run_screener_company_worker(*, due: bool, limit: int, dry_run: bool=False, d
     logger = get_logger(__name__)
     if dry_run:
         due_rows: tuple[ClaimedCompany, ...] = ()
-        if db_path.exists():
-            readonly = sqlite3.connect(f'file:{db_path.resolve()}?mode=ro', uri=True)
+        if selected_backend() == "postgresql" or db_path.exists():
+            readonly = connect(db_path, read_only=True)
             readonly.row_factory = sqlite3.Row
             try:
                 due_rows = preview_due_companies(readonly, now_utc=checked_at, limit=limit)

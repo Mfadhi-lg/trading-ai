@@ -10,6 +10,7 @@ from ..db.document_download_queue_repo import materialize_download_queue
 from ..db.repo import utc_now
 from .credit_rating_downloads import enqueue_credit_ratings_for_accepted_parse
 from ..documents.discovery.promotion import promote_document_links
+from ..db.repository_backend import statement, atomic_repository
 
 
 # Screener's concall notes/AI summaries are deliberately absent: they are a
@@ -53,6 +54,7 @@ def _accepted_company_identity(
     return company_id, label
 
 
+@atomic_repository('automatic-document-scopes')
 def _register_automatic_scope(
     conn: sqlite3.Connection,
     *,
@@ -93,13 +95,13 @@ def _register_automatic_scope(
             "Automatic scope artifacts do not all belong to the accepted company"
         )
 
-    before = conn.total_changes
+    created = 0
     with conn:
-        conn.execute(
-            """INSERT OR IGNORE INTO artifact_download_scopes
+        cursor = conn.execute(
+            statement(conn, """INSERT OR IGNORE INTO artifact_download_scopes
                (scope_id, scope_kind, description, artifact_types_json,
                 policy_json, created_at_utc, updated_at_utc)
-               VALUES (?, 'custom', ?, ?, ?, ?, ?)""",
+               VALUES (?, 'custom', ?, ?, ?, ?, ?)""", "INSERT INTO artifact_download_scopes\n               (scope_id, scope_kind, description, artifact_types_json,\n                policy_json, created_at_utc, updated_at_utc)\n               VALUES (?, 'custom', ?, ?, ?, ?, ?) ON CONFLICT DO NOTHING"),
             (
                 AUTOMATIC_CONCALL_SCOPE_ID,
                 "Automatic primary transcript and presentation acquisition from accepted Screener pages",
@@ -109,30 +111,34 @@ def _register_automatic_scope(
                 now,
             ),
         )
-        conn.execute(
-            """INSERT OR IGNORE INTO artifact_download_scope_companies
+        created += cursor.rowcount
+        cursor = conn.execute(
+            statement(conn, """INSERT OR IGNORE INTO artifact_download_scope_companies
                (scope_id, company_id, symbol)
-               VALUES (?, ?, ?)""",
+               VALUES (?, ?, ?)""", 'INSERT INTO artifact_download_scope_companies\n               (scope_id, company_id, symbol)\n               VALUES (?, ?, ?) ON CONFLICT DO NOTHING'),
             (AUTOMATIC_CONCALL_SCOPE_ID, company_id, company_label),
         )
-        conn.executemany(
-            """INSERT OR IGNORE INTO artifact_download_scope_artifacts
-               (scope_id, artifact_id) VALUES (?, ?)""",
+        created += cursor.rowcount
+        cursor = conn.executemany(
+            statement(conn, """INSERT OR IGNORE INTO artifact_download_scope_artifacts
+               (scope_id, artifact_id) VALUES (?, ?)""", 'INSERT INTO artifact_download_scope_artifacts\n               (scope_id, artifact_id) VALUES (?, ?) ON CONFLICT DO NOTHING'),
             [
                 (AUTOMATIC_CONCALL_SCOPE_ID, artifact_id)
                 for artifact_id in artifact_ids
             ],
         )
-        conn.execute(
+        created += cursor.rowcount
+        cursor = conn.execute(
             """UPDATE artifact_download_scopes SET updated_at_utc=?
                 WHERE scope_id=?""",
             (now, AUTOMATIC_CONCALL_SCOPE_ID),
         )
+        created += cursor.rowcount
     return {
         "scope_id": AUTOMATIC_CONCALL_SCOPE_ID,
         "company_id": company_id,
         "artifact_count": len(artifact_ids),
-        "created_row_count": conn.total_changes - before,
+        "created_row_count": created,
     }
 
 

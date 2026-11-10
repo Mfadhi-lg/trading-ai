@@ -1,5 +1,10 @@
 # PostgreSQL repository and worker transition
 
+This is the retained scope/verification record for PR #78. Its incomplete-port
+statements and remaining-work list are superseded by the full application port
+in [POSTGRESQL_APPLICATION.md](POSTGRESQL_APPLICATION.md). The recorded test run
+below remains evidence for that earlier revision.
+
 This change ports existing repository functions, rather than redirecting all
 application connections. PostgreSQL 16 is supported for the explicit paths below;
 SQLite remains the default application backend. Issue #53 is not fully complete:

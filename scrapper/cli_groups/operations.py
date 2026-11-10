@@ -9,6 +9,17 @@ def dispatch_operations(args, facade) -> int:
         return facade.run_interactive_shell(db_path)
 
     if args.command == "init-db":
+        from ..db.database import selected_backend
+        if selected_backend() == 'postgresql':
+            import os
+            from ..db.postgresql import connect, PostgreSQLSettings
+            from ..db.postgresql_schema import migrate
+            schema = os.environ.get('TRADING_AI_POSTGRESQL_SCHEMA', '')
+            with connect(PostgreSQLSettings.from_env()) as conn:
+                migrate(conn, schema)
+            print(json.dumps({'status': 'ok', 'backend': 'postgresql', 'schema': schema,
+                              'runtime_setup': 'explicit identity and least-privilege role provisioning required'}))
+            return 0
         conn = facade.connect(args.db)
         try:
             facade.init_db(conn, apply_migrations=True)

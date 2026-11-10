@@ -1,5 +1,9 @@
 """Exchange source snapshots, immutable response evidence and guard verdicts."""
 from __future__ import annotations
+from ..repository_backend import (
+    atomic_repository, begin_immediate, commit, execute, executemany, generated_id,
+    is_postgresql, rollback, statement, transaction,
+)
 
 import hashlib
 import json
@@ -33,6 +37,7 @@ def _json(value: Any) -> str:
     return json.dumps(value, sort_keys=True, separators=(",", ":"))
 
 
+@atomic_repository('financial-repositories')
 def store_exchange_blob(
     conn: sqlite3.Connection,
     response: FetchResponse,
@@ -58,18 +63,15 @@ def store_exchange_blob(
         temporary = destination.with_name(destination.name + ".tmp")
         temporary.write_bytes(response.content)
         os.replace(temporary, destination)
-    conn.execute(
-        """INSERT OR IGNORE INTO response_blobs
-           (content_sha256, content_type, encoding, byte_size, local_path,
-            first_observed_at_utc, created_at_utc)
-           VALUES (?, ?, ?, ?, ?, ?, ?)""",
+    execute(conn,
+        statement(conn, 'INSERT OR IGNORE INTO response_blobs\n           (content_sha256, content_type, encoding, byte_size, local_path,\n            first_observed_at_utc, created_at_utc)\n           VALUES (?, ?, ?, ?, ?, ?, ?)', 'INSERT INTO response_blobs\n           (content_sha256, content_type, encoding, byte_size, local_path,\n            first_observed_at_utc, created_at_utc)\n           VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT DO NOTHING'),
         (
             sha256, response.content_type, response.encoding, len(response.content),
             str(destination.resolve()), observed_at_utc, utc_now(),
         ),
     )
-    conn.commit()
-    row = conn.execute(
+    commit(conn)
+    row = execute(conn,
         "SELECT blob_id FROM response_blobs WHERE content_sha256=?", (sha256,)
     ).fetchone()
     if row is None:
@@ -77,6 +79,7 @@ def store_exchange_blob(
     return int(row["blob_id"])
 
 
+@atomic_repository('financial-repositories')
 def record_exchange_fetch(
     conn: sqlite3.Connection,
     run_id: int,
@@ -86,7 +89,7 @@ def record_exchange_fetch(
     blob_id: int,
     fetched_at_utc: str,
 ) -> int:
-    cursor = conn.execute(
+    cursor = execute(conn,
         """INSERT INTO fetch_observations
            (run_id, company_id, source, reporting_scope, requested_source_period,
             resolved_source_period, requested_url, final_url, fetched_at_utc,
@@ -99,11 +102,12 @@ def record_exchange_fetch(
             fetched_at_utc, response.status_code, response.etag,
             response.last_modified, response.auth_mode, blob_id, response.fetch_status,
         ),
-    )
-    conn.commit()
-    return int(cursor.lastrowid)
+     returning='fetch_id')
+    commit(conn)
+    return int(generated_id(cursor, 'fetch_id'))
 
 
+@atomic_repository('financial-repositories')
 def persist_snapshot(
     conn: sqlite3.Connection,
     *,
@@ -129,15 +133,9 @@ def persist_snapshot(
 ) -> tuple[int, bool]:
     rejected = tuple(rejected)
     excluded = tuple(excluded)
-    with conn:
-        cursor = conn.execute(
-            """INSERT OR IGNORE INTO exchange_source_snapshots
-               (exchange, dataset, effective_date, source_label, requested_url,
-                acquisition_mode, fetch_id, blob_id, parser_name, parser_version,
-                source_encoding, observed_at_utc, header_json, accepted_row_count,
-                rejected_row_count, validation_status, compression,
-                excluded_row_count)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+    with transaction(conn):
+        cursor = execute(conn,
+            statement(conn, 'INSERT OR IGNORE INTO exchange_source_snapshots\n               (exchange, dataset, effective_date, source_label, requested_url,\n                acquisition_mode, fetch_id, blob_id, parser_name, parser_version,\n                source_encoding, observed_at_utc, header_json, accepted_row_count,\n                rejected_row_count, validation_status, compression,\n                excluded_row_count)\n               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', 'INSERT INTO exchange_source_snapshots\n               (exchange, dataset, effective_date, source_label, requested_url,\n                acquisition_mode, fetch_id, blob_id, parser_name, parser_version,\n                source_encoding, observed_at_utc, header_json, accepted_row_count,\n                rejected_row_count, validation_status, compression,\n                excluded_row_count)\n               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT DO NOTHING'),
             (
                 exchange.upper(), dataset, effective_date, source_label, requested_url,
                 acquisition_mode, fetch_id, blob_id, parser_name, parser_version,
@@ -147,7 +145,7 @@ def persist_snapshot(
             ),
         )
         created = cursor.rowcount == 1
-        row = conn.execute(
+        row = execute(conn,
             """SELECT snapshot_id FROM exchange_source_snapshots
                WHERE dataset=? AND effective_date=? AND blob_id=? AND parser_name=?
                  AND parser_version=?""",
@@ -157,7 +155,7 @@ def persist_snapshot(
             raise RuntimeError("Failed to persist exchange snapshot")
         snapshot_id = int(row["snapshot_id"])
         if created and rejected:
-            conn.executemany(
+            executemany(conn,
                 """INSERT INTO exchange_source_rejected_rows
                    (snapshot_id, row_position, reason_code, reason_detail, raw_cells_json)
                    VALUES (?, ?, ?, ?, ?)""",
@@ -168,7 +166,7 @@ def persist_snapshot(
                 ],
             )
         if created and excluded:
-            conn.executemany(
+            executemany(conn,
                 """INSERT INTO exchange_source_excluded_rows
                    (snapshot_id, row_position, instrument_class, reason_detail,
                     raw_cells_json)
@@ -203,7 +201,7 @@ def latest_passed_snapshot(
         query += " AND snapshot.snapshot_id<>?"
         parameters += (before_snapshot_id,)
     query += " ORDER BY snapshot.effective_date DESC, snapshot.snapshot_id DESC LIMIT 1"
-    row = conn.execute(query, parameters).fetchone()
+    row = execute(conn, query, parameters).fetchone()
     if row is None:
         return None
     metrics = json.loads(str(row["metrics_json"] or "{}"))
@@ -223,6 +221,7 @@ def latest_passed_snapshot(
     )
 
 
+@atomic_repository('financial-repositories')
 def record_snapshot_validation(
     conn: sqlite3.Connection,
     *,
@@ -236,8 +235,8 @@ def record_snapshot_validation(
     The snapshot and its blob are kept either way: a rejected file is evidence
     of what the exchange published, and discarding it would hide the incident.
     """
-    with conn:
-        conn.execute(
+    with transaction(conn):
+        execute(conn,
             """INSERT INTO exchange_snapshot_validations
                (snapshot_id, baseline_snapshot_id, status, findings_json,
                 metrics_json, thresholds_json, evaluated_at_utc)
@@ -258,7 +257,7 @@ def record_snapshot_validation(
                 evaluated_at_utc,
             ),
         )
-        conn.execute(
+        execute(conn,
             "UPDATE exchange_source_snapshots SET validation_status=? WHERE snapshot_id=?",
             (verdict.status, snapshot_id),
         )
@@ -275,13 +274,13 @@ def snapshot_content_is_new(
     delisting, symbol change or series change. Non-publication has its own
     evidence — the dated artifact is absent — and is established there, not here.
     """
-    row = conn.execute(
+    row = execute(conn,
         """SELECT blob_id FROM exchange_source_snapshots WHERE snapshot_id=?""",
         (snapshot_id,),
     ).fetchone()
     if row is None:
         return True
-    previous = conn.execute(
+    previous = execute(conn,
         """SELECT blob_id FROM exchange_source_snapshots
            WHERE dataset=? AND snapshot_id<>?
            ORDER BY effective_date DESC, snapshot_id DESC LIMIT 1""",

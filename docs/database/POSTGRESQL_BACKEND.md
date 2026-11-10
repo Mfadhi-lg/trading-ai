@@ -1,18 +1,19 @@
 # Native PostgreSQL backend transition
 
-Issue #53 introduces an explicit native connection foundation for PostgreSQL 16.
-SQLite remains the application's current runtime backend. PostgreSQL is not
-authoritative until full repository parity, schema/data migration and operational
-acceptance pass. Explicitly ported repository paths are listed in
-[POSTGRESQL_REPOSITORIES.md](POSTGRESQL_REPOSITORIES.md). Existing
-`scrapper.db.database.connect()` callers retain their SQLite connection lifecycle.
+PostgreSQL 16 is the primary backend target for new configured deployments.
+`scrapper.db.database.connect()` selects it only when
+`TRADING_AI_DB_BACKEND=postgresql` is explicit. Existing installations continue
+to default to SQLite; changing source code never switches a running deployment.
+Application setup and verification are documented in
+[POSTGRESQL_APPLICATION.md](POSTGRESQL_APPLICATION.md).
 
 The compatibility audit is in
 [SQLITE_POSTGRESQL_COMPATIBILITY_AUDIT.md](SQLITE_POSTGRESQL_COMPATIBILITY_AUDIT.md).
-SQLite repositories use `?`, `lastrowid`, `INSERT OR IGNORE/REPLACE`, SQLite rows,
-and `BEGIN IMMEDIATE`; a native connection cannot safely replace them. Queue
-claim/fencing and repository ports must be verified individually. Do not change
-production configuration to PostgreSQL on the strength of connection tests.
+The repository ports use explicit native conflict, generated-ID, date/JSON and
+transaction handling. The application row interface preserves named and indexed
+reads. Operational write policies are enforced by restricted PostgreSQL logins,
+and startup fails closed on privilege, identity or schema drift. The lower-level
+native API below remains available for migrations and controlled infrastructure.
 
 ## Isolated development service
 
@@ -105,13 +106,13 @@ drop UUID-named test schemas; they never use application tables:
 TRADING_AI_POSTGRESQL_TEST_DSN="$DATABASE_URL" python -B -m unittest scrapper.tests.test_postgresql_backend -v
 ```
 
-Live coverage includes mapping rows/exact strings, commit/rollback and close,
+This connection suite's live coverage includes mapping rows/exact strings, commit/rollback and close,
 read-only rejection, pool exhaustion, session reset, statement cancellation,
 subsequent pool recovery and shutdown. It does not certify repository parity,
-concurrent worker semantics, production backup/restore or cutover. Issues #54
-and #55 own PostgreSQL schema lineage and verified data transfer; PostgreSQL
-cannot become the primary production backend until these and the repository
-ports are verified. Production cutover requires separate explicit approval.
+concurrent worker semantics, production backup/restore or cutover. Application
+repository, configured-login and worker coverage is supplied by the additional
+suites described in [POSTGRESQL_APPLICATION.md](POSTGRESQL_APPLICATION.md).
+Production backup/restore and cutover remain separate explicit operator gates.
 
 The reviewed PostgreSQL schema baseline and explicit migration procedure are in
 [POSTGRESQL_SCHEMA.md](POSTGRESQL_SCHEMA.md).

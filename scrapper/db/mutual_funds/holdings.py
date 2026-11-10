@@ -1,6 +1,10 @@
 """Transactional holdings normalization, security identities and match evidence."""
 
 from __future__ import annotations
+from ..repository_backend import (
+    atomic_repository, begin_immediate, commit, execute, executemany, generated_id,
+    is_postgresql, rollback, statement, transaction,
+)
 
 import json
 import sqlite3
@@ -42,6 +46,7 @@ M03_VALIDATION_RULES = (
     "m03_name_fallback_unambiguous",
 )
 
+@atomic_repository('financial-repositories')
 def _upsert_m03_validation(
     conn: sqlite3.Connection,
     import_file_id: int,
@@ -51,7 +56,7 @@ def _upsert_m03_validation(
     passed: bool,
     details: dict,
 ) -> None:
-    conn.execute(
+    execute(conn,
         """INSERT INTO mf_workbook_validation_results
            (import_file_id, rule_code, severity, passed, details_json)
            VALUES (?, ?, ?, ?, ?)
@@ -62,6 +67,7 @@ def _upsert_m03_validation(
         (import_file_id, rule_code, severity, int(passed), _json(details)),
     )
 
+@atomic_repository('financial-repositories')
 def _security_for_isin(
     conn: sqlite3.Connection,
     *,
@@ -69,20 +75,20 @@ def _security_for_isin(
     import_file_id: int,
     observed_at_utc: str,
 ) -> int:
-    found = conn.execute(
+    found = execute(conn,
         """SELECT security_id FROM mf_security_identifiers
            WHERE identifier_type='isin' AND identifier_value=?""",
         (holding.isin_normalized,),
     ).fetchone()
     if found is not None:
         return int(found["security_id"])
-    security = conn.execute(
+    security = execute(conn,
         """INSERT INTO mf_securities(canonical_name, created_at_utc)
            VALUES (?, ?)""",
         (holding.security_name_raw, observed_at_utc),
-    )
-    security_id = int(security.lastrowid)
-    conn.execute(
+     returning='security_id')
+    security_id = int(generated_id(security, 'security_id'))
+    execute(conn,
         """INSERT INTO mf_security_identifiers
            (security_id, identifier_type, identifier_value, structurally_valid,
             first_seen_import_file_id, first_seen_disclosure_month, created_at_utc)
@@ -94,6 +100,7 @@ def _security_for_isin(
     )
     return security_id
 
+@atomic_repository('financial-repositories')
 def persist_ppfas_holdings(
     conn: sqlite3.Connection,
     *,
@@ -101,21 +108,21 @@ def persist_ppfas_holdings(
     holdings: tuple[NormalizedHolding, ...],
 ) -> HoldingsNormalizationSummary:
     """Persist complete M03 normalization and initial match decisions atomically."""
-    existing = conn.execute(
+    existing = execute(conn,
         "SELECT COUNT(*) FROM mf_holdings WHERE import_file_id=?",
         (import_file_id,),
     ).fetchone()[0]
     if existing:
         import_state = str(
-            conn.execute(
+            execute(conn,
                 "SELECT import_state FROM mf_import_files WHERE import_file_id=?",
                 (import_file_id,),
             ).fetchone()["import_state"]
         )
         if import_state == "accepted":
             summary = holdings_normalization_summary(conn, import_file_id)
-            with conn:
-                conn.execute(
+            with transaction(conn):
+                execute(conn,
                     """UPDATE mf_workbook_validation_results SET details_json=?
                        WHERE import_file_id=? AND rule_code LIKE 'm03_%'""",
                     (_json(summary.to_dict()), import_file_id),
@@ -123,29 +130,29 @@ def persist_ppfas_holdings(
             return summary
         # Rejected/inbox imports are derived state and may be reprocessed after
         # an evidenced manifest revision. Immutable workbook cells stay intact.
-        with conn:
-            conn.execute(
+        with transaction(conn):
+            execute(conn,
                 "DELETE FROM mf_security_name_evidence WHERE import_file_id=?",
                 (import_file_id,),
             )
-            conn.execute(
+            execute(conn,
                 "DELETE FROM mf_holdings WHERE import_file_id=?",
                 (import_file_id,),
             )
-            conn.execute(
+            execute(conn,
                 """DELETE FROM mf_workbook_validation_results
                    WHERE import_file_id=? AND (rule_code LIKE 'm03_%'
                                                OR rule_code LIKE 'm04_%')""",
                 (import_file_id,),
             )
-    imported = conn.execute(
+    imported = execute(conn,
         """SELECT publisher, detected_disclosure_month, first_observed_at_utc
            FROM mf_import_files WHERE import_file_id=?""",
         (import_file_id,),
     ).fetchone()
     if imported is None:
         raise RuntimeError("Cannot normalize holdings for a missing import")
-    sheet_rows = conn.execute(
+    sheet_rows = execute(conn,
         """SELECT sheet_id, sheet_position, sheet_classification
            FROM mf_workbook_sheets WHERE import_file_id=?""",
         (import_file_id,),
@@ -169,7 +176,7 @@ def persist_ppfas_holdings(
     name_rule_version = manifest["holdings_normalization"]["name_fallback_rule_version"]
     isin_security: dict[tuple[int, int, int], int] = {}
 
-    with conn:
+    with transaction(conn):
         # Create/reuse identities only from structurally valid ISINs. Names never
         # create a security identity in this pass.
         for item in holdings:
@@ -183,12 +190,8 @@ def persist_ppfas_holdings(
                 observed_at_utc=observed_at,
             )
             isin_security[key] = security_id
-            conn.execute(
-                """INSERT OR IGNORE INTO mf_security_name_evidence
-                   (security_id, normalized_name, security_name_raw, import_file_id,
-                    sheet_id, source_row, evidence_basis, rule_version,
-                    observed_at_utc)
-                   VALUES (?, ?, ?, ?, ?, ?, 'valid_isin', ?, ?)""",
+            execute(conn,
+                statement(conn, "INSERT OR IGNORE INTO mf_security_name_evidence\n                   (security_id, normalized_name, security_name_raw, import_file_id,\n                    sheet_id, source_row, evidence_basis, rule_version,\n                    observed_at_utc)\n                   VALUES (?, ?, ?, ?, ?, ?, 'valid_isin', ?, ?)", "INSERT INTO mf_security_name_evidence\n                   (security_id, normalized_name, security_name_raw, import_file_id,\n                    sheet_id, source_row, evidence_basis, rule_version,\n                    observed_at_utc)\n                   VALUES (?, ?, ?, ?, ?, ?, 'valid_isin', ?, ?) ON CONFLICT DO NOTHING"),
                 (
                     security_id, normalized_security_name(item.security_name_raw),
                     item.security_name_raw, import_file_id,
@@ -198,7 +201,7 @@ def persist_ppfas_holdings(
             )
 
         name_candidates: dict[str, tuple[int, ...]] = {}
-        for row in conn.execute(
+        for row in execute(conn,
             """SELECT normalized_name, security_id
                FROM mf_security_name_evidence
                GROUP BY normalized_name, security_id
@@ -256,7 +259,7 @@ def persist_ppfas_holdings(
                     match_status = "unmatched"
                     decision_rule_version = name_rule_version
                     evidence = {"basis": "no_valid_isin_anchored_name"}
-            cursor = conn.execute(
+            cursor = execute(conn,
                 """INSERT INTO mf_holdings
                    (import_file_id, sheet_id, source_table_position,
                     source_table_kind, source_row, publisher, source,
@@ -298,8 +301,8 @@ def persist_ppfas_holdings(
                     item.percentage_unit_code, item.normalization_rule_version,
                     observed_at, security_id, match_status,
                 ),
-            )
-            conn.execute(
+             returning='holding_id')
+            execute(conn,
                 """INSERT INTO mf_security_match_decisions
                    (holding_id, decision_version, is_current, security_id,
                     match_method, match_status, match_key,
@@ -307,7 +310,7 @@ def persist_ppfas_holdings(
                     decided_at_utc, decided_by)
                    VALUES (?, 1, 1, ?, ?, ?, ?, ?, ?, ?, ?, 'm03_normalizer')""",
                 (
-                    int(cursor.lastrowid), security_id, match_method, match_status,
+                    int(generated_id(cursor, 'holding_id')), security_id, match_method, match_status,
                     match_key, decision_rule_version, _json(candidates),
                     _json(evidence), observed_at,
                 ),
@@ -346,7 +349,7 @@ def persist_ppfas_holdings(
             ),
             (
                 "m03_security_match_decisions_complete", "error",
-                conn.execute(
+                execute(conn,
                     """SELECT COUNT(*) FROM mf_security_match_decisions AS d
                        JOIN mf_holdings AS h ON h.holding_id=d.holding_id
                        WHERE h.import_file_id=? AND d.is_current=1""",
@@ -359,7 +362,7 @@ def persist_ppfas_holdings(
             ),
             (
                 "m03_unmatched_excluded_from_features", "error",
-                conn.execute(
+                execute(conn,
                     """SELECT COUNT(*) FROM mf_holdings
                        WHERE import_file_id=? AND security_match_status!='matched'
                          AND security_id IS NOT NULL""",
@@ -381,26 +384,12 @@ def persist_ppfas_holdings(
 def holdings_normalization_summary(
     conn: sqlite3.Connection, import_file_id: int
 ) -> HoldingsNormalizationSummary:
-    counts = conn.execute(
-        """SELECT COUNT(*) AS holding_count,
-                  SUM(source_table_kind='primary_portfolio') AS primary_count,
-                  SUM(source_table_kind='derivatives') AS derivative_count,
-                  SUM(isin_validation_status='valid') AS valid_isin_count,
-                  SUM(isin_validation_status='missing') AS missing_isin_count,
-                  SUM(isin_validation_status IN ('invalid_format','invalid_checksum'))
-                    AS invalid_isin_count,
-                  SUM(security_match_status='unmatched') AS unmatched_count,
-                  SUM(security_match_status='manual_review') AS manual_review_count
-           FROM mf_holdings WHERE import_file_id=?""",
+    counts = execute(conn,
+        statement(conn, "SELECT COUNT(*) AS holding_count,\n                  SUM(source_table_kind='primary_portfolio') AS primary_count,\n                  SUM(source_table_kind='derivatives') AS derivative_count,\n                  SUM(isin_validation_status='valid') AS valid_isin_count,\n                  SUM(isin_validation_status='missing') AS missing_isin_count,\n                  SUM(isin_validation_status IN ('invalid_format','invalid_checksum'))\n                    AS invalid_isin_count,\n                  SUM(security_match_status='unmatched') AS unmatched_count,\n                  SUM(security_match_status='manual_review') AS manual_review_count\n           FROM mf_holdings WHERE import_file_id=?", "SELECT COUNT(*) AS holding_count,\n                  SUM(CAST((source_table_kind='primary_portfolio') AS integer)) AS primary_count,\n                  SUM(CAST((source_table_kind='derivatives') AS integer)) AS derivative_count,\n                  SUM(CAST((isin_validation_status='valid') AS integer)) AS valid_isin_count,\n                  SUM(CAST((isin_validation_status='missing') AS integer)) AS missing_isin_count,\n                  SUM(CAST((isin_validation_status IN ('invalid_format','invalid_checksum')) AS integer))\n                    AS invalid_isin_count,\n                  SUM(CAST((security_match_status='unmatched') AS integer)) AS unmatched_count,\n                  SUM(CAST((security_match_status='manual_review') AS integer)) AS manual_review_count\n           FROM mf_holdings WHERE import_file_id=?"),
         (import_file_id,),
     ).fetchone()
-    decisions = conn.execute(
-        """SELECT SUM(d.match_method='isin' AND d.match_status='matched') AS isin_matches,
-                  SUM(d.match_method='exact_normalized_name' AND d.match_status='matched')
-                    AS name_matches
-           FROM mf_security_match_decisions AS d
-           JOIN mf_holdings AS h ON h.holding_id=d.holding_id
-           WHERE h.import_file_id=? AND d.is_current=1""",
+    decisions = execute(conn,
+        statement(conn, "SELECT SUM(d.match_method='isin' AND d.match_status='matched') AS isin_matches,\n                  SUM(d.match_method='exact_normalized_name' AND d.match_status='matched')\n                    AS name_matches\n           FROM mf_security_match_decisions AS d\n           JOIN mf_holdings AS h ON h.holding_id=d.holding_id\n           WHERE h.import_file_id=? AND d.is_current=1", "SELECT SUM(CAST((d.match_method='isin' AND d.match_status='matched') AS integer)) AS isin_matches,\n                  SUM(CAST((d.match_method='exact_normalized_name' AND d.match_status='matched') AS integer))\n                    AS name_matches\n           FROM mf_security_match_decisions AS d\n           JOIN mf_holdings AS h ON h.holding_id=d.holding_id\n           WHERE h.import_file_id=? AND d.is_current=1"),
         (import_file_id,),
     ).fetchone()
     return HoldingsNormalizationSummary(
@@ -412,8 +401,8 @@ def holdings_normalization_summary(
         int(decisions["isin_matches"] or 0), int(decisions["name_matches"] or 0),
         int(counts["unmatched_count"] or 0),
         int(counts["manual_review_count"] or 0),
-        int(conn.execute("SELECT COUNT(*) FROM mf_securities").fetchone()[0]),
-        int(conn.execute(
+        int(execute(conn, "SELECT COUNT(*) FROM mf_securities").fetchone()[0]),
+        int(execute(conn,
             """SELECT COUNT(*) FROM mf_workbook_validation_results
                WHERE import_file_id=? AND rule_code LIKE 'm03_%'""",
             (import_file_id,),
