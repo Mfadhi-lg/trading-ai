@@ -138,6 +138,8 @@ class RuntimeStatusTests(unittest.TestCase):
             self.assertFalse(result["value"]["matches_intended"])
             self.assertEqual(result["status"], "warning")
             self.assertNotIn(".Config.Env", str(probe.call_args))
+        with patch.object(status, "run", return_value='true "' + 'a' * 40 + '"'):
+            self.assertIsNone(status.container("test", None)["value"]["matches_intended"])
         with patch.object(status, "run", return_value='false "' + 'a' * 40 + '"'):
             self.assertEqual(status.container("test", "a" * 40)["status"], "unknown")
 

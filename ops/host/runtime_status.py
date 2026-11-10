@@ -162,7 +162,7 @@ def container(name, intended):
         revision = json.loads(revision)
         if running != "true" or not isinstance(revision, str) or not SHA.fullmatch(revision):
             raise ValueError("no running revision")
-        return claim(dict(reported_commit=revision, matches_intended=revision == intended), status="warning",
+        return claim(dict(reported_commit=revision, matches_intended=revision == intended if intended else None), status="warning",
                      source="selected live container", method=method,
                      detail="Container metadata observed now; label is self-reported and does not attest running code or host dispatcher revision.")
     except (OSError, ValueError, subprocess.SubprocessError):
