@@ -15,6 +15,7 @@ import uuid
 from unittest import mock
 
 from scrapper.db import postgresql_schema as schema
+from scrapper.db.postgresql_source_text import SOURCE_TEXT_COLUMNS
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -84,14 +85,14 @@ class SchemaIntegrationTests(unittest.TestCase):
         conn.execute(self.sql.SQL("SET LOCAL search_path TO {}, pg_catalog").format(self.sql.Identifier(self.name)))
 
     def test_full_object_and_column_constraint_parity(self):
-        objects = schema.manifest()["objects"]
+        objects = schema.application_objects()
         with self.connect() as conn:
             self.session(conn)
             for kind, relkind in (("table", "r"), ("view", "v")):
                 names = {row["relname"] for row in conn.execute("SELECT relname FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname=%s AND c.relkind=%s", (self.name, relkind))}
                 self.assertEqual(names - {"_postgresql_migrations"}, set(objects[kind]))
             triggers = {row["tgname"] for row in conn.execute("SELECT tgname FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname=%s AND NOT t.tgisinternal", (self.name,))}
-            self.assertEqual(triggers, set(objects["trigger"]))
+            self.assertEqual(triggers, set(objects["trigger"]) - {"trg_queue_natural_insert_guard"})
             indexes = {row["indexname"] for row in conn.execute("SELECT indexname FROM pg_indexes WHERE schemaname=%s", (self.name,))}
             self.assertTrue(set(objects["index"]) <= indexes)
             for table in objects["table"]:
@@ -100,7 +101,7 @@ class SchemaIntegrationTests(unittest.TestCase):
                     dest = list(conn.execute("SELECT column_name, data_type, is_nullable FROM information_schema.columns WHERE table_schema=%s AND table_name=%s ORDER BY ordinal_position", (self.name, table)))
                     self.assertEqual([col[1] for col in source], [col["column_name"] for col in dest])
                     for col, target in zip(source, dest):
-                        self.assertEqual(target["data_type"], {"INTEGER": "bigint", "REAL": "double precision", "TEXT": "text"}[col[2]])
+                        self.assertEqual(target["data_type"], "bytea" if col[1] in SOURCE_TEXT_COLUMNS.get(table, ()) else {"INTEGER": "bigint", "REAL": "double precision", "TEXT": "text"}[col[2]])
                         self.assertEqual(target["is_nullable"], "NO" if col[3] or col[5] else "YES")
                     pks = conn.execute("SELECT a.attname FROM pg_index i JOIN pg_class c ON c.oid=i.indrelid JOIN pg_namespace n ON n.oid=c.relnamespace CROSS JOIN LATERAL unnest(i.indkey) WITH ORDINALITY k(attnum,ord) JOIN pg_attribute a ON a.attrelid=c.oid AND a.attnum=k.attnum WHERE n.nspname=%s AND c.relname=%s AND i.indisprimary ORDER BY k.ord", (self.name, table)).fetchall()
                     self.assertEqual([col[1] for col in sorted(source, key=lambda c: c[5]) if col[5]], [row["attname"] for row in pks])
@@ -114,6 +115,53 @@ class SchemaIntegrationTests(unittest.TestCase):
             # Every view must parse and resolve all its references/types.
             for view in objects["view"]:
                 conn.execute(self.sql.SQL("SELECT * FROM {} LIMIT 0").format(self.sql.Identifier(view)))
+
+    def test_legacy_004_upgrade_preserves_signatures_and_refuses_drift(self):
+        targets=[self.name+'_old',self.name+'_bad']
+        try:
+            with tempfile.TemporaryDirectory() as directory:
+                migrations=Path(directory);info=schema.manifest()
+                info['migrations']={name:checksum for name,checksum in info['migrations'].items()
+                                    if name<'005_portable_schema_fingerprint.sql'}
+                for name in info['migrations']:shutil.copy(schema.MIGRATIONS/name,migrations/name)
+                (migrations/'manifest.json').write_text(json.dumps(info))
+                with mock.patch.object(schema,'MIGRATIONS',migrations):
+                    for target in targets:
+                        with self.connect() as conn:schema.migrate(conn,target)
+                with self.connect() as conn:
+                    before=conn.execute(self.sql.SQL('SELECT version,sha256,schema_sha256 FROM {}._postgresql_migrations ORDER BY version').format(self.sql.Identifier(targets[0]))).fetchall()
+                    conn.execute(self.sql.SQL('ALTER TABLE {}.companies DISABLE TRIGGER ALL').format(self.sql.Identifier(targets[1])))
+            with self.connect() as conn:
+                schema.migrate(conn,targets[0]);schema.check_compatibility(conn,targets[0])
+                after=conn.execute(self.sql.SQL('SELECT version,sha256,schema_sha256 FROM {}._postgresql_migrations ORDER BY version').format(self.sql.Identifier(targets[0]))).fetchall()
+                self.assertEqual(after[:4],before)
+                self.assertEqual(after[4]['version'],'005_portable_schema_fingerprint.sql')
+            with self.assertRaisesRegex(RuntimeError,'structure drifted'):
+                with self.connect() as conn:schema.migrate(conn,targets[1])
+            with self.connect() as conn:
+                self.assertEqual(conn.execute(self.sql.SQL('SELECT count(*) AS n FROM {}._postgresql_migrations').format(self.sql.Identifier(targets[1]))).fetchone()['n'],4)
+        finally:
+            with self.connect() as conn:
+                for target in targets:conn.execute(self.sql.SQL('DROP SCHEMA IF EXISTS {} CASCADE').format(self.sql.Identifier(target)))
+
+    def test_portable_fingerprint_keeps_user_trigger_names_exact(self):
+        with self.connect() as conn:
+            trigger=conn.execute('''SELECT relation.relname,trigger.tgname FROM pg_trigger trigger
+                JOIN pg_class relation ON relation.oid=trigger.tgrelid
+                JOIN pg_namespace namespace ON namespace.oid=relation.relnamespace
+                WHERE namespace.nspname=%s AND NOT trigger.tgisinternal LIMIT 1''',(self.name,)).fetchone()
+            conn.execute(self.sql.SQL('ALTER TRIGGER {} ON {}.{} RENAME TO changed_user_trigger').format(
+                self.sql.Identifier(trigger['tgname']),self.sql.Identifier(self.name),self.sql.Identifier(trigger['relname'])))
+        with self.assertRaisesRegex(RuntimeError,'structure drifted'):
+            with self.connect() as conn:schema.check_compatibility(conn,self.name)
+
+    def test_portable_fingerprint_retains_internal_foreign_key_enforcement(self):
+        with self.connect() as conn:
+            self.session(conn)
+            conn.execute("ALTER TABLE companies DISABLE TRIGGER ALL")
+        with self.assertRaisesRegex(RuntimeError,"structure drifted"):
+            with self.connect() as conn:
+                schema.check_compatibility(conn,self.name)
 
     def test_idempotency_checksum_and_read_only_checks(self):
         with self.connect() as conn:

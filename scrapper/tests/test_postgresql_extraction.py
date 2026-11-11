@@ -52,6 +52,25 @@ class ExtractionIntegrationTests(unittest.TestCase):
             extracted=document or extracted(),ocr_engine='synthetic',ocr_engine_version='1',
             options={'language':'eng'},started_at_utc=NOW,completed_at_utc=NOW,claim=claim)
 
+    def test_nul_source_text_preserves_repository_payload_and_page_constraints(self):
+        text = '\x00₹\x00\x00literal \\x00 tail\x00'
+        doc = extracted()
+        doc = replace(doc, pages=(replace(doc.pages[0], title_raw=text,
+            native_text=text, selected_text=text,
+            elements=(replace(doc.pages[0].elements[0], text_raw=text),)),
+            replace(doc.pages[1], ocr_text=text, selected_text=text)))
+        with self.session() as conn:
+            result = self.persist(conn, document=doc)
+            payload = repository.extraction_payload(conn, result.extraction_id)
+            self.assertEqual(payload['pages'][0]['native_text'], text)
+            self.assertEqual(payload['pages'][0]['title_raw'], text)
+            self.assertEqual(payload['pages'][0]['elements'][0]['text_raw'], text)
+            self.assertEqual(payload['pages'][1]['ocr_text'], text)
+            from psycopg.errors import CheckViolation
+            with self.assertRaises(CheckViolation), conn.transaction():
+                conn.execute("UPDATE document_pages SET selected_text=%s WHERE page_or_slide_number=1",
+                             (b'different',))
+
     def test_existing_claim_persist_payload_and_reconcile_match_sqlite(self):
         source = synthetic_sqlite()
         import sqlite3

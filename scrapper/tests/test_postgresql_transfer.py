@@ -65,7 +65,7 @@ class SourceSchemaTests(unittest.TestCase):
     def test_runtime_bootstrap_and_observed_formatting_are_accepted(self):
         with closing(formatted_sqlite()) as conn:
             before = list(conn.execute("SELECT type,name,sql FROM sqlite_master ORDER BY name"))
-            self.assertEqual(len(source_tables(conn)), 157)
+            self.assertEqual(len(source_tables(conn)), 158)
             self.assertEqual(before, list(conn.execute("SELECT type,name,sql FROM sqlite_master ORDER BY name")))
 
     def test_real_drift_is_rejected_even_with_formatting_variants(self):
@@ -124,7 +124,7 @@ class SourceSchemaTests(unittest.TestCase):
 
     def test_fallback_requires_pinned_migration_bytes_and_original_catalog_hash(self):
         from unittest import mock
-        from scrapper.db.postgresql_schema import manifest
+        from scrapper.db.postgresql_schema import source_profile as manifest
         for corrupt in ("migration", "catalog"):
             expected = manifest()
             if corrupt == "migration":
@@ -132,7 +132,7 @@ class SourceSchemaTests(unittest.TestCase):
             else:
                 expected["sqlite_schema_sha256"] = "0" * 64
             with self.subTest(corrupt=corrupt), closing(formatted_sqlite()) as conn:
-                with mock.patch("scrapper.db.postgresql_transfer.manifest", return_value=expected):
+                with mock.patch("scrapper.db.postgresql_transfer.source_profile", return_value=expected):
                     with self.assertRaises(RuntimeError):
                         source_tables(conn)
 
@@ -147,7 +147,7 @@ class SourceSchemaTests(unittest.TestCase):
             second = export_snapshot(snapshot, restored)
             self.assertEqual(first["status"], "verified_snapshot")
             self.assertEqual(first["tables"], second["tables"])
-            self.assertEqual(len(first["tables"]), 157)
+            self.assertEqual(len(first["tables"]), 158)
             self.assertEqual(file_sha256(original), before)
 
 
@@ -169,7 +169,7 @@ class SnapshotTests(unittest.TestCase):
         self.assertEqual(report["snapshot_sha256"], file_sha256(target))
         self.assertEqual(report["tables"]["companies"]["rows"], 1)
         self.assertEqual(report["tables"]["company_metric_observations"]["rows"], 4)
-        self.assertEqual(len(report["tables"]), 157)
+        self.assertEqual(len(report["tables"]), 158)
         with read_snapshot(target) as copied:
             self.assertEqual(copied.execute("PRAGMA journal_mode").fetchone()[0], "delete")
             self.assertEqual(copied.execute("PRAGMA integrity_check").fetchone()[0], "ok")
@@ -245,12 +245,50 @@ class TransferIntegrationTests(unittest.TestCase):
     def session(self, conn):
         conn.execute(self.sql.SQL("SET LOCAL search_path TO {}, pg_catalog").format(self.sql.Identifier(self.schema)))
 
+    def test_nul_document_text_is_lossless_and_rerun_verifies_original_hashes(self):
+        from dataclasses import replace
+        from scrapper.tests.test_postgresql_extraction import extracted
+        from scrapper.db import document_extraction_repo as docs
+        from scrapper.db import credit_rating_repo as ratings
+        text = '\x00₹\x00\x00literal \\x00 tail\x00'
+        doc = extracted()
+        doc = replace(doc, pages=(replace(doc.pages[0], title_raw=text,
+            native_text=text, selected_text=text,
+            elements=(replace(doc.pages[0].elements[0], text_raw=text),)),
+            replace(doc.pages[1], ocr_text=text, selected_text=text)))
+        with closing(sqlite3.connect(self.source)) as source:
+            source.row_factory = sqlite3.Row
+            result = docs.persist_extraction(source, content_id=61, extracted=doc,
+                ocr_engine='synthetic', ocr_engine_version='1', options={},
+                started_at_utc='synthetic', completed_at_utc='synthetic')
+            source.execute("""INSERT INTO credit_rating_normalizations
+                (normalization_id,artifact_id,content_id,extraction_id,parser_name,parser_version,
+                 options_json,document_class,normalization_status,accepted_action_count,
+                 review_action_count,conflict_action_count,started_at_utc,completed_at_utc,created_at_utc)
+                VALUES(1,51,61,?,'synthetic','1','{}','unknown','manual_review',0,0,0,'s','s','s')""",
+                (result.extraction_id,))
+            source.execute("""INSERT INTO credit_rating_passages VALUES(1,?,1,0,0,'context',?,'native',NULL)""",
+                           (result.extraction_id, text))
+            source.commit()
+            expected = docs.extraction_payload(source, result.extraction_id)
+            expected_rating = ratings.credit_rating_payload(source, 1)
+        self.snapshot = self.root / 'nul-snapshot.db'
+        self.backup = export_snapshot(self.source, self.snapshot)
+        report = self.run_transfer()
+        self.assertEqual(report['status'], 'committed')
+        self.assertTrue(all(t['verified'] for t in report['tables'].values()))
+        self.assertEqual(self.run_transfer()['status'], 'verified_existing')
+        with self.connect() as conn:
+            self.session(conn)
+            self.assertEqual(docs.extraction_payload(conn, result.extraction_id), expected)
+            self.assertEqual(ratings.credit_rating_payload(conn, 1), expected_rating)
+
     def test_all_tables_exact_values_rerun_trigger_cycle_and_generated_ids(self):
         before = file_sha256(self.source)
         events = []
         report = self.run_transfer(progress=events.append)
         self.assertEqual(report["status"], "committed")
-        self.assertEqual(len(report["tables"]), 157)
+        self.assertEqual(len(report["tables"]), 158)
         self.assertTrue(all(table["verified"] for table in report["tables"].values()))
         self.assertEqual(self.run_transfer()["status"], "verified_existing")
         self.assertEqual(file_sha256(self.source), before)
@@ -335,7 +373,7 @@ class TransferIntegrationTests(unittest.TestCase):
             self.assertEqual(main(["import", "--schema", self.schema, "--allow-destination-write", "--snapshot", str(snapshot), "--snapshot-sha256", digest, "--report", str(import_report)]), 0)
             summary = json.loads(import_report.read_text())
             self.assertEqual(summary["status"], "committed")
-            self.assertEqual(len(summary["tables"]), 157)
+            self.assertEqual(len(summary["tables"]), 158)
             self.assertEqual(import_report.stat().st_mode & 0o777, 0o600)
             self.assertEqual(snapshot.stat().st_mode & 0o777, 0o600)
             with self.assertRaises(FileExistsError):

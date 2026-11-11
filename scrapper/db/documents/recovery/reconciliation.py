@@ -7,6 +7,7 @@ from ....documents.rating_evidence import RATING_EVIDENCE_CLASSIFIER_NAME, RATIN
 from ....documents.recovery import RecoverySourceType
 from ...repo import utc_now
 from .attempts import _remaining_source_status, _recovery_source_group
+from scrapper.db.postgresql_source_text import decode_source_text
 from scrapper.db.repository_backend import (execute, executemany, generated_id, statement, is_postgresql, atomic_repository, begin_immediate, commit, rollback, transaction as repository_transaction)
 
 def _json(value: Any) -> str:
@@ -103,7 +104,7 @@ def reconcile_recovery_for_source(
             "full_rationale_coverage": False,
         }
     pages = [
-        dict(page)
+        {**dict(page), "selected_text": decode_source_text(page["selected_text"])}
         for page in execute(conn,
             """SELECT page_or_slide_number,selected_text FROM document_pages
                 WHERE extraction_id=? ORDER BY page_or_slide_number""",
@@ -240,7 +241,7 @@ def classify_direct_rating_evidence(
     if extraction is None:
         return []
     pages = [
-        dict(page)
+        {**dict(page), "selected_text": decode_source_text(page["selected_text"])}
         for page in execute(conn,
             """SELECT page_or_slide_number,selected_text FROM document_pages
                 WHERE extraction_id=? ORDER BY page_or_slide_number""",

@@ -16,6 +16,15 @@ def manifest():
     return json.loads((MIGRATIONS / "manifest.json").read_text())
 
 
+def source_profile():
+    """The new source lineage is separate from the frozen PG001 baseline."""
+    return json.loads((MIGRATIONS / "sqlite_077_profile.json").read_text())
+
+
+def application_objects():
+    return source_profile()["objects"]
+
+
 def migration_files():
     expected = manifest()["migrations"]
     found = {path.name: path for path in MIGRATIONS.glob("*.sql")}
@@ -28,7 +37,7 @@ def migration_files():
         yield name, expected[name], content.decode()
 
 
-def schema_fingerprint(conn, schema):
+def schema_fingerprint(conn, schema, *, format_version=1):
     """Hash live structure, including constraints and enabled trigger functions.
 
     Excludes rows, sequence positions and the lineage table. The signature is
@@ -44,6 +53,35 @@ def schema_fingerprint(conn, schema):
         "SELECT c.relname,pg_get_viewdef(c.oid) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname=%s AND c.relkind='v' ORDER BY c.relname",
         "SELECT c.relname,s.seqtypid,s.seqstart,s.seqincrement,s.seqmax,s.seqmin,s.seqcache,s.seqcycle,t.relname,a.attname,d.deptype FROM pg_sequence s JOIN pg_class c ON c.oid=s.seqrelid JOIN pg_namespace n ON n.oid=c.relnamespace LEFT JOIN pg_depend d ON d.objid=c.oid AND d.deptype IN ('a','i') LEFT JOIN pg_class t ON t.oid=d.refobjid LEFT JOIN pg_attribute a ON a.attrelid=t.oid AND a.attnum=d.refobjsubid WHERE n.nspname=%s ORDER BY c.relname",
     )
+    if format_version not in (1,2):
+        raise ValueError("Unsupported schema fingerprint format")
+    if format_version == 2:
+        # Only server-generated RI trigger identifiers are allocation-dependent.
+        # Pin their semantic constraint identity, event/function definition,
+        # enabled state and deferrability; user trigger names remain exact.
+        portable_triggers = """SELECT relation.relname,
+            CASE WHEN trigger.tgisinternal AND constraint_info.contype='f'
+                AND trigger.tgname ~ '^RI_ConstraintTrigger_[ac]_[0-9]+$' THEN constraint_relation.relname || ':' || constraint_info.conname
+                || ':' || function.proname || ':' || trigger.tgtype::text ELSE trigger.tgname::text END AS stable_name,
+            trigger.tgenabled,
+            CASE WHEN trigger.tgisinternal AND constraint_info.contype='f'
+                AND trigger.tgname ~ '^RI_ConstraintTrigger_[ac]_[0-9]+$' THEN regexp_replace(pg_get_triggerdef(trigger.oid),
+                '^CREATE CONSTRAINT TRIGGER "RI_ConstraintTrigger_[ac]_[0-9]+" ',
+                'CREATE CONSTRAINT TRIGGER "<internal-ri>" ')
+                ELSE pg_get_triggerdef(trigger.oid) END,
+            constraint_namespace.nspname,constraint_relation.relname,constraint_info.conname,
+            function_namespace.nspname,trigger.tgisinternal,
+            trigger.tgdeferrable,trigger.tginitdeferred
+            FROM pg_trigger trigger JOIN pg_class relation ON relation.oid=trigger.tgrelid
+            JOIN pg_namespace namespace ON namespace.oid=relation.relnamespace
+            JOIN pg_proc function ON function.oid=trigger.tgfoid
+            JOIN pg_namespace function_namespace ON function_namespace.oid=function.pronamespace
+            LEFT JOIN pg_constraint constraint_info ON constraint_info.oid=trigger.tgconstraint
+            LEFT JOIN pg_class constraint_relation ON constraint_relation.oid=constraint_info.conrelid
+            LEFT JOIN pg_namespace constraint_namespace ON constraint_namespace.oid=constraint_info.connamespace
+            WHERE namespace.nspname=%s
+            ORDER BY relation.relname,stable_name,constraint_relation.relname,constraint_info.conname"""
+        queries = (*queries[:4], portable_triggers, *queries[5:])
     from psycopg.rows import tuple_row
     validate_schema_name(schema)
     previous_path = conn.execute("SELECT current_setting('search_path') AS path").fetchone()["path"]
@@ -51,11 +89,21 @@ def schema_fingerprint(conn, schema):
     structure = []
     try:
         with conn.cursor(row_factory=tuple_row) as cursor:
-            for query in queries:
-                structure.append(cursor.execute(query, (schema,)).fetchall())
+            for index, query in enumerate(queries):
+                rows=cursor.execute(query, (schema,)).fetchall()
+                if format_version == 2 and index == 4:
+                    # Canonical full-row ordering also avoids locale-dependent
+                    # ties. Preserve every row and enforcement field exactly.
+                    rows.sort(key=lambda row: json.dumps(row,ensure_ascii=True,separators=(",", ":")))
+                structure.append(rows)
     finally:
         conn.execute("SELECT set_config('search_path', %s, true)", (previous_path,))
     return hashlib.sha256(json.dumps(structure, ensure_ascii=True, separators=(",", ":")).encode()).hexdigest()
+
+
+
+def _fingerprint_format(version):
+    return 2 if version >= "005_portable_schema_fingerprint.sql" else 1
 
 
 def migrate(conn, schema):
@@ -84,7 +132,7 @@ def migrate(conn, schema):
             if name in applied:
                 continue
             conn.execute(content, prepare=False)
-            signature = schema_fingerprint(conn, schema)
+            signature = schema_fingerprint(conn, schema, format_version=_fingerprint_format(name))
             conn.execute("INSERT INTO _postgresql_migrations(version, sha256, schema_sha256) VALUES (%s, %s, %s)", (name, checksum, signature))
 
 
@@ -97,5 +145,5 @@ def check_compatibility(conn, schema, *, allow_pending=False):
     compared = dict(sorted(expected.items())[:len(rows)]) if allow_pending else expected
     if {row["version"]: row["sha256"] for row in rows} != compared:
         raise RuntimeError("PostgreSQL schema is incompatible; explicit migration review required")
-    if not rows or schema_fingerprint(conn, schema) != rows[-1]["schema_sha256"]:
+    if not rows or schema_fingerprint(conn, schema, format_version=_fingerprint_format(rows[-1]["version"])) != rows[-1]["schema_sha256"]:
         raise RuntimeError("PostgreSQL schema structure drifted from its reviewed migration")

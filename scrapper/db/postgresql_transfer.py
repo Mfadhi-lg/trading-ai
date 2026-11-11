@@ -13,7 +13,9 @@ import sqlite3
 from urllib.parse import quote
 import uuid
 
-from .postgresql_schema import check_compatibility, manifest, validate_schema_name
+from .postgresql_source_text import transfer_row
+
+from .postgresql_schema import check_compatibility, manifest, source_profile, validate_schema_name
 
 
 def sqlite_identifier(value):
@@ -75,33 +77,32 @@ def _catalog_tokens(catalog):
 
 
 def _check_source_catalog(conn):
-    expected = manifest()
     catalog = _catalog(conn)
-    if _catalog_sha256(catalog) == expected["sqlite_schema_sha256"]:
-        return
-    # Reconstruct only the checksum-pinned frozen lineage in memory, never in
-    # the source. Anchor its exact catalog to the existing reviewed manifest
-    # before using its token representation as the formatting fallback.
-    with closing(sqlite3.connect(":memory:")) as baseline:
-        for name, checksum in sorted(expected["sqlite_sources"].items()):
-            content = Path(__file__).with_name("migrations").joinpath(name).read_bytes()
-            if hashlib.sha256(content).hexdigest() != checksum:
-                raise RuntimeError("SQLite baseline migration checksum mismatch")
-            baseline.executescript(content.decode())
-        reviewed = _catalog(baseline)
-    if (_catalog_sha256(reviewed) != expected["sqlite_schema_sha256"]
-            or _catalog_tokens(catalog) != _catalog_tokens(reviewed)):
-        raise RuntimeError("SQLite schema differs from the reviewed PostgreSQL baseline")
+    for expected in (manifest(), source_profile()):
+        if _catalog_sha256(catalog) == expected["sqlite_schema_sha256"]:
+            return expected
+        with closing(sqlite3.connect(":memory:")) as baseline:
+            for name, checksum in sorted(expected["sqlite_sources"].items()):
+                content = Path(__file__).with_name("migrations").joinpath(name).read_bytes()
+                if hashlib.sha256(content).hexdigest() != checksum:
+                    raise RuntimeError("SQLite baseline migration checksum mismatch")
+                baseline.executescript(content.decode())
+            reviewed = _catalog(baseline)
+        if _catalog_sha256(reviewed) != expected["sqlite_schema_sha256"]:
+            raise RuntimeError("Reviewed SQLite source profile checksum mismatch")
+        if _catalog_tokens(catalog) == _catalog_tokens(reviewed):
+            return expected
+    raise RuntimeError("SQLite schema differs from the reviewed PostgreSQL baseline")
 
 
 def source_tables(conn):
-    _check_source_catalog(conn)
+    profile = _check_source_catalog(conn)
     if conn.execute("PRAGMA integrity_check").fetchall() != [("ok",)]:
         raise RuntimeError("SQLite integrity check failed")
     if conn.execute("PRAGMA foreign_key_check").fetchone() is not None:
         raise RuntimeError("SQLite foreign key check failed")
     tables = {}
-    for name in manifest()["objects"]["table"]:
+    for name in profile["objects"]["table"]:
         columns = list(conn.execute(f"PRAGMA table_info({sqlite_identifier(name)})"))
         keys = sorted((col for col in columns if col[5]), key=lambda col: col[5])
         if not keys:
@@ -223,7 +224,7 @@ def transfer(settings, snapshot, schema, *, expected_sha256, batch_size=1000, pr
                         for rows in source_rows(source, name, columns, batch_size):
                             for row in rows:
                                 encode_row(row, columns)  # Fail before driver coercion.
-                            writer.executemany(insert, rows)
+                            writer.executemany(insert, (transfer_row(name, columns, row, to_postgresql=True) for row in rows))
                             count += len(rows)
                             if progress:
                                 progress({"phase": "import", "table": name, "rows": count})
@@ -242,7 +243,7 @@ def transfer(settings, snapshot, schema, *, expected_sha256, batch_size=1000, pr
                     reader.execute(sql.SQL("SELECT {} FROM {} ORDER BY {}").format(sql.SQL(",").join(sql.Identifier(col[1]) for col in columns), sql.Identifier(name), order))
                     while rows := reader.fetchmany(batch_size):
                         for row in rows:
-                            digest.update(encode_row(row, columns))
+                            digest.update(encode_row(transfer_row(name, columns, row, to_postgresql=False), columns))
                         count += len(rows)
                 target_summary = {"rows": count, "sha256": digest.hexdigest()}
                 if source_summary != target_summary:
@@ -259,6 +260,9 @@ def transfer(settings, snapshot, schema, *, expected_sha256, batch_size=1000, pr
                     JOIN pg_namespace sn ON sn.oid=s.relnamespace WHERE tn.nspname=%s""", (schema,)).fetchall()
             for seq in sequences:
                 maximum = dest.execute(sql.SQL("SELECT max({}) AS n FROM {}").format(sql.Identifier(seq["column_name"]), sql.Identifier(seq["table_name"]))).fetchone()["n"]
+                if seq["table_name"] == "screener_company_queue":
+                    high = dest.execute("SELECT max(queue_item_id) AS n FROM screener_queue_identities").fetchone()["n"]
+                    maximum = max(maximum or 0, high or 0)
                 if not populated:
                     next_id = max(1, (maximum or 0) + 1)
                     # ALTER SEQUENCE RESTART is transactional; setval is not.

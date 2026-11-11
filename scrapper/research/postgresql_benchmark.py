@@ -123,7 +123,7 @@ def seed(conn, scale):
     conn.execute("""INSERT INTO document_extractions(extraction_id,content_id,parser_name,parser_version,ocr_engine,ocr_engine_version,options_json,started_at_utc,completed_at_utc,extraction_status,page_or_slide_count,native_page_count,ocr_page_count,unusable_page_count,created_at_utc)
         SELECT i,i,'synthetic','1','none','1','{}','2026-01-01T00:00:00Z','2026-01-01T00:00:00Z','ok',40,40,0,0,'2026-01-01T00:00:00Z' FROM generate_series(1,%s) i""", (c,))
     conn.execute("""INSERT INTO document_pages(extraction_id,content_id,page_or_slide_number,page_kind,native_text,selected_text,selected_text_origin,native_text_usable)
-        SELECT i,i,p,'page',repeat('Synthetic text ',40),repeat('Synthetic text ',40),'native',1
+        SELECT i,i,p,'page',convert_to(repeat('Synthetic text ',40),'UTF8'),convert_to(repeat('Synthetic text ',40),'UTF8'),'native',1
         FROM generate_series(1,%s) i CROSS JOIN generate_series(1,40) p""", (c,))
     for table in ('acceptance_events', 'financial_observations', 'accepted_page_versions',
                   'parse_artifacts', 'response_blobs', 'security_identifiers', 'document_pages'):

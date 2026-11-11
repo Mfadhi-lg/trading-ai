@@ -6,7 +6,7 @@ catalogues: they never SET ROLE, repair grants, or emulate a SQL authorizer.
 import re
 import sqlite3
 
-from .postgresql_schema import manifest, validate_schema_name, check_compatibility
+from .postgresql_schema import manifest, validate_schema_name, check_compatibility, application_objects
 
 
 class PermissionPolicyError(RuntimeError):
@@ -145,6 +145,11 @@ def _expected(authorizer, relation, columns, schema):
     writable = (relation['schema'] == schema and relation['relkind'] in ('r','p')
                 and relation['name'] not in _LEDGERS)
     insert = writable and _allows(authorizer, sqlite3.SQLITE_INSERT, relation['name'])
+    if relation['name'] == 'screener_queue_identities':
+        # Invoker-rights queue registration; immutable ledger triggers enforce
+        # queue existence and forbid runtime creation of historical identities.
+        insert = writable and _allows(authorizer, sqlite3.SQLITE_INSERT, 'screener_company_queue')
+        return insert, False, set()
     delete = writable and _allows(authorizer, sqlite3.SQLITE_DELETE, relation['name'])
     updates = {row['name'] for row in columns if writable and _allows(
         authorizer, sqlite3.SQLITE_UPDATE, relation['name'], row['name'])}
@@ -189,7 +194,7 @@ def provision_policy(conn, schema, role, authorizer):
     if conn.info.transaction_status != TransactionStatus.INTRANS:
         raise PermissionPolicyError('Role provisioning requires a managed administrator transaction')
     check_compatibility(conn, schema)
-    expected = set(manifest()['objects']['table']) | {'_postgresql_migrations'}
+    expected = set(application_objects()['table']) | {'_postgresql_migrations'}
     tables = conn.execute('''SELECT c.relname FROM pg_catalog.pg_class c
         JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace
         WHERE n.nspname=%s AND c.relkind IN ('r','p','f')''', (schema,)).fetchall()

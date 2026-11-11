@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import sqlite3
 from .document_work_claims import OwnershipLost, assert_extraction_owned, release_extraction
+from scrapper.db.postgresql_source_text import bind_source_text, decode_source_text
 from .repository_backend import execute, generated_id, transaction, commit, is_postgresql, statement
 from dataclasses import dataclass
 from typing import Any
@@ -273,10 +274,10 @@ def _persist_extraction(
                     content_id,
                     page.number,
                     page.kind,
-                    page.title_raw,
-                    page.native_text,
-                    page.ocr_text,
-                    page.selected_text,
+                    bind_source_text(conn, page.title_raw),
+                    bind_source_text(conn, page.native_text),
+                    bind_source_text(conn, page.ocr_text),
+                    bind_source_text(conn, page.selected_text),
                     page.selected_text_origin,
                     int(page.native_text_usable),
                     page.native_unusable_reason,
@@ -299,7 +300,7 @@ def _persist_extraction(
                         element.position,
                         element.kind,
                         element.text_origin,
-                        element.text_raw,
+                        bind_source_text(conn, element.text_raw),
                         element.title_raw,
                         canonical_json(element.rows) if element.rows is not None else None,
                         canonical_json(element.reference) if element.reference is not None else None,
@@ -379,10 +380,10 @@ def extraction_payload(conn: sqlite3.Connection, extraction_id: int) -> dict[str
             {
                 "page_or_slide_number": page["page_or_slide_number"],
                 "page_kind": page["page_kind"],
-                "title_raw": page["title_raw"],
-                "native_text": page["native_text"],
-                "ocr_text": page["ocr_text"],
-                "selected_text": page["selected_text"],
+                "title_raw": decode_source_text(page["title_raw"]),
+                "native_text": decode_source_text(page["native_text"]),
+                "ocr_text": decode_source_text(page["ocr_text"]),
+                "selected_text": decode_source_text(page["selected_text"]),
                 "selected_text_origin": page["selected_text_origin"],
                 "native_text_usable": bool(page["native_text_usable"]),
                 "native_unusable_reason": page["native_unusable_reason"],
@@ -395,7 +396,7 @@ def extraction_payload(conn: sqlite3.Connection, extraction_id: int) -> dict[str
                         "element_position": element["element_position"],
                         "element_kind": element["element_kind"],
                         "text_origin": element["text_origin"],
-                        "text_raw": element["text_raw"],
+                        "text_raw": decode_source_text(element["text_raw"]),
                         "title_raw": element["title_raw"],
                         "rows": json.loads(element["rows_json"]) if element["rows_json"] else None,
                         "reference": json.loads(element["reference_json"]) if element["reference_json"] else None,

@@ -1,0 +1,2186 @@
+{
+  "format_version": 2,
+  "kind": "current_source_inventory",
+  "source_manifest_sha256": "19f87394ef1fffa5b3bc66b673ea7cf352c429e212562e88125aed8e8d9fd027",
+  "source_manifest": "docs/cleanup/baselines/C22.3/migration-manifest.json",
+  "migration_count": 77,
+  "declaration_entry_count": 410,
+  "declaration_counts": {
+    "create_table": 172,
+    "create_view": 30,
+    "create_index": 102,
+    "create_trigger": 37,
+    "alter_table": 49,
+    "drop_object": 20
+  },
+  "migrations": [
+    {
+      "path": "scrapper/db/migrations/001_initial.sql",
+      "sha256": "7ed340227dd2884f7ac5f794a6aa723ab4e2f5fb751af06f2052bde4c4b4719c",
+      "lines": 198,
+      "declarations": [
+        {
+          "line": 1,
+          "text": "CREATE TABLE IF NOT EXISTS schema_migrations ("
+        },
+        {
+          "line": 6,
+          "text": "CREATE TABLE IF NOT EXISTS companies ("
+        },
+        {
+          "line": 12,
+          "text": "CREATE TABLE IF NOT EXISTS security_identifiers ("
+        },
+        {
+          "line": 23,
+          "text": "CREATE UNIQUE INDEX IF NOT EXISTS uq_current_security_identifier"
+        },
+        {
+          "line": 27,
+          "text": "CREATE TABLE IF NOT EXISTS scrape_runs ("
+        },
+        {
+          "line": 36,
+          "text": "CREATE TABLE IF NOT EXISTS response_blobs ("
+        },
+        {
+          "line": 47,
+          "text": "CREATE TABLE IF NOT EXISTS fetch_observations ("
+        },
+        {
+          "line": 65,
+          "text": "CREATE TABLE IF NOT EXISTS parse_artifacts ("
+        },
+        {
+          "line": 77,
+          "text": "CREATE TABLE IF NOT EXISTS source_sections ("
+        },
+        {
+          "line": 88,
+          "text": "CREATE TABLE IF NOT EXISTS source_fields ("
+        },
+        {
+          "line": 100,
+          "text": "CREATE TABLE IF NOT EXISTS source_table_cells ("
+        },
+        {
+          "line": 117,
+          "text": "CREATE TABLE IF NOT EXISTS quote_observations ("
+        },
+        {
+          "line": 128,
+          "text": "CREATE TABLE IF NOT EXISTS company_metric_observations ("
+        },
+        {
+          "line": 144,
+          "text": "CREATE TABLE IF NOT EXISTS financial_observations ("
+        },
+        {
+          "line": 169,
+          "text": "CREATE TABLE IF NOT EXISTS validation_results ("
+        },
+        {
+          "line": 182,
+          "text": "CREATE TABLE IF NOT EXISTS accepted_page_versions ("
+        },
+        {
+          "line": 194,
+          "text": "CREATE VIEW IF NOT EXISTS latest_accepted_pages AS"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/002_source_identifiers.sql",
+      "sha256": "da12af3d3c5cf14f9c3c0013836dbeb21fb0b24de558b6615bca59f76da9d7a8",
+      "lines": 13,
+      "declarations": [
+        {
+          "line": 1,
+          "text": "CREATE TABLE IF NOT EXISTS source_identifiers ("
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/003_availability_acceptance_periods.sql",
+      "sha256": "3332d7f119fcac209d257000bb10262334c36f00e51f10ef5fcdb3835f9f819c",
+      "lines": 174,
+      "declarations": [
+        {
+          "line": 3,
+          "text": "ALTER TABLE financial_observations"
+        },
+        {
+          "line": 6,
+          "text": "CREATE TABLE company_metric_observations_new ("
+        },
+        {
+          "line": 41,
+          "text": "DROP TABLE company_metric_observations;"
+        },
+        {
+          "line": 42,
+          "text": "ALTER TABLE company_metric_observations_new RENAME TO company_metric_observations;"
+        },
+        {
+          "line": 44,
+          "text": "CREATE TABLE quote_observations_new ("
+        },
+        {
+          "line": 75,
+          "text": "DROP TABLE quote_observations;"
+        },
+        {
+          "line": 76,
+          "text": "ALTER TABLE quote_observations_new RENAME TO quote_observations;"
+        },
+        {
+          "line": 78,
+          "text": "CREATE TABLE fetch_observations_new ("
+        },
+        {
+          "line": 113,
+          "text": "DROP TABLE fetch_observations;"
+        },
+        {
+          "line": 114,
+          "text": "ALTER TABLE fetch_observations_new RENAME TO fetch_observations;"
+        },
+        {
+          "line": 116,
+          "text": "CREATE TABLE acceptance_events ("
+        },
+        {
+          "line": 141,
+          "text": "DROP VIEW latest_accepted_pages;"
+        },
+        {
+          "line": 143,
+          "text": "CREATE TABLE accepted_page_versions_new ("
+        },
+        {
+          "line": 165,
+          "text": "DROP TABLE accepted_page_versions;"
+        },
+        {
+          "line": 166,
+          "text": "ALTER TABLE accepted_page_versions_new RENAME TO accepted_page_versions;"
+        },
+        {
+          "line": 168,
+          "text": "CREATE VIEW latest_accepted_pages AS"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/004_growth_observations.sql",
+      "sha256": "2a02877242b56f91b3a06898c255b96502ecef549910fe9d603caf39128bccbf",
+      "lines": 20,
+      "declarations": [
+        {
+          "line": 1,
+          "text": "CREATE TABLE IF NOT EXISTS growth_observations ("
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/005_financial_expandable_marker.sql",
+      "sha256": "76412d2e3da3e2683e5876623cdb1d8ef9d6a19ceee24e16eae9c16e6ca13960",
+      "lines": 6,
+      "declarations": [
+        {
+          "line": 5,
+          "text": "ALTER TABLE financial_observations ADD COLUMN is_expandable INTEGER NOT NULL DEFAULT 0;"
+        },
+        {
+          "line": 6,
+          "text": "ALTER TABLE financial_observations ADD COLUMN schedule_key TEXT;"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/006_shareholding_observations.sql",
+      "sha256": "46f92b19718613bed3c5cca1b71b1931db101dd8a3f9fb6c38b2d31bd9dfe92e",
+      "lines": 31,
+      "declarations": [
+        {
+          "line": 10,
+          "text": "CREATE TABLE IF NOT EXISTS shareholding_observations ("
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/007_document_links.sql",
+      "sha256": "8f875b531d4bfdf73766204d84eff9ff971129393985b4e31aa8eeaadfb4a933",
+      "lines": 22,
+      "declarations": [
+        {
+          "line": 4,
+          "text": "CREATE TABLE IF NOT EXISTS document_links ("
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/008_company_profile_text.sql",
+      "sha256": "ff0a908e8a9f47897eb91237714796a083dd148e06d53a6a10bdb6b71b733c3e",
+      "lines": 33,
+      "declarations": [
+        {
+          "line": 2,
+          "text": "CREATE TABLE IF NOT EXISTS company_profile_links ("
+        },
+        {
+          "line": 18,
+          "text": "CREATE TABLE IF NOT EXISTS company_text_observations ("
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/009_peer_table.sql",
+      "sha256": "59022b9c064b7cbe77341a4267fa7fa805f24c231297234f1295c309da63e8e2",
+      "lines": 46,
+      "declarations": [
+        {
+          "line": 3,
+          "text": "ALTER TABLE fetch_observations"
+        },
+        {
+          "line": 6,
+          "text": "CREATE TABLE supplemental_parse_links ("
+        },
+        {
+          "line": 16,
+          "text": "CREATE TABLE peer_observations ("
+        },
+        {
+          "line": 43,
+          "text": "CREATE INDEX idx_peer_observations_parse_row"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/010_trendlyne_monthly_page.sql",
+      "sha256": "e290426cbaaf1d99cd9f926e09478efa3c567bb33c0b36463c28486397c57a44",
+      "lines": 25,
+      "declarations": [
+        {
+          "line": 1,
+          "text": "CREATE TABLE IF NOT EXISTS trendlyne_monthly_pages ("
+        },
+        {
+          "line": 23,
+          "text": "CREATE INDEX IF NOT EXISTS ix_trendlyne_monthly_pages_identity_period"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/011_trendlyne_fund_source_rows.sql",
+      "sha256": "23d1b2c82e5301259671830acc826a13292ed6b5d6a7e4d07a4b4698f57dd462",
+      "lines": 13,
+      "declarations": [
+        {
+          "line": 1,
+          "text": "CREATE TABLE IF NOT EXISTS trendlyne_fund_source_rows ("
+        },
+        {
+          "line": 12,
+          "text": "CREATE INDEX IF NOT EXISTS ix_trendlyne_fund_source_rows_scheme"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/012_trendlyne_fund_observations.sql",
+      "sha256": "87217b09a628d9539c86fcb3ed2359d89caf835887cecb88d64c251406ece956",
+      "lines": 43,
+      "declarations": [
+        {
+          "line": 4,
+          "text": "CREATE TABLE IF NOT EXISTS trendlyne_fund_observations ("
+        },
+        {
+          "line": 42,
+          "text": "CREATE INDEX IF NOT EXISTS ix_trendlyne_fund_observations_scheme_period"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/013_trendlyne_mf_page_summaries.sql",
+      "sha256": "945c0c61906069a5fc75b02df4cb9c8f684fef49e48dba52b437a712aae41a27",
+      "lines": 40,
+      "declarations": [
+        {
+          "line": 4,
+          "text": "CREATE TABLE IF NOT EXISTS trendlyne_mf_page_summaries ("
+        },
+        {
+          "line": 39,
+          "text": "CREATE INDEX IF NOT EXISTS ix_trendlyne_mf_page_summaries_period"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/014_trendlyne_month_history.sql",
+      "sha256": "70e3dd24a464f89527459b3f4e00fe7e4b11080e9951a0cd1ab5ee287c07c12e",
+      "lines": 24,
+      "declarations": [
+        {
+          "line": 3,
+          "text": "CREATE TABLE IF NOT EXISTS trendlyne_month_links ("
+        },
+        {
+          "line": 23,
+          "text": "CREATE INDEX IF NOT EXISTS ix_trendlyne_month_links_identity_period"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/015_trendlyne_pilot_backfill.sql",
+      "sha256": "f3cd59896eb05d62864dac105dc7f9bab684920d0702ac64e9d11ba7e12370cc",
+      "lines": 45,
+      "declarations": [
+        {
+          "line": 3,
+          "text": "CREATE TABLE IF NOT EXISTS trendlyne_backfill_plans ("
+        },
+        {
+          "line": 20,
+          "text": "CREATE TABLE IF NOT EXISTS trendlyne_backfill_items ("
+        },
+        {
+          "line": 44,
+          "text": "CREATE INDEX IF NOT EXISTS ix_trendlyne_backfill_items_status"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/016_mf_workbook_import_foundation.sql",
+      "sha256": "0db42dc7ee4ecfa322a8cb80b3547d63dd568096d9eb76974ecce80dc46ef941",
+      "lines": 128,
+      "declarations": [
+        {
+          "line": 3,
+          "text": "CREATE TABLE IF NOT EXISTS mf_workbook_blobs ("
+        },
+        {
+          "line": 17,
+          "text": "CREATE TABLE IF NOT EXISTS mf_import_files ("
+        },
+        {
+          "line": 38,
+          "text": "CREATE TABLE IF NOT EXISTS mf_import_observations ("
+        },
+        {
+          "line": 53,
+          "text": "CREATE TABLE IF NOT EXISTS mf_workbook_sheets ("
+        },
+        {
+          "line": 74,
+          "text": "CREATE TABLE IF NOT EXISTS mf_workbook_cells ("
+        },
+        {
+          "line": 90,
+          "text": "CREATE TABLE IF NOT EXISTS mf_import_state_events ("
+        },
+        {
+          "line": 105,
+          "text": "CREATE TABLE IF NOT EXISTS mf_schemes ("
+        },
+        {
+          "line": 113,
+          "text": "CREATE TABLE IF NOT EXISTS mf_accepted_versions ("
+        },
+        {
+          "line": 124,
+          "text": "CREATE INDEX IF NOT EXISTS ix_mf_import_files_state"
+        },
+        {
+          "line": 127,
+          "text": "CREATE INDEX IF NOT EXISTS ix_mf_import_observations_hash"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/017_mf_ppfas_source_cells.sql",
+      "sha256": "a179d7e34775e487e30bec9ef4684d2776a927fc7220906f69592df2a70d4f5d",
+      "lines": 63,
+      "declarations": [
+        {
+          "line": 2,
+          "text": "ALTER TABLE mf_import_files ADD COLUMN detected_publisher TEXT;"
+        },
+        {
+          "line": 3,
+          "text": "ALTER TABLE mf_import_files ADD COLUMN workbook_manifest_version TEXT;"
+        },
+        {
+          "line": 5,
+          "text": "ALTER TABLE mf_workbook_sheets ADD COLUMN sheet_classification TEXT CHECK ("
+        },
+        {
+          "line": 8,
+          "text": "ALTER TABLE mf_workbook_sheets ADD COLUMN manifest_version TEXT;"
+        },
+        {
+          "line": 10,
+          "text": "ALTER TABLE mf_workbook_cells ADD COLUMN cell_position INTEGER;"
+        },
+        {
+          "line": 11,
+          "text": "ALTER TABLE mf_workbook_cells ADD COLUMN table_position INTEGER;"
+        },
+        {
+          "line": 13,
+          "text": "CREATE UNIQUE INDEX IF NOT EXISTS ux_mf_workbook_cells_source_order"
+        },
+        {
+          "line": 17,
+          "text": "CREATE TABLE IF NOT EXISTS mf_workbook_tables ("
+        },
+        {
+          "line": 38,
+          "text": "CREATE TABLE IF NOT EXISTS mf_workbook_merged_ranges ("
+        },
+        {
+          "line": 51,
+          "text": "CREATE TABLE IF NOT EXISTS mf_workbook_validation_results ("
+        },
+        {
+          "line": 62,
+          "text": "CREATE INDEX IF NOT EXISTS ix_mf_workbook_tables_kind"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/018_mf_holdings_normalization.sql",
+      "sha256": "08a7503f2916782824abf0c7312c175d4720d10d42358da74ade838795d47518",
+      "lines": 145,
+      "declarations": [
+        {
+          "line": 2,
+          "text": "CREATE TABLE IF NOT EXISTS mf_securities ("
+        },
+        {
+          "line": 8,
+          "text": "CREATE TABLE IF NOT EXISTS mf_security_identifiers ("
+        },
+        {
+          "line": 21,
+          "text": "CREATE TABLE IF NOT EXISTS mf_holdings ("
+        },
+        {
+          "line": 81,
+          "text": "CREATE TABLE IF NOT EXISTS mf_security_name_evidence ("
+        },
+        {
+          "line": 95,
+          "text": "CREATE TABLE IF NOT EXISTS mf_security_match_decisions ("
+        },
+        {
+          "line": 116,
+          "text": "CREATE UNIQUE INDEX IF NOT EXISTS ux_mf_security_match_current"
+        },
+        {
+          "line": 120,
+          "text": "CREATE INDEX IF NOT EXISTS ix_mf_holdings_import_scheme"
+        },
+        {
+          "line": 123,
+          "text": "CREATE INDEX IF NOT EXISTS ix_mf_holdings_security_month"
+        },
+        {
+          "line": 127,
+          "text": "CREATE INDEX IF NOT EXISTS ix_mf_name_evidence_normalized"
+        },
+        {
+          "line": 130,
+          "text": "CREATE VIEW IF NOT EXISTS mf_security_resolved_holdings AS"
+        },
+        {
+          "line": 138,
+          "text": "CREATE VIEW IF NOT EXISTS mf_stock_feature_eligible_holdings AS"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/019_mf_scheme_registry_acceptance.sql",
+      "sha256": "5d5dd49585144df34480ccaf00b1d543ae08762e7b03f9881b42ea86cc8e1f3d",
+      "lines": 129,
+      "declarations": [
+        {
+          "line": 2,
+          "text": "ALTER TABLE mf_holdings ADD COLUMN scheme_id INTEGER REFERENCES mf_schemes(scheme_id);"
+        },
+        {
+          "line": 3,
+          "text": "ALTER TABLE mf_holdings ADD COLUMN scheme_category TEXT;"
+        },
+        {
+          "line": 5,
+          "text": "CREATE INDEX IF NOT EXISTS ix_mf_holdings_scheme_identity"
+        },
+        {
+          "line": 8,
+          "text": "CREATE TABLE IF NOT EXISTS mf_scheme_name_versions ("
+        },
+        {
+          "line": 23,
+          "text": "CREATE TABLE IF NOT EXISTS mf_scheme_classifications ("
+        },
+        {
+          "line": 47,
+          "text": "CREATE INDEX IF NOT EXISTS ix_mf_scheme_classifications_period"
+        },
+        {
+          "line": 50,
+          "text": "CREATE TABLE IF NOT EXISTS mf_workbook_acceptance_events ("
+        },
+        {
+          "line": 64,
+          "text": "CREATE TABLE IF NOT EXISTS mf_accepted_version_events ("
+        },
+        {
+          "line": 79,
+          "text": "CREATE INDEX IF NOT EXISTS ix_mf_accepted_version_events_history"
+        },
+        {
+          "line": 85,
+          "text": "CREATE VIEW IF NOT EXISTS mf_accepted_holdings AS"
+        },
+        {
+          "line": 108,
+          "text": "CREATE VIEW IF NOT EXISTS mf_all_scheme_accepted_holdings AS"
+        },
+        {
+          "line": 111,
+          "text": "CREATE VIEW IF NOT EXISTS mf_active_equity_accepted_holdings AS"
+        },
+        {
+          "line": 116,
+          "text": "DROP VIEW IF EXISTS mf_stock_feature_eligible_holdings;"
+        },
+        {
+          "line": 117,
+          "text": "CREATE VIEW mf_stock_feature_eligible_holdings AS"
+        },
+        {
+          "line": 124,
+          "text": "CREATE VIEW IF NOT EXISTS mf_active_equity_stock_feature_eligible_holdings AS"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/020_mf_consecutive_month_changes.sql",
+      "sha256": "1d736c5e89bb50e4da8c81fa36a8d49f4d856040ee0595998a1c16e13998be03",
+      "lines": 132,
+      "declarations": [
+        {
+          "line": 2,
+          "text": "CREATE TABLE IF NOT EXISTS mf_scheme_month_change_sets ("
+        },
+        {
+          "line": 25,
+          "text": "CREATE INDEX IF NOT EXISTS ix_mf_change_sets_pair"
+        },
+        {
+          "line": 30,
+          "text": "CREATE TABLE IF NOT EXISTS mf_scheme_month_change_validations ("
+        },
+        {
+          "line": 42,
+          "text": "CREATE TABLE IF NOT EXISTS mf_scheme_security_month_changes ("
+        },
+        {
+          "line": 95,
+          "text": "CREATE INDEX IF NOT EXISTS ix_mf_scheme_security_changes_month"
+        },
+        {
+          "line": 102,
+          "text": "CREATE VIEW IF NOT EXISTS mf_current_scheme_month_change_sets AS"
+        },
+        {
+          "line": 128,
+          "text": "CREATE VIEW IF NOT EXISTS mf_current_scheme_security_month_changes AS"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/021_mf_stock_monthly_features.sql",
+      "sha256": "e1b096d273f43a505d27640ba33d840120309f942495a2ee9752e4d748322b12",
+      "lines": 164,
+      "declarations": [
+        {
+          "line": 4,
+          "text": "CREATE TABLE IF NOT EXISTS mf_stock_month_feature_sets ("
+        },
+        {
+          "line": 20,
+          "text": "CREATE INDEX IF NOT EXISTS ix_mf_stock_feature_sets_pair"
+        },
+        {
+          "line": 25,
+          "text": "CREATE TABLE IF NOT EXISTS mf_stock_month_feature_inputs ("
+        },
+        {
+          "line": 43,
+          "text": "CREATE TABLE IF NOT EXISTS mf_stock_month_feature_validations ("
+        },
+        {
+          "line": 55,
+          "text": "CREATE TABLE IF NOT EXISTS mf_stock_monthly_features ("
+        },
+        {
+          "line": 89,
+          "text": "CREATE INDEX IF NOT EXISTS ix_mf_stock_monthly_features_lookup"
+        },
+        {
+          "line": 94,
+          "text": "CREATE TABLE IF NOT EXISTS mf_stock_month_feature_lineage ("
+        },
+        {
+          "line": 109,
+          "text": "CREATE VIEW IF NOT EXISTS mf_current_stock_month_feature_sets AS"
+        },
+        {
+          "line": 152,
+          "text": "CREATE VIEW IF NOT EXISTS mf_current_stock_monthly_features AS"
+        },
+        {
+          "line": 158,
+          "text": "CREATE VIEW IF NOT EXISTS mf_all_scheme_stock_monthly_features AS"
+        },
+        {
+          "line": 162,
+          "text": "CREATE VIEW IF NOT EXISTS mf_active_equity_stock_monthly_features AS"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/022_mfdata_crosscheck.sql",
+      "sha256": "8f7390152a1ceee8e193d28e2f0bf68bb79c40de2eabc219a7e6c2befa2b8121",
+      "lines": 257,
+      "declarations": [
+        {
+          "line": 4,
+          "text": "CREATE TABLE IF NOT EXISTS mfdata_snapshots ("
+        },
+        {
+          "line": 29,
+          "text": "CREATE TABLE IF NOT EXISTS mfdata_snapshot_observations ("
+        },
+        {
+          "line": 40,
+          "text": "CREATE TABLE IF NOT EXISTS mfdata_holdings ("
+        },
+        {
+          "line": 98,
+          "text": "CREATE INDEX IF NOT EXISTS ix_mfdata_holdings_lookup"
+        },
+        {
+          "line": 101,
+          "text": "CREATE TABLE IF NOT EXISTS mfdata_accepted_versions ("
+        },
+        {
+          "line": 112,
+          "text": "CREATE TABLE IF NOT EXISTS mfdata_accepted_version_events ("
+        },
+        {
+          "line": 126,
+          "text": "CREATE TABLE IF NOT EXISTS mfdata_crosscheck_runs ("
+        },
+        {
+          "line": 156,
+          "text": "CREATE TABLE IF NOT EXISTS mfdata_crosscheck_results ("
+        },
+        {
+          "line": 191,
+          "text": "CREATE VIEW IF NOT EXISTS mf_current_mfdata_holdings AS"
+        },
+        {
+          "line": 203,
+          "text": "CREATE VIEW IF NOT EXISTS mf_holding_source_evidence AS"
+        },
+        {
+          "line": 254,
+          "text": "CREATE VIEW IF NOT EXISTS mf_preferred_holdings AS"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/023_document_artifact_discovery.sql",
+      "sha256": "6cd2c94da8f6000127214c52dad15d2d23bda6c11b07669d9a63093c76194b0b",
+      "lines": 145,
+      "declarations": [
+        {
+          "line": 6,
+          "text": "CREATE TABLE IF NOT EXISTS artifact_discovery_pages ("
+        },
+        {
+          "line": 26,
+          "text": "CREATE TABLE IF NOT EXISTS document_artifacts ("
+        },
+        {
+          "line": 58,
+          "text": "CREATE TABLE IF NOT EXISTS artifact_sources ("
+        },
+        {
+          "line": 95,
+          "text": "CREATE TABLE IF NOT EXISTS artifact_contents ("
+        },
+        {
+          "line": 113,
+          "text": "CREATE INDEX IF NOT EXISTS idx_artifact_sources_document_url"
+        },
+        {
+          "line": 116,
+          "text": "CREATE INDEX IF NOT EXISTS idx_document_artifacts_company_type"
+        },
+        {
+          "line": 119,
+          "text": "CREATE TRIGGER IF NOT EXISTS document_artifact_preferred_content_insert_guard"
+        },
+        {
+          "line": 129,
+          "text": "CREATE TRIGGER IF NOT EXISTS document_artifact_preferred_content_update_guard"
+        },
+        {
+          "line": 139,
+          "text": "CREATE VIEW IF NOT EXISTS preferred_artifact_contents AS"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/024_artifact_downloads.sql",
+      "sha256": "e9d88c01eeafb9a977f45156a64d88bde32f09c50c8a695db8fe908d88ac3bbf",
+      "lines": 66,
+      "declarations": [
+        {
+          "line": 3,
+          "text": "CREATE TABLE IF NOT EXISTS artifact_download_attempts ("
+        },
+        {
+          "line": 43,
+          "text": "CREATE TABLE IF NOT EXISTS artifact_download_attempt_sources ("
+        },
+        {
+          "line": 50,
+          "text": "CREATE INDEX IF NOT EXISTS idx_artifact_download_attempts_artifact"
+        },
+        {
+          "line": 53,
+          "text": "CREATE INDEX IF NOT EXISTS idx_artifact_download_attempts_hash"
+        },
+        {
+          "line": 56,
+          "text": "CREATE INDEX IF NOT EXISTS idx_artifact_download_sources_source"
+        },
+        {
+          "line": 59,
+          "text": "CREATE VIEW IF NOT EXISTS artifact_download_provenance AS"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/025_document_extraction.sql",
+      "sha256": "3154aa0b10e66cb18cdb558e31bfcada95fdf6b347a5ebc10fbca1f0891882ac",
+      "lines": 92,
+      "declarations": [
+        {
+          "line": 3,
+          "text": "CREATE TABLE IF NOT EXISTS document_extractions ("
+        },
+        {
+          "line": 28,
+          "text": "CREATE TABLE IF NOT EXISTS document_pages ("
+        },
+        {
+          "line": 59,
+          "text": "CREATE TABLE IF NOT EXISTS document_page_elements ("
+        },
+        {
+          "line": 77,
+          "text": "CREATE TABLE IF NOT EXISTS document_extraction_validations ("
+        },
+        {
+          "line": 88,
+          "text": "CREATE INDEX IF NOT EXISTS idx_document_extractions_content"
+        },
+        {
+          "line": 91,
+          "text": "CREATE INDEX IF NOT EXISTS idx_document_page_elements_kind"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/026_credit_rating_normalization.sql",
+      "sha256": "aae3e70a2c2b918a1268b62847c14bebed89446d3371bb400c3e5c5f9fcd6f2b",
+      "lines": 245,
+      "declarations": [
+        {
+          "line": 3,
+          "text": "CREATE TABLE IF NOT EXISTS credit_rating_normalizations ("
+        },
+        {
+          "line": 34,
+          "text": "CREATE TABLE IF NOT EXISTS credit_rating_source_tables ("
+        },
+        {
+          "line": 53,
+          "text": "CREATE TABLE IF NOT EXISTS credit_rating_passages ("
+        },
+        {
+          "line": 75,
+          "text": "CREATE TABLE IF NOT EXISTS credit_rating_actions ("
+        },
+        {
+          "line": 110,
+          "text": "CREATE TABLE IF NOT EXISTS credit_rating_field_evidence ("
+        },
+        {
+          "line": 141,
+          "text": "CREATE TABLE IF NOT EXISTS credit_rating_normalization_validations ("
+        },
+        {
+          "line": 155,
+          "text": "CREATE TABLE IF NOT EXISTS preferred_credit_rating_normalizations ("
+        },
+        {
+          "line": 162,
+          "text": "CREATE INDEX IF NOT EXISTS idx_credit_rating_normalizations_artifact"
+        },
+        {
+          "line": 165,
+          "text": "CREATE INDEX IF NOT EXISTS idx_credit_rating_actions_date"
+        },
+        {
+          "line": 168,
+          "text": "CREATE INDEX IF NOT EXISTS idx_credit_rating_evidence_action"
+        },
+        {
+          "line": 171,
+          "text": "CREATE TRIGGER IF NOT EXISTS credit_rating_normalization_identity_insert_guard"
+        },
+        {
+          "line": 189,
+          "text": "CREATE TRIGGER IF NOT EXISTS credit_rating_source_table_identity_guard"
+        },
+        {
+          "line": 199,
+          "text": "CREATE TRIGGER IF NOT EXISTS credit_rating_evidence_identity_guard"
+        },
+        {
+          "line": 214,
+          "text": "CREATE TRIGGER IF NOT EXISTS preferred_credit_rating_insert_guard"
+        },
+        {
+          "line": 225,
+          "text": "CREATE TRIGGER IF NOT EXISTS preferred_credit_rating_update_guard"
+        },
+        {
+          "line": 236,
+          "text": "CREATE VIEW IF NOT EXISTS current_credit_rating_actions AS"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/027_official_transcripts.sql",
+      "sha256": "2b650e63285f0f59a151a0ccb39e5915eaf06cb79fd32701cae642e5c12b2055",
+      "lines": 269,
+      "declarations": [
+        {
+          "line": 3,
+          "text": "CREATE TABLE IF NOT EXISTS transcripts ("
+        },
+        {
+          "line": 42,
+          "text": "CREATE TABLE IF NOT EXISTS transcript_section_boundaries ("
+        },
+        {
+          "line": 68,
+          "text": "CREATE TABLE IF NOT EXISTS transcript_segments ("
+        },
+        {
+          "line": 107,
+          "text": "CREATE TABLE IF NOT EXISTS transcript_validations ("
+        },
+        {
+          "line": 120,
+          "text": "CREATE TABLE IF NOT EXISTS preferred_transcripts ("
+        },
+        {
+          "line": 126,
+          "text": "CREATE INDEX IF NOT EXISTS idx_transcripts_artifact_origin"
+        },
+        {
+          "line": 129,
+          "text": "CREATE INDEX IF NOT EXISTS idx_transcript_segments_speaker"
+        },
+        {
+          "line": 132,
+          "text": "CREATE TRIGGER IF NOT EXISTS transcript_identity_insert_guard"
+        },
+        {
+          "line": 162,
+          "text": "CREATE TRIGGER IF NOT EXISTS transcript_segment_identity_guard"
+        },
+        {
+          "line": 178,
+          "text": "CREATE TRIGGER IF NOT EXISTS preferred_transcript_insert_guard"
+        },
+        {
+          "line": 199,
+          "text": "CREATE TRIGGER IF NOT EXISTS preferred_transcript_update_guard"
+        },
+        {
+          "line": 220,
+          "text": "CREATE TRIGGER IF NOT EXISTS artifact_transcript_content_preference_guard"
+        },
+        {
+          "line": 237,
+          "text": "CREATE TRIGGER IF NOT EXISTS artifact_transcript_status_preference_guard"
+        },
+        {
+          "line": 249,
+          "text": "CREATE VIEW IF NOT EXISTS current_transcripts AS"
+        },
+        {
+          "line": 254,
+          "text": "CREATE VIEW IF NOT EXISTS current_transcript_segments AS"
+        },
+        {
+          "line": 259,
+          "text": "CREATE VIEW IF NOT EXISTS official_transcript_fallback_status AS"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/028_recording_audio_normalization.sql",
+      "sha256": "4f15c959a80bb4eec4614982825695645c1e20c45a183bfe93239e984e5c6630",
+      "lines": 150,
+      "declarations": [
+        {
+          "line": 3,
+          "text": "CREATE TABLE IF NOT EXISTS recording_normalizations ("
+        },
+        {
+          "line": 46,
+          "text": "CREATE TABLE IF NOT EXISTS artifact_content_relationships ("
+        },
+        {
+          "line": 60,
+          "text": "CREATE TABLE IF NOT EXISTS recording_normalization_validations ("
+        },
+        {
+          "line": 72,
+          "text": "CREATE INDEX IF NOT EXISTS idx_recording_normalizations_artifact"
+        },
+        {
+          "line": 75,
+          "text": "CREATE INDEX IF NOT EXISTS idx_recording_normalizations_source"
+        },
+        {
+          "line": 78,
+          "text": "CREATE TRIGGER IF NOT EXISTS recording_normalization_identity_insert_guard"
+        },
+        {
+          "line": 112,
+          "text": "CREATE TRIGGER IF NOT EXISTS artifact_content_relationship_identity_insert_guard"
+        },
+        {
+          "line": 135,
+          "text": "CREATE VIEW IF NOT EXISTS accepted_recording_audio AS"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/029_machine_transcription.sql",
+      "sha256": "44d735c389087978fd88e8b1aa3a8cd6a3aa91a22f6d2549f98fa0f976fb55af",
+      "lines": 161,
+      "declarations": [
+        {
+          "line": 3,
+          "text": "ALTER TABLE transcript_segments"
+        },
+        {
+          "line": 6,
+          "text": "CREATE TABLE IF NOT EXISTS machine_transcription_runs ("
+        },
+        {
+          "line": 51,
+          "text": "CREATE INDEX IF NOT EXISTS idx_machine_transcription_target"
+        },
+        {
+          "line": 54,
+          "text": "CREATE UNIQUE INDEX IF NOT EXISTS idx_machine_transcript_source_identity"
+        },
+        {
+          "line": 58,
+          "text": "CREATE TRIGGER IF NOT EXISTS machine_transcription_run_insert_guard"
+        },
+        {
+          "line": 158,
+          "text": "CREATE VIEW IF NOT EXISTS current_machine_transcription_provenance AS"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/030_artifact_reconciliation.sql",
+      "sha256": "0f8f212387eb6f7361acd497ca9a43eea97d05155251522229c100d438e7e719",
+      "lines": 136,
+      "declarations": [
+        {
+          "line": 3,
+          "text": "CREATE TABLE IF NOT EXISTS artifact_events ("
+        },
+        {
+          "line": 22,
+          "text": "CREATE TABLE IF NOT EXISTS artifact_expectations ("
+        },
+        {
+          "line": 59,
+          "text": "CREATE TABLE IF NOT EXISTS artifact_check_events ("
+        },
+        {
+          "line": 80,
+          "text": "CREATE INDEX IF NOT EXISTS idx_artifact_expectations_due"
+        },
+        {
+          "line": 83,
+          "text": "CREATE INDEX IF NOT EXISTS idx_artifact_expectations_coverage"
+        },
+        {
+          "line": 86,
+          "text": "CREATE INDEX IF NOT EXISTS idx_artifact_check_events_expectation"
+        },
+        {
+          "line": 89,
+          "text": "CREATE TRIGGER IF NOT EXISTS artifact_expectation_event_company_insert_guard"
+        },
+        {
+          "line": 98,
+          "text": "CREATE TRIGGER IF NOT EXISTS artifact_expectation_event_company_update_guard"
+        },
+        {
+          "line": 107,
+          "text": "CREATE TRIGGER IF NOT EXISTS artifact_check_discovery_identity_guard"
+        },
+        {
+          "line": 130,
+          "text": "CREATE VIEW IF NOT EXISTS artifact_retry_coverage AS"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/031_screener_result_discovery.sql",
+      "sha256": "026727696bebd9bc48dde113b82a3980ce89e17196f9911164f6be62063bd47f",
+      "lines": 106,
+      "declarations": [
+        {
+          "line": 3,
+          "text": "CREATE TABLE IF NOT EXISTS screener_screen_runs ("
+        },
+        {
+          "line": 22,
+          "text": "CREATE TABLE IF NOT EXISTS screener_screen_source_cells ("
+        },
+        {
+          "line": 35,
+          "text": "CREATE TABLE IF NOT EXISTS screener_result_candidates ("
+        },
+        {
+          "line": 50,
+          "text": "CREATE TABLE IF NOT EXISTS screener_company_collection_state ("
+        },
+        {
+          "line": 61,
+          "text": "CREATE TABLE IF NOT EXISTS screener_company_queue ("
+        },
+        {
+          "line": 89,
+          "text": "CREATE TABLE IF NOT EXISTS screener_company_queue_events ("
+        },
+        {
+          "line": 99,
+          "text": "CREATE INDEX IF NOT EXISTS idx_screener_queue_due"
+        },
+        {
+          "line": 102,
+          "text": "CREATE INDEX IF NOT EXISTS idx_screener_candidates_period"
+        },
+        {
+          "line": 105,
+          "text": "CREATE INDEX IF NOT EXISTS idx_screener_screen_runs_role"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/032_exchange_universe.sql",
+      "sha256": "438fd2bc424ee83f5fa0baf7a4b405667215ebeb0cc6e209f8f19b2e745f11cd",
+      "lines": 289,
+      "declarations": [
+        {
+          "line": 9,
+          "text": "CREATE TABLE IF NOT EXISTS exchange_source_snapshots ("
+        },
+        {
+          "line": 36,
+          "text": "CREATE TABLE IF NOT EXISTS exchange_source_rejected_rows ("
+        },
+        {
+          "line": 45,
+          "text": "CREATE TABLE IF NOT EXISTS exchange_securities ("
+        },
+        {
+          "line": 74,
+          "text": "CREATE TABLE IF NOT EXISTS exchange_security_versions ("
+        },
+        {
+          "line": 94,
+          "text": "CREATE TABLE IF NOT EXISTS exchange_security_events ("
+        },
+        {
+          "line": 110,
+          "text": "CREATE TABLE IF NOT EXISTS exchange_company_registry ("
+        },
+        {
+          "line": 121,
+          "text": "CREATE TABLE IF NOT EXISTS exchange_company_links ("
+        },
+        {
+          "line": 133,
+          "text": "CREATE UNIQUE INDEX IF NOT EXISTS uq_exchange_company_link_current"
+        },
+        {
+          "line": 136,
+          "text": "CREATE TABLE IF NOT EXISTS exchange_symbol_changes ("
+        },
+        {
+          "line": 151,
+          "text": "CREATE TABLE IF NOT EXISTS exchange_result_filings ("
+        },
+        {
+          "line": 173,
+          "text": "CREATE TABLE IF NOT EXISTS exchange_result_watermarks ("
+        },
+        {
+          "line": 182,
+          "text": "CREATE TABLE IF NOT EXISTS exchange_company_result_state ("
+        },
+        {
+          "line": 196,
+          "text": "CREATE TABLE IF NOT EXISTS exchange_screener_enqueues ("
+        },
+        {
+          "line": 213,
+          "text": "CREATE INDEX IF NOT EXISTS idx_exchange_securities_isin"
+        },
+        {
+          "line": 216,
+          "text": "CREATE INDEX IF NOT EXISTS idx_exchange_security_events_type"
+        },
+        {
+          "line": 219,
+          "text": "CREATE INDEX IF NOT EXISTS idx_exchange_result_filings_broadcast"
+        },
+        {
+          "line": 222,
+          "text": "CREATE INDEX IF NOT EXISTS idx_exchange_result_filings_period"
+        },
+        {
+          "line": 231,
+          "text": "CREATE TABLE IF NOT EXISTS screener_company_queue_new ("
+        },
+        {
+          "line": 279,
+          "text": "DROP TABLE screener_company_queue;"
+        },
+        {
+          "line": 281,
+          "text": "ALTER TABLE screener_company_queue_new RENAME TO screener_company_queue;"
+        },
+        {
+          "line": 283,
+          "text": "CREATE INDEX IF NOT EXISTS idx_screener_queue_due"
+        },
+        {
+          "line": 286,
+          "text": "CREATE INDEX IF NOT EXISTS idx_screener_queue_origin"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/033_exchange_automation.sql",
+      "sha256": "70f745c3a5107160bec5ad27dd3ddfe12edcca2055246578cf317dd1f315e2a5",
+      "lines": 206,
+      "declarations": [
+        {
+          "line": 24,
+          "text": "CREATE TABLE IF NOT EXISTS exchange_source_snapshots_new ("
+        },
+        {
+          "line": 64,
+          "text": "DROP TABLE exchange_source_snapshots;"
+        },
+        {
+          "line": 66,
+          "text": "ALTER TABLE exchange_source_snapshots_new RENAME TO exchange_source_snapshots;"
+        },
+        {
+          "line": 70,
+          "text": "CREATE TABLE IF NOT EXISTS exchange_security_events_new ("
+        },
+        {
+          "line": 94,
+          "text": "DROP TABLE exchange_security_events;"
+        },
+        {
+          "line": 96,
+          "text": "ALTER TABLE exchange_security_events_new RENAME TO exchange_security_events;"
+        },
+        {
+          "line": 98,
+          "text": "CREATE INDEX IF NOT EXISTS idx_exchange_security_events_type"
+        },
+        {
+          "line": 105,
+          "text": "CREATE TABLE IF NOT EXISTS exchange_snapshot_validations ("
+        },
+        {
+          "line": 118,
+          "text": "ALTER TABLE exchange_securities ADD COLUMN absence_streak INTEGER NOT NULL DEFAULT 0;"
+        },
+        {
+          "line": 119,
+          "text": "ALTER TABLE exchange_securities ADD COLUMN first_absent_date TEXT;"
+        },
+        {
+          "line": 120,
+          "text": "ALTER TABLE exchange_securities ADD COLUMN last_absent_snapshot_id INTEGER"
+        },
+        {
+          "line": 126,
+          "text": "ALTER TABLE exchange_securities ADD COLUMN source_type TEXT NOT NULL DEFAULT 'manual_import'"
+        },
+        {
+          "line": 128,
+          "text": "ALTER TABLE exchange_securities ADD COLUMN verification_status TEXT NOT NULL DEFAULT 'unverified'"
+        },
+        {
+          "line": 130,
+          "text": "ALTER TABLE exchange_securities ADD COLUMN official_presence TEXT NOT NULL DEFAULT 'not_confirmed'"
+        },
+        {
+          "line": 143,
+          "text": "CREATE TABLE IF NOT EXISTS exchange_identity_conflicts ("
+        },
+        {
+          "line": 162,
+          "text": "CREATE INDEX IF NOT EXISTS idx_exchange_identity_conflicts_open"
+        },
+        {
+          "line": 165,
+          "text": "CREATE INDEX IF NOT EXISTS idx_exchange_securities_verification"
+        },
+        {
+          "line": 172,
+          "text": "CREATE TABLE IF NOT EXISTS exchange_source_excluded_rows ("
+        },
+        {
+          "line": 181,
+          "text": "CREATE INDEX IF NOT EXISTS idx_exchange_source_excluded_class"
+        },
+        {
+          "line": 189,
+          "text": "CREATE TABLE IF NOT EXISTS exchange_schedule_runs ("
+        },
+        {
+          "line": 205,
+          "text": "CREATE INDEX IF NOT EXISTS idx_exchange_schedule_runs_day"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/034_schedule_publication.sql",
+      "sha256": "fc943aab7229effdceaaaf73ec5bd7a96bf44ac6cc56a550099c001e81b8b034",
+      "lines": 70,
+      "declarations": [
+        {
+          "line": 25,
+          "text": "CREATE TABLE IF NOT EXISTS exchange_schedule_runs_034 ("
+        },
+        {
+          "line": 62,
+          "text": "DROP TABLE exchange_schedule_runs;"
+        },
+        {
+          "line": 64,
+          "text": "ALTER TABLE exchange_schedule_runs_034 RENAME TO exchange_schedule_runs;"
+        },
+        {
+          "line": 66,
+          "text": "CREATE INDEX IF NOT EXISTS idx_exchange_schedule_runs_day"
+        },
+        {
+          "line": 69,
+          "text": "CREATE INDEX IF NOT EXISTS idx_exchange_schedule_runs_role"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/035_company_period_queue.sql",
+      "sha256": "d88f0c538ec2da215f20a767b0b66b81b2f99d84b95739a4a71da05b485e9a21",
+      "lines": 24,
+      "declarations": []
+    },
+    {
+      "path": "scrapper/db/migrations/036_document_followups.sql",
+      "sha256": "9c729b889f5a0ed544a7c3cf4e2c4f9dd90e7467db8bb27ed1492711ac17a7bd",
+      "lines": 12,
+      "declarations": [
+        {
+          "line": 3,
+          "text": "CREATE TABLE IF NOT EXISTS company_document_followups ("
+        },
+        {
+          "line": 11,
+          "text": "CREATE INDEX IF NOT EXISTS idx_company_document_followups_due"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/037_disable_blind_document_followups.sql",
+      "sha256": "cfd09e6d76529110f539995045da6187e25246b1a9cf5c93f37a2dbfad3acb29",
+      "lines": 8,
+      "declarations": []
+    },
+    {
+      "path": "scrapper/db/migrations/038_monitor_query_indexes.sql",
+      "sha256": "67ced06967e172cb6da0e9fa939705bba0644b0a112d2694f22c0bf760120222",
+      "lines": 10,
+      "declarations": [
+        {
+          "line": 4,
+          "text": "CREATE INDEX IF NOT EXISTS idx_screener_queue_events_item_time"
+        },
+        {
+          "line": 9,
+          "text": "CREATE INDEX IF NOT EXISTS idx_screener_queue_status_updated"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/039_credit_rating_acquisition.sql",
+      "sha256": "50cbc708c402554a39a197c408c99ad4c843206580a97f648cf613eaa4ea5de7",
+      "lines": 83,
+      "declarations": [
+        {
+          "line": 3,
+          "text": "CREATE TABLE IF NOT EXISTS document_link_promotions ("
+        },
+        {
+          "line": 22,
+          "text": "CREATE INDEX IF NOT EXISTS idx_document_link_promotions_status"
+        },
+        {
+          "line": 25,
+          "text": "CREATE TABLE IF NOT EXISTS credit_rating_download_queue ("
+        },
+        {
+          "line": 48,
+          "text": "CREATE INDEX IF NOT EXISTS idx_credit_rating_queue_claim"
+        },
+        {
+          "line": 51,
+          "text": "CREATE TABLE IF NOT EXISTS credit_rating_resolution_attempts ("
+        },
+        {
+          "line": 65,
+          "text": "CREATE TABLE IF NOT EXISTS credit_rating_resolution_steps ("
+        },
+        {
+          "line": 82,
+          "text": "CREATE INDEX IF NOT EXISTS idx_credit_rating_resolution_job"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/040_credit_rating_host_health.sql",
+      "sha256": "5b06139c5067a5d7871605270d8c628e91b8f17a25655c0594cfc11133c66fce",
+      "lines": 16,
+      "declarations": [
+        {
+          "line": 3,
+          "text": "ALTER TABLE credit_rating_download_queue"
+        },
+        {
+          "line": 6,
+          "text": "CREATE TABLE IF NOT EXISTS credit_rating_host_health ("
+        },
+        {
+          "line": 15,
+          "text": "CREATE INDEX IF NOT EXISTS idx_credit_rating_queue_host_claim"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/041_credit_rating_host_policy.sql",
+      "sha256": "3c36f6b0a46083eab4f0e8fdd58c7ed6a802332165065924c37e8e70c5e200df",
+      "lines": 81,
+      "declarations": [
+        {
+          "line": 3,
+          "text": "CREATE TABLE IF NOT EXISTS credit_rating_host_policy ("
+        },
+        {
+          "line": 80,
+          "text": "CREATE INDEX IF NOT EXISTS idx_credit_rating_host_policy_status"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/042_document_download_queue.sql",
+      "sha256": "89f34388f3fc72e157cd37bf4f51d0ce56126dacce8216a7200f7595916774ac",
+      "lines": 80,
+      "declarations": [
+        {
+          "line": 3,
+          "text": "CREATE TABLE IF NOT EXISTS artifact_download_scopes ("
+        },
+        {
+          "line": 15,
+          "text": "CREATE TABLE IF NOT EXISTS artifact_download_scope_companies ("
+        },
+        {
+          "line": 25,
+          "text": "CREATE TABLE IF NOT EXISTS artifact_download_queue ("
+        },
+        {
+          "line": 50,
+          "text": "CREATE INDEX IF NOT EXISTS idx_artifact_download_queue_claim"
+        },
+        {
+          "line": 55,
+          "text": "CREATE INDEX IF NOT EXISTS idx_artifact_download_queue_host"
+        },
+        {
+          "line": 58,
+          "text": "CREATE INDEX IF NOT EXISTS idx_artifact_download_scope_company"
+        },
+        {
+          "line": 61,
+          "text": "CREATE TABLE IF NOT EXISTS artifact_download_scope_artifacts ("
+        },
+        {
+          "line": 68,
+          "text": "CREATE INDEX IF NOT EXISTS idx_artifact_download_scope_artifact"
+        },
+        {
+          "line": 71,
+          "text": "CREATE TABLE IF NOT EXISTS artifact_download_queue_attempts ("
+        },
+        {
+          "line": 79,
+          "text": "CREATE INDEX IF NOT EXISTS idx_artifact_download_queue_attempt_job"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/043_generic_download_host_policy.sql",
+      "sha256": "3a0815d58f921a4a1d6449b53baf1f3a8fd1027f0e1ff0e4d18a8e48fe6f4dc0",
+      "lines": 20,
+      "declarations": [
+        {
+          "line": 19,
+          "text": "CREATE INDEX IF NOT EXISTS idx_artifact_download_queue_policy_host"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/044_crisilratings_and_recording_safety.sql",
+      "sha256": "44c4def7e3ce60d530f8933527fac24899f6aabd8c4c6b443315c0b8cd8d8070",
+      "lines": 76,
+      "declarations": []
+    },
+    {
+      "path": "scrapper/db/migrations/045_document_download_recovery.sql",
+      "sha256": "7f6fb869a213eb4e6a76479b34b56026b1604b1d89bd10d925467bde52c41c9f",
+      "lines": 100,
+      "declarations": [
+        {
+          "line": 14,
+          "text": "ALTER TABLE artifact_contents RENAME TO artifact_contents_before_recovery;"
+        },
+        {
+          "line": 16,
+          "text": "CREATE TABLE artifact_contents ("
+        },
+        {
+          "line": 41,
+          "text": "DROP TABLE artifact_contents_before_recovery;"
+        },
+        {
+          "line": 43,
+          "text": "CREATE INDEX IF NOT EXISTS idx_artifact_contents_hash"
+        },
+        {
+          "line": 46,
+          "text": "CREATE TABLE IF NOT EXISTS document_download_recovery_actions ("
+        },
+        {
+          "line": 72,
+          "text": "CREATE INDEX IF NOT EXISTS idx_document_recovery_artifact"
+        },
+        {
+          "line": 75,
+          "text": "CREATE INDEX IF NOT EXISTS idx_document_recovery_job"
+        },
+        {
+          "line": 78,
+          "text": "CREATE TABLE IF NOT EXISTS manual_document_imports ("
+        },
+        {
+          "line": 94,
+          "text": "CREATE INDEX IF NOT EXISTS idx_manual_document_import_artifact"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/046_document_alternate_source_recovery.sql",
+      "sha256": "55801fee7baf954c302c8433594d2f1123a1a461d415e44e4b2e7d44971047d7",
+      "lines": 205,
+      "declarations": [
+        {
+          "line": 7,
+          "text": "ALTER TABLE artifact_sources ADD COLUMN automation_status TEXT NOT NULL"
+        },
+        {
+          "line": 13,
+          "text": "ALTER TABLE artifact_sources ADD COLUMN document_originator TEXT CHECK ("
+        },
+        {
+          "line": 16,
+          "text": "ALTER TABLE artifact_sources ADD COLUMN retrieval_source_type TEXT;"
+        },
+        {
+          "line": 17,
+          "text": "ALTER TABLE artifact_sources ADD COLUMN retrieval_host TEXT;"
+        },
+        {
+          "line": 18,
+          "text": "ALTER TABLE artifact_sources ADD COLUMN published_at_utc TEXT;"
+        },
+        {
+          "line": 19,
+          "text": "ALTER TABLE artifact_sources ADD COLUMN available_at_utc TEXT;"
+        },
+        {
+          "line": 20,
+          "text": "ALTER TABLE artifact_sources ADD COLUMN availability_basis TEXT;"
+        },
+        {
+          "line": 21,
+          "text": "ALTER TABLE artifact_sources ADD COLUMN recovery_target_id INTEGER"
+        },
+        {
+          "line": 23,
+          "text": "ALTER TABLE artifact_sources ADD COLUMN recovery_candidate_id INTEGER"
+        },
+        {
+          "line": 25,
+          "text": "ALTER TABLE artifact_sources ADD COLUMN matching_confidence TEXT CHECK ("
+        },
+        {
+          "line": 31,
+          "text": "ALTER TABLE artifact_sources ADD COLUMN recovery_evidence_json TEXT NOT NULL"
+        },
+        {
+          "line": 56,
+          "text": "CREATE TABLE artifact_recovery_targets ("
+        },
+        {
+          "line": 101,
+          "text": "CREATE INDEX idx_artifact_recovery_targets_claim"
+        },
+        {
+          "line": 104,
+          "text": "CREATE INDEX idx_artifact_recovery_targets_originator"
+        },
+        {
+          "line": 107,
+          "text": "CREATE TABLE artifact_recovery_quarantine ("
+        },
+        {
+          "line": 115,
+          "text": "CREATE TABLE artifact_recovery_attempts ("
+        },
+        {
+          "line": 133,
+          "text": "CREATE INDEX idx_artifact_recovery_attempts_target"
+        },
+        {
+          "line": 136,
+          "text": "CREATE TABLE artifact_recovery_candidates ("
+        },
+        {
+          "line": 183,
+          "text": "CREATE INDEX idx_artifact_recovery_candidates_decision"
+        },
+        {
+          "line": 186,
+          "text": "CREATE TABLE artifact_source_evidence_classifications ("
+        },
+        {
+          "line": 203,
+          "text": "CREATE INDEX idx_artifact_source_evidence_class"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/047_generic_download_host_health.sql",
+      "sha256": "c86595504091c2d4e6ac813ddddc736f61e99d95090ed4c999e89807099b5371",
+      "lines": 15,
+      "declarations": [
+        {
+          "line": 4,
+          "text": "CREATE TABLE artifact_download_host_health ("
+        },
+        {
+          "line": 14,
+          "text": "CREATE INDEX idx_artifact_download_host_health_blocked"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/048_exchange_retrieval_provenance.sql",
+      "sha256": "010fc5be0c3c3a0d9d0217eb23a864f4af6a6d8b413115f26aa0bbf7baa1b2cb",
+      "lines": 57,
+      "declarations": [
+        {
+          "line": 57,
+          "text": "DROP TABLE _official_exchange_content_ids;"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/049_document_acquisition_closure.sql",
+      "sha256": "34a913c67b1221de4820ecebb426e10fab367ba2070a59546b13946d5357e222",
+      "lines": 27,
+      "declarations": [
+        {
+          "line": 4,
+          "text": "CREATE TABLE document_acquisition_closure_states ("
+        },
+        {
+          "line": 26,
+          "text": "CREATE INDEX idx_document_acquisition_closure_state"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/050_rating_agency_direct_provenance.sql",
+      "sha256": "4e3980d8570481ceb5d7b360d0564ae8f89c777819accd30a85e32154b9df8b2",
+      "lines": 60,
+      "declarations": [
+        {
+          "line": 60,
+          "text": "DROP TABLE _official_direct_rating_content_ids;"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/051_html_pdf_derivatives.sql",
+      "sha256": "3868d5ad31ceea327500bbe61bec3e0f5875bdf46247580995bfda2fb68fc1ff",
+      "lines": 53,
+      "declarations": [
+        {
+          "line": 9,
+          "text": "ALTER TABLE artifact_content_relationships RENAME TO artifact_content_relationships_before_html_pdf;"
+        },
+        {
+          "line": 11,
+          "text": "CREATE TABLE artifact_content_relationships ("
+        },
+        {
+          "line": 31,
+          "text": "DROP TABLE artifact_content_relationships_before_html_pdf;"
+        },
+        {
+          "line": 33,
+          "text": "CREATE TABLE html_document_renderings ("
+        },
+        {
+          "line": 47,
+          "text": "CREATE INDEX idx_html_document_renderings_artifact"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/052_reporting_scope_ml_contract.sql",
+      "sha256": "52c6e69572cb67e4554d6f7bc818fa7b9829e2e133f8b5a46bf51e5835003673",
+      "lines": 50,
+      "declarations": [
+        {
+          "line": 4,
+          "text": "CREATE TABLE IF NOT EXISTS company_period_scope_policy ("
+        },
+        {
+          "line": 13,
+          "text": "CREATE INDEX IF NOT EXISTS idx_company_period_scope_policy_preference"
+        },
+        {
+          "line": 35,
+          "text": "CREATE VIEW IF NOT EXISTS ml_screener_standalone_pages AS"
+        },
+        {
+          "line": 42,
+          "text": "CREATE VIEW IF NOT EXISTS financial_scope_integrity_audit AS"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/053_fix_financial_scope_integrity_audit.sql",
+      "sha256": "7bc846c2d4d57e3acfeefca453cb4eb50fa13b4e7ded9a9b721c8db3a66fb2d7",
+      "lines": 13,
+      "declarations": [
+        {
+          "line": 3,
+          "text": "DROP VIEW IF EXISTS financial_scope_integrity_audit;"
+        },
+        {
+          "line": 4,
+          "text": "CREATE VIEW financial_scope_integrity_audit AS"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/054_standalone_financial_write_guard.sql",
+      "sha256": "88b88b37a8e59c1ff765dfe84955cc12ae8268b9d9a2ae25098e7a44491c59fe",
+      "lines": 16,
+      "declarations": [
+        {
+          "line": 4,
+          "text": "CREATE TRIGGER IF NOT EXISTS trg_financial_observations_standalone_only"
+        },
+        {
+          "line": 11,
+          "text": "CREATE TRIGGER IF NOT EXISTS trg_financial_observations_standalone_only_update"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/055_repair_circuit_deferred_downloads.sql",
+      "sha256": "3629414e5d3ec9e8130c4cd6d5577e2dac97a2a35f9f875f7827b8ec51465d20",
+      "lines": 13,
+      "declarations": []
+    },
+    {
+      "path": "scrapper/db/migrations/056_rearm_delayed_concall_refresh.sql",
+      "sha256": "c3a31e7a9c54b807dc5b483688bbd76fa9c7d2fd2d67dddacea1e1561faecfdd",
+      "lines": 17,
+      "declarations": []
+    },
+    {
+      "path": "scrapper/db/migrations/057_close_invalid_result_period_artifacts.sql",
+      "sha256": "63bd018dbe7a3d1e993d37ee933f1b55fff0f120be22cfdf5aa9e73ff30b6a93",
+      "lines": 19,
+      "declarations": []
+    },
+    {
+      "path": "scrapper/db/migrations/058_rebase_active_concall_refresh.sql",
+      "sha256": "b9d88483ad4e6a11867d7f9dfa8e14a59ab302ea8ad5d5464ca47df6edbe87ad",
+      "lines": 24,
+      "declarations": []
+    },
+    {
+      "path": "scrapper/db/migrations/059_finalize_concall_retry_rebase.sql",
+      "sha256": "d46ad0cc13e4907e8b8cd317f3454523edb2f3ac71aa43752d1924969a5eb5d3",
+      "lines": 42,
+      "declarations": []
+    },
+    {
+      "path": "scrapper/db/migrations/060_rebase_all_overdue_concall_refresh.sql",
+      "sha256": "ebb1c87453c89ae39e30a51440f820247fad7543c7c0c1bcb27c7f4496400789",
+      "lines": 27,
+      "declarations": []
+    },
+    {
+      "path": "scrapper/db/migrations/061_limit_delayed_concall_refresh_by_market_cap.sql",
+      "sha256": "3071f630db1305f0e961a7e42c8f91873fc815d31c7d424136f158b860c3fc7d",
+      "lines": 39,
+      "declarations": []
+    },
+    {
+      "path": "scrapper/db/migrations/062_collection_scope_monitor.sql",
+      "sha256": "b9aaff032fb66a01c677e150ba7aa55a4a03cd4b68cce75e8b2a884b13e11210",
+      "lines": 33,
+      "declarations": [
+        {
+          "line": 2,
+          "text": "CREATE TABLE screener_collection_scope ("
+        },
+        {
+          "line": 16,
+          "text": "CREATE INDEX idx_collection_scope_due ON screener_collection_scope(next_check_at_utc);"
+        },
+        {
+          "line": 17,
+          "text": "CREATE INDEX idx_collection_scope_company ON screener_collection_scope(company_id,eligibility);"
+        },
+        {
+          "line": 18,
+          "text": "CREATE TABLE screener_scope_aliases ("
+        },
+        {
+          "line": 23,
+          "text": "ALTER TABLE screener_company_queue ADD COLUMN collection_disposition TEXT;"
+        },
+        {
+          "line": 26,
+          "text": "CREATE TABLE screener_scope_observations ("
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/063_document_period_corrections.sql",
+      "sha256": "6c46d68bd259f8136e2a075bfff592b7353ba09377f6bdb4595a0409e045c69a",
+      "lines": 10,
+      "declarations": [
+        {
+          "line": 1,
+          "text": "CREATE TABLE artifact_period_corrections ("
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/064_exchange_filing_identity_collisions.sql",
+      "sha256": "884d963316c9f0d4aae1dbfc7bf720836a89dc87cbfa9e5c786550de755e46b2",
+      "lines": 18,
+      "declarations": [
+        {
+          "line": 4,
+          "text": "CREATE TABLE IF NOT EXISTS exchange_result_filing_collisions ("
+        },
+        {
+          "line": 17,
+          "text": "CREATE INDEX IF NOT EXISTS idx_exchange_filing_collision_review"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/065_operator_browser_rating_recovery.sql",
+      "sha256": "6bdf193405f96e7837628d81c4c7b7b9e1601fcb0745091df72e108876340208",
+      "lines": 26,
+      "declarations": [
+        {
+          "line": 3,
+          "text": "CREATE TABLE IF NOT EXISTS browser_rating_recovery_jobs ("
+        },
+        {
+          "line": 25,
+          "text": "CREATE INDEX IF NOT EXISTS idx_browser_rating_recovery_pending"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/066_browser_rating_recovery_backoff.sql",
+      "sha256": "49efe4257373c9e6fd2a7ea61bba65e0333c6bc3af3d2d653f06d4a941fb381e",
+      "lines": 10,
+      "declarations": [
+        {
+          "line": 1,
+          "text": "CREATE TABLE IF NOT EXISTS browser_rating_recovery_hosts ("
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/067_browser_rating_workers.sql",
+      "sha256": "7445c39dfba325e2d5ce8b55144d53ed19bf4597e61898f3316f676f86c7eb0b",
+      "lines": 7,
+      "declarations": [
+        {
+          "line": 1,
+          "text": "CREATE TABLE IF NOT EXISTS browser_rating_recovery_workers ("
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/068_exchange_source_access_compatibility.sql",
+      "sha256": "0dcc0f22272f72e816fdb7ad1f03bbb2d63bb74d0086e262ed236b50b4a27c57",
+      "lines": 62,
+      "declarations": [
+        {
+          "line": 6,
+          "text": "CREATE TABLE exchange_schedule_runs_068 ("
+        },
+        {
+          "line": 26,
+          "text": "DROP TABLE exchange_schedule_runs;"
+        },
+        {
+          "line": 27,
+          "text": "ALTER TABLE exchange_schedule_runs_068 RENAME TO exchange_schedule_runs;"
+        },
+        {
+          "line": 28,
+          "text": "CREATE INDEX idx_exchange_schedule_runs_day"
+        },
+        {
+          "line": 30,
+          "text": "CREATE INDEX idx_exchange_schedule_runs_role"
+        },
+        {
+          "line": 33,
+          "text": "CREATE TABLE IF NOT EXISTS exchange_source_access_events ("
+        },
+        {
+          "line": 41,
+          "text": "CREATE INDEX IF NOT EXISTS idx_exchange_source_access_events_latest"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/069_worker_claim_fencing.sql",
+      "sha256": "3207e495e464d079ffd5d18ade9197d5f9cd3510916e83f2dd281f7aec7a71cb",
+      "lines": 6,
+      "declarations": [
+        {
+          "line": 4,
+          "text": "ALTER TABLE artifact_download_queue ADD COLUMN claim_token TEXT;"
+        },
+        {
+          "line": 5,
+          "text": "ALTER TABLE credit_rating_download_queue ADD COLUMN claim_token TEXT;"
+        },
+        {
+          "line": 6,
+          "text": "ALTER TABLE browser_rating_recovery_jobs ADD COLUMN claim_token TEXT;"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/070_document_extraction_claims.sql",
+      "sha256": "cc6c82616d2e78d622a4e925c8b8bf7f9916c9b4b585a0ae9663f7541e7e447b",
+      "lines": 8,
+      "declarations": [
+        {
+          "line": 2,
+          "text": "CREATE TABLE document_extraction_claims ("
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/071_shared_host_permits.sql",
+      "sha256": "c27f8542dc2d0ea2fa12a3736eb6c08b1e8a4a1f0f90c3317c006e370a9daa32",
+      "lines": 29,
+      "declarations": [
+        {
+          "line": 3,
+          "text": "CREATE TABLE acquisition_host_state ("
+        },
+        {
+          "line": 14,
+          "text": "CREATE TABLE acquisition_host_permits ("
+        },
+        {
+          "line": 28,
+          "text": "CREATE INDEX idx_acquisition_host_active"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/072_document_processing_work.sql",
+      "sha256": "71f2e6662a34959334c393ca8a35f71fd0155c22fdfecd34c148d3bc354e2897",
+      "lines": 22,
+      "declarations": [
+        {
+          "line": 2,
+          "text": "CREATE TABLE document_processing_inbox ("
+        },
+        {
+          "line": 6,
+          "text": "CREATE TABLE document_processing_work ("
+        },
+        {
+          "line": 19,
+          "text": "CREATE TRIGGER document_processing_saved AFTER INSERT ON artifact_contents"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/073_exchange_coordinator_tasks.sql",
+      "sha256": "e514e175670059b67aa23a06510532bee4742b88dbc253dcf0c5c9438f859571",
+      "lines": 22,
+      "declarations": [
+        {
+          "line": 2,
+          "text": "CREATE TABLE exchange_coordinator_tasks ("
+        },
+        {
+          "line": 22,
+          "text": "CREATE INDEX exchange_coordinator_ready ON exchange_coordinator_tasks(state, priority, scheduled_for, attempt);"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/074_collection_scope_tasks.sql",
+      "sha256": "11c16d9edf80189409b9c5fdfe1158f91d5f717fdcfdee068f6b5d11f6f4b871",
+      "lines": 12,
+      "declarations": [
+        {
+          "line": 2,
+          "text": "CREATE TABLE collection_scope_tasks ("
+        },
+        {
+          "line": 12,
+          "text": "CREATE UNIQUE INDEX collection_scope_single_pending ON collection_scope_tasks(state) WHERE state='PENDING';"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/075_periodic_dispatch.sql",
+      "sha256": "ef3758d563a8791e3c889158e20b165fc295f6818ea83b32f3048c6086a059e1",
+      "lines": 16,
+      "declarations": [
+        {
+          "line": 2,
+          "text": "CREATE TABLE periodic_dispatch_tasks ("
+        },
+        {
+          "line": 16,
+          "text": "CREATE UNIQUE INDEX periodic_single_pending ON periodic_dispatch_tasks(kind) WHERE state='PENDING';"
+        }
+      ]
+    },
+    {
+      "path": "scrapper/db/migrations/076_retire_crisil_icra_terms_holds.sql",
+      "sha256": "3f94543a4af7c1d02742c0a6db8274546d9f98ef1cc83b8f5bc493d7e18d163f",
+      "lines": 46,
+      "declarations": []
+    },
+    {
+      "path": "scrapper/db/migrations/077_screener_queue_identities.sql",
+      "sha256": "971743ca3f471add760d3551c256af14968d36fcba86553c82d4e3e5909413f0",
+      "lines": 208,
+      "declarations": [
+        {
+          "line": 6,
+          "text": "CREATE TABLE IF NOT EXISTS screener_queue_identities ("
+        },
+        {
+          "line": 23,
+          "text": "DROP TABLE queue_identity_migration_guard;"
+        },
+        {
+          "line": 25,
+          "text": "CREATE TABLE screener_company_queue_077 ("
+        },
+        {
+          "line": 62,
+          "text": "DROP TABLE screener_company_queue;"
+        },
+        {
+          "line": 64,
+          "text": "ALTER TABLE screener_company_queue_077 RENAME TO screener_company_queue;"
+        },
+        {
+          "line": 66,
+          "text": "CREATE INDEX idx_screener_queue_due"
+        },
+        {
+          "line": 69,
+          "text": "CREATE INDEX idx_screener_queue_origin"
+        },
+        {
+          "line": 72,
+          "text": "CREATE INDEX idx_screener_queue_status_updated"
+        },
+        {
+          "line": 75,
+          "text": "CREATE TABLE screener_company_queue_events_077 ("
+        },
+        {
+          "line": 87,
+          "text": "DROP TABLE screener_company_queue_events;"
+        },
+        {
+          "line": 89,
+          "text": "ALTER TABLE screener_company_queue_events_077 RENAME TO screener_company_queue_events;"
+        },
+        {
+          "line": 91,
+          "text": "CREATE INDEX idx_screener_queue_events_item_time"
+        },
+        {
+          "line": 94,
+          "text": "CREATE TABLE exchange_screener_enqueues_077 ("
+        },
+        {
+          "line": 113,
+          "text": "DROP TABLE exchange_screener_enqueues;"
+        },
+        {
+          "line": 115,
+          "text": "ALTER TABLE exchange_screener_enqueues_077 RENAME TO exchange_screener_enqueues;"
+        },
+        {
+          "line": 121,
+          "text": "CREATE TRIGGER trg_queue_identity_register AFTER INSERT ON screener_company_queue"
+        },
+        {
+          "line": 126,
+          "text": "CREATE TRIGGER trg_queue_identity_insert_guard BEFORE INSERT ON screener_queue_identities"
+        },
+        {
+          "line": 132,
+          "text": "CREATE TRIGGER trg_queue_identity_update_guard BEFORE UPDATE ON screener_queue_identities"
+        },
+        {
+          "line": 137,
+          "text": "CREATE TRIGGER trg_queue_identity_delete_guard BEFORE DELETE ON screener_queue_identities"
+        },
+        {
+          "line": 142,
+          "text": "CREATE TRIGGER trg_queue_key_insert_guard BEFORE INSERT ON screener_company_queue"
+        },
+        {
+          "line": 148,
+          "text": "CREATE TRIGGER trg_queue_key_update_guard BEFORE UPDATE OF queue_item_id ON screener_company_queue"
+        },
+        {
+          "line": 154,
+          "text": "CREATE TRIGGER trg_queue_delete_guard BEFORE DELETE ON screener_company_queue"
+        },
+        {
+          "line": 159,
+          "text": "CREATE TRIGGER trg_queue_natural_insert_guard BEFORE INSERT ON screener_company_queue"
+        },
+        {
+          "line": 165,
+          "text": "CREATE TRIGGER trg_queue_natural_update_guard BEFORE UPDATE OF company_path_normalized,reporting_scope,result_period ON screener_company_queue"
+        },
+        {
+          "line": 171,
+          "text": "CREATE TRIGGER trg_queue_claim_insert_guard BEFORE INSERT ON screener_company_queue"
+        },
+        {
+          "line": 177,
+          "text": "CREATE TRIGGER trg_queue_claim_update_guard BEFORE UPDATE OF claim_token ON screener_company_queue"
+        },
+        {
+          "line": 183,
+          "text": "CREATE TRIGGER trg_queue_event_insert_parent BEFORE INSERT ON screener_company_queue_events"
+        },
+        {
+          "line": 189,
+          "text": "CREATE TRIGGER trg_queue_event_update_parent BEFORE UPDATE OF queue_item_id ON screener_company_queue_events"
+        },
+        {
+          "line": 195,
+          "text": "CREATE TRIGGER trg_queue_enqueue_insert_parent BEFORE INSERT ON exchange_screener_enqueues"
+        },
+        {
+          "line": 201,
+          "text": "CREATE TRIGGER trg_queue_enqueue_update_parent BEFORE UPDATE OF queue_item_id ON exchange_screener_enqueues"
+        }
+      ]
+    }
+  ]
+}

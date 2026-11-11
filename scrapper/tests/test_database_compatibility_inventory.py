@@ -6,13 +6,14 @@ import re
 import unittest
 
 ROOT = Path(__file__).resolve().parents[2]
-INVENTORY = ROOT / 'docs/database/migration-inventory-2026-11-08.json'
+INVENTORY = ROOT / 'docs/database/migration-inventory.json'
 DECLARATION = re.compile(r'^\s*(CREATE\s+(?:UNIQUE\s+)?(?:TABLE|VIEW|INDEX|TRIGGER)|ALTER\s+TABLE|DROP\s+(?:TABLE|VIEW|INDEX|TRIGGER))\b', re.I)
 
 
 class DatabaseCompatibilityInventoryTests(unittest.TestCase):
     def test_inventory_covers_canonical_migrations_and_exact_source(self):
         inventory = json.loads(INVENTORY.read_text())
+        self.assertEqual(inventory['source_manifest_sha256'], hashlib.sha256((ROOT / inventory['source_manifest']).read_bytes()).hexdigest())
         entries = inventory['migrations']
         actual = sorted(str(p.relative_to(ROOT)) for p in (ROOT / 'scrapper/db/migrations').glob('*.sql'))
         self.assertEqual([e['path'] for e in entries], actual)
