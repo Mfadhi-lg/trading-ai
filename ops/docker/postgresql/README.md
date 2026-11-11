@@ -51,7 +51,9 @@ pre-write rollback window. The external document archive stays at its existing
 location with its existing sentinel and capacity checks.
 
 Host status/search/quarter observations use the restricted native reader and a
-repeatable-read, read-only transaction. The manual CLI follows the selected
+repeatable-read, read-only transaction. Catalog identifiers use binary UTF-8
+ordering; company sections use stable keys and undated financial periods sort
+after dated periods, matching SQLite observations. The manual CLI follows the selected
 native release instead of reopening SQLite. Missing native configuration keeps
 the existing backend; malformed native configuration fails closed.
 

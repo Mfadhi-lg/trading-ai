@@ -18,6 +18,21 @@ class NativeObservationTests(DisposablePostgreSQLTestCase):
             source=Path(directory)/'source.db';snapshot=Path(directory)/'snapshot.db'
             sqlite=make_source(source);sqlite.row_factory=sqlite3.Row
             self.addCleanup(sqlite.close)
+            sqlite.executemany("INSERT INTO security_identifiers(company_id,identifier_type,identifier_value) VALUES(91,'synthetic',?)",
+                               [('Z symbol',),('A symbol',),('₹ symbol',)])
+            sqlite.execute("INSERT INTO accepted_page_versions VALUES(91,'synthetic','standalone','fixture',41,'2026-11-08T00:00:00Z','fixture','fixture')")
+            sqlite.executemany("""INSERT INTO financial_observations
+                (parse_id,reporting_scope,section_code,line_item_raw,row_position,period_label_raw,period_end,
+                 period_type,column_position,first_observed_at_utc,available_at_utc,availability_basis,display_value)
+                VALUES(41,'standalone',?,'fixture',?,?,?,'quarter',0,'2026-11-08T00:00:00Z',
+                       '2026-11-08T00:00:00Z','fixture','1')""",
+                [('z_section',0,'undated',None),('z_section',1,'dated','2026-09-30'),
+                 ('a_section',2,'dated','2026-09-30')])
+            sqlite.commit()
+            self.assertEqual(queries.query(sqlite,'company_catalog')['companies'][0]['identifiers'],
+                             'A symbol Z symbol ₹ symbol')
+            self.assertEqual([(row['period_end'],row['section_code']) for row in queries.query(sqlite,'company',company_id=91)['periods']],
+                             [('2026-09-30','a_section'),('2026-09-30','z_section'),(None,'z_section')])
             report=export_snapshot(source,snapshot)
             transfer(self.settings,snapshot,self.schema,expected_sha256=report['snapshot_sha256'])
             with self.session(read_only=True) as native:
