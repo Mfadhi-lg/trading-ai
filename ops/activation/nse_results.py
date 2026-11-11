@@ -21,6 +21,10 @@ from scrapper.sources.exchange.reporting_periods import priority_result_periods
 
 
 def require_packaged_period_logic():
+    from postgresql_release import target,verify
+    if target():
+        verify()
+        return
     source = SOURCE
     manifest = json.loads((RELEASE / 'release-manifest.json').read_text())
     require(hashlib.sha256(source.read_bytes()).hexdigest() == manifest['source_manifest_sha256'],

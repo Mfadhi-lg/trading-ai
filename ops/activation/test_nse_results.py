@@ -19,6 +19,14 @@ runtime = module('nse_results_runtime')
 
 
 class ActivationTests(unittest.TestCase):
+    def test_native_period_package_uses_the_selected_release_verification(self):
+        with patch('postgresql_release.target',return_value={'image':'native'}),patch('postgresql_release.verify') as verify:
+            host.require_packaged_period_logic()
+            verify.assert_called_once_with()
+            verify.side_effect=RuntimeError('Native release configuration drift')
+            with self.assertRaisesRegex(RuntimeError,'configuration drift'):
+                host.require_packaged_period_logic()
+
     def test_unactivated_native_source_does_not_relabel_the_old_seal(self):
         with patch('postgresql_release.target',return_value=None):
             with self.assertRaisesRegex(RuntimeError,'Replacement configuration/source evidence changed'):
