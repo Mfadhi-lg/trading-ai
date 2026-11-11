@@ -3,6 +3,9 @@
 The optional native release keeps the existing bounded acquisition schedules,
 source budgets, ownership locks and document store. It is selected only by a
 prepared release containing a manifest-bound `ops/activation/postgresql-target.json`.
+Release preparation retains the existing workspace experiment dependency through
+a symlink, preserving the candle lifecycle’s original state root and process
+identity. This workspace dependency remains outside the sealed acquisition inventory.
 Changing repository source never activates that release. The target can pin
 `host_python` and `host_site_packages` to a persistent, hash-locked host
 environment. The lifecycle launcher follows the active release’s prepared

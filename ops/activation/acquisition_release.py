@@ -41,7 +41,7 @@ def prepare_release(workspace, release, *, source=None):
     marker={'workspace_root':str(workspace)}
     if source is not None:marker['source_root']=str(source_root)
     (release / '.acquisition-release.json').write_text(json.dumps(marker)+'\n')
-    for directory in ('artifacts', 'docs', 'ops/docker', '.git'):
+    for directory in ('artifacts', 'docs', 'ops/docker', '.git', 'experiments'):
         (release / directory).symlink_to(workspace / directory, target_is_directory=True)
     # Credentials remain live and private; they are never copied into releases.
     (release / '.screener_session').symlink_to(workspace / '.screener_session')

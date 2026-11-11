@@ -180,7 +180,7 @@ class NativeReleaseWiringTests(unittest.TestCase):
         workspace=(self.root/'workspace').resolve();source=(self.root/'reviewed').resolve()
         for root in (workspace,source):
             for directory in ('scrapper','ops/activation','ops/host'):(root/directory).mkdir(parents=True)
-        for directory in ('artifacts','docs','ops/docker','.git'):(workspace/directory).mkdir(parents=True,exist_ok=True)
+        for directory in ('artifacts','docs','ops/docker','.git','experiments'):(workspace/directory).mkdir(parents=True,exist_ok=True)
         (workspace/'.screener_session').write_text('fixture')
         for name in ('.scheduler-admission.lock','.nse-owner.lock','.monitor-readers.lock'):
             (workspace/'ops/activation'/name).touch()
@@ -194,6 +194,7 @@ class NativeReleaseWiringTests(unittest.TestCase):
         self.assertEqual((release/'ops/activation/.nse-owner.lock').stat().st_ino,
                          (workspace/'ops/activation/.nse-owner.lock').stat().st_ino)
         self.assertTrue((release/'.screener_session').is_symlink())
+        self.assertEqual((release/'experiments').resolve(),workspace/'experiments')
         old_style=workspace/'artifacts/acquisition-releases/default'
         prepare_release(workspace,old_style)
         self.assertEqual((old_style/'scrapper/code.py').read_text(),'editable workspace bytes')
