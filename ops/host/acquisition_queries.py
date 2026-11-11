@@ -105,13 +105,17 @@ def query(conn, action, term='', company_id=0, offset=0, quarter='all'):
         from acquisition_quarter_queries import monitor
         return monitor(conn, quarter, term=term, offset=offset, company_id=company_id)
     if action == 'company_catalog':
-        identifiers=statement(conn,"group_concat(identifier_value,' ')","string_agg(identifier_value,' ')")
+        identifiers=statement(conn,
+            "SELECT company_id,group_concat(identifier_value,' ') identifiers FROM "
+            "(SELECT company_id,identifier_value FROM security_identifiers WHERE is_current=1 "
+            "ORDER BY company_id,identifier_value COLLATE BINARY,security_identifier_id) ordered GROUP BY company_id",
+            "SELECT company_id,string_agg(identifier_value,' ' ORDER BY identifier_value COLLATE \"C\",security_identifier_id) identifiers "
+            "FROM security_identifiers WHERE is_current=1 GROUP BY company_id")
         # One guarded read supplies in-memory completion; typing never queries SQLite.
         return {'companies': rows(f'''WITH symbols AS (
             SELECT company_id,min(source_symbol) symbol FROM source_identifiers
             WHERE source='screener' GROUP BY company_id), ids AS (
-            SELECT company_id,{identifiers} identifiers
-            FROM security_identifiers WHERE is_current=1 GROUP BY company_id)
+            {identifiers})
             SELECT c.company_id,c.current_legal_name,s.symbol,i.identifiers
             FROM companies c LEFT JOIN symbols s ON s.company_id=c.company_id
             LEFT JOIN ids i ON i.company_id=c.company_id
@@ -222,15 +226,18 @@ def query(conn, action, term='', company_id=0, offset=0, quarter='all'):
     age_seconds=statement(conn,"CAST((julianday('now')-julianday(q.created_at_utc))*86400 AS INTEGER)",
         "trunc(extract(epoch FROM CURRENT_TIMESTAMP-NULLIF(q.created_at_utc,'')::timestamptz))::bigint")
     accepted = 'SELECT parse_id FROM accepted_page_versions WHERE company_id=?'
+    binary_collation=statement(conn,'BINARY','"C"')
     result = {'company': company[0], 'limit_per_section': 100,
-        'identifiers': rows('SELECT identifier_type,identifier_value FROM security_identifiers WHERE company_id=? AND is_current=1 LIMIT 100',(company_id,)),
-        'accepted_pages': rows('SELECT source,reporting_scope,resolved_source_period,accepted_at_utc,parse_id FROM accepted_page_versions WHERE company_id=? LIMIT 100',(company_id,)),
-        'periods': rows('SELECT DISTINCT reporting_scope,section_code,period_end,period_type,period_label_raw FROM financial_observations WHERE parse_id IN ('+accepted+') ORDER BY period_end DESC LIMIT 100',(company_id,)),
-        'financial_jobs': rows(f"SELECT q.queue_item_id,q.company_path_normalized,q.result_period,q.reporting_scope,q.status,{age_seconds} queue_age_seconds,q.created_at_utc,q.updated_at_utc,q.last_error_json,q.accepted_export_path FROM screener_company_queue q WHERE q.company_path_normalized IN (SELECT company_path_normalized FROM screener_company_collection_state WHERE company_id=?) ORDER BY q.updated_at_utc DESC LIMIT 100",(company_id,)),
-        'filings': rows('SELECT filing_id,exchange,company_name_raw,result_period,reporting_scope,broadcast_at_utc,discovered_at_utc FROM exchange_result_filings WHERE isin IN (SELECT identifier_value FROM security_identifiers WHERE company_id=? AND identifier_type=\'isin\') OR exchange_key IN (SELECT identifier_value FROM security_identifiers WHERE company_id=?) ORDER BY discovered_at_utc DESC LIMIT 100',(company_id,company_id)),
-        'documents': rows('SELECT a.artifact_id,a.artifact_type,a.title_raw,a.period_end,a.event_date,a.acquisition_status,a.first_observed_at_utc,c.content_sha256,c.extraction_status,b.local_path,c.created_at_utc FROM document_artifacts a LEFT JOIN artifact_contents c ON c.content_id=a.preferred_content_id LEFT JOIN response_blobs b ON b.blob_id=c.blob_id WHERE a.company_id=? ORDER BY a.first_observed_at_utc DESC LIMIT 100',(company_id,)),
-        'expectations': rows('SELECT artifact_type,availability_status,terminal_reason,last_error_json,last_checked_at_utc FROM artifact_expectations WHERE company_id=? LIMIT 100',(company_id,)),
-        'links': rows('SELECT document_type,title_raw,period_label_raw,availability_status,source_url,first_observed_at_utc FROM document_links WHERE parse_id IN ('+accepted+') LIMIT 100',(company_id,))}
+        'identifiers': rows(statement(conn,
+            'SELECT identifier_type,identifier_value FROM security_identifiers WHERE company_id=? AND is_current=1 ORDER BY identifier_type COLLATE BINARY,identifier_value COLLATE BINARY,security_identifier_id LIMIT 100',
+            'SELECT identifier_type,identifier_value FROM security_identifiers WHERE company_id=? AND is_current=1 ORDER BY identifier_type COLLATE "C",identifier_value COLLATE "C",security_identifier_id LIMIT 100'),(company_id,)),
+        'accepted_pages': rows(f'SELECT source,reporting_scope,resolved_source_period,accepted_at_utc,parse_id FROM accepted_page_versions WHERE company_id=? ORDER BY parse_id,source COLLATE {binary_collation},reporting_scope COLLATE {binary_collation},resolved_source_period COLLATE {binary_collation} LIMIT 100',(company_id,)),
+        'periods': rows(f'SELECT * FROM (SELECT DISTINCT reporting_scope,section_code,period_end,period_type,period_label_raw FROM financial_observations WHERE parse_id IN ({accepted})) periods ORDER BY period_end DESC NULLS LAST,reporting_scope COLLATE {binary_collation} NULLS FIRST,section_code COLLATE {binary_collation} NULLS FIRST,period_type COLLATE {binary_collation} NULLS FIRST,period_label_raw COLLATE {binary_collation} NULLS FIRST LIMIT 100',(company_id,)),
+        'financial_jobs': rows(f"SELECT q.queue_item_id,q.company_path_normalized,q.result_period,q.reporting_scope,q.status,{age_seconds} queue_age_seconds,q.created_at_utc,q.updated_at_utc,q.last_error_json,q.accepted_export_path FROM screener_company_queue q WHERE q.company_path_normalized IN (SELECT company_path_normalized FROM screener_company_collection_state WHERE company_id=?) ORDER BY q.updated_at_utc DESC,q.queue_item_id DESC LIMIT 100",(company_id,)),
+        'filings': rows('SELECT filing_id,exchange,company_name_raw,result_period,reporting_scope,broadcast_at_utc,discovered_at_utc FROM exchange_result_filings WHERE isin IN (SELECT identifier_value FROM security_identifiers WHERE company_id=? AND identifier_type=\'isin\') OR exchange_key IN (SELECT identifier_value FROM security_identifiers WHERE company_id=?) ORDER BY discovered_at_utc DESC,filing_id DESC LIMIT 100',(company_id,company_id)),
+        'documents': rows('SELECT a.artifact_id,a.artifact_type,a.title_raw,a.period_end,a.event_date,a.acquisition_status,a.first_observed_at_utc,c.content_sha256,c.extraction_status,b.local_path,c.created_at_utc FROM document_artifacts a LEFT JOIN artifact_contents c ON c.content_id=a.preferred_content_id LEFT JOIN response_blobs b ON b.blob_id=c.blob_id WHERE a.company_id=? ORDER BY a.first_observed_at_utc DESC,a.artifact_id DESC LIMIT 100',(company_id,)),
+        'expectations': rows('SELECT artifact_type,availability_status,terminal_reason,last_error_json,last_checked_at_utc FROM artifact_expectations WHERE company_id=? ORDER BY expectation_id LIMIT 100',(company_id,)),
+        'links': rows('SELECT document_type,title_raw,period_label_raw,availability_status,source_url,first_observed_at_utc FROM document_links WHERE parse_id IN ('+accepted+') ORDER BY document_link_id LIMIT 100',(company_id,))}
     result['absence_meaning'] = 'No record means not discovered / unknown, unless an explicit availability record confirms otherwise.'
     result['missing_periods'] = 'Unknown: no authoritative expected-period denominator. Pending/failed result periods are listed in financial_jobs.'
     result['verification_meaning'] = 'Persisted acquisition/validation state and stored hashes; files are not rehashed by monitoring.'
