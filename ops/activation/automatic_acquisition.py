@@ -22,6 +22,8 @@ RECEIPTS = ROOT / 'artifacts/bse-browser-results'
 LABEL = 'com.trading-ai.automatic-acquisition'
 PYTHON = '/Users/mohamedfadhi/.cache/uv/archive-v0/-WyGD_mChAFVX11K/bin/python'
 SITE_PACKAGES = '/Users/mohamedfadhi/.cache/uv/archive-v0/4GTYw8_mNnscx89r/lib/python3.13/site-packages'
+from postgresql_release import configured_host_runtime
+PYTHON,SITE_PACKAGES=configured_host_runtime(PYTHON,SITE_PACKAGES)
 
 
 class SlotConsumed(Exception):
@@ -162,7 +164,10 @@ def bse_once(out, preflight=False):
                 shutil.copyfile(evidence / source, out / target)
         else:
             capture_bse(out, permission, daily_fallback)
-        application_hashes=dict(manifest['application_hashes'])
+        from postgresql_release import target
+        native=target()
+        if native:image['Id']=native['image']
+        application_hashes=dict(native['application_hashes'] if native else manifest['application_hashes'])
         application_hashes['scrapper/sources/exchange/result_filings.py']=hashlib.sha256((ROOT/'scrapper/sources/exchange/result_filings.py').read_bytes()).hexdigest()
         save(out / 'checks.json', {'application_hashes': application_hashes,
             'operator_hashes': {name: hashlib.sha256((HERE / name).read_bytes()).hexdigest() for name in
@@ -226,6 +231,8 @@ def ingest_bse_capture(out, image_id, preflight=False):
             'release_id': identity['release_id'], 'roles': ['store' if name == 'store' else 'documents']})
     compose['configs'] = {'nse_identity': {'file': str(out / 'identity.json')},
         'nse_store': {'file': str(out / 'store.json')}, 'nse_snapshots': {'file': str(out / 'snapshots.json')}}
+    from postgresql_release import configure
+    configure(compose,service,'exchange',out/'identity.json')
     save(out / 'compose.json', compose)
     command = ['docker', 'compose', '-f', str(out / 'compose.json'), '--profile', 'bse',
         'run', '--rm', '--no-deps', '--name', 'trading-ai-bse-scheduled', 'nse-results']

@@ -5,8 +5,10 @@ from pathlib import Path
 import sqlite3
 import sys
 import time
+from postgresql_runtime import query_deadline
+from scrapper.db.repository_backend import is_postgresql, statement
 from datetime import datetime, timezone
-sys.path.insert(0, '/activation')
+sys.path[:0]=['/activation','/app']
 from sqlite_sidecar_guard import assert_safe_empty_wal, snapshot
 
 
@@ -14,13 +16,13 @@ def monitor_details(conn):
     """Separate stored coverage from queue work; tolerate older snapshot schemas."""
     def rows(sql):
         deadline = time.monotonic() + 4
-        conn.set_progress_handler(lambda: int(time.monotonic() > deadline), 10000)
+        query_deadline(conn,deadline)
         return [dict(r) for r in conn.execute(sql)]
     result = {'detail_errors': []}
     sections = {
         'quarterly_coverage': '''SELECT f.period_end,a.reporting_scope,
             count(DISTINCT a.company_id) companies
-            FROM accepted_page_versions a CROSS JOIN financial_observations f ON f.parse_id=a.parse_id
+            FROM accepted_page_versions a JOIN financial_observations f ON f.parse_id=a.parse_id
             WHERE f.period_type='quarter' AND f.section_code='quarters'
             AND f.row_position=(SELECT min(h.row_position) FROM financial_observations h
                 WHERE h.parse_id=a.parse_id AND h.section_code='quarters')
@@ -43,13 +45,15 @@ def monitor_details(conn):
     ):
         try:
             deadline = time.monotonic() + 4
-            conn.set_progress_handler(lambda: int(time.monotonic() > deadline), 10000)
+            query_deadline(conn,deadline)
+            due=statement(conn,"julianday(next_attempt_at_utc)<=julianday('now')", "NULLIF(next_attempt_at_utc,'')::timestamptz<=CURRENT_TIMESTAMP")
+            waiting=statement(conn,"julianday(next_attempt_at_utc)>julianday('now')", "NULLIF(next_attempt_at_utc,'')::timestamptz>CURRENT_TIMESTAMP")
             counts = dict(conn.execute(f'''SELECT
-                sum(CASE WHEN status='{pending}' AND attempt_count=0 THEN 1 ELSE 0 END) unattempted,
-                sum(CASE WHEN status='{retry}' AND (next_attempt_at_utc IS NULL OR
-                    julianday(next_attempt_at_utc)<=julianday('now')) THEN 1 ELSE 0 END) retry_due,
-                sum(CASE WHEN status='{retry}' AND julianday(next_attempt_at_utc)>julianday('now')
-                    THEN 1 ELSE 0 END) retry_waiting FROM {name}''').fetchone())
+                sum(CAST((CASE WHEN status='{pending}' AND attempt_count=0 THEN 1 ELSE 0 END) AS INTEGER)) unattempted,
+                sum(CAST((CASE WHEN status='{retry}' AND (next_attempt_at_utc IS NULL OR
+                    {due}) THEN 1 ELSE 0 END) AS INTEGER)) retry_due,
+                sum(CAST((CASE WHEN status='{retry}' AND {waiting}
+                    THEN 1 ELSE 0 END) AS INTEGER)) retry_waiting FROM {name}''').fetchone())
             reasons = rows(f'''SELECT status,substr({error},1,500) reason,count(*) n,
                 min(next_attempt_at_utc) next_attempt_at_utc FROM {name}
                 WHERE status='{retry}' GROUP BY status,{error} ORDER BY n DESC LIMIT 5''')
@@ -62,7 +66,7 @@ def monitor_details(conn):
 def query(conn, action, term='', company_id=0, offset=0, quarter='all'):
     conn.row_factory = sqlite3.Row
     deadline = time.monotonic() + 4
-    conn.set_progress_handler(lambda: int(time.monotonic() > deadline), 10000)
+    query_deadline(conn,deadline)
     def rows(sql, args=()):
         return [dict(r) for r in conn.execute(sql, args)]
     if action == 'pilot_validation':
@@ -79,13 +83,13 @@ def query(conn, action, term='', company_id=0, offset=0, quarter='all'):
             WHERE c.content_id IN ("""+','.join('?' for _ in ids)+')',ids)}
     if action == 'download_diagnostics':
         return {'pending_epoch':rows("""SELECT status,
-            sum(created_at_utc<'2026-10-09T00:00:00+00:00') pre_epoch,
-            sum(created_at_utc>='2026-10-09T00:00:00+00:00') post_epoch,count(*) jobs
+            sum(CAST((created_at_utc<'2026-10-09T00:00:00+00:00') AS INTEGER)) pre_epoch,
+            sum(CAST((created_at_utc>='2026-10-09T00:00:00+00:00') AS INTEGER)) post_epoch,count(*) jobs
             FROM artifact_download_queue WHERE status IN ('PENDING','RETRYABLE_FAILURE','LEASED') GROUP BY status"""),
             'validated_downloads_since_baseline':rows("""SELECT count(*) attempts,count(DISTINCT content_id) contents,
-                coalesce(sum(byte_size),0) bytes FROM artifact_download_attempts
+                coalesce(CAST(sum(byte_size) AS BIGINT),0) bytes FROM artifact_download_attempts
                 WHERE result_status='validated' AND fetched_at_utc>='2026-10-30T04:52:16+00:00'"""),
-            'host_policies':rows('SELECT * FROM credit_rating_host_policy LIMIT 30')}
+            'host_policies':rows('SELECT * FROM credit_rating_host_policy ORDER BY host LIMIT 30')}
     if action == 'phase3_audit':
         return {'enqueues': rows('SELECT e.*,r.company_id FROM exchange_screener_enqueues e LEFT JOIN exchange_company_registry r USING(registry_company_id) ORDER BY enqueue_id DESC LIMIT 5'),
             'states': rows('SELECT * FROM screener_company_collection_state LIMIT 5'),
@@ -101,11 +105,12 @@ def query(conn, action, term='', company_id=0, offset=0, quarter='all'):
         from acquisition_quarter_queries import monitor
         return monitor(conn, quarter, term=term, offset=offset, company_id=company_id)
     if action == 'company_catalog':
+        identifiers=statement(conn,"group_concat(identifier_value,' ')","string_agg(identifier_value,' ')")
         # One guarded read supplies in-memory completion; typing never queries SQLite.
-        return {'companies': rows('''WITH symbols AS (
+        return {'companies': rows(f'''WITH symbols AS (
             SELECT company_id,min(source_symbol) symbol FROM source_identifiers
             WHERE source='screener' GROUP BY company_id), ids AS (
-            SELECT company_id,group_concat(identifier_value,' ') identifiers
+            SELECT company_id,{identifiers} identifiers
             FROM security_identifiers WHERE is_current=1 GROUP BY company_id)
             SELECT c.company_id,c.current_legal_name,s.symbol,i.identifiers
             FROM companies c LEFT JOIN symbols s ON s.company_id=c.company_id
@@ -170,7 +175,7 @@ def query(conn, action, term='', company_id=0, offset=0, quarter='all'):
         name = 'lower(c.current_legal_name)'
         for char in (' ', '.', '-', '&', '(', ')', "'"):
             name = "replace(" + name + ", '" + char.replace("'", "''") + "', '')"
-        return {'companies': rows('''
+        search_sql='''
             SELECT c.company_id,c.current_legal_name,c.status,
               (SELECT s.source_symbol FROM source_identifiers s
                WHERE s.company_id=c.company_id AND s.source='screener' LIMIT 1) AS symbol
@@ -187,19 +192,41 @@ def query(conn, action, term='', company_id=0, offset=0, quarter='all'):
             ORDER BY CASE WHEN c.company_id IN (SELECT i.company_id FROM security_identifiers i
                  WHERE i.is_current=1 AND lower(i.identifier_value)=lower(?)) THEN 0
                  WHEN lower(c.current_legal_name)=lower(?) THEN 1 ELSE 2 END,
-                 c.current_legal_name,c.company_id LIMIT 41 OFFSET ?''',
+                 c.current_legal_name,c.company_id LIMIT 41 OFFSET ?'''
+        if is_postgresql(conn):
+            search_sql='''
+            SELECT c.company_id,c.current_legal_name,c.status,
+              (SELECT s.source_symbol FROM source_identifiers s
+               WHERE s.company_id=c.company_id AND s.source='screener' LIMIT 1) AS symbol
+            FROM companies c WHERE c.company_id IN (
+            SELECT c.company_id FROM companies c
+            WHERE ?='' OR position(lower(?) in lower(c.current_legal_name))>0
+              OR (?<>'' AND position(? in ''' + name + ''')>0)
+              OR CAST(c.company_id AS TEXT)=?
+            UNION SELECT i.company_id FROM security_identifiers i
+                 WHERE i.is_current=1 AND position(lower(?) in lower(i.identifier_value))>0
+            UNION SELECT s.company_id FROM source_identifiers s WHERE
+                   (position(lower(?) in lower(COALESCE(s.source_symbol,'')))>0
+                    OR position(lower(?) in lower(COALESCE(s.source_slug,'')))>0))
+            ORDER BY CASE WHEN c.company_id IN (SELECT i.company_id FROM security_identifiers i
+                 WHERE i.is_current=1 AND lower(i.identifier_value)=lower(?)) THEN 0
+                 WHEN lower(c.current_legal_name)=lower(?) THEN 1 ELSE 2 END,
+                 c.current_legal_name,c.company_id LIMIT 41 OFFSET ?'''
+        return {'companies': rows(search_sql,
             (term,term,normalized,normalized,term,term,term,term,term,term,max(0,min(offset,100000))))}
     if action != 'company':
         raise ValueError('Unsupported read-only query')
     company = rows('SELECT * FROM companies WHERE company_id=?', (company_id,))
     if not company:
         return {'company': None}
+    age_seconds=statement(conn,"CAST((julianday('now')-julianday(q.created_at_utc))*86400 AS INTEGER)",
+        "trunc(extract(epoch FROM CURRENT_TIMESTAMP-NULLIF(q.created_at_utc,'')::timestamptz))::bigint")
     accepted = 'SELECT parse_id FROM accepted_page_versions WHERE company_id=?'
     result = {'company': company[0], 'limit_per_section': 100,
         'identifiers': rows('SELECT identifier_type,identifier_value FROM security_identifiers WHERE company_id=? AND is_current=1 LIMIT 100',(company_id,)),
         'accepted_pages': rows('SELECT source,reporting_scope,resolved_source_period,accepted_at_utc,parse_id FROM accepted_page_versions WHERE company_id=? LIMIT 100',(company_id,)),
         'periods': rows('SELECT DISTINCT reporting_scope,section_code,period_end,period_type,period_label_raw FROM financial_observations WHERE parse_id IN ('+accepted+') ORDER BY period_end DESC LIMIT 100',(company_id,)),
-        'financial_jobs': rows("SELECT q.queue_item_id,q.company_path_normalized,q.result_period,q.reporting_scope,q.status,CAST((julianday('now')-julianday(q.created_at_utc))*86400 AS INTEGER) queue_age_seconds,q.created_at_utc,q.updated_at_utc,q.last_error_json,q.accepted_export_path FROM screener_company_queue q WHERE q.company_path_normalized IN (SELECT company_path_normalized FROM screener_company_collection_state WHERE company_id=?) ORDER BY q.updated_at_utc DESC LIMIT 100",(company_id,)),
+        'financial_jobs': rows(f"SELECT q.queue_item_id,q.company_path_normalized,q.result_period,q.reporting_scope,q.status,{age_seconds} queue_age_seconds,q.created_at_utc,q.updated_at_utc,q.last_error_json,q.accepted_export_path FROM screener_company_queue q WHERE q.company_path_normalized IN (SELECT company_path_normalized FROM screener_company_collection_state WHERE company_id=?) ORDER BY q.updated_at_utc DESC LIMIT 100",(company_id,)),
         'filings': rows('SELECT filing_id,exchange,company_name_raw,result_period,reporting_scope,broadcast_at_utc,discovered_at_utc FROM exchange_result_filings WHERE isin IN (SELECT identifier_value FROM security_identifiers WHERE company_id=? AND identifier_type=\'isin\') OR exchange_key IN (SELECT identifier_value FROM security_identifiers WHERE company_id=?) ORDER BY discovered_at_utc DESC LIMIT 100',(company_id,company_id)),
         'documents': rows('SELECT a.artifact_id,a.artifact_type,a.title_raw,a.period_end,a.event_date,a.acquisition_status,a.first_observed_at_utc,c.content_sha256,c.extraction_status,b.local_path,c.created_at_utc FROM document_artifacts a LEFT JOIN artifact_contents c ON c.content_id=a.preferred_content_id LEFT JOIN response_blobs b ON b.blob_id=c.blob_id WHERE a.company_id=? ORDER BY a.first_observed_at_utc DESC LIMIT 100',(company_id,)),
         'expectations': rows('SELECT artifact_type,availability_status,terminal_reason,last_error_json,last_checked_at_utc FROM artifact_expectations WHERE company_id=? LIMIT 100',(company_id,)),
@@ -211,22 +238,21 @@ def query(conn, action, term='', company_id=0, offset=0, quarter='all'):
 
 
 def inspect(db, action, *, live=False, **kwargs):
-    before = None if live else assert_safe_empty_wal(db)
-    uri = 'file:'+str(db)+'?mode=ro'+('' if live else '&immutable=1')
-    conn = sqlite3.connect(uri,uri=True,timeout=2)
-    conn.row_factory = sqlite3.Row
+    from postgresql_runtime import enabled,read_connection
+    native=enabled()
+    before = None if live or native else assert_safe_empty_wal(db)
+    conn = read_connection(db,immutable=not live)
     try:
-        conn.execute('PRAGMA query_only=ON')
-        conn.execute('PRAGMA temp_store=MEMORY')
-        if live:
-            conn.execute('BEGIN')  # One consistent committed snapshot, including WAL.
-        else:
+        if not native:
+            conn.execute('PRAGMA temp_store=MEMORY')
+            if live:conn.execute('BEGIN')
+        if not live:
             from production_ownership import assert_no_conflicting_leases
             assert_no_conflicting_leases(conn, now=datetime.now(timezone.utc).isoformat())
         result = query(conn, action, **kwargs)
     finally:
         conn.close()
-    if not live and snapshot(db) != before['files']:
+    if not live and not native and snapshot(db) != before['files']:
         raise RuntimeError('Database changed during inspection; result discarded')
     return result
 

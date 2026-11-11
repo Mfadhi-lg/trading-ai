@@ -19,8 +19,18 @@ runtime = module('nse_results_runtime')
 
 
 class ActivationTests(unittest.TestCase):
-    def test_exact_accepted_configuration(self):
-        self.assertEqual(host.check_configuration()['image_reference'], host.IMAGE)
+    def test_native_period_package_uses_the_selected_release_verification(self):
+        with patch('postgresql_release.target',return_value={'image':'native'}),patch('postgresql_release.verify') as verify:
+            host.require_packaged_period_logic()
+            verify.assert_called_once_with()
+            verify.side_effect=RuntimeError('Native release configuration drift')
+            with self.assertRaisesRegex(RuntimeError,'configuration drift'):
+                host.require_packaged_period_logic()
+
+    def test_unactivated_native_source_does_not_relabel_the_old_seal(self):
+        with patch('postgresql_release.target',return_value=None):
+            with self.assertRaisesRegex(RuntimeError,'Replacement configuration/source evidence changed'):
+                host.check_configuration()
 
     def test_preview_budgets_and_guard_cannot_be_overridden(self):
         preview = {'validation': {'status': 'passed'}, 'accepted_row_count': 1, 'enqueue': {'queued': 100}}
@@ -70,7 +80,7 @@ class ActivationTests(unittest.TestCase):
 
     def test_offline_default_and_override_do_not_inspect_production(self):
         for argv in (['runner'], ['runner', '--period', '2024-03']):
-            with patch.object(host.sys, 'argv', argv), patch.object(host, 'checked') as checked:
+            with patch.object(host.sys, 'argv', argv), patch.object(host, 'check_configuration',return_value={'image_reference':host.IMAGE}), patch.object(host, 'checked') as checked:
                 self.assertEqual(host.main(), 0)
                 checked.assert_not_called()
 

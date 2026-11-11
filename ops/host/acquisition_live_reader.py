@@ -6,7 +6,7 @@ Every database connection still uses URI mode=ro and PRAGMA query_only=ON.
 import json
 from pathlib import Path
 import sys
-sys.path[:0]=['/host','/activation']
+sys.path[:0]=['/host','/activation','/app']
 ALLOWED={'quarter_monitor','quarter_options','quarter_coverage_export','summary',
          'search','company','company_report','company_catalog','financials','download_diagnostics'}
 

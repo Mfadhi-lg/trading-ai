@@ -173,7 +173,11 @@ def database_status(script="/host/acquisition_db_status.py", arguments=()):
         '--mount', 'type=bind,source=' + str(ROOT / 'scrapper/view/render.py') + ',target=/acquisition_financial_renderer.py,readonly',
         '--env', 'PYTHONDONTWRITEBYTECODE=1', '--entrypoint', 'python', IMAGE,
         *(['/host/acquisition_live_reader.py',*reader_args] if live else [script,*arguments])]
-    if live:args[2:2]=['--label','com.trading-ai.role=monitor-reader']
+    from postgresql_release import target,reader_prefix
+    if target():
+        args=['docker',*reader_prefix(),
+            *(['/host/acquisition_live_reader.py',*reader_args] if live else [script,*arguments])]
+    elif live:args[2:2]=['--label','com.trading-ai.role=monitor-reader']
     return json.loads(run(args, timeout=90).stdout)
 
 

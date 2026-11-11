@@ -29,6 +29,8 @@ def read_only_docker_command(args):
     try:parts=shlex.split(args)
     except ValueError:return False
     if not parts or Path(parts[0]).name not in ('docker','com.docker.cli'):return False
+    from postgresql_release import is_reader_command
+    if is_reader_command(parts):return True
     if parts[1:]==['volume','inspect',VOLUME]:return True
     if 'com.trading-ai.role=monitor-reader' not in parts:return False
     from phase4_documents import IMAGE
@@ -141,9 +143,9 @@ def assert_no_conflicting_leases(conn, *, now):
     if instant.tzinfo is None:
         raise RuntimeError('Ownership clock must be timezone aware')
     checked=[]
-    for table in conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND (sql LIKE '%lease_%' OR sql LIKE '%claim_expires%')").fetchall():
-        name=table['name']
-        columns=[r['name'] for r in conn.execute('PRAGMA table_info("'+name+'")')]
+    from postgresql_runtime import table_names, table_columns
+    for name in table_names(conn):
+        columns=table_columns(conn,name)
         for expiry in ('lease_until_utc','lease_expires_at_utc','claim_expires_at_utc'):
             if expiry not in columns:
                 continue

@@ -269,6 +269,8 @@ def prepare(out,kind,*,authorized=False,local_historical_processing=False,recove
     compose['configs']['nse_identity']['file']=str(out/'runtime-identity.json')
     for name in ('nse_store','nse_snapshots'):compose['configs'][name]['file']=str((HERE/compose['configs'][name]['file']).resolve())
     # Physical document marker remains visible and independently hash-checked.
+    from postgresql_release import configure
+    configure(compose,service,'documents',out/'runtime-identity.json')
     save(out,'compose.json',compose)
     # Runtime attestation covers application code, not concurrently edited tests.
     files=[p for p in (ROOT/'scrapper').rglob('*.py') if 'tests' not in p.relative_to(ROOT/'scrapper').parts]+list((ROOT/'scrapper/documents/download/certificates').glob('*.pem'))

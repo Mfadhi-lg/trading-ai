@@ -8,7 +8,9 @@ HERE=Path(__file__).resolve().parent
 ROOT=HERE.parents[1]
 OUT=ROOT/'artifacts/phase4/canary'
 STORE=Path('/Volumes/My Passport/passport/trading-ai')
+from postgresql_release import configured_image
 IMAGE='sha256:1a310808f878911b4bd0a324beaf2948f215e3743238c981a531656cf0eecbf9'
+IMAGE=configured_image(IMAGE)
 UUID='60E1204B-CB98-48C4-9398-1D2FBAC9B44A'
 
 
