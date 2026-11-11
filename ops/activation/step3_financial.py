@@ -16,7 +16,9 @@ from production_ownership import owner_gate
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 OUT = ROOT / 'artifacts/step3-financial-readiness/prepared'
+from postgresql_release import configured_image
 IMAGE = 'sha256:1a310808f878911b4bd0a324beaf2948f215e3743238c981a531656cf0eecbf9'
+IMAGE=configured_image(IMAGE)
 
 
 def save(name, payload):
@@ -56,18 +58,25 @@ def prepare(scope_monitor=False):
         'scrapper/workflows/screener/ingest.py',
         'scrapper/pipeline/accepted_document_downloads.py',
         'scrapper/documents/discovery/promotion.py','scrapper/db/document_download_queue_repo.py')
-    for path in paths:
-        if path in overlays:continue
-        if path == 'scrapper/workflows/screener/ingest.py':
-            # Financial work reads this file from the verified image, not the
-            # Phase 4 document-only host implementation. Its image hash remains
-            # in application_hashes and is checked inside the container.
-            scheduling=json.loads((HERE/'automatic-acquisition-manifest.json').read_text())
-            nse.require(hashlib.sha256((ROOT/path).read_bytes()).hexdigest()==scheduling['files'][path],
-                        'Sealed document-only ingestion source changed: '+path)
-            continue
-        nse.require(hashlib.sha256((ROOT/path).read_bytes()).hexdigest() == hashes[path],
-                    'Financial application differs from existing verified image: '+path)
+    from postgresql_release import target,verify,configure
+    native=target()
+    if native:
+        verify()
+        hashes={path:native['application_hashes'][path] for path in paths}
+        overlays=()
+    else:
+        for path in paths:
+            if path in overlays:continue
+            if path == 'scrapper/workflows/screener/ingest.py':
+                # Financial work reads this file from the verified image, not the
+                # Phase 4 document-only host implementation. Its image hash remains
+                # in application_hashes and is checked inside the container.
+                scheduling=json.loads((HERE/'automatic-acquisition-manifest.json').read_text())
+                nse.require(hashlib.sha256((ROOT/path).read_bytes()).hexdigest()==scheduling['files'][path],
+                            'Sealed document-only ingestion source changed: '+path)
+                continue
+            nse.require(hashlib.sha256((ROOT/path).read_bytes()).hexdigest() == hashes[path],
+                        'Financial application differs from existing verified image: '+path)
     save('manifest.json',{'image':IMAGE,'application_hashes':{p:hashes[p] for p in paths if p not in overlays},
         'application_overlays':{p:hashlib.sha256((ROOT/p).read_bytes()).hexdigest() for p in overlays},
         'overlay_base_hashes':{p:hashes[p] for p in overlays},
@@ -102,6 +111,7 @@ def prepare(scope_monitor=False):
         save(name+'.json',{'environment':'production','path':path,'release_id':identity['release_id'],'roles':[role]})
     compose['configs']={'nse_identity':{'file':str(OUT/'identity.json')},
         'nse_store':{'file':str(OUT/'store.json')},'nse_snapshots':{'file':str(OUT/'snapshots.json')}}
+    configure(compose,service,'financial',OUT/'identity.json')
     save('compose.json',compose)
     return plan
 

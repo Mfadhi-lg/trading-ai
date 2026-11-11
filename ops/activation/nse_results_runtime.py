@@ -65,6 +65,28 @@ def review_dispositions(reader,snapshot_id,*,retained_bse=False,bounded_nse=Fals
     return pending,fatal
 
 
+
+EXCHANGE_WRITE_TABLES = {'scrape_runs','response_blobs','fetch_observations','exchange_source_snapshots',
+    'exchange_snapshot_validations','exchange_result_filings','exchange_screener_enqueues',
+    'screener_company_queue','screener_company_queue_events','screener_company_collection_state',
+    'exchange_company_result_state','exchange_result_watermarks','exchange_source_rejected_rows',
+    'exchange_source_excluded_rows','exchange_result_filing_collisions'}
+
+def exchange_authorizer(action, table, column, database, trigger):
+    if table == 'screener_queue_identities' and action in (sqlite3.SQLITE_INSERT, sqlite3.SQLITE_UPDATE, sqlite3.SQLITE_DELETE):
+        return sqlite3.SQLITE_OK if action == sqlite3.SQLITE_INSERT and trigger == 'trg_queue_identity_register' else sqlite3.SQLITE_DENY
+    if action in (sqlite3.SQLITE_INSERT, sqlite3.SQLITE_UPDATE, sqlite3.SQLITE_DELETE):
+        if table not in EXCHANGE_WRITE_TABLES or action == sqlite3.SQLITE_DELETE:
+            return sqlite3.SQLITE_DENY
+        if action == sqlite3.SQLITE_UPDATE and table in ('exchange_result_filings',
+                'exchange_screener_enqueues','response_blobs','fetch_observations',
+                'screener_company_queue','screener_company_queue_events'):
+            return sqlite3.SQLITE_DENY
+    if action in (sqlite3.SQLITE_ATTACH,sqlite3.SQLITE_DETACH,sqlite3.SQLITE_ALTER_TABLE,
+            sqlite3.SQLITE_DROP_TABLE,sqlite3.SQLITE_CREATE_TABLE):
+        return sqlite3.SQLITE_DENY
+    return sqlite3.SQLITE_OK
+
 def run(period=None, source=None, verify_only=False):
     from scrapper.operations.coordinator.exchange import ownership
     from scrapper.sources.exchange.reporting_periods import priority_result_periods
@@ -94,50 +116,60 @@ def run_owned(periods, db, baseline, source=None, verify_only=False):
     from scrapper.workflows.exchange import universe
     from scrapper.db.database import connect
     from zoneinfo import ZoneInfo
-    # A cooperating WAL reader can be the last connection after a worker exits.
-    # Drain monitors, reject unknown connections, and checkpoint committed frames
-    # before the unchanged cold-state verification. No sidecar is deleted by hand.
-    from sqlite_sidecar_guard import prepare_writer_startup
-    assert_configured_writable_targets(db_path=db)
-    prepare_writer_startup(db,expected_inode=baseline['db_after']['inode'])
-    print(json.dumps({'stage': 'sidecar_guard', 'result': assert_safe_empty_wal(db)}), flush=True)
-    require(db.stat().st_ino == baseline['db_after']['inode'] and
-            db.stat().st_size >= baseline['db_after']['bytes'], 'Production DB file identity mismatch')
-    # Check real, underlying markers before the role-specific read-only configs.
-    for name, expected in baseline['physical_markers'].items():
-        actual = Path(name.replace('/data/', '/physical/', 1))
-        require(hashlib.sha256(actual.read_bytes()).hexdigest() == expected['sha256'],
-                'Underlying production marker changed: ' + name)
-    assert_configured_writable_targets(db_path=db)
-    for target in (db.parent, Path('/data/snapshots')):
-        stats = os.statvfs(target)
-        require(not stats.f_flag & os.ST_RDONLY and stats.f_bavail * stats.f_frsize >= 64 * 1024 * 1024,
-                'Insufficient writable DB/evidence storage and WAL headroom')
-    with closing(sqlite3.connect('file:/data/scraper.db?mode=ro', uri=True)) as reader:
-        reader.row_factory = sqlite3.Row
-        reader.execute('PRAGMA query_only=ON')
-        check_schema_compatibility(reader)
-        assert_no_conflicting_leases(reader, now=datetime.now(timezone.utc).isoformat())
-        require([dict(r) for r in reader.execute('SELECT * FROM schema_migrations ORDER BY version')]
-                == baseline['ledger'], 'Production migration identity mismatch')
-        require([dict(r) for r in reader.execute(
-            'SELECT type,name,tbl_name,sql FROM sqlite_master ORDER BY type,name')]
-                == baseline['schema'], 'Production schema changed')
-        receipt = reader.execute('SELECT * FROM document_extraction_claims WHERE resource_key=?',
-                                 (baseline['control_row']['resource_key'],)).fetchone()
-        require(receipt is not None and dict(receipt) == baseline['control_row'], 'Control receipt changed')
-        holds = [dict(r) for r in reader.execute('SELECT * FROM exchange_source_access_events ORDER BY event_id')]
-        queue_before = reader.execute('SELECT COUNT(*) FROM screener_company_queue').fetchone()[0]
+    from postgresql_runtime import enabled, preflight, read_connection
+    native = enabled()
+    if native:
+        state = preflight(db, baseline)
+        holds, queue_before = state['holds'], state['queue_count']
         if verify_only:
-            print(json.dumps({'stage': 'preflight_verified', 'production_ingestion': False,
-                'source_requests': 0, 'holds': holds, 'queue_count': queue_before,
-                'filing_counts': [dict(r) for r in reader.execute(
-                    'SELECT exchange,COUNT(*) AS count FROM exchange_result_filings GROUP BY exchange')],
-                'document_worker_started': False, 'backlog_dispatched': False}), flush=True)
+            print(json.dumps({'stage':'preflight_verified','backend':'postgresql',
+                'production_ingestion':False,'source_requests':0,**state,
+                'document_worker_started':False,'backlog_dispatched':False}),flush=True)
+    else:
+        # A cooperating WAL reader can be the last connection after a worker exits.
+        # Drain monitors, reject unknown connections, and checkpoint committed frames
+        # before the unchanged cold-state verification. No sidecar is deleted by hand.
+        from sqlite_sidecar_guard import prepare_writer_startup
+        assert_configured_writable_targets(db_path=db)
+        prepare_writer_startup(db,expected_inode=baseline['db_after']['inode'])
+        print(json.dumps({'stage': 'sidecar_guard', 'result': assert_safe_empty_wal(db)}), flush=True)
+        require(db.stat().st_ino == baseline['db_after']['inode'] and
+                db.stat().st_size >= baseline['db_after']['bytes'], 'Production DB file identity mismatch')
+        # Check real, underlying markers before the role-specific read-only configs.
+        for name, expected in baseline['physical_markers'].items():
+            actual = Path(name.replace('/data/', '/physical/', 1))
+            require(hashlib.sha256(actual.read_bytes()).hexdigest() == expected['sha256'],
+                    'Underlying production marker changed: ' + name)
+        assert_configured_writable_targets(db_path=db)
+        for target in (db.parent, Path('/data/snapshots')):
+            stats = os.statvfs(target)
+            require(not stats.f_flag & os.ST_RDONLY and stats.f_bavail * stats.f_frsize >= 64 * 1024 * 1024,
+                    'Insufficient writable DB/evidence storage and WAL headroom')
+        with closing(read_connection(db)) as reader:
+            reader.row_factory = sqlite3.Row
+            reader.execute('PRAGMA query_only=ON')
+            check_schema_compatibility(reader)
+            assert_no_conflicting_leases(reader, now=datetime.now(timezone.utc).isoformat())
+            require([dict(r) for r in reader.execute('SELECT * FROM schema_migrations ORDER BY version')]
+                    == baseline['ledger'], 'Production migration identity mismatch')
+            require([dict(r) for r in reader.execute(
+                'SELECT type,name,tbl_name,sql FROM sqlite_master ORDER BY type,name')]
+                    == baseline['schema'], 'Production schema changed')
+            receipt = reader.execute('SELECT * FROM document_extraction_claims WHERE resource_key=?',
+                                     (baseline['control_row']['resource_key'],)).fetchone()
+            require(receipt is not None and dict(receipt) == baseline['control_row'], 'Control receipt changed')
+            holds = [dict(r) for r in reader.execute('SELECT * FROM exchange_source_access_events ORDER BY event_id')]
+            queue_before = reader.execute('SELECT COUNT(*) FROM screener_company_queue').fetchone()[0]
+            if verify_only:
+                print(json.dumps({'stage': 'preflight_verified', 'production_ingestion': False,
+                    'source_requests': 0, 'holds': holds, 'queue_count': queue_before,
+                    'filing_counts': [dict(r) for r in reader.execute(
+                        'SELECT exchange,COUNT(*) AS count FROM exchange_result_filings GROUP BY exchange')],
+                    'document_worker_started': False, 'backlog_dispatched': False}), flush=True)
     if verify_only:
         if source:
             require(len(source.response.content) <= 10 * 1024 * 1024, 'Retained response byte budget exceeded')
-            assert_safe_empty_wal(db)
+            if not native:assert_safe_empty_wal(db)
             preview = discover_exchange_results(dataset='bse_financial_results',
                 url=source.response.requested_url, result_period=source.result_period,
                 effective_date=datetime.fromisoformat(source.captured_at_utc).astimezone(ZoneInfo('Asia/Kolkata')).date().isoformat(),
@@ -154,29 +186,10 @@ def run_owned(periods, db, baseline, source=None, verify_only=False):
     totals = {'rows': 0, 'queued': 0, 'bytes': 0}
     # Reuse the successful BSE operation's table boundary. Financial history,
     # documents, ratings and API holds cannot be changed by this writer.
-    write_tables = {'scrape_runs','response_blobs','fetch_observations','exchange_source_snapshots',
-        'exchange_snapshot_validations','exchange_result_filings','exchange_screener_enqueues',
-        'screener_company_queue','screener_company_queue_events','screener_company_collection_state',
-        'exchange_company_result_state','exchange_result_watermarks','exchange_source_rejected_rows',
-        'exchange_source_excluded_rows','exchange_result_filing_collisions'}
     def protected_connect(path):
         require(Path(path) == db, 'Unexpected canonical DB target')
         conn = connect(path)
-        def authorize(action, table, column, database, trigger):
-            if table == 'screener_queue_identities' and action in (sqlite3.SQLITE_INSERT, sqlite3.SQLITE_UPDATE, sqlite3.SQLITE_DELETE):
-                return sqlite3.SQLITE_OK if action == sqlite3.SQLITE_INSERT and trigger == 'trg_queue_identity_register' else sqlite3.SQLITE_DENY
-            if action in (sqlite3.SQLITE_INSERT, sqlite3.SQLITE_UPDATE, sqlite3.SQLITE_DELETE):
-                if table not in write_tables or action == sqlite3.SQLITE_DELETE:
-                    return sqlite3.SQLITE_DENY
-                if action == sqlite3.SQLITE_UPDATE and table in ('exchange_result_filings',
-                        'exchange_screener_enqueues','response_blobs','fetch_observations',
-                        'screener_company_queue','screener_company_queue_events'):
-                    return sqlite3.SQLITE_DENY
-            if action in (sqlite3.SQLITE_ATTACH,sqlite3.SQLITE_DETACH,sqlite3.SQLITE_ALTER_TABLE,
-                    sqlite3.SQLITE_DROP_TABLE,sqlite3.SQLITE_CREATE_TABLE):
-                return sqlite3.SQLITE_DENY
-            return sqlite3.SQLITE_OK
-        conn.set_authorizer(authorize)
+        conn.set_authorizer(exchange_authorizer)
         return conn
     for selected_period in periods:
         url = source.response.requested_url if source else resolve_url(dataset, None, result_period=selected_period)
@@ -202,7 +215,7 @@ def run_owned(periods, db, baseline, source=None, verify_only=False):
             options.update(url=url, now_utc=lambda: source.captured_at_utc,
                 effective_date=datetime.fromisoformat(source.captured_at_utc).astimezone(
                     ZoneInfo('Asia/Kolkata')).date().isoformat())
-        assert_safe_empty_wal(db)
+        if not native:assert_safe_empty_wal(db)
         preview = discover_exchange_results(**options, dry_run=True)
         print(json.dumps({'stage': 'preview', 'query_period': selected_period, 'result': preview}), flush=True)
         # Only the NSE host adapter mounts the tested bounded-admission overlay.
@@ -215,12 +228,12 @@ def run_owned(periods, db, baseline, source=None, verify_only=False):
                 'maximum_new_queue_entries': admission_limit,
                 'remaining_filings': 'Retained undecided for subsequent bounded feed admission'}), flush=True)
             options['max_new_queue_entries'] = admission_limit
-        assert_safe_empty_wal(db)
+        if not native:assert_safe_empty_wal(db)
         result = discover_exchange_results(**options,
             _ingest=partial(universe._ingest, connect=protected_connect))
         totals['rows'] += result['accepted_row_count']
         totals['queued'] += result['enqueue'].get('queued', 0)
-        with closing(sqlite3.connect('file:/data/scraper.db?mode=ro', uri=True)) as reader:
+        with closing(read_connection(db)) as reader:
             reader.row_factory = sqlite3.Row
             require([dict(r) for r in reader.execute('SELECT * FROM exchange_source_access_events ORDER BY event_id')]
                     == holds, 'Unexpected BSE hold mutation')
@@ -230,7 +243,7 @@ def run_owned(periods, db, baseline, source=None, verify_only=False):
         print(json.dumps({'stage': 'outcome', 'query_period': selected_period, 'result': result,
                           'queue_delta': delta, 'totals': totals, 'bse_holds_unchanged': True}), flush=True)
         if result['enqueue'].get('manual_review', 0):
-            with closing(sqlite3.connect('file:/data/scraper.db?mode=ro',uri=True)) as reader:
+            with closing(read_connection(db)) as reader:
                 reader.row_factory=sqlite3.Row
                 pending,fatal=review_dispositions(reader,result['snapshot_id'],retained_bse=source is not None and exchange_name=='BSE',bounded_nse=admission_limit is not None)
             if pending:

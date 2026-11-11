@@ -17,6 +17,10 @@ WRITE_TABLES={'response_blobs','artifact_download_attempts','artifact_download_a
 
 def fingerprint(c, table):
     """Hash rows in declared primary-key order, for both SQLite table kinds."""
+    from scrapper.db.repository_backend import is_postgresql
+    if is_postgresql(c):
+        from postgresql_runtime import fingerprint as native_fingerprint
+        return native_fingerprint(c,table)
     quote = lambda name: '"' + name.replace('"', '""') + '"'
     columns = c.execute('PRAGMA table_info(' + quote(table) + ')').fetchall()
     if not columns:

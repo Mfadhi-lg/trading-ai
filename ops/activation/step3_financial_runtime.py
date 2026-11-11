@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 import signal
 import sqlite3
+from postgresql_runtime import read_connection
 import sys
 
 sys.path[:0] = ['/activation', '/app']
@@ -107,7 +108,7 @@ def main():
         if plan.get('paired_downloads') and '--verify-only' not in sys.argv:
             from paired_downloads import begin
             stack.enter_context(begin(plan))
-        with closing(sqlite3.connect('file:/data/scraper.db?mode=ro', uri=True)) as c:
+        with closing(read_connection(db)) as c:
             c.row_factory = sqlite3.Row
             holds = [dict(r) for r in c.execute('SELECT * FROM exchange_source_access_events ORDER BY event_id')]
             company_count = c.execute('SELECT count(*) FROM companies').fetchone()[0]
@@ -243,7 +244,7 @@ def main():
                 skip_if_already_accepted=skip_accepted,
                 claim_due_companies=lambda conn, **options: selected_claim(conn, plan=plan, **options))
             print(json.dumps({'stage':'financial_batch_outcome','result':result}, default=str), flush=True)
-        with closing(sqlite3.connect('file:/data/scraper.db?mode=ro',uri=True)) as c:
+        with closing(read_connection(db)) as c:
             c.row_factory=sqlite3.Row
             require([dict(r) for r in c.execute('SELECT * FROM exchange_source_access_events ORDER BY event_id')] == holds,
                     'Exchange API holds changed during financial processing')
