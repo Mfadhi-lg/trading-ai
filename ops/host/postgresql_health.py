@@ -7,7 +7,8 @@ import re
 import subprocess
 import sys
 import uuid
-ROOT=Path(__file__).resolve().parents[2]
+SCRIPT=Path(__file__).resolve()
+ROOT=SCRIPT.parents[2] if len(SCRIPT.parents)>2 else Path('/app')
 sys.path[:0]=[str(ROOT/'ops/activation'),str(ROOT)]
 
 
