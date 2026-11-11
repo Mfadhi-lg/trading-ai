@@ -140,6 +140,10 @@ class NativeReleaseWiringTests(unittest.TestCase):
         for change in ('--privileged','--user=root'):
             self.assertFalse(self.release.is_reader_command(command[:2]+[change]+command[2:]))
         self.assertFalse(self.release.is_reader_command([part.replace('roles/reader','roles/financial') for part in command]))
+        health=['docker',*self.release.reader_prefix(),'/host/postgresql_health.py','--probe']
+        self.assertTrue(self.release.is_reader_command(health))
+        self.assertFalse(self.release.is_reader_command(health+['--execute']))
+        self.assertFalse(self.release.is_reader_command(health[:-1]))
 
     def test_document_companion_uses_its_own_native_login_identity_and_passfile(self):
         import json
@@ -275,3 +279,22 @@ class PhysicalStorageSealTests(unittest.TestCase):
                 with self.assertRaisesRegex(RuntimeError,'marker changed'):runtime.verify_physical_storage(baseline)
                 mounts.write_text(f'1 0 0:1 / {root} rw - tmpfs tmpfs rw\n')
                 with self.assertRaisesRegex(RuntimeError,'Read-only physical'):runtime.verify_physical_storage(baseline)
+
+
+class LocalHealthControlTests(unittest.TestCase):
+    def test_backup_health_rejects_stale_foreign_missing_or_changed_archives(self):
+        from datetime import datetime,timedelta,timezone
+        from postgresql_health import backup_health
+        now=datetime.now(timezone.utc)
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);archive=root/'fixture.dump.age';archive.write_bytes(b'encrypted fixture')
+            receipt={'status':'PASS','target_id':'selected','finished_at_utc':now.isoformat(),
+                'archive':str(archive),'encrypted_bytes':archive.stat().st_size,'encrypted_sha256':'a'*64}
+            self.assertEqual(backup_health(receipt,'selected',now,root)['status'],'PASS')
+            for change in ({'target_id':'foreign'},{'status':'FAIL'},
+                    {'finished_at_utc':(now-timedelta(hours=27)).isoformat()},
+                    {'finished_at_utc':(now+timedelta(minutes=6)).isoformat()},
+                    {'encrypted_bytes':1},{'archive':str(root/'missing.dump.age')},
+                    {'archive':str(root.parent/'fixture.dump.age')},{'encrypted_sha256':'invalid'}):
+                with self.subTest(change=change),self.assertRaises(RuntimeError):
+                    backup_health({**receipt,**change},'selected',now,root)

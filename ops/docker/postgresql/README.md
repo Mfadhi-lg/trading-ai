@@ -73,7 +73,12 @@ A uniquely named dump client, exclusive job lock, private diagnostics and atomic
 receipts support interruption/failure diagnosis. Interruptions stop that owned
 client and mark failure; partial archives are preserved. Install the daily local
 LaunchAgent only after an initial encrypted backup, decryption and isolated
-restore have passed. Monitor the local receipt's age and status; a successful
+restore have passed. Install an hourly `ops/host/postgresql_health.py` observation after restore
+verification. It verifies the selected native reader, backup target identity,
+26-hour freshness, archive location/existence/size and storage configuration,
+then writes a private `artifacts/postgresql-backups/health.json` receipt. It does
+not rehash the entire encrypted archive each hour or repeat restore verification.
+Monitor the health receipt and LaunchAgent exit status; a successful
 dump alone is not restore proof. Keep source, schema, all-table hash, sequence,
 backup and restore receipts privately.
 

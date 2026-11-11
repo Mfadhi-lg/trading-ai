@@ -151,6 +151,7 @@ def is_reader_command(parts):
     if parts[1:1+len(prefix)]!=prefix:return False
     tail=parts[1+len(prefix):]
     if not tail:return False
+    if tail==['/host/postgresql_health.py','--probe']:return True
     if tail[0]=='/host/acquisition_db_status.py':return tail[1:] in ([],['--summary'])
     if tail[0] not in ('/host/acquisition_live_reader.py','/host/acquisition_queries.py') or len(tail)!=3:return False
     if tail[1] not in {'census','quarter_monitor','quarter_options','quarter_coverage_export','summary',
