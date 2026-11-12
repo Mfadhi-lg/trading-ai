@@ -1,7 +1,8 @@
 """SS-02 scope-corrected full existing-universe classification and basket preparation."""
 import argparse
 import collections
-from datetime import datetime
+from datetime import date, datetime
+from decimal import Decimal, InvalidOperation, localcontext
 import json
 from pathlib import Path
 import re
@@ -85,18 +86,48 @@ def classify(profile,curated=None,official=None):
                 exposures=[dict(code=code,role='primary' if code==primary else 'secondary' if primary else 'unranked_activity',evidence=evidence[code]) for code in codes])
 
 
+def decimal_value(value):
+    """Interpret retained numeric values without doing binary-float arithmetic."""
+    try:
+        result = Decimal(str(value))
+    except (InvalidOperation, ValueError):
+        return None
+    return result if result.is_finite() else None
+
+
+def dated_instant(value):
+    try:
+        result = datetime.fromisoformat(value)
+    except (TypeError, ValueError):
+        return None
+    return result if result.utcoffset() is not None else None
+
+
 def eligibility(record,code,cutoff):
+    cutoff_at = dated_instant(cutoff)
+    if cutoff_at is None:
+        raise ValueError('cutoff must be a timezone-aware ISO timestamp')
     reasons=[]
     if not record:return ['historical_company_metadata_missing']
     if taxonomy.HISTORICAL_INDUSTRY.get(record['basic_industry'])!=code:
         reasons.append('no_dated_granular_business_proof_for_this_subsector')
-    if datetime.fromisoformat(record['available_at'])>datetime.fromisoformat(cutoff):
+    available_at = dated_instant(record.get('available_at'))
+    if available_at is None:
+        reasons.append('missing_or_invalid_publisher_availability')
+    elif available_at>cutoff_at:
         reasons.append('publisher_version_after_cutoff')
-    if record['observation_date']>cutoff[:10]:reasons.append('observation_after_cutoff')
-    if not record['historical_index_mcap_crore'] or record['historical_index_mcap_crore']<=0:
+    try:
+        observed = date.fromisoformat(record.get('observation_date'))
+    except (TypeError, ValueError):
+        reasons.append('missing_or_invalid_observation_date')
+    else:
+        if observed>cutoff_at.date():reasons.append('observation_after_cutoff')
+    cap = decimal_value(record.get('historical_index_mcap_crore'))
+    if cap is None or cap<=0:
         reasons.append('missing_historical_capitalisation')
-    impact=record['historical_impact_cost_percent']
-    if impact is None or impact>policy.MAX_IMPACT_COST_PERCENT:reasons.append('missing_or_insufficient_historical_liquidity')
+    impact=decimal_value(record.get('historical_impact_cost_percent'))
+    if impact is None or not Decimal(0)<=impact<=Decimal(str(policy.MAX_IMPACT_COST_PERCENT)):
+        reasons.append('missing_or_insufficient_historical_liquidity')
     if not record['quote_evidence']:reasons.append('historical_price_quote_not_observed')
     if record['symbol'].startswith('DUMMY'):reasons.append('non_tradable_placeholder')
     return reasons
@@ -104,7 +135,27 @@ def eligibility(record,code,cutoff):
 
 def select(records):
     # Positive ranking inputs only. Never access returns, beta, today's cap or future performance.
-    return sorted(records,key=lambda x:(-x['historical_index_mcap_crore'],x['company_id']))[:policy.TOP_N]
+    records = list(records)
+    if len({r['company_id'] for r in records}) != len(records):
+        raise ValueError('duplicate canonical company in selection')
+    if any((cap := decimal_value(r['historical_index_mcap_crore'])) is None or cap<=0 for r in records):
+        raise ValueError('selection requires finite positive historical capitalisation')
+    return sorted(records,key=lambda x:(decimal_value(x['historical_index_mcap_crore']).copy_negate(),x['company_id']))[:policy.TOP_N]
+
+
+def initial_members(records):
+    """Initial basket weights only; retain the existing JSON/SQLite REAL contract."""
+    chosen = select(records)
+    if not chosen:
+        return []
+    with localcontext() as context:
+        context.prec = 50
+        caps = [decimal_value(r['historical_index_mcap_crore']) for r in chosen]
+        total = sum(caps, Decimal(0))
+        return [dict(company_id=r['company_id'], rank=n,
+                     equal_weight=float(Decimal(1)/len(chosen)),
+                     historical_cap_weight=float(cap/total), selection_evidence=r)
+                for n,(r,cap) in enumerate(zip(chosen,caps),1)]
 
 
 def evidence_manifest():
@@ -197,9 +248,7 @@ def make_plan():
                     reasons=eligibility(metadata,code,cutoff)
                     reviews.append(dict(company_id=cid,status='eligible_on_retained_historical_metadata' if not reasons else 'requires_historical_evidence',reasons=reasons))
                     if not reasons:eligible.append(metadata)
-                chosen=select(eligible);total=sum(r['historical_index_mcap_crore'] for r in chosen)
-                members=[dict(company_id=r['company_id'],rank=n,equal_weight=1/len(chosen),historical_cap_weight=r['historical_index_mcap_crore']/total,
-                    selection_evidence=r) for n,r in enumerate(chosen,1)]
+                members=initial_members(eligible)
                 baskets.append(dict(basket_id=base.digest([code,quarter,policy_hash]),code=code,quarter=quarter,cutoff_at=cutoff,
                     frozen_at=frozen,status='FROZEN_METADATA_QUALIFIED_RECONSTRUCTION' if members else 'CANDIDATE_ONLY_HISTORICAL_EVIDENCE_MISSING',
                     chart_ready=0,policy_sha256=policy_hash,members=members,candidate_review=reviews,
