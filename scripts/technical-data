@@ -9,10 +9,15 @@ s.add_parser('status')
 c=s.add_parser('charts');c.add_argument('--company',nargs='+',type=int,default=[555,90,3]);c.add_argument('--start');c.add_argument('--end',default='2026-11-06')
 u=s.add_parser('update');u.add_argument('--authorize',required=True)
 s.add_parser('tick')
+s.add_parser('scheduled-tick')
+s.add_parser('scheduled-status')
 args=p.parse_args()
 if args.action=='charts':
     from experiments.technical_fix_v2.integrate import main
     main(tuple(args.company),args.start,args.end)
+elif args.action in ('scheduled-tick', 'scheduled-status'):
+    from experiments.technical_fix_v2.schedule import status, tick
+    print(json.dumps(status() if args.action=='scheduled-status' else tick(),indent=2,default=str))
 elif args.action=='update':
     from experiments.technical_fix_v2.update import execute
     execute(args.authorize)

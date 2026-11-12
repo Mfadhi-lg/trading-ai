@@ -121,6 +121,14 @@
     {
       "consumer": "scripts/technical-data",
       "module": "experiments.technical_fix_v2.update"
+    },
+    {
+      "consumer": "ops/host/technical_market_updates.py",
+      "module": "experiments.technical_fix_v2.schedule"
+    },
+    {
+      "consumer": "scripts/technical-data",
+      "module": "experiments.technical_fix_v2.schedule"
     }
   ]
 }
