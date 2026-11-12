@@ -27,10 +27,10 @@ Do not read the entire repository by default. Use targeted search, imports, entr
 
 ## Branch workflow
 
-- Keep `main` as the normal local working branch. Start each task from an updated `main`, preserving all existing local changes and untracked files.
-- Maintain only `main` and the reusable `fuad` branch. Do not create a branch for each fix, task, review or agent.
+- Keep `main` as the shared integration branch. Fadhi works on the reusable `fadhi` branch; his friend works on `fuad`. Use `fadhi` for this checkout and Fadhi's tasks, preserving all existing local changes and untracked files.
+- Maintain `main`, `fadhi` and `fuad`. Do not create a branch for each fix, task, review or agent. Do not commit or push Fadhi's work to `fuad` unless explicitly requested.
 - Existing branches supporting open pull requests may remain until those pull requests are merged; remove them afterward once their work is preserved.
-- Use `fuad` when a pull request branch is required by the existing protection on `main`. Reuse it for subsequent pull requests after the previous work is merged; do not bypass branch protection or force-push shared history.
+- Bring updates from `origin/main` into the appropriate personal branch and open pull requests from that branch to `main`. Reuse personal branches for subsequent work; do not bypass branch protection or force-push shared history.
 - Preserve untracked files in the local checkout and every linked worktree. Branch cleanup must not delete worktree directories, run `git clean`, discard changes or remove local data.
 - Before removing an old branch, account for unmerged commits and open pull requests. Preserve their history and any local changes before deleting branch references.
 
