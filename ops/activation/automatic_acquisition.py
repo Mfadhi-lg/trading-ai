@@ -150,7 +150,8 @@ def bse_once(out, preflight=False):
         save(out / 'owner-before.json', owner_gate())
         if not preflight:
             desktop_check()
-        manifest = json.loads((ROOT / 'artifacts/bse-production-ingestion-ownership-fixed-2026-10-09/manifest.json').read_text())
+        from bse_production import production_config
+        manifest = production_config()
         image = json.loads(nse.checked(['docker', 'image', 'inspect', manifest['operation_image']]))[0]
         nse.require(image['Id'] == manifest['operation_image'], 'Existing BSE application image changed')
         volume = json.loads(nse.checked(['docker', 'volume', 'inspect', nse.VOLUME]))[0]

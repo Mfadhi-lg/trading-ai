@@ -36,5 +36,5 @@ esac
 if [ $# -eq 0 ]; then
     exec python3 -B ops/host/run_acquisition_lifecycle.py shell
 else
-    exec docker compose --profile manual run --rm cli "$@"
+    exec python3 -B ops/host/run_acquisition_lifecycle.py manual "$@"
 fi

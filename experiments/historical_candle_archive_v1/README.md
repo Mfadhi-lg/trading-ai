@@ -26,6 +26,14 @@ are checksum-verified and skipped; saved raw responses recover without a GET.
 Transport failures have bounded recovery; authentication/rate-limit HTTP failures
 stop acquisition. Manually resuming retains a three-run request attempt ceiling.
 
+The separately authorized HCD-02 full campaign resumes durable SUCCESS index
+entries without rereading all completed files on each wake. Interrupted requests
+retain checksum recovery and uncertain-delivery stops. Full raw/Parquet checksum
+verification remains required in campaign finalization; corruption in completed
+files can therefore be detected at finalization rather than startup. Execution
+receipts distinguish resumed entries from checksum-verified reuse and report
+request-boundary progress during long recovery scans.
+
 `python3 -m experiments.historical_candle_archive_v1.analyze` validates retained
 raw evidence and writes separate native/custom definitions and provisional
 reconstructions to Passport. It does not issue requests. Source OHLC defects

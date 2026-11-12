@@ -92,6 +92,20 @@ def test_already_running_candle_wake_does_not_require_its_writer_to_be_idle(isol
     assert lifecycle.wake()['already_awake']
 
 
+@pytest.mark.parametrize('owner_lock', ['.scheduler-admission.lock', '.nse-owner.lock'])
+def test_already_awake_without_candles_does_not_drain_active_owner(isolated, monkeypatch, owner_lock):
+    monkeypatch.setattr(lifecycle.candles, 'status', lambda: {'status': 'NOT_CONFIGURED'})
+    def unexpected_start():
+        pytest.fail('An already-awake dispatcher must not start candle workers')
+    monkeypatch.setattr(lifecycle.candles, 'wake', unexpected_start)
+    with (lifecycle.ACTIVATION / owner_lock).open('rb') as owner:
+        fcntl.flock(owner, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        result = lifecycle.wake()
+    assert result['status'] == 'PASS' and result['already_awake']
+    assert not lifecycle.PAUSE.exists()
+    assert not any(c[:2] == ['launchctl', 'bootstrap'] for c in isolated)
+
+
 def test_wake_uses_sealed_local_image_without_repository_alias(isolated, monkeypatch):
     import nse_results
     digest = 'sha256:' + 'a' * 64

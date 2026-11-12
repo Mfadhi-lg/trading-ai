@@ -10,11 +10,130 @@ import time
 import unittest
 from unittest.mock import Mock,patch
 
-from . import control,rollout,storage,acquire,repair_queue
+from . import control,rollout,storage,acquire,repair_queue,campaign
 from ops.host import historical_candle_lifecycle as host
 
 
 class LifecycleTests(unittest.TestCase):
+    def test_fast_resume_campaign_cannot_finish_when_final_audit_fails(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder)
+            for name in ('full-universe-manifest.json', 'special-full-manifest.json'):
+                (path/name).write_bytes(b'{}')
+            digest = storage.sha(b'{}')
+            storage.dump(path/'owner-authorization.json', dict(native_manifest_sha256=digest,
+                session_repair_manifest_sha256=digest))
+            storage.dump(path/'scaled-validation.json', dict(safe_for_full_manifest=True))
+            with patch.object(campaign, 'EVIDENCE', path), patch.object(campaign, 'OUT', path), \
+                 patch.object(campaign, 'execute') as execute, patch.object(campaign.subprocess, 'Popen'), \
+                 patch.object(campaign, 'finalize', side_effect=RuntimeError('STOP_FINAL_RAW_CHECKSUM')):
+                with self.assertRaisesRegex(RuntimeError, 'STOP_FINAL_RAW_CHECKSUM'):
+                    campaign._run()
+            self.assertEqual([c.kwargs for c in execute.call_args_list],
+                             [dict(authorize=digest, fast_resume=True)] * 2)
+            state = json.loads((path/'full-campaign.json').read_text())
+            self.assertEqual(state['status'], 'STOPPED')
+            self.assertEqual(state['reason'], 'STOP_FINAL_RAW_CHECKSUM')
+
+    def test_final_audit_rejects_corrupt_previously_completed_response(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder)
+            (path/'full-universe-manifest.json').write_text('{}')
+            (path/'raw.gz').write_bytes(gzip.compress(b'corrupt'))
+            a = Mock(root=path)
+            a.db.execute.side_effect = [Mock(fetchall=lambda: [('ok',)]),
+                                       Mock(fetchall=lambda: [(storage.sha(b'original'), 'raw.gz')])]
+            with patch.object(campaign, 'OUT', path), patch.object(campaign, 'EVIDENCE', path), \
+                 patch.object(campaign, 'Archive', return_value=a), patch.object(campaign, 'acquisition_inventory'), \
+                 patch.object(campaign, 'refresh'), patch.object(control, 'PAUSE', path/'pause'), \
+                 patch.object(control, 'SHARED_PAUSE', path/'shared'):
+                with self.assertRaisesRegex(RuntimeError, 'STOP_FINAL_RAW_CHECKSUM'):
+                    campaign.finalize({})
+            self.assertFalse((path/'full-completion.json').exists())
+            a.db.close.assert_called_once()
+
+    def test_full_resume_skips_success_but_preserves_uncertain_delivery_stop(self):
+        for pending, fast_resume in ((False, True), (True, True), (False, False)):
+            with self.subTest(pending=pending, fast_resume=fast_resume), tempfile.TemporaryDirectory() as folder:
+                path = Path(folder)
+                root = path/'archive'
+                root.mkdir()
+                a = Mock(root=root, mount=path, info={'VolumeUUID': 'fixture'})
+                a.db = sqlite3.connect(':memory:')
+                a.db.execute('CREATE TABLE requests(request_id TEXT,status TEXT,raw_sha256 TEXT,raw_path TEXT,received_at TEXT,attempts INTEGER,error_kind TEXT)')
+                a.db.execute('CREATE INDEX status_lookup ON requests(status)')
+                queries = []
+                a.db.set_trace_callback(queries.append)
+                requests = []
+                for cid in (1, 2):
+                    q = dict(company_id=cid, instrument_key=f'NSE_EQ|FIXTURE{cid}', unit='days',
+                             interval=1, timeframe='Daily', from_date='2026-10-30',
+                             to_date='2026-10-30', role='TEST')
+                    q['request_id'] = storage.sha(json.dumps(q, sort_keys=True).encode())
+                    requests.append(q)
+                    status = 'IN_FLIGHT' if cid == 2 and pending else 'SUCCESS'
+                    a.db.execute('INSERT INTO requests VALUES(?,?,?,?,?,?,?)',
+                                 (q['request_id'], status, 'fixture', 'absent.gz', None, 1, None))
+                storage.dump(path/'full-universe-manifest.json', dict(requests=requests,
+                    companies=[dict(company_id=q['company_id'], instrument_key=q['instrument_key']) for q in requests]))
+                digest = storage.sha((path/'full-universe-manifest.json').read_bytes())
+                storage.dump(path/'scaled-validation.json', dict(safe_for_full_manifest=True, full_manifest_sha256=digest))
+                with patch.object(rollout, 'EVIDENCE', path), patch.object(rollout, 'OUT', path), \
+                     patch.object(rollout, 'Archive', return_value=a), patch.object(acquire, 'OUT', path), \
+                     patch.object(acquire, 'secure_supplier', return_value='fixture'), patch.object(acquire, 'fetch') as provider, \
+                     patch.object(rollout, 'recover', wraps=rollout.recover) as recovery, \
+                     patch.object(rollout, 'acquisition_inventory'), patch.object(repair_queue, 'refresh'), \
+                     patch.object(control, 'PAUSE', path/'pause'), patch.object(control, 'SHARED_PAUSE', path/'shared'):
+                    if not fast_resume:
+                        with self.assertRaises(FileNotFoundError):
+                            rollout.execute('full', authorize=digest)
+                        recovery.assert_called_once_with(a, requests[0])
+                    elif pending:
+                        with self.assertRaisesRegex(RuntimeError, 'STOP_UNCERTAIN_PROVIDER_DELIVERY'):
+                            rollout.execute('full', authorize=digest, fast_resume=True)
+                        recovery.assert_called_once_with(a, requests[1])
+                    else:
+                        result = rollout.execute('full', authorize=digest, fast_resume=True)
+                        self.assertEqual(result['runs'][-1]['resumed'], 2)
+                        self.assertEqual(result['runs'][-1]['reused'], 0)
+                        recovery.assert_not_called()
+                    provider.assert_not_called()
+                    if fast_resume:
+                        self.assertTrue(any('FROM requests NOT INDEXED' in query for query in queries))
+
+    def test_reuse_scan_reports_progress_before_new_downloads(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder)
+            a = Mock(root=path, mount=path, info={'VolumeUUID': 'fixture'})
+            requests = []
+            for cid in (1, 2, 3):
+                q = dict(company_id=cid, instrument_key=f'NSE_EQ|FIXTURE{cid}', unit='days',
+                         interval=1, timeframe='Daily', from_date='2026-10-30',
+                         to_date='2026-10-30', role='TEST')
+                q['request_id'] = storage.sha(json.dumps(q, sort_keys=True).encode())
+                requests.append(q)
+            storage.dump(path/'operation-manifest.json', dict(requests=requests,
+                companies=[dict(company_id=q['company_id'], instrument_key=q['instrument_key']) for q in requests]))
+            observations = []
+            def reuse(archive, q):
+                saved = json.loads((path/'operation-execution.json').read_text())
+                observations.append(saved)
+                return True, None
+            ticks = iter(range(0, 1000, 11))
+            with patch.object(rollout, 'EVIDENCE', path), patch.object(rollout, 'Archive', return_value=a), \
+                 patch.object(acquire, 'OUT', path), patch.object(acquire, 'secure_supplier', return_value='fixture'), \
+                 patch.object(acquire, 'fetch') as provider, patch.object(rollout, 'recover', side_effect=reuse), \
+                 patch.object(rollout.time, 'monotonic', side_effect=lambda: next(ticks)), \
+                 patch.object(rollout, 'acquisition_inventory'), patch.object(repair_queue, 'refresh'), \
+                 patch.object(control, 'PAUSE', path/'pause'), patch.object(control, 'SHARED_PAUSE', path/'shared'):
+                result = rollout.execute('operation')
+            provider.assert_not_called()
+            self.assertEqual([d['requests_checked'] for d in observations], [0, 1, 2])
+            self.assertEqual([d['runs'][-1]['reused'] for d in observations], [0, 1, 2])
+            self.assertTrue(all(d['stage'] == 'VERIFYING_SAVED_DATA' for d in observations))
+            self.assertEqual(result['requests_checked'], 3)
+            self.assertEqual(result['stage'], 'MANIFEST_PASS_FINISHED')
+
     def test_pause_during_fetch_finishes_receipt_and_resumes_without_duplicate_get(self):
         with tempfile.TemporaryDirectory() as folder:
             path=Path(folder);root=path/'archive';root.mkdir();pause=path/'pause.json'

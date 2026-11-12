@@ -244,6 +244,7 @@ def run_document_download_worker(
                         )
                         if (
                             str(job["artifact_type"]) == "credit_rating"
+                            and result.result_status == "rejected_unexpected_html"
                             and result.http_status == 200
                             and result.detected_media_type == "text/html"
                             and result.body

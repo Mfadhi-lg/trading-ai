@@ -40,9 +40,9 @@ def _run():
                owner_requests_isolated_corruption_be_listed_and_acquisition_continue=True)
     dump(EVIDENCE/'full-campaign.json',state)
     try:
-        execute('full',authorize=authorization['native_manifest_sha256'])
+        execute('full',authorize=authorization['native_manifest_sha256'],fast_resume=True)
         state.update(phase='SESSION_REPAIRS',updated_at=now());dump(EVIDENCE/'full-campaign.json',state)
-        execute('special-full',authorize=authorization['session_repair_manifest_sha256'])
+        execute('special-full',authorize=authorization['session_repair_manifest_sha256'],fast_resume=True)
         state.update(phase='FINAL_VERIFICATION',updated_at=now());dump(EVIDENCE/'full-campaign.json',state)
         finalize(state)
         state.update(status='ACQUISITION_PASS_FINISHED; SEE_REPAIR_QUEUE',phase='FINISHED',finished_at=now())
