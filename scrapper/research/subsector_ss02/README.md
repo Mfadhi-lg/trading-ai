@@ -83,7 +83,9 @@ never backdated into March/June knowledge. `queries.sql` compares instants using
 SQLite `julianday`, including timezone offsets.
 
 No candles, final charts, Document Intelligence pipeline, ML or production changes
-are part of this module. `INDEX_METHODOLOGY.md` is a specification only.
+are part of this module. [Basket methodology and calculation boundary](INDEX_METHODOLOGY.md)
+documents historical eligibility, initial weights, and the evidence still required
+for index levels or benchmark comparisons.
 
 Tested with Python 3.14, SQLite, openpyxl 3.1.5, pypdf 6.14.2 and certifi 2026.7.22.
 The migration is outside the scraper's runtime migration directory.
