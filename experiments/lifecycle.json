@@ -22,8 +22,8 @@
       "name": "historical_candle_archive_v1",
       "status": "production",
       "owner": "Acquisition operations maintainer",
-      "interface": "control.py; storage.py; access.py via ops/host/historical_candle_lifecycle.py",
-      "validation_gate": "Only existing bounded archive lifecycle is operationally integrated; partial calendar, source/adjustment and indicator limits remain."
+      "interface": "control.py; storage.py; access.py via ops/host/historical_candle_lifecycle.py and read-only scrapper.research.features.technical.daily_indicators",
+      "validation_gate": "Only existing bounded archive lifecycle and read-only indicator access are integrated; partial calendar, source/adjustment and indicator limits remain."
     },
     {
       "name": "subsector_index_v1",
@@ -90,6 +90,14 @@
     }
   ],
   "operational_imports": [
+    {
+      "consumer": "scrapper/research/features/technical.py",
+      "module": "experiments.earnings_reaction_v1.indicators"
+    },
+    {
+      "consumer": "scrapper/research/features/technical.py",
+      "module": "experiments.historical_candle_archive_v1.access"
+    },
     {
       "consumer": "ops/host/historical_candle_lifecycle.py",
       "module": "experiments.historical_candle_archive_v1"
