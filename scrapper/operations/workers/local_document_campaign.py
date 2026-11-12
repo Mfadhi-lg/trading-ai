@@ -81,7 +81,10 @@ def run_local_campaign(*,db_path,manifest,expected_sha256,ocr_engine,output_dir,
     if type(limit) is not int or not 1<=limit<=24:raise ValueError('Daily finite limit required')
     if not 1<=seconds<=420:raise ValueError('Finite runtime required')
     start=time.monotonic();outcomes=[]
-    if dry_run:
+    from ...db.database import selected_backend, connect
+    if dry_run and selected_backend() == "postgresql":
+        conn = connect(db_path, read_only=True)
+    elif dry_run:
         conn=sqlite3.connect(Path(db_path).resolve().as_uri()+'?mode=ro',uri=True)
         conn.row_factory=sqlite3.Row;conn.execute('PRAGMA query_only=ON');conn.execute('BEGIN')
     else:conn=connection_factory(db_path)

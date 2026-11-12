@@ -1,8 +1,10 @@
 """Read-only, explicitly scoped D09 evidence rows; never read current readiness."""
+from scrapper.db.repository_backend import (execute, executemany, generated_id, statement, is_postgresql, atomic_repository, begin_immediate, commit, rollback, transaction as repository_transaction)
 
 
+@atomic_repository('documents')
 def document_check_rows(conn, *, expectation_id):
-    cursor = conn.execute(
+    cursor = execute(conn,
         """SELECT expectation.expectation_id, expectation.company_id,
                   expectation.artifact_type, expectation.created_at_utc,
                   expectation.expectation_basis, expectation.expected_after_utc,

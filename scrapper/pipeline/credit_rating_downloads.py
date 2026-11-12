@@ -29,8 +29,10 @@ from ..db.repo import utc_now
 from ..documents.credit_rating_resolver import RESOLVER_VERSION, resolve_credit_rating
 from ..documents.downloader import DownloadPolicy
 from ..documents.store import assert_document_store_ready
+from scrapper.db.repository_backend import (execute, executemany, generated_id, statement, is_postgresql, atomic_repository, begin_immediate, commit, rollback, transaction as repository_transaction)
 
 
+@atomic_repository('documents')
 def queue_credit_rating_downloads(
     conn: sqlite3.Connection,
     *,
@@ -55,10 +57,9 @@ def queue_credit_rating_downloads(
         artifact_filter = f" AND artifact.artifact_id IN ({placeholders})"
         parameters.extend(selected_ids)
     maintenance_filter='' if artifact_ids is None else ' AND artifact_id IN ('+','.join(str(x) for x in selected_ids)+')'
-    before = conn.total_changes
-    with conn:
-        conn.execute(
-            f"""INSERT OR IGNORE INTO credit_rating_download_queue
+    with repository_transaction(conn):
+        cursor = execute(conn,
+            statement(conn, f"""INSERT OR IGNORE INTO credit_rating_download_queue
                (artifact_id, requested_url, priority, status,
                 created_at_utc, updated_at_utc)
                SELECT artifact.artifact_id, source.document_url,
@@ -73,20 +74,20 @@ def queue_credit_rating_downloads(
                 WHERE artifact.artifact_type='credit_rating'
                   AND source.availability_status NOT IN ('not_offered', 'not_applicable')
                   {artifact_filter}
-                GROUP BY artifact.artifact_id, source.document_url""",
+                GROUP BY artifact.artifact_id, source.document_url""", f"INSERT INTO credit_rating_download_queue\n               (artifact_id, requested_url, priority, status,\n                created_at_utc, updated_at_utc)\n               SELECT artifact.artifact_id, source.document_url,\n                      CASE WHEN artifact.published_at_utc IS NULL THEN 100 ELSE 50 END,\n                      CASE WHEN EXISTS (\n                        SELECT 1 FROM artifact_contents AS content\n                         WHERE content.artifact_id=artifact.artifact_id\n                      ) THEN 'SKIPPED_ALREADY_HAVE_CONTENT' ELSE 'PENDING' END,\n                      ?, ?\n                 FROM document_artifacts AS artifact\n                 JOIN artifact_sources AS source USING (artifact_id)\n                WHERE artifact.artifact_type='credit_rating'\n                  AND source.availability_status NOT IN ('not_offered', 'not_applicable')\n                  {artifact_filter}\n                GROUP BY artifact.artifact_id, source.document_url ON CONFLICT DO NOTHING"),
             parameters,
         )
-        created = conn.total_changes - before
-        for row in conn.execute(
+        created = cursor.rowcount
+        for row in execute(conn,
             f"""SELECT download_job_id, requested_url
                  FROM credit_rating_download_queue WHERE target_host='' {maintenance_filter}"""
         ).fetchall():
             host = (urlsplit(row["requested_url"]).hostname or "").lower()
-            conn.execute(
+            execute(conn,
                 "UPDATE credit_rating_download_queue SET target_host=? WHERE download_job_id=?",
                 (host, int(row["download_job_id"])),
             )
-        conn.execute(
+        execute(conn,
             f"""UPDATE credit_rating_download_queue
                   SET status='SUCCEEDED', last_result_status='CONTENT_ALREADY_PRESENT',
                       next_attempt_at_utc=NULL, lease_owner=NULL,
@@ -97,7 +98,7 @@ def queue_credit_rating_downloads(
                 )""",
             (created_at_utc,),
         )
-        conn.execute(
+        execute(conn,
             f"""UPDATE credit_rating_download_queue
                   SET status='SKIPPED_POLICY', next_attempt_at_utc=NULL,
                       lease_owner=NULL, lease_expires_at_utc=NULL,
@@ -123,6 +124,7 @@ def queue_credit_rating_downloads(
     )
 
 
+@atomic_repository('documents')
 def _queue_counts(
     conn: sqlite3.Connection,
     *,
@@ -133,7 +135,7 @@ def _queue_counts(
         return {"created_job_count": created_job_count, "total_job_count": 0}
     counts = {
         row["status"]: int(row["count"])
-        for row in conn.execute(
+        for row in execute(conn,
             "SELECT status, COUNT(*) AS count FROM credit_rating_download_queue GROUP BY status"
         )
     }
@@ -144,6 +146,7 @@ def _queue_counts(
     }
 
 
+@atomic_repository('documents')
 def _terms_blocked_artifact_ids(
     conn: sqlite3.Connection, artifact_ids: Iterable[int]
 ) -> tuple[int, ...]:
@@ -155,7 +158,7 @@ def _terms_blocked_artifact_ids(
     placeholders = ",".join("?" for _ in selected)
     return tuple(
         int(row[0])
-        for row in conn.execute(
+        for row in execute(conn,
             f"""SELECT DISTINCT artifact_id FROM credit_rating_download_queue
                  WHERE artifact_id IN ({placeholders})
                    AND status='SKIPPED_POLICY'
@@ -165,6 +168,7 @@ def _terms_blocked_artifact_ids(
     )
 
 
+@atomic_repository('documents')
 def enqueue_credit_ratings_for_accepted_parse(
     conn: sqlite3.Connection,
     *,
@@ -197,6 +201,7 @@ def _iso_after(seconds: int) -> str:
     return (datetime.now(timezone.utc) + timedelta(seconds=seconds)).isoformat()
 
 
+@atomic_repository('documents')
 def _claim_job(
     conn: sqlite3.Connection,
     *,
@@ -211,14 +216,14 @@ def _claim_job(
         if len(allowed_job_ids)>2 or any(type(x) is not int or x<=0 for x in allowed_job_ids):
             raise ValueError('Automatic rating claims require at most two positive IDs')
     selection='' if allowed_job_ids is None else ' AND download_job_id IN ('+','.join('?' for _ in allowed_job_ids)+')'
-    conn.execute("BEGIN IMMEDIATE")
+    begin_immediate(conn, lock='documents')
     try:
         # A dead worker's lease is safely reclaimable.
-        conn.execute(
-            f"""UPDATE credit_rating_download_queue
+        execute(conn,
+            statement(conn, f"""UPDATE credit_rating_download_queue
                   SET status='RETRYABLE_FAILURE', lease_owner=NULL,
                       lease_expires_at_utc=NULL, updated_at_utc=?
-                WHERE status='LEASED' AND lease_expires_at_utc < ? {selection}""",
+                WHERE status='LEASED' AND lease_expires_at_utc < ? {selection}""", f"UPDATE credit_rating_download_queue\n                  SET status='RETRYABLE_FAILURE', lease_owner=NULL,\n                      lease_expires_at_utc=NULL, updated_at_utc=?\n                WHERE status='LEASED' AND CAST(lease_expires_at_utc AS timestamptz) < CAST(? AS timestamptz) {selection}"),
             (now, now, *(allowed_job_ids or ())),
         )
         host_filter = ""
@@ -231,8 +236,8 @@ def _claim_job(
             host_filter += selection
             parameters.extend(allowed_job_ids)
         parameters.append(now)
-        row = conn.execute(
-            f"""SELECT * FROM credit_rating_download_queue
+        row = execute(conn,
+            statement(conn, f"""SELECT * FROM credit_rating_download_queue
                 WHERE status IN ('PENDING', 'RETRYABLE_FAILURE')
                   AND NOT EXISTS (SELECT 1 FROM screener_collection_scope sc
                     JOIN document_artifacts da ON da.company_id=sc.company_id
@@ -264,30 +269,31 @@ def _claim_job(
                        AND health.blocked_until_utc IS NOT NULL
                        AND health.blocked_until_utc > ?
                 )
-                ORDER BY priority, attempt_count, download_job_id LIMIT 1""",
+                ORDER BY priority, attempt_count, download_job_id LIMIT 1""", f"SELECT * FROM credit_rating_download_queue\n                WHERE status IN ('PENDING', 'RETRYABLE_FAILURE')\n                  AND NOT EXISTS (SELECT 1 FROM screener_collection_scope sc\n                    JOIN document_artifacts da ON da.company_id=sc.company_id\n                    WHERE da.artifact_id=credit_rating_download_queue.artifact_id\n                      AND sc.eligibility='below_floor')\n                  AND (next_attempt_at_utc IS NULL OR CAST(next_attempt_at_utc AS timestamptz) <= CAST(? AS timestamptz))\n                  {host_filter}\n                  AND NOT EXISTS (\n                    SELECT 1 FROM credit_rating_host_policy AS policy\n                     WHERE policy.automation_status='BLOCKED_TERMS'\n                       AND (\n                         credit_rating_download_queue.target_host=policy.host\n                         OR credit_rating_download_queue.target_host LIKE '%.' || policy.host\n                       )\n                  )\n                  AND (\n                    SELECT COUNT(*) FROM credit_rating_download_queue AS active\n                     WHERE active.target_host=credit_rating_download_queue.target_host\n                       AND active.status='LEASED'\n                  ) < COALESCE(\n                    (SELECT policy.max_concurrency\n                       FROM credit_rating_host_policy AS policy\n                      WHERE policy.host=credit_rating_download_queue.target_host),\n                    1\n                  )\n                  AND NOT EXISTS (\n                    SELECT 1 FROM credit_rating_host_health AS health\n                     WHERE health.host=credit_rating_download_queue.target_host\n                       AND health.blocked_until_utc IS NOT NULL\n                       AND CAST(health.blocked_until_utc AS timestamptz) > CAST(? AS timestamptz)\n                )\n                ORDER BY priority, attempt_count, download_job_id LIMIT 1"),
             parameters,
         ).fetchone()
         if row is None:
-            conn.commit()
+            commit(conn)
             return None
-        conn.execute(
+        execute(conn,
             """UPDATE credit_rating_download_queue
                   SET status='LEASED', attempt_count=attempt_count+1,
                       lease_owner=?, lease_expires_at_utc=?, updated_at_utc=?, claim_token=?
                 WHERE download_job_id=?""",
             (worker, _iso_after(lease_seconds), now, secrets.token_hex(16), int(row["download_job_id"])),
         )
-        claimed = conn.execute(
+        claimed = execute(conn,
             "SELECT * FROM credit_rating_download_queue WHERE download_job_id=?",
             (int(row["download_job_id"]),),
         ).fetchone()
-        conn.commit()
+        commit(conn)
         return claimed
     except Exception:
-        conn.rollback()
+        rollback(conn)
         raise
 
 
+@atomic_repository('documents')
 def _finish_job(
     conn: sqlite3.Connection,
     *,
@@ -301,8 +307,8 @@ def _finish_job(
     retry_seconds: int | None = None,
 ) -> None:
     now = utc_now()
-    with conn:
-        cursor = conn.execute(
+    with repository_transaction(conn):
+        cursor = execute(conn,
             """UPDATE credit_rating_download_queue
                   SET status=?, next_attempt_at_utc=?, lease_owner=NULL,
                       lease_expires_at_utc=NULL, last_result_status=?,
@@ -325,10 +331,11 @@ def _finish_job(
             raise RuntimeError("Rating job lease is no longer owned by this claim")
 
 
+@atomic_repository('documents')
 def _source_ids(conn: sqlite3.Connection, artifact_id: int, url: str) -> tuple[int, ...]:
     return tuple(
         int(row["artifact_source_id"])
-        for row in conn.execute(
+        for row in execute(conn,
             """SELECT artifact_source_id FROM artifact_sources
                 WHERE artifact_id=? AND document_url=? ORDER BY artifact_source_id""",
             (artifact_id, url),
@@ -345,6 +352,7 @@ def _host_block_status(resolution: Any) -> int | None:
     return None
 
 
+@atomic_repository('documents')
 def _record_host_block(
     conn: sqlite3.Connection,
     *,
@@ -354,8 +362,8 @@ def _record_host_block(
 ) -> None:
     now = utc_now()
     blocked_until = _iso_after(24 * 60 * 60 if http_status in {401, 403} else 6 * 60 * 60)
-    with conn:
-        conn.execute(
+    with repository_transaction(conn):
+        execute(conn,
             """INSERT INTO credit_rating_host_health
                (host, blocked_until_utc, last_http_status, consecutive_blocks,
                 last_result_status, updated_at_utc)
@@ -370,6 +378,7 @@ def _record_host_block(
         )
 
 
+@atomic_repository('documents')
 def _persist_resolution(
     conn: sqlite3.Connection,
     *,
@@ -379,8 +388,8 @@ def _persist_resolution(
     snapshot_root: Path,
     policy: DownloadPolicy,
 ) -> int | None:
-    with conn:
-        cursor = conn.execute(
+    with repository_transaction(conn):
+        cursor = execute(conn,
             """INSERT INTO credit_rating_resolution_attempts
                (download_job_id, artifact_id, original_url, started_at_utc,
                 completed_at_utc, resolution_status, resolver_version,
@@ -393,8 +402,8 @@ def _persist_resolution(
                 resolution.final_result.final_url if resolution.final_result else None,
                 json.dumps({"message": resolution.error} if resolution.error else {}),
             ),
-        )
-        attempt_id = int(cursor.lastrowid)
+         returning='resolution_attempt_id')
+        attempt_id = generated_id(cursor, 'resolution_attempt_id')
         for position, step in enumerate(resolution.steps):
             blob_id = None
             if step.result.body is not None:
@@ -405,7 +414,7 @@ def _persist_resolution(
                     observed_at_utc=utc_now(),
                     snapshot_root=snapshot_root,
                 )
-            conn.execute(
+            execute(conn,
                 """INSERT INTO credit_rating_resolution_steps
                    (resolution_attempt_id, step_position, step_type, requested_url,
                     final_url, request_method, http_status, declared_media_type,
@@ -448,6 +457,7 @@ def _persist_resolution(
     return persisted.content_id
 
 
+@atomic_repository('documents')
 def run_credit_rating_download_worker(
     conn: sqlite3.Connection,
     *,
@@ -483,7 +493,7 @@ def run_credit_rating_download_worker(
     if throttle_seconds < 0:
         raise ValueError("throttle_seconds cannot be negative")
     if hosts:
-        rows = conn.execute(
+        rows = execute(conn,
             f"""SELECT host, min_delay_seconds FROM credit_rating_host_policy
                  WHERE host IN ({','.join('?' for _ in hosts)})""",
             hosts,
@@ -608,7 +618,7 @@ def run_credit_rating_download_worker(
                 lifecycle.wait(throttle_seconds, state="THROTTLED")
     queue_counts = {
         row["status"]: int(row["count"])
-        for row in conn.execute(
+        for row in execute(conn,
             "SELECT status, COUNT(*) AS count FROM credit_rating_download_queue GROUP BY status"
         )
     }

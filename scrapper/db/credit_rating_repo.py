@@ -15,6 +15,8 @@ from ..documents.credit_rating import (
     RatingEvidence,
     canonical_json,
 )
+from scrapper.db.postgresql_source_text import bind_source_text, decode_source_text
+from scrapper.db.repository_backend import (execute, executemany, generated_id, statement, is_postgresql, atomic_repository, begin_immediate, commit, rollback, transaction as repository_transaction)
 
 
 @dataclass(frozen=True)
@@ -41,10 +43,11 @@ class PersistedCreditRating:
         }
 
 
+@atomic_repository('documents')
 def _existing(
     conn: sqlite3.Connection, *, extraction_id: int, options_json: str
 ) -> sqlite3.Row | None:
-    return conn.execute(
+    return execute(conn,
         """SELECT * FROM credit_rating_normalizations
            WHERE extraction_id=? AND parser_name=? AND parser_version=?
              AND options_json=?""",
@@ -70,6 +73,7 @@ def _result(row: sqlite3.Row, *, reused: bool) -> PersistedCreditRating:
     )
 
 
+@atomic_repository('documents')
 def _insert_evidence(
     conn: sqlite3.Connection,
     *,
@@ -79,7 +83,7 @@ def _insert_evidence(
     rating_action_id: int | None = None,
     source_table_id: int | None = None,
 ) -> None:
-    conn.execute(
+    execute(conn,
         """INSERT INTO credit_rating_field_evidence
            (normalization_id, rating_action_id, extraction_id, source_table_id,
             field_code, page_number, element_position, source_row_position,
@@ -104,6 +108,7 @@ def _insert_evidence(
     )
 
 
+@atomic_repository('documents')
 def persist_credit_rating(
     conn: sqlite3.Connection,
     *,
@@ -130,8 +135,8 @@ def persist_credit_rating(
     conflict_count = sum(
         action.canonical_status == "conflict" for action in normalized.actions
     )
-    with conn:
-        cursor = conn.execute(
+    with repository_transaction(conn):
+        cursor = execute(conn,
             """INSERT INTO credit_rating_normalizations
                (artifact_id, content_id, extraction_id, parser_name,
                 parser_version, options_json, document_class, agency_raw,
@@ -160,11 +165,11 @@ def persist_credit_rating(
                 completed_at_utc,
                 completed_at_utc,
             ),
-        )
-        normalization_id = int(cursor.lastrowid)
+         returning='normalization_id')
+        normalization_id = generated_id(cursor, 'normalization_id')
         table_ids: list[int] = []
         for table in normalized.source_tables:
-            table_cursor = conn.execute(
+            table_cursor = execute(conn,
                 """INSERT INTO credit_rating_source_tables
                    (normalization_id, extraction_id, page_number,
                     element_position, source_rows_json, header_mapping_json,
@@ -181,11 +186,11 @@ def persist_credit_rating(
                     table.status,
                     canonical_json(table.review_reasons),
                 ),
-            )
-            table_ids.append(int(table_cursor.lastrowid))
+             returning='source_table_id')
+            table_ids.append(generated_id(table_cursor, 'source_table_id'))
 
         for passage in normalized.passages:
-            conn.execute(
+            execute(conn,
                 """INSERT INTO credit_rating_passages
                    (normalization_id, extraction_id, page_number,
                     passage_position, element_position, passage_kind, text_raw,
@@ -198,7 +203,7 @@ def persist_credit_rating(
                     passage.passage_position,
                     passage.element_position,
                     passage.passage_kind,
-                    passage.text_raw,
+                    bind_source_text(conn, passage.text_raw),
                     passage.text_origin,
                     canonical_json(passage.bbox) if passage.bbox is not None else None,
                 ),
@@ -214,7 +219,7 @@ def persist_credit_rating(
 
         for action in normalized.actions:
             source_table_id = table_ids[action.source_table_index]
-            action_cursor = conn.execute(
+            action_cursor = execute(conn,
                 """INSERT INTO credit_rating_actions
                    (normalization_id, source_table_id, source_row_position,
                     facility_or_instrument_raw, facility_or_instrument_code,
@@ -248,8 +253,8 @@ def persist_credit_rating(
                     canonical_json(action.source_row),
                     canonical_json(action.ambiguity_reasons),
                 ),
-            )
-            rating_action_id = int(action_cursor.lastrowid)
+             returning='rating_action_id')
+            rating_action_id = generated_id(action_cursor, 'rating_action_id')
             for evidence in action.evidence:
                 _insert_evidence(
                     conn,
@@ -265,7 +270,7 @@ def persist_credit_rating(
                 )
 
         for validation in normalized.validations:
-            conn.execute(
+            execute(conn,
                 """INSERT INTO credit_rating_normalization_validations
                    (normalization_id, rule_code, severity, status,
                     expected_value, actual_value, details_json)
@@ -281,7 +286,7 @@ def persist_credit_rating(
                 ),
             )
         if normalized.status == "accepted":
-            conn.execute(
+            execute(conn,
                 """INSERT INTO preferred_credit_rating_normalizations
                    (artifact_id, normalization_id, updated_at_utc)
                    VALUES (?, ?, ?)
@@ -290,7 +295,7 @@ def persist_credit_rating(
                      updated_at_utc=excluded.updated_at_utc""",
                 (artifact_id, normalization_id, completed_at_utc),
             )
-    row = conn.execute(
+    row = execute(conn,
         "SELECT * FROM credit_rating_normalizations WHERE normalization_id=?",
         (normalization_id,),
     ).fetchone()
@@ -313,26 +318,27 @@ def _evidence_payload(row: sqlite3.Row) -> dict[str, Any]:
     }
 
 
+@atomic_repository('documents')
 def credit_rating_payload(
     conn: sqlite3.Connection, normalization_id: int
 ) -> dict[str, Any]:
-    normalization = conn.execute(
+    normalization = execute(conn,
         "SELECT * FROM credit_rating_normalizations WHERE normalization_id=?",
         (normalization_id,),
     ).fetchone()
     if normalization is None:
         raise ValueError(f"Unknown credit-rating normalization: {normalization_id}")
-    preferred = conn.execute(
+    preferred = execute(conn,
         """SELECT normalization_id FROM preferred_credit_rating_normalizations
            WHERE artifact_id=?""",
         (normalization["artifact_id"],),
     ).fetchone()
-    tables = conn.execute(
+    tables = execute(conn,
         """SELECT * FROM credit_rating_source_tables WHERE normalization_id=?
            ORDER BY page_number, element_position""",
         (normalization_id,),
     ).fetchall()
-    actions = conn.execute(
+    actions = execute(conn,
         """SELECT action.*, source_table.page_number, source_table.element_position
            FROM credit_rating_actions AS action
            JOIN credit_rating_source_tables AS source_table USING (source_table_id)
@@ -341,12 +347,12 @@ def credit_rating_payload(
                     action.source_row_position""",
         (normalization_id,),
     ).fetchall()
-    passages = conn.execute(
+    passages = execute(conn,
         """SELECT * FROM credit_rating_passages WHERE normalization_id=?
            ORDER BY passage_position""",
         (normalization_id,),
     ).fetchall()
-    document_evidence = conn.execute(
+    document_evidence = execute(conn,
         """SELECT * FROM credit_rating_field_evidence
            WHERE normalization_id=? AND rating_action_id IS NULL
            ORDER BY page_number, COALESCE(element_position, -1), evidence_id""",
@@ -354,7 +360,7 @@ def credit_rating_payload(
     ).fetchall()
     action_payloads: list[dict[str, Any]] = []
     for action in actions:
-        evidence = conn.execute(
+        evidence = execute(conn,
             """SELECT * FROM credit_rating_field_evidence
                WHERE rating_action_id=?
                ORDER BY page_number, COALESCE(element_position, -1),
@@ -389,7 +395,7 @@ def credit_rating_payload(
                 "evidence": [_evidence_payload(row) for row in evidence],
             }
         )
-    validations = conn.execute(
+    validations = execute(conn,
         """SELECT * FROM credit_rating_normalization_validations
            WHERE normalization_id=? ORDER BY rule_code""",
         (normalization_id,),
@@ -438,7 +444,7 @@ def credit_rating_payload(
                 "passage_position": row["passage_position"],
                 "element_position": row["element_position"],
                 "passage_kind": row["passage_kind"],
-                "text_raw": row["text_raw"],
+                "text_raw": decode_source_text(row["text_raw"]),
                 "text_origin": row["text_origin"],
                 "bbox": json.loads(row["bbox_json"]) if row["bbox_json"] else None,
             }

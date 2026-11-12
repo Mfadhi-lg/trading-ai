@@ -1,4 +1,5 @@
 """Live, read-only visibility into the operator-directed rating backfill."""
+from ..db.repository_backend import statement, is_postgresql, execute, generated_id, atomic_repository, begin_immediate
 import argparse
 import sqlite3
 import time
@@ -6,12 +7,14 @@ from ..config import DB_PATH
 
 
 def fetch_rating_data(conn):
-    exists = conn.execute("SELECT 1 FROM sqlite_master WHERE name='browser_rating_recovery_jobs'").fetchone()
+    exists = conn.execute(statement(conn,
+        "SELECT 1 FROM sqlite_master WHERE name='browser_rating_recovery_jobs'",
+        "SELECT 1 FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname=current_schema() AND c.relname='browser_rating_recovery_jobs' AND c.relkind IN ('r','p')")).fetchone()
     if not exists:
         return {'hosts': [], 'workers': [], 'current': [], 'recent': []}
     def rows(sql):
         return [dict(row) for row in conn.execute(sql)]
-    hosts = rows('''SELECT job.target_host,sum(job.status='SUCCEEDED') saved,
+    hosts = rows(statement(conn, '''SELECT job.target_host,sum(job.status='SUCCEEDED') saved,
         sum(job.status='PENDING') pending,sum(job.status='RUNNING') active,
         sum(job.status='FAILED' AND coalesce(json_extract(job.evidence_json,'$.resolution'),'')
             !='PUBLISHER_SOURCE_UNAVAILABLE') failed,
@@ -21,13 +24,15 @@ def fetch_rating_data(conn):
         sum(job.status='SUCCEEDED' AND julianday(content.created_at_utc)>julianday('now','-15 minutes')) recent,
         max(CASE WHEN job.status='SUCCEEDED' THEN content.created_at_utc END) last_saved
         FROM browser_rating_recovery_jobs job LEFT JOIN artifact_contents content USING(content_id)
-        GROUP BY job.target_host ORDER BY job.target_host''')
-    health_exists = conn.execute("SELECT 1 FROM sqlite_master WHERE name='browser_rating_recovery_workers'").fetchone()
-    workers = rows('''SELECT worker_id,status,heartbeat_at_utc,
+        GROUP BY job.target_host ORDER BY job.target_host''', "SELECT job.target_host,sum(CASE WHEN job.status='SUCCEEDED' THEN 1 ELSE 0 END) saved,\n        sum(CASE WHEN job.status='PENDING' THEN 1 ELSE 0 END) pending,sum(CASE WHEN job.status='RUNNING' THEN 1 ELSE 0 END) active,\n        sum(CASE WHEN job.status='FAILED' AND coalesce((job.evidence_json::jsonb ->> 'resolution'),'')\n            !='PUBLISHER_SOURCE_UNAVAILABLE' THEN 1 ELSE 0 END) failed,\n        sum(CASE WHEN job.status='REVIEW_REQUIRED' THEN 1 ELSE 0 END) review,\n        sum(CASE WHEN job.status='FAILED' AND (job.evidence_json::jsonb ->> 'resolution')\n            ='PUBLISHER_SOURCE_UNAVAILABLE' THEN 1 ELSE 0 END) unavailable,\n        sum(CASE WHEN job.status='SUCCEEDED' AND (EXTRACT(EPOCH FROM content.created_at_utc::timestamptz) / 86400)>(EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP - INTERVAL '15 minutes')) / 86400) THEN 1 ELSE 0 END) recent,\n        max(CASE WHEN job.status='SUCCEEDED' THEN content.created_at_utc END) last_saved\n        FROM browser_rating_recovery_jobs job LEFT JOIN artifact_contents content USING(content_id)\n        GROUP BY job.target_host ORDER BY job.target_host"))
+    health_exists = conn.execute(statement(conn,
+        "SELECT 1 FROM sqlite_master WHERE name='browser_rating_recovery_workers'",
+        "SELECT 1 FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname=current_schema() AND c.relname='browser_rating_recovery_workers' AND c.relkind IN ('r','p')")).fetchone()
+    workers = rows(statement(conn, '''SELECT worker_id,status,heartbeat_at_utc,
         (julianday('now')-julianday(heartbeat_at_utc))*86400 heartbeat_age
-        FROM browser_rating_recovery_workers ORDER BY heartbeat_at_utc DESC''') if health_exists else []
-    cooldowns = rows('''SELECT target_host,blocked_until_utc FROM browser_rating_recovery_hosts
-        WHERE julianday(blocked_until_utc)>julianday('now')''')
+        FROM browser_rating_recovery_workers ORDER BY heartbeat_at_utc DESC''', 'SELECT worker_id,status,heartbeat_at_utc,\n        ((EXTRACT(EPOCH FROM CURRENT_TIMESTAMP) / 86400)-(EXTRACT(EPOCH FROM heartbeat_at_utc::timestamptz) / 86400))*86400 heartbeat_age\n        FROM browser_rating_recovery_workers ORDER BY heartbeat_at_utc DESC')) if health_exists else []
+    cooldowns = rows(statement(conn, '''SELECT target_host,blocked_until_utc FROM browser_rating_recovery_hosts
+        WHERE julianday(blocked_until_utc)>julianday('now')''', 'SELECT target_host,blocked_until_utc FROM browser_rating_recovery_hosts\n        WHERE (EXTRACT(EPOCH FROM blocked_until_utc::timestamptz) / 86400)>(EXTRACT(EPOCH FROM CURRENT_TIMESTAMP) / 86400)'))
     waits = {r['target_host']: r['blocked_until_utc'] for r in cooldowns}
     for host in hosts:
         host['cooldown'] = waits.get(host['target_host'])
@@ -88,9 +93,8 @@ def main():
     parser.add_argument('--once', action='store_true')
     parser.add_argument('--live', action='store_true')
     args = parser.parse_args()
-    conn = sqlite3.connect(f'file:{DB_PATH.resolve()}?mode=ro', uri=True)
-    conn.row_factory = sqlite3.Row
-    conn.execute('PRAGMA query_only=ON')
+    from ..db.database import connect
+    conn = connect(DB_PATH, read_only=True)
     try:
         if args.live and not args.once:
             run_rating_monitor(conn)

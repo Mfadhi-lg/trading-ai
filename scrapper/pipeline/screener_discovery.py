@@ -23,7 +23,7 @@ from ..config import (
 )
 from ..core.log import get_logger, log_event
 from ..core.http import FetchResponse, ScreenerHostClient, fetch_screener_result_screen
-from ..db.database import connect, init_db
+from ..db.database import connect, init_db, selected_backend
 from ..db.repo import finish_run, record_fetch, start_run, store_blob, utc_now
 from ..db.screener_discovery_repo import (
     ClaimedCompany,
@@ -280,8 +280,8 @@ def requeue_failed_screener_companies(
     checked_at = now_utc()
     if dry_run:
         items: tuple[dict[str, Any], ...] = ()
-        if db_path.exists():
-            readonly = sqlite3.connect(f"file:{db_path.resolve()}?mode=ro", uri=True)
+        if selected_backend() == "postgresql" or db_path.exists():
+            readonly = connect(db_path, read_only=True)
             readonly.row_factory = sqlite3.Row
             try:
                 items = preview_requeue_candidates(
@@ -342,8 +342,8 @@ def requeue_incomplete_metric_screener_companies(
     checked_at = now_utc()
     if dry_run:
         items: tuple[dict[str, Any], ...] = ()
-        if db_path.exists():
-            readonly = sqlite3.connect(f"file:{db_path.resolve()}?mode=ro", uri=True)
+        if selected_backend() == "postgresql" or db_path.exists():
+            readonly = connect(db_path, read_only=True)
             readonly.row_factory = sqlite3.Row
             try:
                 items = preview_incomplete_metric_candidates(

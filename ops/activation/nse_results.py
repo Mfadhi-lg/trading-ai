@@ -21,6 +21,10 @@ from scrapper.sources.exchange.reporting_periods import priority_result_periods
 
 
 def require_packaged_period_logic():
+    from postgresql_release import target,verify
+    if target():
+        verify()
+        return
     source = SOURCE
     manifest = json.loads((RELEASE / 'release-manifest.json').read_text())
     require(hashlib.sha256(source.read_bytes()).hexdigest() == manifest['source_manifest_sha256'],
@@ -50,6 +54,12 @@ def checked(args):
 
 
 def check_configuration():
+    from postgresql_release import target,verify
+    native=target()
+    if native:
+        verify()
+        manifest=json.loads((HERE/'automatic-acquisition-manifest.json').read_text())
+        return {**manifest,'oci_index_digest':native['image'],'source_base_commit':native['source_revision']}
     # Verify the retained sign-off's integrity; do not repeat its technical review.
     for line in (REVIEW / 'SHA256SUMS').read_text().splitlines():
         digest, name = line.split('  ', 1)
@@ -122,12 +132,18 @@ def main():
             out = ROOT / 'artifacts/acquisition-readiness/operations' / datetime.now(timezone.utc).strftime('nse-%Y%m%dT%H%M%S%fZ')
             out.mkdir(parents=True)
             image = json.loads(checked(['docker', 'image', 'inspect', manifest['oci_index_digest']]))[0]
-            labels = image['Config']['Labels']
-            require(image['Id'] == manifest['oci_index_digest'] and image['Os'] == 'linux'
-                    and image['Architecture'] == 'arm64'
-                    and labels['org.opencontainers.image.revision'] == manifest['source_base_commit']
-                    and labels['ai.trading.source.projection.sha256'] == manifest['source_projection_sha256']
-                    and labels['ai.trading.source.patch.sha256'] == manifest['source_patch_sha256'], 'Loaded image mismatch')
+            from postgresql_release import target
+            native=target()
+            if native:
+                require(image['Id']==native['image'] and image['Os']=='linux'
+                    and image['Architecture']=='arm64', 'Native application image mismatch')
+            else:
+                labels = image['Config']['Labels']
+                require(image['Id'] == manifest['oci_index_digest'] and image['Os'] == 'linux'
+                        and image['Architecture'] == 'arm64'
+                        and labels['org.opencontainers.image.revision'] == manifest['source_base_commit']
+                        and labels['ai.trading.source.projection.sha256'] == manifest['source_projection_sha256']
+                        and labels['ai.trading.source.patch.sha256'] == manifest['source_patch_sha256'], 'Loaded image mismatch')
             volume = json.loads(checked(['docker', 'volume', 'inspect', VOLUME]))[0]
             require(volume['Name'] == VOLUME and volume['Labels'].get('com.docker.compose.project') == 'trading-ai',
                     'Existing production volume mismatch')
@@ -145,8 +161,24 @@ def main():
             override.write_text(json.dumps({'services': {'nse-results': {'image': image['Id'],
                 'volumes': [{'type': 'bind', 'source': str(ROOT/name), 'target': '/app/'+name,
                     'read_only': True, 'bind': {'create_host_path': False}} for name in overlays]}}}))
-            command = ['docker', 'compose', '-f', str(HERE / 'compose.nse.json'), '-f', str(override), '--profile', 'nse',
-                       'run', '--rm', '--no-deps', '--name', 'trading-ai-nse-results', 'nse-results']
+            if native:
+                from postgresql_release import configure
+                compose=json.loads((HERE/'compose.nse.json').read_text())
+                service=compose['services']['nse-results']
+                for mount in service['volumes']:
+                    if mount['type']=='bind':mount['source']=str(HERE)
+                native_identity=out/'native-identity.json'
+                native_identity.write_text((HERE/'runtime-identity-nse-results.json').read_text())
+                configure(compose,service,'exchange',native_identity)
+                compose['configs']['nse_identity']['file']=str(native_identity)
+                for key in ('nse_store','nse_snapshots'):
+                    compose['configs'][key]['file']=str((HERE/compose['configs'][key]['file']).resolve())
+                (out/'compose.native.json').write_text(json.dumps(compose,indent=2)+'\n')
+                command=['docker','compose','-f',str(out/'compose.native.json'),'--profile','nse',
+                    'run','--rm','--no-deps','--name','trading-ai-nse-results','nse-results']
+            else:
+                command = ['docker', 'compose', '-f', str(HERE / 'compose.nse.json'), '-f', str(override), '--profile', 'nse',
+                           'run', '--rm', '--no-deps', '--name', 'trading-ai-nse-results', 'nse-results']
             if args.period is not None:
                 command.extend(['--period', args.period])
             if args.preflight:

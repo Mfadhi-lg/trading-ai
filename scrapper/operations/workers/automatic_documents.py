@@ -1,5 +1,6 @@
 """Bounded adapters over existing queues; no new crawler or historical campaign."""
 from ...db.database import connect, check_schema_compatibility
+from ...db.repository_backend import statement, is_postgresql
 from ...db.repo import utc_now
 from ...documents.priority import bounded_lanes, current_period, download_lanes
 from ...documents.availability import parse_utc
@@ -35,6 +36,11 @@ def select_downloads(conn, *, now, epoch, limit=2, historical_limit=0, recovery_
                 (q.target_host=p.host OR q.target_host LIKE '%.'||p.host))
           AND EXISTS (SELECT 1 FROM screener_collection_scope s
               WHERE s.company_id=a.company_id AND s.eligibility='eligible')'''
+    if is_postgresql(conn):
+        common = common.replace("json_extract(rs.policy_json,'$.revision_artifact_id')", "(rs.policy_json::jsonb -> 'revision_artifact_id')")
+        common = common.replace("=q.artifact_id", "=to_jsonb(q.artifact_id)")
+        common = common.replace("json_extract(rs.policy_json,'$.revision_url')", "(rs.policy_json::jsonb ->> 'revision_url')")
+        common = common.replace("json_extract(rs.policy_json,'$.revision_indicator') IS NOT NULL", "(rs.policy_json::jsonb -> 'revision_indicator') IS NOT NULL AND (rs.policy_json::jsonb -> 'revision_indicator') <> 'null'::jsonb")
     if recovery_job_ids:
         # Only an externally authorized finite campaign supplies these exact
         # canonical identities. Never rewrite timestamps or widen routine lanes.
@@ -144,7 +150,7 @@ def run_automatic_discovery(*, db_path, epoch, limit=2, historical_limit=0,
                             output=None, now_utc=utc_now, official_request_limit=2, screener_request_limit=2,
                             snapshot_root=None, connection_factory=connect):
     """Use the canonical bounded follow-up refresher, same policies and leases."""
-    from ...db.documents.due import _DUE_SELECT, preview_due_expectations, claim_due_expectations
+    from ...db.documents.due import _DUE_SELECT, _DUE_SELECT_NATIVE, preview_due_expectations, claim_due_expectations
     from ...workflows.documents.reconciliation import reconcile_artifacts
     if type(screener_request_limit) is not int or not 1 <= screener_request_limit <= 100:
         raise ValueError('Screener request budget must be 1–100')
@@ -166,16 +172,28 @@ def run_automatic_discovery(*, db_path, epoch, limit=2, historical_limit=0,
                   AND (expectation.claim_token IS NULL OR expectation.claim_expires_at_utc<=?)
                   AND EXISTS (SELECT 1 FROM screener_collection_scope s
                       WHERE s.company_id=expectation.company_id AND s.eligibility='eligible')'''
+            if is_postgresql(conn):
+                common = common.replace("json_extract(expectation.schedule_json,'$.long_tail_v1')=1", "(expectation.schedule_json::jsonb -> 'long_tail_v1') IN ('1'::jsonb, 'true'::jsonb)")
             rows=[]
             for predicate,args,budget in (
                 ("(expectation.created_at_utc>=? OR json_extract(expectation.schedule_json,'$.long_tail_v1')=1) AND event.period_end=?",(epoch,current_period(now)),limit),
                 ("(expectation.created_at_utc>=? OR json_extract(expectation.schedule_json,'$.long_tail_v1')=1) AND (event.period_end IS NULL OR event.period_end<>?)",(epoch,current_period(now)),limit),
                 ('expectation.created_at_utc<?',(epoch,),historical_limit),
             ):
+                if is_postgresql(conn):
+                    predicate = predicate.replace("json_extract(expectation.schedule_json,'$.long_tail_v1')=1", "(expectation.schedule_json::jsonb -> 'long_tail_v1') IN ('1'::jsonb, 'true'::jsonb)")
                 if budget:
-                    rows.extend(dict(r) for r in conn.execute(common+' AND '+predicate+
-                        ' GROUP BY expectation.company_id,expectation.event_id ORDER BY expectation.expected_after_utc DESC,expectation.next_check_at_utc,expectation.expectation_id LIMIT ?',
-                        (now,now,*args,budget)))
+                    if is_postgresql(conn):
+                        # Choose one eligible representative within this lane;
+                        # grouping unrelated row columns is invalid in PostgreSQL.
+                        grouped = common.replace('SELECT expectation.expectation_id',
+                            'SELECT DISTINCT ON (expectation.company_id,expectation.event_id) expectation.expected_after_utc,expectation.next_check_at_utc,expectation.expectation_id', 1)
+                        query = ('SELECT * FROM (' + grouped + ' AND ' + predicate +
+                            ' ORDER BY expectation.company_id,expectation.event_id,expectation.expected_after_utc DESC NULLS LAST,expectation.next_check_at_utc,expectation.expectation_id) eligible_groups'
+                            ' ORDER BY expected_after_utc DESC NULLS LAST,next_check_at_utc,expectation_id LIMIT ?')
+                    else:
+                        query = common+' AND '+predicate+' GROUP BY expectation.company_id,expectation.event_id ORDER BY expectation.expected_after_utc DESC,expectation.next_check_at_utc,expectation.expectation_id LIMIT ?'
+                    rows.extend(dict(r) for r in conn.execute(query, (now,now,*args,budget)))
             selected=bounded_lanes(rows,limit=limit,historical_limit=historical_limit,epoch=epoch,now=now)
             # A slot is a company/event page retrieval, with both due document
             # expectations carried together. Never claim a future or leased peer.
@@ -186,13 +204,14 @@ def run_automatic_discovery(*, db_path, epoch, limit=2, historical_limit=0,
             selected = []
             for row, lane in groups:
                 fresh = " AND (expectation.created_at_utc>=? OR json_extract(expectation.schedule_json,'$.long_tail_v1')=1)" if lane != 3 else ''
+                if is_postgresql(conn):
+                    fresh = fresh.replace("json_extract(expectation.schedule_json,'$.long_tail_v1')=1", "(expectation.schedule_json::jsonb -> 'long_tail_v1') IN ('1'::jsonb, 'true'::jsonb)")
                 peers = conn.execute(common + ' AND expectation.company_id=? AND expectation.event_id=?'
                     + fresh + ' ORDER BY expectation.expectation_id',
                     (now, now, row['company_id'], row['event_id'], *((epoch,) if fresh else ()))).fetchall()
                 selected.extend((dict(peer), lane) for peer in peers)
             due_count = conn.execute('SELECT count(*) FROM (' + common + ')', (now, now)).fetchone()[0]
-            due_groups = conn.execute('SELECT count(*) FROM (' + common +
-                ' GROUP BY expectation.company_id,expectation.event_id)', (now, now)).fetchone()[0]
+            due_groups = conn.execute(statement(conn, 'SELECT count(*) FROM (' + common + ' GROUP BY expectation.company_id,expectation.event_id)', 'SELECT count(*) FROM (SELECT DISTINCT company_id,event_id FROM (' + common + ') due_rows) due_groups'), (now, now)).fetchone()[0]
             capacity = {'due_expectations': due_count, 'due_company_events': due_groups, 'selected_expectations': len(selected),
                 'selected_company_events': len(groups), 'screener_request_limit': screener_request_limit,
                 'remaining_due_expectations': due_count - len(selected)}
@@ -209,8 +228,16 @@ def run_automatic_discovery(*, db_path, epoch, limit=2, historical_limit=0,
                 official=refresh_official_pages(conn,company_ids=companies,now=now,
                     snapshot_root=snapshot_root or SNAPSHOTS,session=session,request_limit=official_request_limit)
             # IDs come only from SQLite integers; values cannot introduce SQL.
-            selection=_DUE_SELECT.replace('WHERE expectation.next_check_at_utc',
-                'WHERE expectation.expectation_id IN ('+','.join(str(int(x)) for x in ids)+') AND expectation.next_check_at_utc')
+            if is_postgresql(conn):
+                selection = _DUE_SELECT_NATIVE.replace('WHERE expectation.next_check_at_utc',
+                    'WHERE expectation.expectation_id IN ('+','.join(str(int(x)) for x in ids)+') AND expectation.next_check_at_utc')
+                # Native due SQL casts its deadline, so inject at the shared FROM
+                # boundary rather than relying on a backend-specific WHERE form.
+                if 'expectation.expectation_id IN (' not in selection:
+                    selection = selection.replace('WHERE ', 'WHERE expectation.expectation_id IN ('+','.join(str(int(x)) for x in ids)+') AND ', 1)
+            else:
+                selection = _DUE_SELECT.replace('WHERE expectation.next_check_at_utc',
+                    'WHERE expectation.expectation_id IN ('+','.join(str(int(x)) for x in ids)+') AND expectation.next_check_at_utc')
             result=reconcile_artifacts(due=True,limit=len(ids),db_path=db_path,
                 now_utc=now_utc,output=output,shared_permits=True,
                 shared_client_factory=lambda *a, **kw: BoundedDocumentScreenerClient(

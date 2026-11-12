@@ -1,5 +1,9 @@
 """Exchange schedule attempt history and publication queries; no scheduling startup."""
 from __future__ import annotations
+from ..repository_backend import (
+    atomic_repository, begin_immediate, commit, execute, executemany, generated_id,
+    is_postgresql, rollback, statement, transaction,
+)
 
 import sqlite3
 from typing import Any
@@ -14,6 +18,7 @@ SATISFYING_OUTCOMES = ("published_changed", "published_unchanged")
 
 SCHEDULE_ROLES = ("primary", "revision")
 
+@atomic_repository('financial-repositories')
 def record_schedule_run(
     conn: sqlite3.Connection,
     *,
@@ -39,8 +44,8 @@ def record_schedule_run(
         raise ValueError(f"Unknown schedule outcome: {outcome!r}")
     if role not in SCHEDULE_ROLES:
         raise ValueError(f"Unknown schedule role: {role!r}")
-    with conn:
-        conn.execute(
+    with transaction(conn):
+        execute(conn,
             """INSERT INTO exchange_schedule_runs
                (dataset, scheduled_for, attempt, role, result_period, outcome,
                 snapshot_id, error, started_at_utc, finished_at_utc)
@@ -69,7 +74,7 @@ def datasets_published_on(
     placeholders = ", ".join("?" for _ in SATISFYING_OUTCOMES)
     return {
         str(row["dataset"])
-        for row in conn.execute(
+        for row in execute(conn,
             f"""SELECT DISTINCT dataset FROM exchange_schedule_runs
                 WHERE scheduled_for=? AND role='primary'
                   AND outcome IN ({placeholders})""",
@@ -82,7 +87,7 @@ def schedule_day(conn: sqlite3.Connection, scheduled_for: str) -> list[dict[str,
     """Every recorded attempt for one scheduled day, oldest first."""
     return [
         dict(row)
-        for row in conn.execute(
+        for row in execute(conn,
             """SELECT * FROM exchange_schedule_runs WHERE scheduled_for=?
                ORDER BY attempt, dataset""",
             (scheduled_for,),

@@ -3,6 +3,19 @@ import json, os, subprocess, sys, tempfile, unittest
 from pathlib import Path
 
 class ManualCliContracts(unittest.TestCase):
+    def test_declared_native_release_cannot_fall_back_when_target_is_missing(self):
+        source=Path(__file__).resolve().parents[2]
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);host=root/'ops/host';activation=root/'ops/activation'
+            host.mkdir(parents=True);activation.mkdir(parents=True)
+            launcher=host/'run_acquisition_lifecycle.py'
+            launcher.write_bytes((source/'ops/host/run_acquisition_lifecycle.py').read_bytes())
+            (activation/'acquisition_release.py').write_bytes((source/'ops/activation/acquisition_release.py').read_bytes())
+            (activation/'automatic-acquisition-manifest.json').write_text(json.dumps({'files':{'ops/activation/postgresql-target.json':'expected'}}))
+            result=subprocess.run([sys.executable,'-B',str(launcher),'manual','--help'],capture_output=True,text=True)
+            self.assertNotEqual(result.returncode,0)
+            self.assertIn('declared native target is missing',result.stderr)
+
     def invoke(self, args, exit_code, *, program='docker'):
         with tempfile.TemporaryDirectory() as directory:
             capture=Path(directory)/"args.json"

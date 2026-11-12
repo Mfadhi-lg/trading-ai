@@ -1,6 +1,7 @@
 """Queue only active exchange-master companies with no accepted Screener parse."""
 
 from __future__ import annotations
+from ..db.repository_backend import statement, is_postgresql, execute, generated_id, atomic_repository, begin_immediate
 
 import json
 import re
@@ -16,6 +17,7 @@ def _name_key(value: str) -> str:
     return re.sub(r"[^a-z0-9]+", "", value.lower())
 
 
+@atomic_repository('consumer-persistence')
 def run_unaccepted_backfill(conn: sqlite3.Connection, *, dry_run: bool = False) -> dict:
     """Requeue missing captures without touching a master company already accepted.
 
@@ -140,27 +142,26 @@ def run_unaccepted_backfill(conn: sqlite3.Connection, *, dry_run: bool = False) 
         with conn:
             filing_key = f"master_backfill_standalone_{isin}"
             conn.execute(
-                """INSERT OR IGNORE INTO exchange_result_filings
+                statement(conn, """INSERT OR IGNORE INTO exchange_result_filings
                    (snapshot_id,exchange,filing_key,exchange_key,isin,company_name_raw,
                     result_period,period_end_date,reporting_scope,broadcast_raw,
                     broadcast_at_utc,raw_row_json,discovered_at_utc)
-                   VALUES (?,?,?,?,?,?, '1970-01','1970-01-01','standalone','',?,'{}',?)""",
+                   VALUES (?,?,?,?,?,?, '1970-01','1970-01-01','standalone','',?,'{}',?)""", "INSERT INTO exchange_result_filings\n                   (snapshot_id,exchange,filing_key,exchange_key,isin,company_name_raw,\n                    result_period,period_end_date,reporting_scope,broadcast_raw,\n                    broadcast_at_utc,raw_row_json,discovered_at_utc)\n                   VALUES (?,?,?,?,?,?, '1970-01','1970-01-01','standalone','',?,'{}',?) ON CONFLICT DO NOTHING"),
                 (snapshot_id, exchange, filing_key, exchange_key, isin, name, now, now),
             )
             filing_id = int(conn.execute(
                 "SELECT filing_id FROM exchange_result_filings WHERE exchange=? AND filing_key=?",
                 (exchange, filing_key),
             ).fetchone()["filing_id"])
-            cursor = conn.execute(
+            cursor = execute(conn,
                 """INSERT INTO screener_company_queue
                    (origin,candidate_id,exchange_filing_id,company_path_normalized,
                     reporting_scope,result_period,queue_reason,status,attempt_count,
                     next_attempt_at_utc,created_at_utc,updated_at_utc)
                    VALUES ('exchange_filing',NULL,? ,?,'standalone','1970-01',
                            'new_company','pending',0,?,?,?)""",
-                (filing_id, path, now, now, now),
-            )
-            queue_id = int(cursor.lastrowid)
+                (filing_id, path, now, now, now), returning='queue_item_id')
+            queue_id = generated_id(cursor, 'queue_item_id')
             conn.execute(
                 """INSERT INTO screener_company_queue_events
                    (queue_item_id,event_at_utc,from_status,to_status,evidence_json)
@@ -168,12 +169,12 @@ def run_unaccepted_backfill(conn: sqlite3.Connection, *, dry_run: bool = False) 
                 (queue_id, now, json.dumps({"reason": "active_master_unaccepted_backfill"})),
             )
             conn.execute(
-                """INSERT OR IGNORE INTO exchange_screener_enqueues
+                statement(conn, """INSERT OR IGNORE INTO exchange_screener_enqueues
                    (filing_id,decision,decision_reason,company_path_normalized,
                     reporting_scope,result_period,path_basis,registry_company_id,
                     queue_item_id,created_at_utc)
                    VALUES (?,'queued','active_master_unaccepted_backfill',?,
-                           'standalone','1970-01',?,?,?,?)""",
+                           'standalone','1970-01',?,?,?,?)""", "INSERT INTO exchange_screener_enqueues\n                   (filing_id,decision,decision_reason,company_path_normalized,\n                    reporting_scope,result_period,path_basis,registry_company_id,\n                    queue_item_id,created_at_utc)\n                   VALUES (?,'queued','active_master_unaccepted_backfill',?,\n                           'standalone','1970-01',?,?,?,?) ON CONFLICT DO NOTHING"),
                 (filing_id, path, "nse_symbol" if nse else "bse_scrip_code", registry_id, queue_id, now),
             )
     return {"dry_run": dry_run, "counts": counts}

@@ -22,6 +22,7 @@ from ...document_artifact_repo import register_artifact_content
 from ...document_download_repo import store_response_blob
 from ...repo import utc_now
 from ....documents.downloader import ALLOWED_MEDIA_BY_ARTIFACT, detect_media_type
+from scrapper.db.repository_backend import (execute, executemany, generated_id, statement, is_postgresql, atomic_repository, begin_immediate, commit, rollback, transaction as repository_transaction)
 
 
 RECOVERY_REPORT_SCHEMA_VERSION = "1.0.0"
@@ -46,6 +47,7 @@ REQUEUEABLE = {
 
 from ....documents.recovery.failed_download import _normalized_http_url
 
+@atomic_repository('documents')
 def requeue_document_downloads(
     conn: sqlite3.Connection,
     *,
@@ -72,7 +74,7 @@ def requeue_document_downloads(
         raise ValueError("At least one explicit download job id is required")
     table = QUEUE_TABLES[queue_kind]
     placeholders = ",".join("?" for _ in selected)
-    rows = conn.execute(
+    rows = execute(conn,
         f"SELECT * FROM {table} WHERE download_job_id IN ({placeholders}) ORDER BY download_job_id",
         selected,
     ).fetchall()
@@ -81,7 +83,7 @@ def requeue_document_downloads(
         raise ValueError(f"Unknown {queue_kind} download jobs: {sorted(set(selected) - found)}")
     for row in rows:
         status = str(row["status"])
-        unresolved_alternate = queue_kind == "generic" and conn.execute(
+        unresolved_alternate = queue_kind == "generic" and execute(conn,
             """SELECT 1
                  FROM artifact_sources AS source
                  JOIN artifact_recovery_targets AS recovery
@@ -98,7 +100,7 @@ def requeue_document_downloads(
             raise ValueError(
                 f"Job {row['download_job_id']} status {status} is not safely requeueable"
             )
-        covered = conn.execute(
+        covered = execute(conn,
             "SELECT 1 FROM artifact_contents WHERE artifact_id=? LIMIT 1",
             (int(row["artifact_id"]),),
         ).fetchone()
@@ -126,9 +128,9 @@ def requeue_document_downloads(
         }
 
     applied_at = applied_at_utc or utc_now()
-    with conn:
+    with repository_transaction(conn):
         for row in rows:
-            conn.execute(
+            execute(conn,
                 f"""UPDATE {table}
                        SET status='PENDING', attempt_count=0,
                            next_attempt_at_utc=NULL, lease_owner=NULL,
@@ -138,7 +140,7 @@ def requeue_document_downloads(
                      WHERE download_job_id=?""",
                 (applied_at, int(row["download_job_id"])),
             )
-            conn.execute(
+            execute(conn,
                 """INSERT INTO document_download_recovery_actions
                    (artifact_id, queue_kind, download_job_id, action_type,
                     reason_code, reason_detail, previous_status,
@@ -167,6 +169,7 @@ def requeue_document_downloads(
     }
 
 
+@atomic_repository('documents')
 def register_replacement_document_url(
     conn: sqlite3.Connection,
     *,
@@ -192,7 +195,7 @@ def register_replacement_document_url(
     if reason_code not in RECOVERY_REASON_CODES:
         raise ValueError(f"Unknown recovery reason: {reason_code}")
     normalized = _normalized_http_url(replacement_url)
-    source = conn.execute(
+    source = execute(conn,
         """SELECT source.*, artifact.artifact_type
              FROM artifact_sources AS source
              JOIN document_artifacts AS artifact USING (artifact_id)
@@ -205,7 +208,7 @@ def register_replacement_document_url(
         raise ValueError("Replacement URL is identical to the failed source URL")
     scopes = tuple(
         str(row["scope_id"])
-        for row in conn.execute(
+        for row in execute(conn,
             """SELECT DISTINCT scope_id FROM artifact_download_queue
                 WHERE artifact_id=? ORDER BY scope_id""",
             (artifact_id,),
@@ -243,22 +246,28 @@ def register_replacement_document_url(
         normalized, additional_hosts=blocked_terms_hosts(conn)
     )
     created_jobs: list[dict[str, Any]] = []
-    with conn:
+    with repository_transaction(conn):
         position = int(
-            conn.execute(
+            execute(conn,
                 """SELECT COALESCE(MAX(source_position), -1) + 1
                      FROM artifact_sources WHERE discovery_page_id=?""",
                 (int(source["discovery_page_id"]),),
             ).fetchone()[0]
         )
-        conn.execute(
-            """INSERT OR IGNORE INTO artifact_sources
+        execute(conn,
+            statement(conn, """INSERT OR IGNORE INTO artifact_sources
                (artifact_id, discovery_page_id, discovered_from_source,
                 discovery_page_url, document_url, publisher_claim,
                 exchange_announcement_id, source_position, source_title_raw,
                 classification_evidence_json, is_primary_source,
                 first_observed_at_utc, last_checked_at_utc, availability_status)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'available')""",
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'available')""", """INSERT INTO artifact_sources
+               (artifact_id, discovery_page_id, discovered_from_source,
+                discovery_page_url, document_url, publisher_claim,
+                exchange_announcement_id, source_position, source_title_raw,
+                classification_evidence_json, is_primary_source,
+                first_observed_at_utc, last_checked_at_utc, availability_status)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'available') ON CONFLICT DO NOTHING"""),
             (
                 artifact_id, int(source["discovery_page_id"]),
                 source["discovered_from_source"], source["discovery_page_url"],
@@ -268,7 +277,7 @@ def register_replacement_document_url(
                 int(source["is_primary_source"]), applied_at, applied_at,
             ),
         )
-        replacement = conn.execute(
+        replacement = execute(conn,
             """SELECT artifact_source_id FROM artifact_sources
                 WHERE artifact_id=? AND discovered_from_source=?
                   AND discovery_page_url=? AND document_url=?""",
@@ -280,13 +289,13 @@ def register_replacement_document_url(
         if replacement is None:
             raise RuntimeError("Failed to register replacement artifact source")
         replacement_source_id = int(replacement["artifact_source_id"])
-        conn.execute(
+        execute(conn,
             """UPDATE artifact_sources
                   SET availability_status='inaccessible', last_checked_at_utc=?
                 WHERE artifact_source_id=?""",
             (applied_at, replaces_artifact_source_id),
         )
-        has_content = conn.execute(
+        has_content = execute(conn,
             "SELECT 1 FROM artifact_contents WHERE artifact_id=? LIMIT 1",
             (artifact_id,),
         ).fetchone() is not None
@@ -297,18 +306,22 @@ def register_replacement_document_url(
             )
             result = PUBLISHER_TERMS_RESULT if policy_blocked else None
             error = PUBLISHER_TERMS_ERROR if policy_blocked else None
-            conn.execute(
-                """INSERT OR IGNORE INTO artifact_download_queue
+            execute(conn,
+                statement(conn, """INSERT OR IGNORE INTO artifact_download_queue
                    (artifact_id, requested_url, target_host, priority, scope_id,
                     status, last_result_status, last_error,
                     created_at_utc, updated_at_utc)
-                   VALUES (?, ?, ?, 50, ?, ?, ?, ?, ?, ?)""",
+                   VALUES (?, ?, ?, 50, ?, ?, ?, ?, ?, ?)""", """INSERT INTO artifact_download_queue
+                   (artifact_id, requested_url, target_host, priority, scope_id,
+                    status, last_result_status, last_error,
+                    created_at_utc, updated_at_utc)
+                   VALUES (?, ?, ?, 50, ?, ?, ?, ?, ?, ?) ON CONFLICT DO NOTHING"""),
                 (
                     artifact_id, normalized, host, scope, status, result, error,
                     applied_at, applied_at,
                 ),
             )
-            job = conn.execute(
+            job = execute(conn,
                 """SELECT download_job_id FROM artifact_download_queue
                     WHERE artifact_id=? AND requested_url=? AND scope_id=?""",
                 (artifact_id, normalized, scope),
@@ -321,11 +334,14 @@ def register_replacement_document_url(
                 "SKIPPED_ALREADY_HAVE_CONTENT" if has_content
                 else "SKIPPED_POLICY" if policy_blocked else "PENDING"
             )
-            conn.execute(
-                """INSERT OR IGNORE INTO credit_rating_download_queue
+            execute(conn,
+                statement(conn, """INSERT OR IGNORE INTO credit_rating_download_queue
                    (artifact_id, requested_url, target_host, priority, status,
                     last_result_status, last_error, created_at_utc, updated_at_utc)
-                   VALUES (?, ?, ?, 50, ?, ?, ?, ?, ?)""",
+                   VALUES (?, ?, ?, 50, ?, ?, ?, ?, ?)""", """INSERT INTO credit_rating_download_queue
+                   (artifact_id, requested_url, target_host, priority, status,
+                    last_result_status, last_error, created_at_utc, updated_at_utc)
+                   VALUES (?, ?, ?, 50, ?, ?, ?, ?, ?) ON CONFLICT DO NOTHING"""),
                 (
                     artifact_id, normalized, host, status,
                     PUBLISHER_TERMS_RESULT if policy_blocked else None,
@@ -333,7 +349,7 @@ def register_replacement_document_url(
                     applied_at, applied_at,
                 ),
             )
-            job = conn.execute(
+            job = execute(conn,
                 """SELECT download_job_id FROM credit_rating_download_queue
                     WHERE artifact_id=? AND requested_url=?""",
                 (artifact_id, normalized),
@@ -342,7 +358,7 @@ def register_replacement_document_url(
                 {"queue_kind": "credit_rating", "download_job_id": int(job[0]), "scope_id": None}
             )
         for job in created_jobs:
-            conn.execute(
+            execute(conn,
                 """INSERT INTO document_download_recovery_actions
                    (artifact_id, queue_kind, download_job_id, action_type,
                     reason_code, reason_detail, replaced_artifact_source_id,
@@ -365,6 +381,7 @@ def register_replacement_document_url(
     }
 
 
+@atomic_repository('documents')
 def import_manual_document(
     conn: sqlite3.Connection,
     *,
@@ -386,7 +403,7 @@ def import_manual_document(
     store_response_blob = getattr(_hooks, "store_response_blob", globals()["store_response_blob"])
     utc_now = getattr(_hooks, "utc_now", globals()["utc_now"])
 
-    source = conn.execute(
+    source = execute(conn,
         """SELECT source.*, artifact.artifact_type
              FROM artifact_sources AS source
              JOIN document_artifacts AS artifact USING (artifact_id)
@@ -413,7 +430,7 @@ def import_manual_document(
             f"{source['artifact_type']!r}"
         )
     imported_at = imported_at_utc or utc_now()
-    with conn:
+    with repository_transaction(conn):
         blob_id, digest = store_response_blob(
             conn,
             body=body,
@@ -429,12 +446,16 @@ def import_manual_document(
             is_official=official,
             created_at_utc=imported_at,
         )
-        conn.execute(
-            """INSERT OR IGNORE INTO manual_document_imports
+        execute(conn,
+            statement(conn, """INSERT OR IGNORE INTO manual_document_imports
                (artifact_id, artifact_source_id, content_id, input_filename,
                 input_sha256, byte_size, detected_media_type, official_assertion,
                 reason_detail, evidence_json, imported_at_utc)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", """INSERT INTO manual_document_imports
+               (artifact_id, artifact_source_id, content_id, input_filename,
+                input_sha256, byte_size, detected_media_type, official_assertion,
+                reason_detail, evidence_json, imported_at_utc)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT DO NOTHING"""),
             (
                 artifact_id, artifact_source_id, content_id, path.name,
                 digest, len(body), detected, int(official), reason_detail.strip(),
@@ -443,18 +464,18 @@ def import_manual_document(
             ),
         )
         manual_import_id = int(
-            conn.execute(
+            execute(conn,
                 """SELECT manual_import_id FROM manual_document_imports
                     WHERE artifact_id=? AND artifact_source_id=? AND content_id=?""",
                 (artifact_id, artifact_source_id, content_id),
             ).fetchone()[0]
         )
-        conn.execute(
+        execute(conn,
             """UPDATE document_artifacts SET acquisition_status='downloaded'
                 WHERE artifact_id=? AND acquisition_status <> 'validated'""",
             (artifact_id,),
         )
-        conn.execute(
+        execute(conn,
             """UPDATE artifact_download_queue
                   SET status='SKIPPED_ALREADY_HAVE_CONTENT',
                       next_attempt_at_utc=NULL, lease_owner=NULL,
@@ -464,7 +485,7 @@ def import_manual_document(
                 WHERE artifact_id=? AND status <> 'SUCCEEDED'""",
             (imported_at, artifact_id),
         )
-        conn.execute(
+        execute(conn,
             """UPDATE credit_rating_download_queue
                   SET status='SUCCEEDED', next_attempt_at_utc=NULL,
                       lease_owner=NULL, lease_expires_at_utc=NULL,

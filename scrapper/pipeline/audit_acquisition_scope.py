@@ -16,6 +16,7 @@ from typing import Any, Iterable
 
 from ..config import DB_PATH, assert_configured_writable_targets
 from ..db.database import connect, init_db
+from ..db.repository_backend import statement
 
 
 def _percentile(values: list[int], percentile: float) -> int | None:
@@ -201,7 +202,7 @@ def audit_scope(
     production_duplicate_examples = [
         dict(row)
         for row in conn.execute(
-            """SELECT content.blob_id,blob.content_sha256,blob.local_path,
+            statement(conn, """SELECT content.blob_id,blob.content_sha256,blob.local_path,
                       COUNT(DISTINCT content.artifact_id) AS logical_artifacts,
                       GROUP_CONCAT(DISTINCT content.artifact_id) AS artifact_ids,
                       MAX(content.byte_size) AS physical_bytes
@@ -212,7 +213,7 @@ def audit_scope(
                       ('transcript','presentation','credit_rating')
                 GROUP BY content.blob_id
                HAVING COUNT(DISTINCT content.artifact_id)>1
-                ORDER BY logical_artifacts DESC,content.blob_id LIMIT 20"""
+                ORDER BY logical_artifacts DESC,content.blob_id LIMIT 20""", "SELECT content.blob_id,blob.content_sha256,blob.local_path,\n                      COUNT(DISTINCT content.artifact_id) AS logical_artifacts,\n                      STRING_AGG(DISTINCT content.artifact_id::text, ',') AS artifact_ids,\n                      MAX(content.byte_size) AS physical_bytes\n                 FROM artifact_contents AS content\n                 JOIN document_artifacts AS artifact USING (artifact_id)\n                 JOIN response_blobs AS blob USING (blob_id)\n                WHERE artifact.artifact_type IN\n                      ('transcript','presentation','credit_rating')\n                GROUP BY content.blob_id,blob.blob_id\n               HAVING COUNT(DISTINCT content.artifact_id)>1\n                ORDER BY logical_artifacts DESC,content.blob_id LIMIT 20")
         )
     ]
     report = {

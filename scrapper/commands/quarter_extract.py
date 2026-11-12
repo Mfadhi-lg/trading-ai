@@ -52,8 +52,8 @@ def main():
         parser.error("Limit must be between 1 and 100")
     if args.apply:
         assert_configured_writable_targets(db_path=args.db)
-    conn = sqlite3.connect(f"file:{args.db.resolve()}?mode=ro", uri=True)
-    conn.row_factory = sqlite3.Row
+    from ..db.database import connect
+    conn = connect(args.db, read_only=True)
     try:
         selected, backlog = pending_contents(conn, period=args.period, limit=args.limit)
     finally:

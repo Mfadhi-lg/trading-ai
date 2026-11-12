@@ -40,7 +40,7 @@ def period_coverage(conn, period: str, symbols=()) -> list[dict]:
         periods = [r[0] for r in conn.execute("""SELECT DISTINCT substr(period_end,1,7)
             FROM financial_observations WHERE parse_id=? AND section_code='quarters'
               AND reporting_scope='standalone' AND period_end IS NOT NULL
-            ORDER BY period_end""", (row['parse_id'],))]
+            ORDER BY substr(period_end,1,7)""", (row['parse_id'],))]
         actual = max(periods) if periods else 'not_applicable'
         mislabeled = [dict(pointer) for pointer in conn.execute("""SELECT a.parse_id,
             a.resolved_source_period AS stored_period, MAX(substr(f.period_end,1,7)) AS actual_period

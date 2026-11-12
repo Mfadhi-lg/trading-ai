@@ -1,6 +1,10 @@
 """Exact, auditable M05 comparisons across consecutive accepted MF months."""
 
 from __future__ import annotations
+from ..repository_backend import (
+    atomic_repository, begin_immediate, commit, execute, executemany, generated_id,
+    is_postgresql, rollback, statement, transaction,
+)
 
 import hashlib
 import json
@@ -92,7 +96,7 @@ def _pointer_evidence(
     scheme_id: int,
     month: str,
 ) -> tuple[dict, int | None, bool]:
-    pointer = conn.execute(
+    pointer = execute(conn,
         """SELECT av.import_file_id, av.accepted_at_utc AS pointer_accepted_at_utc,
                   f.import_state, f.detected_disclosure_month,
                   event.workbook_acceptance_event_id,
@@ -109,7 +113,7 @@ def _pointer_evidence(
             "import_file_id": int(row["import_file_id"]),
             "import_state": str(row["import_state"]),
         }
-        for row in conn.execute(
+        for row in execute(conn,
             """SELECT DISTINCT f.import_file_id, f.import_state
                FROM mf_import_files AS f
                LEFT JOIN mf_holdings AS h ON h.import_file_id=f.import_file_id
@@ -164,7 +168,7 @@ def _eligible_holdings(
     month: str,
     import_file_id: int,
 ) -> tuple[dict[int, dict], list[dict], list[dict]]:
-    rows = conn.execute(
+    rows = execute(conn,
         """SELECT h.*,
                   COALESCE(
                     h.isin_normalized,
@@ -238,7 +242,7 @@ def _candidate_scheme_ids(
 ) -> tuple[int, ...]:
     return tuple(
         int(row["scheme_id"])
-        for row in conn.execute(
+        for row in execute(conn,
             """SELECT scheme_id FROM mf_accepted_versions
                WHERE publisher=? AND disclosure_month IN (?, ?)
                UNION
@@ -271,6 +275,7 @@ def _change_class(previous: Decimal, current: Decimal) -> str:
     return "unchanged"
 
 
+@atomic_repository('financial-repositories')
 def _persist_change_validations(
     conn: sqlite3.Connection,
     *,
@@ -316,10 +321,8 @@ def _persist_change_validations(
             },
         ),
     )
-    conn.executemany(
-        """INSERT OR IGNORE INTO mf_scheme_month_change_validations
-           (change_set_id, rule_code, severity, validation_status, details_json)
-           VALUES (?, ?, 'error', ?, ?)""",
+    executemany(conn,
+        statement(conn, "INSERT OR IGNORE INTO mf_scheme_month_change_validations\n           (change_set_id, rule_code, severity, validation_status, details_json)\n           VALUES (?, ?, 'error', ?, ?)", "INSERT INTO mf_scheme_month_change_validations\n           (change_set_id, rule_code, severity, validation_status, details_json)\n           VALUES (?, ?, 'error', ?, ?) ON CONFLICT DO NOTHING"),
         (
             (change_set_id, rule_code, status, _json(details))
             for rule_code, status, details in rules
@@ -327,6 +330,7 @@ def _persist_change_validations(
     )
 
 
+@atomic_repository('financial-repositories')
 def generate_scheme_month_changes(
     conn: sqlite3.Connection,
     *,
@@ -407,14 +411,9 @@ def generate_scheme_month_changes(
             "holding_inputs": holding_inputs,
         }
         fingerprint = hashlib.sha256(_json(fingerprint_payload).encode("utf-8")).hexdigest()
-        with conn:
-            conn.execute(
-                """INSERT OR IGNORE INTO mf_scheme_month_change_sets
-                   (publisher, scheme_id, previous_month, current_month,
-                    previous_import_file_id, current_import_file_id,
-                    comparison_status, reason_code, completeness_evidence_json,
-                    engine_version, input_fingerprint, generated_at_utc)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        with transaction(conn):
+            execute(conn,
+                statement(conn, 'INSERT OR IGNORE INTO mf_scheme_month_change_sets\n                   (publisher, scheme_id, previous_month, current_month,\n                    previous_import_file_id, current_import_file_id,\n                    comparison_status, reason_code, completeness_evidence_json,\n                    engine_version, input_fingerprint, generated_at_utc)\n                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', 'INSERT INTO mf_scheme_month_change_sets\n                   (publisher, scheme_id, previous_month, current_month,\n                    previous_import_file_id, current_import_file_id,\n                    comparison_status, reason_code, completeness_evidence_json,\n                    engine_version, input_fingerprint, generated_at_utc)\n                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT DO NOTHING'),
                 (
                     publisher, scheme_id, previous_month, current_month,
                     previous_import_id, current_import_id,
@@ -423,7 +422,7 @@ def generate_scheme_month_changes(
                     generated_at_utc,
                 ),
             )
-            change_set = conn.execute(
+            change_set = execute(conn,
                 """SELECT change_set_id, comparison_status
                    FROM mf_scheme_month_change_sets WHERE input_fingerprint=?""",
                 (fingerprint,),
@@ -470,20 +469,8 @@ def generate_scheme_month_changes(
                 if identity_row is None:
                     raise RuntimeError("Comparison security has no source holding")
                 isin = str(identity_row["canonical_isin"])
-                conn.execute(
-                    """INSERT OR IGNORE INTO mf_scheme_security_month_changes
-                       (change_set_id, publisher, scheme_id, security_id,
-                        isin_normalized, previous_month, current_month,
-                        previous_holding_id, current_holding_id,
-                        previous_row_presence, current_row_presence,
-                        previous_quantity_decimal, current_quantity_decimal,
-                        quantity_change_decimal, previous_weight_decimal,
-                        current_weight_decimal, portfolio_weight_change_decimal,
-                        change_class, previous_import_file_id,
-                        current_import_file_id, completeness_evidence_json,
-                        generated_at_utc)
-                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-                               ?, ?, ?, ?)""",
+                execute(conn,
+                    statement(conn, 'INSERT OR IGNORE INTO mf_scheme_security_month_changes\n                       (change_set_id, publisher, scheme_id, security_id,\n                        isin_normalized, previous_month, current_month,\n                        previous_holding_id, current_holding_id,\n                        previous_row_presence, current_row_presence,\n                        previous_quantity_decimal, current_quantity_decimal,\n                        quantity_change_decimal, previous_weight_decimal,\n                        current_weight_decimal, portfolio_weight_change_decimal,\n                        change_class, previous_import_file_id,\n                        current_import_file_id, completeness_evidence_json,\n                        generated_at_utc)\n                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,\n                               ?, ?, ?, ?)', 'INSERT INTO mf_scheme_security_month_changes\n                       (change_set_id, publisher, scheme_id, security_id,\n                        isin_normalized, previous_month, current_month,\n                        previous_holding_id, current_holding_id,\n                        previous_row_presence, current_row_presence,\n                        previous_quantity_decimal, current_quantity_decimal,\n                        quantity_change_decimal, previous_weight_decimal,\n                        current_weight_decimal, portfolio_weight_change_decimal,\n                        change_class, previous_import_file_id,\n                        current_import_file_id, completeness_evidence_json,\n                        generated_at_utc)\n                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,\n                               ?, ?, ?, ?) ON CONFLICT DO NOTHING'),
                     (
                         change_set_id, publisher, scheme_id, security_id, isin,
                         previous_month, current_month,
@@ -503,7 +490,7 @@ def generate_scheme_month_changes(
                         evidence_json, generated_at_utc,
                     ),
                 )
-            persisted_counts = conn.execute(
+            persisted_counts = execute(conn,
                 """SELECT change_class, COUNT(*) AS count
                    FROM mf_scheme_security_month_changes
                    WHERE change_set_id=? GROUP BY change_class""",
@@ -549,7 +536,7 @@ def refresh_changes_for_accepted_month(
         )
     ]
     following = adjacent_month(changed_month, 1)
-    has_following_pointer = conn.execute(
+    has_following_pointer = execute(conn,
         """SELECT 1 FROM mf_accepted_versions
            WHERE publisher=? AND disclosure_month=? LIMIT 1""",
         (publisher, following),

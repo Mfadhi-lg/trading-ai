@@ -17,6 +17,7 @@ from ..sources.screener.peers import ParsedPeerTable
 
 
 from .screener import observations as _observations
+from .repository_backend import execute, generated_id, commit, is_postgresql, statement, require_transaction, lock_write
 
 
 def utc_now() -> str:
@@ -24,28 +25,36 @@ def utc_now() -> str:
 
 
 def start_run(conn: sqlite3.Connection, code_version: str, config: dict) -> int:
-    cursor = conn.execute(
+    cursor = execute(conn,
         """INSERT INTO scrape_runs
            (started_at_utc, code_version, config_json, status)
            VALUES (?, ?, ?, 'running')""",
         (utc_now(), code_version, json.dumps(config, sort_keys=True)),
+        returning="run_id",
     )
-    conn.commit()
-    return int(cursor.lastrowid)
+    commit(conn)
+    return generated_id(cursor, "run_id")
 
 
 def finish_run(conn: sqlite3.Connection, run_id: int, status: str) -> None:
-    conn.execute(
+    execute(conn,
         "UPDATE scrape_runs SET completed_at_utc=?, status=? WHERE run_id=?",
         (utc_now(), status, run_id),
     )
-    conn.commit()
+    commit(conn)
 
 
 def ensure_company(conn: sqlite3.Connection, parsed: ParsedCompany) -> int:
+    if is_postgresql(conn):
+        require_transaction(conn)
+        lock_write(conn)
+        # Serialize all company identity decisions. Source/NSE/BSE aliases may
+        # overlap across independent workers; a per-source lock is insufficient.
+        conn.execute("SELECT pg_advisory_xact_lock(hashtextextended(%s, 0))",
+                     ("trading-ai-company-identity",))
     matches: set[int] = set()
     if parsed.source_company_id:
-        row = conn.execute(
+        row = execute(conn,
             """SELECT company_id FROM source_identifiers
                WHERE source='screener' AND source_company_id=?""",
             (parsed.source_company_id,),
@@ -58,7 +67,7 @@ def ensure_company(conn: sqlite3.Connection, parsed: ParsedCompany) -> int:
     ):
         if not identifier_value:
             continue
-        row = conn.execute(
+        row = execute(conn,
             """SELECT company_id FROM security_identifiers
                WHERE identifier_type=? AND identifier_value=? AND is_current=1""",
             (identifier_type, identifier_value),
@@ -69,25 +78,30 @@ def ensure_company(conn: sqlite3.Connection, parsed: ParsedCompany) -> int:
         raise ValueError("Conflicting verified Screener/NSE/BSE company identities")
     if matches:
         company_id = matches.pop()
-        conn.execute(
+        execute(conn,
             "UPDATE companies SET current_legal_name=? WHERE company_id=?",
             (parsed.company_name, company_id),
         )
     else:
-        cursor = conn.execute(
+        cursor = execute(conn,
             "INSERT INTO companies(current_legal_name, status) VALUES (?, 'active')",
             (parsed.company_name,),
+            returning="company_id",
         )
-        company_id = int(cursor.lastrowid)
+        company_id = generated_id(cursor, "company_id")
     for identifier_type, identifier_value in (
         ("NSE", parsed.nse_symbol),
         ("BSE", parsed.bse_code),
     ):
         if identifier_value:
-            conn.execute(
-                """INSERT OR IGNORE INTO security_identifiers
-                   (company_id, identifier_type, identifier_value, is_current)
-                   VALUES (?, ?, ?, 1)""",
+            execute(conn,
+                statement(conn,
+                    """INSERT OR IGNORE INTO security_identifiers
+                       (company_id, identifier_type, identifier_value, is_current)
+                       VALUES (?, ?, ?, 1)""",
+                    """INSERT INTO security_identifiers
+                       (company_id, identifier_type, identifier_value, is_current)
+                       VALUES (?, ?, ?, 1) ON CONFLICT DO NOTHING"""),
                 (company_id, identifier_type, identifier_value),
             )
     return company_id

@@ -1,6 +1,8 @@
 """Quarter-scoped acquisition observations; bounded SQL, no production writes."""
 import sqlite3
 import time
+from postgresql_runtime import query_deadline
+from scrapper.db.repository_backend import is_postgresql, statement
 from reporting_quarters import normalize, predicate, label, default_quarter
 
 
@@ -37,7 +39,7 @@ def monitor(conn, quarter, term='', offset=0, company_id=0, export=False):
     conn.row_factory = sqlite3.Row
     def rows(sql, args=()):
         deadline = time.monotonic()+3
-        conn.set_progress_handler(lambda: int(time.monotonic()>deadline), 5000)
+        query_deadline(conn,deadline,5000)
         return [dict(r) for r in conn.execute(sql,args)]
     fq, fa = predicate('q.result_period',quarter)
     ap, aa = predicate('a.period_end',quarter)
@@ -67,17 +69,17 @@ def monitor(conn, quarter, term='', offset=0, company_id=0, export=False):
     result['discovery'] = rows('SELECT x.availability_status state,count(*) n FROM artifact_expectations x JOIN artifact_events e USING(event_id) WHERE '+ep+' GROUP BY 1',ea)
     result['accepted'] = rows('SELECT reporting_scope,count(DISTINCT company_id) companies,max(accepted_at_utc) last_accepted FROM ('+accepted+af+') GROUP BY reporting_scope',afa)
     result['acquisition'] = rows('''SELECT count(*) document_links_discovered,
-        coalesce(sum(EXISTS(SELECT 1 FROM artifact_contents c WHERE c.artifact_id=a.artifact_id)),0) documents_already_stored,
-        coalesce(sum(EXISTS(SELECT 1 FROM artifact_download_attempts t WHERE t.artifact_id=a.artifact_id
-          AND t.result_status='validated' AND t.fetched_at_utc>='2026-10-09T00:00:00+00:00')),0) new_documents_downloaded_since_epoch,
-        coalesce(sum(NOT EXISTS(SELECT 1 FROM artifact_contents c WHERE c.artifact_id=a.artifact_id)
+        coalesce(sum(CAST((EXISTS(SELECT 1 FROM artifact_contents c WHERE c.artifact_id=a.artifact_id)) AS INTEGER)),0) documents_already_stored,
+        coalesce(sum(CAST((EXISTS(SELECT 1 FROM artifact_download_attempts t WHERE t.artifact_id=a.artifact_id
+          AND t.result_status='validated' AND t.fetched_at_utc>='2026-10-09T00:00:00+00:00')) AS INTEGER)),0) new_documents_downloaded_since_epoch,
+        coalesce(sum(CAST((NOT EXISTS(SELECT 1 FROM artifact_contents c WHERE c.artifact_id=a.artifact_id)
           AND EXISTS(SELECT 1 FROM artifact_download_queue q WHERE q.artifact_id=a.artifact_id
-          AND q.status IN ('PENDING','RETRYABLE_FAILURE','LEASED'))),0) documents_awaiting_download,
-        coalesce(sum(EXISTS(SELECT 1 FROM artifact_sources s JOIN credit_rating_host_policy p
+          AND q.status IN ('PENDING','RETRYABLE_FAILURE','LEASED'))) AS INTEGER)),0) documents_awaiting_download,
+        coalesce(sum(CAST((EXISTS(SELECT 1 FROM artifact_sources s JOIN credit_rating_host_policy p
           ON s.document_url LIKE 'https://'||p.host||'/%' WHERE s.artifact_id=a.artifact_id
-          AND p.automation_status='BLOCKED_TERMS')),0) documents_blocked_source_policy,
-        coalesce(sum(EXISTS(SELECT 1 FROM artifact_contents c WHERE c.artifact_id=a.artifact_id
-          AND c.extraction_status='ok')),0) document_processing_completed
+          AND p.automation_status='BLOCKED_TERMS')) AS INTEGER)),0) documents_blocked_source_policy,
+        coalesce(sum(CAST((EXISTS(SELECT 1 FROM artifact_contents c WHERE c.artifact_id=a.artifact_id
+          AND c.extraction_status='ok')) AS INTEGER)),0) document_processing_completed
         FROM document_artifacts a WHERE '''+ap,aa)[0]
     result['acquisition']['documents_awaiting_publication'] = rows('''SELECT count(*) n
         FROM artifact_expectations x JOIN artifact_events e USING(event_id)
@@ -87,18 +89,19 @@ def monitor(conn, quarter, term='', offset=0, company_id=0, export=False):
           AND EXISTS(SELECT 1 FROM artifact_sources s WHERE s.artifact_id=a.artifact_id
             AND s.availability_status='available'))''',ea)[0]['n']
     unassigned = rows('''SELECT
-        coalesce(sum(a.artifact_type<>'credit_rating'),0) quarterly_documents,
-        coalesce(sum(a.artifact_type='credit_rating'),0) rating_reports
+        coalesce(sum(CAST((a.artifact_type<>'credit_rating') AS INTEGER)),0) quarterly_documents,
+        coalesce(sum(CAST((a.artifact_type='credit_rating') AS INTEGER)),0) rating_reports
         FROM document_artifacts a WHERE a.period_end IS NULL AND a.company_id IN
         (SELECT company_id FROM ('''+accepted+af+'))',afa)[0]
     result['acquisition']['unknown_period_documents_for_quarter_companies'] = unassigned['quarterly_documents']
     result['acquisition']['rating_reports_without_reporting_quarter'] = unassigned['rating_reports']
-    result['download_exclusions'] = rows('''SELECT q.status,q.last_result_status reason,count(DISTINCT a.artifact_id) documents,
+    clock=statement(conn,"strftime('%Y-%m-%dT%H:%M:%S+00:00','now')", "to_char(CURRENT_TIMESTAMP AT TIME ZONE 'UTC','YYYY-MM-DD\"T\"HH24:MI:SS\"+00:00\"')")
+    result['download_exclusions'] = rows(f''' SELECT q.status,q.last_result_status reason,count(DISTINCT a.artifact_id) documents,
         CASE WHEN EXISTS(SELECT 1 FROM artifact_download_host_health h WHERE h.host=q.target_host
-          AND h.blocked_until_utc>strftime('%Y-%m-%dT%H:%M:%S+00:00','now')) THEN
+          AND h.blocked_until_utc>{clock}) THEN
           (SELECT 'host cooldown until '||h.blocked_until_utc FROM artifact_download_host_health h WHERE h.host=q.target_host)
           WHEN q.created_at_utc<'2026-10-09T00:00:00+00:00' THEN 'pre-epoch; finite campaign required'
-          WHEN q.next_attempt_at_utc>strftime('%Y-%m-%dT%H:%M:%S+00:00','now') THEN 'retry not due' ELSE 'canonical policy/claim check required' END eligibility
+          WHEN q.next_attempt_at_utc>{clock} THEN 'retry not due' ELSE 'canonical policy/claim check required' END eligibility
         FROM artifact_download_queue q JOIN document_artifacts a USING(artifact_id)
         WHERE '''+ap+''' AND NOT EXISTS(SELECT 1 FROM artifact_contents c WHERE c.artifact_id=a.artifact_id)
         AND q.status<>'SUCCEEDED' GROUP BY 1,2,4''',aa)
@@ -108,7 +111,7 @@ def monitor(conn, quarter, term='', offset=0, company_id=0, export=False):
         LEFT JOIN screener_company_collection_state s
           ON s.company_path_normalized=en.company_path_normalized AND s.reporting_scope=en.reporting_scope) '''
     result['filings'] = rows(mapping+'''SELECT f.exchange,count(*) filings,count(DISTINCT r.company_id) mapped_companies,
-        sum(r.company_id IS NULL) unresolved_filings,max(f.discovered_at_utc) last_detected
+        sum(CAST((r.company_id IS NULL) AS INTEGER)) unresolved_filings,max(f.discovered_at_utc) last_detected
         FROM exchange_result_filings f LEFT JOIN mapped r USING(filing_id)
         WHERE '''+fp+' GROUP BY f.exchange',fpa)
     result['downloads'] = rows('''SELECT a.artifact_id,a.company_id,c.current_legal_name,a.artifact_type,a.period_end,
@@ -132,12 +135,12 @@ def monitor(conn, quarter, term='', offset=0, company_id=0, export=False):
     # Aggregate each independent fact once; joining raw queue rows would multiply
     # documents and incorrectly count duplicate scope jobs as companies.
     sql = mapping.rstrip()+''', accepted AS ('''+accepted+af+'''), fin AS (
-        SELECT company_id,max(reporting_scope='standalone') standalone,
-            max(reporting_scope='consolidated') consolidated,max(accepted_at_utc) last_acceptance
+        SELECT company_id,max(CAST((reporting_scope='standalone') AS INTEGER)) standalone,
+            max(CAST((reporting_scope='consolidated') AS INTEGER)) consolidated,max(accepted_at_utc) last_acceptance
         FROM accepted GROUP BY company_id), jobs AS (
         SELECT s.company_id,count(DISTINCT q.queue_item_id) admitted,
-          max(q.status='accepted') scraped,
-          max(q.status IN ('failed_retryable','failed_terminal','failed','manual_review')) failed
+          max(CAST((q.status='accepted') AS INTEGER)) scraped,
+          max(CAST((q.status IN ('failed_retryable','failed_terminal','failed','manual_review')) AS INTEGER)) failed
         FROM screener_company_queue q JOIN screener_company_collection_state s
         ON s.company_path_normalized=q.company_path_normalized AND s.reporting_scope=q.reporting_scope
         WHERE '''+fq+''' GROUP BY s.company_id), filings AS (
@@ -149,11 +152,11 @@ def monitor(conn, quarter, term='', offset=0, company_id=0, export=False):
           AND s.reporting_scope=x.reporting_scope_hint WHERE '''+predicate('x.result_period',quarter)[0]+'''
         GROUP BY s.company_id), docs AS (
         SELECT a.company_id,count(*) documents,count(d.content_id) stored,
-          sum(d.extraction_status='ok') processed FROM document_artifacts a
+          sum(CAST((d.extraction_status='ok') AS INTEGER)) processed FROM document_artifacts a
         LEFT JOIN artifact_contents d ON d.content_id=coalesce(a.preferred_content_id,
           (SELECT cc.content_id FROM artifact_contents cc WHERE cc.artifact_id=a.artifact_id ORDER BY cc.content_id DESC LIMIT 1)) WHERE '''+ap+'''
         GROUP BY a.company_id), scope AS (
-        SELECT company_id,max(eligibility='eligible') eligible FROM screener_collection_scope GROUP BY company_id)
+        SELECT company_id,max(CAST((eligibility='eligible') AS INTEGER)) eligible FROM screener_collection_scope GROUP BY company_id)
         SELECT c.company_id,c.current_legal_name,coalesce(s.eligible,0) eligible,
           coalesce(f.found,0) official_filings,coalesce(x.found,0) screener_candidates,
           coalesce(j.admitted,0) admitted_jobs,coalesce(j.scraped,0) scraped,
@@ -167,13 +170,14 @@ def monitor(conn, quarter, term='', offset=0, company_id=0, export=False):
         LEFT JOIN candidates x USING(company_id) LEFT JOIN docs d USING(company_id)'''
     args = (*afa,*fa,*fpa,*predicate('x.result_period',quarter)[1],*aa)
     result['coverage'] = rows('''SELECT count(*) universe,sum(eligible) eligible,
-        sum(official_filings>0) official_results_found,sum(official_filings>0 OR screener_candidates>0) results_detected,
-        sum(admitted_jobs>0) admitted,sum(scraped) scraped,sum(standalone) standalone,
-        sum(consolidated) consolidated,sum(standalone AND consolidated) both_scopes,
-        sum(failed) failed,sum(documents>0) with_documents,sum(stored>0) with_stored_documents
+        sum(CAST((official_filings>0) AS INTEGER)) official_results_found,sum(CAST((official_filings>0 OR screener_candidates>0) AS INTEGER)) results_detected,
+        sum(CAST((admitted_jobs>0) AS INTEGER)) admitted,sum(scraped) scraped,sum(standalone) standalone,
+        sum(consolidated) consolidated,sum(CAST((standalone<>0 AND consolidated<>0) AS INTEGER)) both_scopes,
+        sum(failed) failed,sum(CAST((documents>0) AS INTEGER)) with_documents,sum(CAST((stored>0) AS INTEGER)) with_stored_documents
         FROM ('''+sql+')',args)[0]
-    result['companies'] = rows('SELECT * FROM ('+sql+''') WHERE (?=0 OR company_id=?)
-        AND (?='' OR instr(lower(current_legal_name),lower(?))>0 OR cast(company_id AS TEXT)=?)
+    contains=statement(conn,'instr(lower(current_legal_name),lower(?))','position(lower(?) in lower(current_legal_name))')
+    result['companies'] = rows('SELECT * FROM ('+sql+f''' ) WHERE (?=0 OR company_id=?)
+        AND (?='' OR {contains}>0 OR cast(company_id AS TEXT)=?)
         ORDER BY eligible DESC,official_filings DESC,company_id LIMIT ? OFFSET ?''',
         (*args,company_id,company_id,term,term,term,20000 if export else 100,max(0,min(offset,100000))))
     result['last_download'] = rows('''SELECT max(t.fetched_at_utc) at,count(*) validated_attempts

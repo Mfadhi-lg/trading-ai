@@ -2,6 +2,7 @@
 from __future__ import annotations
 import sqlite3
 from ...domain.artifact_reconciliation import ClaimedExpectation
+from scrapper.db.repository_backend import (execute, executemany, generated_id, statement, is_postgresql, atomic_repository, begin_immediate, commit, rollback, transaction as repository_transaction)
 
 
 def _same_event(expectation: ClaimedExpectation, artifact: sqlite3.Row) -> bool:
@@ -17,10 +18,11 @@ def _same_event(expectation: ClaimedExpectation, artifact: sqlite3.Row) -> bool:
     )
 
 
+@atomic_repository('documents')
 def _accepted_artifact(
     conn: sqlite3.Connection, expectation: ClaimedExpectation, *, _same_event=_same_event
 ) -> sqlite3.Row | None:
-    candidates = conn.execute(
+    candidates = execute(conn,
         """SELECT * FROM document_artifacts
            WHERE company_id=? AND artifact_type=? ORDER BY artifact_id""",
         (expectation.company_id, expectation.artifact_type),
@@ -30,25 +32,25 @@ def _accepted_artifact(
             continue
         artifact_id = int(artifact["artifact_id"])
         if expectation.artifact_type == "transcript":
-            accepted = conn.execute(
+            accepted = execute(conn,
                 """SELECT 1 FROM transcripts WHERE artifact_id=?
                    AND origin='official' AND validation_status='accepted' LIMIT 1""",
                 (artifact_id,),
             ).fetchone()
         elif expectation.artifact_type == "recording":
-            accepted = conn.execute(
+            accepted = execute(conn,
                 """SELECT 1 FROM recording_normalizations WHERE artifact_id=?
                    AND normalization_status='accepted' LIMIT 1""",
                 (artifact_id,),
             ).fetchone()
         elif expectation.artifact_type == "credit_rating":
-            accepted = conn.execute(
+            accepted = execute(conn,
                 """SELECT 1 FROM credit_rating_normalizations WHERE artifact_id=?
                    AND normalization_status='accepted' LIMIT 1""",
                 (artifact_id,),
             ).fetchone()
         else:
-            accepted = conn.execute(
+            accepted = execute(conn,
                 """SELECT 1 FROM document_extractions AS extraction
                    JOIN artifact_contents AS content USING (content_id)
                    WHERE content.artifact_id=? AND extraction.extraction_status='ok'
@@ -61,10 +63,11 @@ def _accepted_artifact(
 
 
 
+@atomic_repository('documents')
 def matching_artifact_sources(conn, expectation, *, _same_event=_same_event):
     return [
         row
-        for row in conn.execute(
+        for row in execute(conn,
             """SELECT artifact.*, source.document_url,
                       source.availability_status AS source_status
                FROM document_artifacts AS artifact
@@ -77,6 +80,7 @@ def matching_artifact_sources(conn, expectation, *, _same_event=_same_event):
     ]
 
 
+@atomic_repository('documents')
 def latest_machine_transcription(conn, matching):
     machine = None
     matching_artifact_ids = tuple(
@@ -84,7 +88,7 @@ def latest_machine_transcription(conn, matching):
     )
     if matching_artifact_ids:
         placeholders = ",".join("?" for _ in matching_artifact_ids)
-        machine = conn.execute(
+        machine = execute(conn,
             f"""SELECT transcription_run_id
                 FROM machine_transcription_runs
                 WHERE transcript_artifact_id IN ({placeholders})

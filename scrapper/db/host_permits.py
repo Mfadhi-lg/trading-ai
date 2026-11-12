@@ -14,6 +14,7 @@ import json
 from dataclasses import asdict
 import secrets
 from ..core.host_policy import MODES, OperatorAuthorization, policy_for
+from scrapper.db.repository_backend import (execute, executemany, generated_id, statement, is_postgresql, atomic_repository, begin_immediate, commit, rollback, transaction as repository_transaction)
 
 @dataclass(frozen=True)
 class Permit:
@@ -42,22 +43,27 @@ def number(value, *, positive=False):
 
 @contextmanager
 def transaction(conn):
+    if is_postgresql(conn):
+        with repository_transaction(conn):
+            yield
+        return
     if conn.in_transaction:
         raise ValueError('Permit operations require a connection without an outer transaction')
-    conn.execute('BEGIN IMMEDIATE')
+    begin_immediate(conn, lock='documents')
     try:
         yield
-        conn.commit()
+        commit(conn)
     except BaseException:
-        conn.rollback()
+        rollback(conn)
         raise
 
 
+@atomic_repository('documents')
 def reviewed_policy(conn, target):
     policy = policy_for(target)
     # Any restriction on an alias constrains the whole explicitly shared publisher.
     # Unrelated hosts retain independent state.
-    for host, status, concurrency, delay in conn.execute(
+    for host, status, concurrency, delay in execute(conn,
             'SELECT host,automation_status,max_concurrency,min_delay_seconds FROM credit_rating_host_policy'):
         if policy_for(host).group != policy.group:
             continue
@@ -68,16 +74,17 @@ def reviewed_policy(conn, target):
     return policy
 
 
+@atomic_repository('documents')
 def inherited_cooldown(conn, group):
     # Preserve already persisted partition cooldowns when a group first participates.
     # Presence is optional only for minimal permit fixtures. No legacy row is edited.
-    tables={r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+    tables={r[0] for r in execute(conn, statement(conn, "SELECT name FROM sqlite_master WHERE type='table'", 'SELECT tablename AS name FROM pg_tables WHERE schemaname=current_schema()'))}
     until=0.0
     for table,host_column in [('artifact_download_host_health','host'),
             ('credit_rating_host_health','host'),('browser_rating_recovery_hosts','target_host')]:
         if table not in tables:
             continue
-        for host,deadline in conn.execute('SELECT '+host_column+',blocked_until_utc FROM '+table+' WHERE blocked_until_utc IS NOT NULL'):
+        for host,deadline in execute(conn, 'SELECT '+host_column+',blocked_until_utc FROM '+table+' WHERE blocked_until_utc IS NOT NULL'):
             if policy_for(host).group != group:
                 continue
             dt=datetime.fromisoformat(deadline)
@@ -87,20 +94,22 @@ def inherited_cooldown(conn, group):
     return until
 
 
+@atomic_repository('documents')
 def state(conn, policy, now):
-    conn.execute('INSERT OR IGNORE INTO acquisition_host_state(publisher_group,policy_version) VALUES(?,?)',
+    execute(conn, statement(conn, 'INSERT OR IGNORE INTO acquisition_host_state(publisher_group,policy_version) VALUES(?,?)', 'INSERT INTO acquisition_host_state(publisher_group,policy_version) VALUES(?,?) ON CONFLICT DO NOTHING'),
                  (policy.group, policy.version))
     # Backward clock correction/restart never makes a persisted deadline earlier.
-    conn.execute('UPDATE acquisition_host_state SET blocked_until=max(blocked_until,?) WHERE publisher_group=?',
+    execute(conn, statement(conn, 'UPDATE acquisition_host_state SET blocked_until=max(blocked_until,?) WHERE publisher_group=?', 'UPDATE acquisition_host_state SET blocked_until=CASE WHEN blocked_until IS NULL THEN NULL ELSE GREATEST(blocked_until,?) END WHERE publisher_group=?'),
                  (inherited_cooldown(conn, policy.group), policy.group))
-    row = conn.execute('SELECT next_request_at,blocked_until,circuit_until,observed_at,consecutive_failures FROM acquisition_host_state WHERE publisher_group=?',
+    row = execute(conn, 'SELECT next_request_at,blocked_until,circuit_until,observed_at,consecutive_failures FROM acquisition_host_state WHERE publisher_group=?',
                        (policy.group,)).fetchone()
     now = max(now, row[3])
-    conn.execute('UPDATE acquisition_host_state SET observed_at=?,policy_version=? WHERE publisher_group=?',
+    execute(conn, 'UPDATE acquisition_host_state SET observed_at=?,policy_version=? WHERE publisher_group=?',
                  (now, policy.version, policy.group))
     return row, now
 
 
+@atomic_repository('documents')
 def acquire(conn, target, *, mode, owner, now, lease_seconds=60, authorization=None):
     now, lease = number(now), number(lease_seconds, positive=True)
     if mode not in MODES or not isinstance(owner, str) or not owner.strip():
@@ -122,7 +131,7 @@ def acquire(conn, target, *, mode, owner, now, lease_seconds=60, authorization=N
             return Decision('PUBLISHER_POLICY_BLOCKED')
         if restricted:
             policy = replace(policy, max_concurrency=1)
-        if mode == 'browser' and not authorization.covers(host, max(now, conn.execute(
+        if mode == 'browser' and not authorization.covers(host, max(now, execute(conn,
                 'SELECT COALESCE(MAX(observed_at),0) FROM acquisition_host_state WHERE publisher_group=?',
                 (policy.group,)).fetchone()[0])):
             return Decision('OPERATOR_AUTHORIZATION_REQUIRED')
@@ -130,7 +139,7 @@ def acquire(conn, target, *, mode, owner, now, lease_seconds=60, authorization=N
         retry_at = max(row[:3])
         if retry_at > now:
             return Decision('HOST_DEFERRED', retry_at=retry_at)
-        active = conn.execute("SELECT lease_expires_at FROM acquisition_host_permits WHERE publisher_group=? AND status='ACTIVE' AND lease_expires_at>? ORDER BY lease_expires_at",
+        active = execute(conn, "SELECT lease_expires_at FROM acquisition_host_permits WHERE publisher_group=? AND status='ACTIVE' AND lease_expires_at>? ORDER BY lease_expires_at",
                               (policy.group, now)).fetchall()
         if len(active) >= policy.max_concurrency:
             return Decision('HOST_BUSY', retry_at=active[0][0])
@@ -138,29 +147,31 @@ def acquire(conn, target, *, mode, owner, now, lease_seconds=60, authorization=N
         expires = number(now + lease, positive=True)
         if authorization is not None:
             expires = min(expires, authorization.expires_at)
-        conn.execute("INSERT INTO acquisition_host_permits VALUES(?,?,?,?,?,'ACTIVE',?,?,NULL,?,?)",
+        execute(conn, "INSERT INTO acquisition_host_permits VALUES(?,?,?,?,?,'ACTIVE',?,?,NULL,?,?)",
                      (token, policy.group, policy.host, mode, owner, now, expires, policy.version,
                       json.dumps(asdict(authorization), sort_keys=True) if authorization else '{}'))
-        conn.execute('UPDATE acquisition_host_state SET next_request_at=max(next_request_at,?) WHERE publisher_group=?',
+        execute(conn, statement(conn, 'UPDATE acquisition_host_state SET next_request_at=max(next_request_at,?) WHERE publisher_group=?', 'UPDATE acquisition_host_state SET next_request_at=CASE WHEN next_request_at IS NULL THEN NULL ELSE GREATEST(next_request_at,?) END WHERE publisher_group=?'),
                      (number(now + policy.min_delay_seconds), policy.group))
         return Decision('GRANTED', Permit(token, policy.group, policy.host, mode, owner, expires))
 
 
+@atomic_repository('documents')
 def owned(conn, permit, now):
-    row = conn.execute("SELECT lease_expires_at FROM acquisition_host_permits WHERE permit_token=? AND publisher_group=? AND host=? AND acquisition_mode=? AND owner=? AND status='ACTIVE'",
+    row = execute(conn, "SELECT lease_expires_at FROM acquisition_host_permits WHERE permit_token=? AND publisher_group=? AND host=? AND acquisition_mode=? AND owner=? AND status='ACTIVE'",
                        (permit.token, permit.group, permit.host, permit.mode, permit.owner)).fetchone()
     if row is None or row[0] <= now:
         raise PermitLost('Permit expired, released or not owned')
     return row[0]
 
 
+@atomic_repository('documents')
 def renew(conn, permit, *, now, lease_seconds=60):
     now, lease = number(now), number(lease_seconds, positive=True)
     with transaction(conn):
         policy = reviewed_policy(conn, permit.host)
         _, now = state(conn, policy, now)
         deadline = owned(conn, permit, now)
-        auth = json.loads(conn.execute('SELECT authorization_json FROM acquisition_host_permits WHERE permit_token=?', (permit.token,)).fetchone()[0])
+        auth = json.loads(execute(conn, 'SELECT authorization_json FROM acquisition_host_permits WHERE permit_token=?', (permit.token,)).fetchone()[0])
         restricted = bool(auth) and permit.mode == 'browser' and permit.host in auth['restricted_hosts']
         if (policy.blocked or policy.max_concurrency == 0) and not restricted:
             raise PermitLost('Publisher policy no longer permits this request')
@@ -169,7 +180,7 @@ def renew(conn, permit, *, now, lease_seconds=60):
         expires = max(deadline, number(now + lease, positive=True))
         if auth:
             expires = min(expires, auth['expires_at'])
-        conn.execute('UPDATE acquisition_host_permits SET lease_expires_at=? WHERE permit_token=?', (expires, permit.token))
+        execute(conn, 'UPDATE acquisition_host_permits SET lease_expires_at=? WHERE permit_token=?', (expires, permit.token))
         return replace(permit, expires_at=expires)
 
 
@@ -189,6 +200,7 @@ def retry_after_seconds(raw, now):
             return None
 
 
+@atomic_repository('documents')
 def finish(conn, permit, *, now, outcome='success', retry_after=None, cooldown_seconds=0):
     now, cooldown = number(now), number(cooldown_seconds)
     if outcome not in {'success', 'released', 'blocked', 'transport_failure'}:
@@ -203,6 +215,6 @@ def finish(conn, permit, *, now, outcome='success', retry_after=None, cooldown_s
                             3600 if outcome == 'blocked' and delay is None and not cooldown else 0))
         circuit = number(now + 3600) if failures >= 3 and outcome == 'transport_failure' else 0
         # A success never clears an independently recorded future cooldown/circuit.
-        conn.execute("UPDATE acquisition_host_permits SET status='RELEASED',released_at=? WHERE permit_token=?", (now, permit.token))
-        conn.execute('UPDATE acquisition_host_state SET blocked_until=max(blocked_until,?),circuit_until=max(circuit_until,?),consecutive_failures=?,retry_after_raw=?,last_outcome=? WHERE publisher_group=?',
+        execute(conn, "UPDATE acquisition_host_permits SET status='RELEASED',released_at=? WHERE permit_token=?", (now, permit.token))
+        execute(conn, statement(conn, 'UPDATE acquisition_host_state SET blocked_until=max(blocked_until,?),circuit_until=max(circuit_until,?),consecutive_failures=?,retry_after_raw=?,last_outcome=? WHERE publisher_group=?', 'UPDATE acquisition_host_state SET blocked_until=CASE WHEN blocked_until IS NULL THEN NULL ELSE GREATEST(blocked_until,?) END,circuit_until=CASE WHEN circuit_until IS NULL THEN NULL ELSE GREATEST(circuit_until,?) END,consecutive_failures=?,retry_after_raw=?,last_outcome=? WHERE publisher_group=?'),
                      (blocked, circuit, failures, None if retry_after is None else str(retry_after), outcome, permit.group))

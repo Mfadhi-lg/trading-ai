@@ -3,6 +3,7 @@
 Run --bootstrap --apply once; --monitor --limit 40 hourly performs one
 authorized company-page request per due company (no peers/documents).
 """
+from ..db.repository_backend import statement, is_postgresql, execute, generated_id, atomic_repository, begin_immediate
 import argparse
 import json
 import sqlite3
@@ -48,11 +49,15 @@ def apply_observation(conn, row, *, snapshot, now, evidence):
         conn.execute(f"""UPDATE screener_company_queue SET collection_disposition=NULL
            WHERE company_path_normalized IN ({alias_sql}) AND collection_disposition='below_market_cap'""",(row["company_path"],))
         if row["eligibility"] != "eligible":
-            candidate = conn.execute(f"""SELECT * FROM screener_company_queue
+            candidate = conn.execute(statement(conn, f"""SELECT * FROM screener_company_queue
               WHERE company_path_normalized IN ({alias_sql}) AND reporting_scope='standalone'
               AND result_period GLOB '[12][0-9][0-9][0-9]-[01][0-9]' AND result_period>'1970-01'
               AND status IN ('failed_terminal','failed_retryable','manual_review') AND collection_disposition IS NULL
-              ORDER BY result_period DESC,queue_item_id DESC LIMIT 1""",(row["company_path"],)).fetchone()
+              ORDER BY result_period DESC,queue_item_id DESC LIMIT 1""", f"""SELECT * FROM screener_company_queue
+              WHERE company_path_normalized IN ({alias_sql}) AND reporting_scope='standalone'
+              AND result_period ~ '^[12][0-9][0-9][0-9]-[01][0-9]$' AND result_period>'1970-01'
+              AND status IN ('failed_terminal','failed_retryable','manual_review') AND collection_disposition IS NULL
+              ORDER BY result_period DESC,queue_item_id DESC LIMIT 1"""),(row["company_path"],)).fetchone()
             if candidate:
                 conn.execute("""UPDATE screener_company_queue SET status='pending',next_attempt_at_utc=?,
                     last_error_json=?,updated_at_utc=? WHERE queue_item_id=?""",
@@ -66,11 +71,11 @@ def apply_observation(conn, row, *, snapshot, now, evidence):
           WHERE status='SKIPPED_POLICY' AND last_result_status='SCOPE_BELOW_MARKET_CAP_FLOOR'
           AND artifact_id IN (SELECT artifact_id FROM document_artifacts WHERE company_id=?)""",
           (now,now,row["company_id"]))
-        conn.execute("""UPDATE artifact_expectations SET availability_status='expected_not_yet_published',
+        conn.execute(statement(conn, """UPDATE artifact_expectations SET availability_status='expected_not_yet_published',
           next_check_at_utc=?,terminal_reason=NULL,last_error_json='{}',updated_at_utc=?
           WHERE company_id=? AND claim_token IS NULL AND availability_status='source_not_covered'
           AND (terminal_reason='market_cap_not_above_580_crore'
-            OR json_extract(last_error_json,'$.type')='ScreenerMarketCapOutOfScope')""",(now,now,row["company_id"]))
+            OR json_extract(last_error_json,'$.type')='ScreenerMarketCapOutOfScope')""", "UPDATE artifact_expectations SET availability_status='expected_not_yet_published',\n          next_check_at_utc=?,terminal_reason=NULL,last_error_json='{}',updated_at_utc=?\n          WHERE company_id=? AND claim_token IS NULL AND availability_status='source_not_covered'\n          AND (terminal_reason='market_cap_not_above_580_crore'\n            OR (last_error_json::jsonb ->> 'type')='ScreenerMarketCapOutOfScope')"),(now,now,row["company_id"]))
     return state
 
 
@@ -87,9 +92,9 @@ def monitor(conn, *, limit, client=None, now_fn=utc_now, snapshot_root=SNAPSHOTS
         if before_claim is not None and not before_claim():
             break
         now=now_fn(); token=uuid.uuid4().hex
-        conn.execute("BEGIN IMMEDIATE")
+        begin_immediate(conn)
         row=conn.execute("""SELECT * FROM screener_collection_scope
-          WHERE ((? IS NULL AND next_check_at_utc<=?) OR company_path=?)
+          WHERE ((CAST(? AS text) IS NULL AND next_check_at_utc<=?) OR company_path=?)
           AND (claim_token IS NULL OR claim_expires_at_utc<=?)
           ORDER BY next_check_at_utc,company_path LIMIT 1""",(company_path,now,company_path,now)).fetchone()
         if row is None:
@@ -176,7 +181,7 @@ def main():
     if args.bootstrap or args.monitor:
         conn=connect(args.db); init_db(conn)
     else:
-        conn=sqlite3.connect(f"file:{args.db.resolve()}?mode=ro",uri=True); conn.row_factory=sqlite3.Row
+        conn=connect(args.db, read_only=True)
     try:
         result=bootstrap_scope(conn,now=utc_now()) if args.bootstrap else monitor(conn,limit=args.limit) if args.monitor else scope_summary(conn)
         print(json.dumps(result,sort_keys=True))

@@ -1,0 +1,65 @@
+name: PostgreSQL transition
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  postgresql-contract:
+    runs-on: ubuntu-latest
+    env:
+      TRADING_AI_ENV: test
+      PYTHONDONTWRITEBYTECODE: "1"
+      # Synthetic CI-only credentials; the service is discarded with the job.
+      TRADING_AI_POSTGRESQL_TEST_DSN: postgresql://postgres:postgres@127.0.0.1:5432/trading_ai_test
+    services:
+      postgres:
+        image: postgres:16.14-bookworm
+        env:
+          POSTGRES_DB: trading_ai_test
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d trading_ai_test"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Configure isolated CI data roots
+        shell: bash
+        run: |
+          test_root="$RUNNER_TEMP/trading-ai-test"
+          mkdir -p "$test_root/state" "$test_root/store"
+          {
+            echo "TRADING_AI_TEST_ROOT=$test_root"
+            echo "SCRAPER_STORE_PATH=$test_root/store"
+            echo "SCRAPER_FILES_PATH=$test_root/store/files"
+            echo "SCRAPER_SNAPSHOTS_PATH=$test_root/store/snapshots"
+            echo "SCRAPER_EXPORTS_PATH=$test_root/store/exports"
+            echo "SCRAPER_DB_PATH=$test_root/state/scraper.db"
+            echo "SCRAPER_CAMPAIGNS_PATH=$test_root/store/campaigns"
+            echo "SCRAPER_LOGS_PATH=$test_root/store/logs"
+            echo "SCRAPER_BROWSER_STATE_PATH=$test_root/store/browser-state"
+            echo "SCRAPER_BACKUPS_PATH=$test_root/store/backups"
+          } >> "$GITHUB_ENV"
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.12.16"
+      - name: Install optional native backend
+        run: |
+          python -m pip install --require-hashes -r scrapper/requirements.test.lock
+          python -m pip install -r scrapper/requirements.postgresql.txt
+      - name: Install matching backup and restore clients
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes postgresql-client-16
+          echo "/usr/lib/postgresql/16/bin" >> "$GITHUB_PATH"
+      - name: Native PostgreSQL contracts
+        run: |
+          python -B -m unittest discover -s scrapper/tests -t . -p 'test_postgresql*.py' -v
+          python -B -m unittest scrapper.tests.test_repository_backend scrapper.tests.test_screener_observation_repo scrapper.tests.test_exchange_coordinator scrapper.tests.test_periodic_coordinator scrapper.tests.test_claim_fencing scrapper.tests.test_document_processing_work scrapper.tests.test_ci_database_isolation -v

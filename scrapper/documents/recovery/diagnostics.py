@@ -109,8 +109,12 @@ def diagnose(db_path: str, scope_id: str | None, *, _hooks=None) -> dict:
     _family = getattr(_hooks, "_family", globals()["_family"])
     _host = getattr(_hooks, "_host", globals()["_host"])
     _verdict = getattr(_hooks, "_verdict", globals()["_verdict"])
-    conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
-    conn.row_factory = sqlite3.Row
+    from ...db.database import connect, selected_backend
+    if selected_backend() == 'postgresql':
+        conn = connect(db_path, read_only=True)
+    else:
+        conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
+        conn.row_factory = sqlite3.Row
     now = dt.datetime.now(dt.timezone.utc)
     now_iso = now.strftime("%Y-%m-%dT%H:%M:%S+00:00")
 

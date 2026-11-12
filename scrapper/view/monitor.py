@@ -1,6 +1,7 @@
 """Real-time CLI monitoring dashboard for scraper pipeline execution."""
 
 from __future__ import annotations
+from ..db.repository_backend import statement, is_postgresql, execute, generated_id, atomic_repository, begin_immediate
 
 import datetime
 import json
@@ -103,7 +104,7 @@ def _fetch_average_run_seconds(conn: sqlite3.Connection) -> float | None:
     becomes disproportionately expensive on a long-running queue.
     """
     row = conn.execute(
-        """
+        statement(conn, """
         WITH transitions AS (
             SELECT
                 to_status,
@@ -124,9 +125,9 @@ def _fetch_average_run_seconds(conn: sqlite3.Connection) -> float | None:
         FROM transitions
         WHERE previous_status = 'running'
           AND to_status IN ('accepted', 'failed_terminal', 'failed_retryable', 'manual_review')
-        """
+        """, "\n        WITH transitions AS (\n            SELECT\n                to_status,\n                event_at_utc,\n                LAG(to_status) OVER (\n                    PARTITION BY queue_item_id\n                    ORDER BY event_at_utc, queue_event_id\n                ) AS previous_status,\n                LAG(event_at_utc) OVER (\n                    PARTITION BY queue_item_id\n                    ORDER BY event_at_utc, queue_event_id\n                ) AS previous_event_at_utc\n            FROM screener_company_queue_events\n        )\n        SELECT AVG(\n            EXTRACT(EPOCH FROM event_at_utc::timestamptz) - EXTRACT(EPOCH FROM previous_event_at_utc::timestamptz)\n        ) AS avg_sec\n        FROM transitions\n        WHERE previous_status = 'running'\n          AND to_status IN ('accepted', 'failed_terminal', 'failed_retryable', 'manual_review')\n        ")
     ).fetchone()
-    return row["avg_sec"] if row and row["avg_sec"] is not None else None
+    return float(row["avg_sec"]) if row and row["avg_sec"] is not None else None
 
 
 def fetch_monitor_data(

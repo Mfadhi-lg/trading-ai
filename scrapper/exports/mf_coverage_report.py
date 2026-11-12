@@ -1,6 +1,7 @@
 """M07 coverage report for a bounded official-workbook vertical slice."""
 
 from __future__ import annotations
+from ..db.repository_backend import statement
 
 import json
 import sqlite3
@@ -177,7 +178,7 @@ def _security_coverage(
         }
     import_id = import_ids[0]
     counts = conn.execute(
-        """SELECT COUNT(*) AS holding_count,
+        statement(conn, """SELECT COUNT(*) AS holding_count,
                   SUM(source_table_kind='primary_portfolio') AS primary_count,
                   SUM(source_table_kind!='primary_portfolio') AS non_primary_count,
                   SUM(source_table_kind='primary_portfolio'
@@ -191,7 +192,7 @@ def _security_coverage(
                   COUNT(DISTINCT CASE WHEN security_id IS NOT NULL
                                       AND security_match_status='matched'
                                       THEN security_id END) AS security_count
-           FROM mf_holdings WHERE import_file_id=?""",
+           FROM mf_holdings WHERE import_file_id=?""", "SELECT COUNT(*) AS holding_count,\n                  SUM(CASE WHEN source_table_kind='primary_portfolio' THEN 1 ELSE 0 END) AS primary_count,\n                  SUM(CASE WHEN source_table_kind!='primary_portfolio' THEN 1 ELSE 0 END) AS non_primary_count,\n                  SUM(CASE WHEN source_table_kind='primary_portfolio'\n                      AND security_id IS NOT NULL\n                      AND security_match_status='matched' THEN 1 ELSE 0 END) AS eligible_count,\n                  SUM(CASE WHEN source_table_kind='primary_portfolio'\n                      AND NOT (security_id IS NOT NULL\n                               AND security_match_status='matched') THEN 1 ELSE 0 END)\n                    AS primary_unmatched_count,\n                  SUM(CASE WHEN isin_validation_status LIKE 'invalid%' THEN 1 ELSE 0 END) AS invalid_isin_count,\n                  COUNT(DISTINCT CASE WHEN security_id IS NOT NULL\n                                      AND security_match_status='matched'\n                                      THEN security_id END) AS security_count\n           FROM mf_holdings WHERE import_file_id=?"),
         (import_id,),
     ).fetchone()
     holding_count = int(counts["holding_count"] or 0)

@@ -111,6 +111,8 @@ def execute_once(kind,out,*,verify_only=False,company_path=None,paired_downloads
                     {'type':'bind','source':str(STORE),'target':'/documents','bind':{'create_host_path':False}},
                     {'type':'bind','source':str(STORE),'target':'/physical_documents','read_only':True,'bind':{'create_host_path':False}},
                     {'type':'bind','source':str(ROOT/'scrapper'),'target':'/document_app/scrapper','read_only':True,'bind':{'create_host_path':False}}]
+                from postgresql_release import configure_document_companion
+                configure_document_companion(compose,service,out)
                 adapter.save('compose.json',compose)
                 manifest=json.loads((out/'manifest.json').read_text())
                 files=[p for p in (ROOT/'scrapper').rglob('*.py') if 'tests' not in p.relative_to(ROOT/'scrapper').parts]+list((ROOT/'scrapper/documents/download/certificates').glob('*.pem'))

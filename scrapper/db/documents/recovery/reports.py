@@ -4,6 +4,7 @@ import sqlite3
 from collections import Counter
 from typing import Any
 from ...repo import utc_now
+from scrapper.db.repository_backend import (execute, executemany, generated_id, statement, is_postgresql, atomic_repository, begin_immediate, commit, rollback, transaction as repository_transaction)
 
 RECOVERY_REPORT_SCHEMA_VERSION = "1.0.0"
 
@@ -19,6 +20,7 @@ def _source_bucket(source_type: str | None) -> str:
     return "other"
 
 
+@atomic_repository('documents')
 def build_alternate_source_recovery_report(
     conn: sqlite3.Connection, *, generated_at_utc: str | None = None, _hooks: Any = None
 ) -> dict[str, Any]:
@@ -26,14 +28,14 @@ def build_alternate_source_recovery_report(
     _source_bucket = getattr(_hooks, "_source_bucket", globals()["_source_bucket"])
     RECOVERY_REPORT_SCHEMA_VERSION = getattr(_hooks, "RECOVERY_REPORT_SCHEMA_VERSION", globals()["RECOVERY_REPORT_SCHEMA_VERSION"])
     generated = generated_at_utc or utc_now()
-    targets = conn.execute(
+    targets = execute(conn,
         """SELECT target.*,candidate.source_type,candidate.content_class
              FROM artifact_recovery_targets AS target
              LEFT JOIN artifact_recovery_candidates AS candidate
                ON candidate.candidate_id=target.resolved_candidate_id
             ORDER BY target.recovery_target_id"""
     ).fetchall()
-    quarantine = conn.execute(
+    quarantine = execute(conn,
         "SELECT * FROM artifact_recovery_quarantine ORDER BY artifact_id"
     ).fetchall()
     status_counts = Counter(str(row["status"]) for row in targets)
@@ -115,6 +117,7 @@ def build_alternate_source_recovery_report(
     return payload
 
 
+@atomic_repository('documents')
 def retryable_jobs(conn, *, scope_id):
     where = "q.status = 'RETRYABLE_FAILURE'"
     params: list[str] = []
@@ -122,7 +125,7 @@ def retryable_jobs(conn, *, scope_id):
         where += " AND q.scope_id = ?"
         params.append(scope_id)
 
-    return conn.execute(
+    return execute(conn,
         f"""SELECT q.download_job_id, q.scope_id, q.requested_url, q.target_host,
                    q.attempt_count, q.next_attempt_at_utc, q.last_result_status,
                    q.last_error, q.updated_at_utc, a.artifact_type
@@ -134,8 +137,9 @@ def retryable_jobs(conn, *, scope_id):
 
 
 
+@atomic_repository('documents')
 def retryable_host_recency(conn, *, like, host):
-    rec = conn.execute(
+    rec = execute(conn,
         """SELECT
              MAX(CASE WHEN result_status = 'validated' THEN fetched_at_utc END) latest_success,
              MAX(CASE WHEN result_status <> 'validated' THEN fetched_at_utc END) latest_failure,
@@ -145,7 +149,7 @@ def retryable_host_recency(conn, *, like, host):
           WHERE requested_url LIKE ?""",
         (like,),
     ).fetchone()
-    health = conn.execute(
+    health = execute(conn,
         "SELECT blocked_until_utc, consecutive_blocks, last_result_status"
         "  FROM artifact_download_host_health WHERE host = ?",
         (host,),
@@ -153,6 +157,7 @@ def retryable_host_recency(conn, *, like, host):
     return rec, health
 
 
+@atomic_repository('documents')
 def document_recovery_jobs(conn, *, scope_id=None, include_pending=False):
     generic_scope = " AND queue.scope_id=?" if scope_id is not None else ""
     generic_parameters: tuple[Any, ...] = (scope_id,) if scope_id is not None else ()
@@ -161,7 +166,7 @@ def document_recovery_jobs(conn, *, scope_id=None, include_pending=False):
         + (",'PENDING'" if include_pending else "")
     )
     rows: list[dict[str, Any]] = []
-    generic = conn.execute(
+    generic = execute(conn,
         f"""SELECT 'generic' AS queue_kind, queue.download_job_id,
                    queue.scope_id, queue.artifact_id, artifact.artifact_type,
                    company.current_legal_name,
@@ -188,7 +193,7 @@ def document_recovery_jobs(conn, *, scope_id=None, include_pending=False):
             "'RETRYABLE_FAILURE','TERMINAL_FAILURE','INTERACTION_REQUIRED',"
             "'SKIPPED_POLICY'" + (",'PENDING'" if include_pending else "")
         )
-        rating = conn.execute(
+        rating = execute(conn,
             f"""SELECT 'credit_rating' AS queue_kind, queue.download_job_id,
                        NULL AS scope_id, queue.artifact_id, artifact.artifact_type,
                        company.current_legal_name,

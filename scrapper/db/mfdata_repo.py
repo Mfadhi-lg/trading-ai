@@ -1,6 +1,10 @@
 """Persistence and official-first reconciliation for M09 mfdata evidence."""
 
 from __future__ import annotations
+from .repository_backend import (
+    atomic_repository, begin_immediate, commit, execute, executemany, generated_id,
+    is_postgresql, rollback, statement, transaction,
+)
 
 import hashlib
 import json
@@ -51,7 +55,7 @@ def _different(left: str | None, right: str | None) -> bool:
 def _scheme(
     conn: sqlite3.Connection, *, publisher: str, scheme_code: str
 ) -> sqlite3.Row:
-    row = conn.execute(
+    row = execute(conn,
         """SELECT scheme_id, publisher, scheme_code FROM mf_schemes
            WHERE publisher=? AND scheme_code=?""",
         (publisher, scheme_code),
@@ -64,6 +68,7 @@ def _scheme(
     return row
 
 
+@atomic_repository('financial-repositories')
 def _persist_snapshot(
     conn: sqlite3.Connection,
     *,
@@ -78,7 +83,7 @@ def _persist_snapshot(
     scheme = _scheme(conn, publisher=publisher, scheme_code=scheme_code)
     scheme_id = int(scheme["scheme_id"])
     content_hash = hashlib.sha256(raw_bytes).hexdigest()
-    existing = conn.execute(
+    existing = execute(conn,
         """SELECT * FROM mfdata_snapshots
            WHERE provider='mfdata' AND content_sha256=?""",
         (content_hash,),
@@ -97,16 +102,16 @@ def _persist_snapshot(
             raise ValueError(
                 "Identical mfdata bytes cannot be remapped to another official identity"
             )
-        observation = conn.execute(
+        observation = execute(conn,
             """INSERT INTO mfdata_snapshot_observations
                (mfdata_snapshot_id, observed_at_utc, submitted_path,
                 observation_result)
                VALUES (?, ?, ?, 'duplicate')""",
             (int(existing["mfdata_snapshot_id"]), observed_at_utc, submitted_path),
-        )
-        return int(existing["mfdata_snapshot_id"]), int(observation.lastrowid), True
+         returning='mfdata_observation_id')
+        return int(existing["mfdata_snapshot_id"]), int(generated_id(observation, 'mfdata_observation_id')), True
 
-    snapshot = conn.execute(
+    snapshot = execute(conn,
         """INSERT INTO mfdata_snapshots
            (provider, source, source_quality, publisher, scheme_id, scheme_code,
             provider_family_id, requested_disclosure_month,
@@ -121,20 +126,20 @@ def _persist_snapshot(
             content_hash, len(raw_bytes), submitted_path, immutable_path,
             parsed.parser_version, observed_at_utc, observed_at_utc,
         ),
-    )
-    snapshot_id = int(snapshot.lastrowid)
-    observation = conn.execute(
+     returning='mfdata_snapshot_id')
+    snapshot_id = int(generated_id(snapshot, 'mfdata_snapshot_id'))
+    observation = execute(conn,
         """INSERT INTO mfdata_snapshot_observations
            (mfdata_snapshot_id, observed_at_utc, submitted_path,
             observation_result)
            VALUES (?, ?, ?, 'accepted')""",
         (snapshot_id, observed_at_utc, submitted_path),
-    )
+     returning='mfdata_observation_id')
     for holding in parsed.holdings:
         security_id = None
         match_status = "invalid_isin"
         if holding.isin_validation_status == "valid":
-            security = conn.execute(
+            security = execute(conn,
                 """SELECT security_id FROM mf_security_identifiers
                    WHERE identifier_type='isin' AND identifier_value=?""",
                 (holding.isin_normalized,),
@@ -146,7 +151,7 @@ def _persist_snapshot(
                 match_status = "unmatched"
         elif holding.isin_validation_status == "missing":
             match_status = "unmatched"
-        conn.execute(
+        execute(conn,
             """INSERT INTO mfdata_holdings
                (mfdata_snapshot_id, source_position, holding_type,
                 holding_type_position, publisher, scheme_id, scheme_code,
@@ -182,13 +187,13 @@ def _persist_snapshot(
                 match_status, observed_at_utc, observed_at_utc,
             ),
         )
-    previous = conn.execute(
+    previous = execute(conn,
         """SELECT mfdata_snapshot_id FROM mfdata_accepted_versions
            WHERE publisher=? AND scheme_id=? AND disclosure_month=?""",
         (publisher, scheme_id, parsed.disclosure_month),
     ).fetchone()
     previous_id = None if previous is None else int(previous["mfdata_snapshot_id"])
-    conn.execute(
+    execute(conn,
         """INSERT INTO mfdata_accepted_versions
            (publisher, scheme_id, disclosure_month, mfdata_snapshot_id,
             accepted_at_utc, accepted_by)
@@ -199,7 +204,7 @@ def _persist_snapshot(
              accepted_by=excluded.accepted_by""",
         (publisher, scheme_id, parsed.disclosure_month, snapshot_id, observed_at_utc),
     )
-    conn.execute(
+    execute(conn,
         """INSERT INTO mfdata_accepted_version_events
            (publisher, scheme_id, disclosure_month, mfdata_snapshot_id,
             previous_mfdata_snapshot_id, accepted_at_utc, accepted_by)
@@ -209,9 +214,10 @@ def _persist_snapshot(
             previous_id, observed_at_utc,
         ),
     )
-    return snapshot_id, int(observation.lastrowid), False
+    return snapshot_id, int(generated_id(observation, 'mfdata_observation_id')), False
 
 
+@atomic_repository('financial-repositories')
 def _crosscheck(
     conn: sqlite3.Connection,
     *,
@@ -220,7 +226,7 @@ def _crosscheck(
     scheme_code: str,
     generated_at_utc: str,
 ) -> tuple[int, dict[str, int | str]]:
-    snapshot = conn.execute(
+    snapshot = execute(conn,
         "SELECT * FROM mfdata_snapshots WHERE mfdata_snapshot_id=?",
         (snapshot_id,),
     ).fetchone()
@@ -228,7 +234,7 @@ def _crosscheck(
         raise ValueError(f"Unknown mfdata snapshot: {snapshot_id}")
     scheme_id = int(snapshot["scheme_id"])
     month = str(snapshot["detected_disclosure_month"])
-    official_rows = conn.execute(
+    official_rows = execute(conn,
         """SELECT holding_id, security_id, security_name_raw, isin_normalized,
                   quantity_decimal, market_value_decimal,
                   percentage_of_nav_decimal
@@ -240,7 +246,7 @@ def _crosscheck(
            ORDER BY isin_normalized, holding_id""",
         (publisher, scheme_id, month),
     ).fetchall()
-    third_rows = conn.execute(
+    third_rows = execute(conn,
         """SELECT * FROM mfdata_holdings
            WHERE mfdata_snapshot_id=? AND holding_type='equity'
            ORDER BY source_position""",
@@ -263,7 +269,7 @@ def _crosscheck(
         ],
     }
     fingerprint = hashlib.sha256(_json(fingerprint_payload).encode()).hexdigest()
-    existing = conn.execute(
+    existing = execute(conn,
         """SELECT * FROM mfdata_crosscheck_runs WHERE input_fingerprint=?""",
         (fingerprint,),
     ).fetchone()
@@ -378,7 +384,7 @@ def _crosscheck(
         + counts["third_party_only_count"] + counts["unmatched_third_party_count"]
     )
     comparison_status = "passed_with_warnings" if warning_count else "passed"
-    run = conn.execute(
+    run = execute(conn,
         """INSERT INTO mfdata_crosscheck_runs
            (mfdata_snapshot_id, publisher, scheme_id, disclosure_month,
             comparison_status, official_observation_count,
@@ -394,10 +400,10 @@ def _crosscheck(
             counts["third_party_only_count"], counts["unmatched_third_party_count"],
             fingerprint, generated_at_utc,
         ),
-    )
-    run_id = int(run.lastrowid)
+     returning='mfdata_crosscheck_run_id')
+    run_id = int(generated_id(run, 'mfdata_crosscheck_run_id'))
     for position, result in enumerate(results):
-        conn.execute(
+        execute(conn,
             """INSERT INTO mfdata_crosscheck_results
                (mfdata_crosscheck_run_id, result_position, result_status,
                 security_id, isin_normalized, security_name_raw,
@@ -422,7 +428,7 @@ def _crosscheck(
                 result["preferred_source_quality"],
             ),
         )
-    persisted = conn.execute(
+    persisted = execute(conn,
         "SELECT * FROM mfdata_crosscheck_runs WHERE mfdata_crosscheck_run_id=?",
         (run_id,),
     ).fetchone()
@@ -441,7 +447,7 @@ def persist_and_crosscheck_mfdata(
     observed_at_utc: str,
 ) -> MFDataCrosscheckSummary:
     """Persist complete evidence, then compare it without mutating official rows."""
-    with conn:
+    with transaction(conn):
         snapshot_id, observation_id, duplicate = _persist_snapshot(
             conn,
             parsed=parsed,

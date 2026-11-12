@@ -1,6 +1,7 @@
 """Validation and automatic-acceptance policy for Screener artifacts."""
 
 from __future__ import annotations
+from ..db.repository_backend import statement, is_postgresql, execute, generated_id, atomic_repository, begin_immediate
 
 import json
 import sqlite3
@@ -138,6 +139,7 @@ def _shareholding_total_anomalies(
     return len(anomalies), "; ".join(anomalies) if anomalies else None
 
 
+@atomic_repository('validation')
 def validate_peer_parse(
     conn: sqlite3.Connection,
     parse_id: int,
@@ -169,8 +171,8 @@ def validate_peer_parse(
         (parse_id,),
     ).fetchone()["n"]
     unknown_metrics = conn.execute(
-        """SELECT GROUP_CONCAT(DISTINCT metric_label_raw) AS labels
-           FROM peer_observations WHERE parse_id=? AND metric_code IS NULL""",
+        statement(conn, """SELECT GROUP_CONCAT(DISTINCT metric_label_raw) AS labels
+           FROM peer_observations WHERE parse_id=? AND metric_code IS NULL""", "SELECT STRING_AGG(DISTINCT metric_label_raw::text, ',') AS labels\n           FROM peer_observations WHERE parse_id=? AND metric_code IS NULL"),
         (parse_id,),
     ).fetchone()["labels"]
     placeholder_count = conn.execute(
@@ -231,6 +233,7 @@ def validate_peer_parse(
     return status
 
 
+@atomic_repository('validation')
 def validate_parse(
     conn: sqlite3.Connection,
     parse_id: int,
@@ -288,8 +291,8 @@ def validate_parse(
         (parse_id,),
     ).fetchone()["n"]
     unknown_metrics = conn.execute(
-        """SELECT GROUP_CONCAT(label_raw) AS labels FROM company_metric_observations
-           WHERE parse_id=? AND metric_code IS NULL""",
+        statement(conn, """SELECT GROUP_CONCAT(label_raw) AS labels FROM company_metric_observations
+           WHERE parse_id=? AND metric_code IS NULL""", "SELECT STRING_AGG(label_raw::text, ',') AS labels FROM company_metric_observations\n           WHERE parse_id=? AND metric_code IS NULL"),
         (parse_id,),
     ).fetchone()["labels"]
     pnl_count = conn.execute(

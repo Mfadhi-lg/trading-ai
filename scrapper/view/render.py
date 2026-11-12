@@ -736,12 +736,16 @@ def render_coverage(conn: sqlite3.Connection) -> str:
 
 
 def render_tables(conn: sqlite3.Connection) -> str:
+    from ..db.repository_backend import statement
     rows = conn.execute(
-        """
+        statement(conn, """
         SELECT name FROM sqlite_master
         WHERE type IN ('table', 'view') AND name NOT LIKE 'sqlite_%'
         ORDER BY lower(name)
-        """
+        """, """SELECT c.relname AS name FROM pg_class c
+        JOIN pg_namespace n ON n.oid=c.relnamespace
+        WHERE n.nspname=current_schema() AND c.relkind IN ('r','p','v')
+        ORDER BY lower(c.relname)""")
     ).fetchall()
     return render_table(["Table / view"], [[r["name"]] for r in rows])
 
@@ -753,11 +757,15 @@ def table_literal(name: str) -> str:
 def render_browse(
     conn: sqlite3.Connection, table: str, *, where: str | None, limit: int
 ) -> str:
+    from ..db.repository_backend import statement, is_postgresql
     allowed = conn.execute(
-        """
+        statement(conn, """
         SELECT name FROM sqlite_master
         WHERE type IN ('table', 'view') AND lower(name)=lower(?)
-        """,
+        """, """SELECT c.relname AS name FROM pg_class c
+        JOIN pg_namespace n ON n.oid=c.relnamespace
+        WHERE n.nspname=current_schema() AND c.relkind IN ('r','p','v')
+          AND lower(c.relname)=lower(?)"""),
         (table,),
     ).fetchone()
     if allowed is None:
@@ -765,7 +773,11 @@ def render_browse(
     table = allowed["name"]
     where_clause = ""
     if where:
-        columns = {row[1] for row in conn.execute(f"PRAGMA table_info({table_literal(table)})")}
+        if is_postgresql(conn):
+            columns = {row[0] for row in conn.execute(
+                "SELECT column_name FROM information_schema.columns WHERE table_schema=current_schema() AND table_name=?", (table,))}
+        else:
+            columns = {row[1] for row in conn.execute(f"PRAGMA table_info({table_literal(table)})")}
         column = where.split()[0].strip().strip('"').strip("`").strip("'")
         if column not in columns:
             raise ValueError(

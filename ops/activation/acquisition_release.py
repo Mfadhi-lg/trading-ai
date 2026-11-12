@@ -27,16 +27,21 @@ def active_root(root):
     return release
 
 
-def prepare_release(workspace, release):
+def prepare_release(workspace, release, *, source=None):
     workspace, release = Path(workspace).resolve(), Path(release).absolute()
     if release.parent != workspace / 'artifacts/acquisition-releases':
         raise ValueError('Release must live in artifacts/acquisition-releases')
+    source_root=workspace if source is None else Path(source).resolve()
+    if source_root==release or source_root.is_relative_to(release):
+        raise ValueError('Release source cannot be inside its destination')
     release.mkdir(parents=True, exist_ok=False)
     ignore = shutil.ignore_patterns('__pycache__', '.venv', 'store', '*.pyc', '*.lock')
     for directory in ('scrapper', 'ops/activation', 'ops/host'):
-        shutil.copytree(workspace / directory, release / directory, ignore=ignore)
-    (release / '.acquisition-release.json').write_text(json.dumps({'workspace_root': str(workspace)})+'\n')
-    for directory in ('artifacts', 'docs', 'ops/docker', '.git'):
+        shutil.copytree(source_root / directory, release / directory, ignore=ignore)
+    marker={'workspace_root':str(workspace)}
+    if source is not None:marker['source_root']=str(source_root)
+    (release / '.acquisition-release.json').write_text(json.dumps(marker)+'\n')
+    for directory in ('artifacts', 'docs', 'ops/docker', '.git', 'experiments'):
         (release / directory).symlink_to(workspace / directory, target_is_directory=True)
     # Credentials remain live and private; they are never copied into releases.
     (release / '.screener_session').symlink_to(workspace / '.screener_session')
@@ -106,10 +111,12 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--prepare', type=Path)
     parser.add_argument('--activate', type=Path)
+    parser.add_argument('--source', type=Path, help='Reviewed code checkout for preparation; runtime state stays in the workspace')
     args = parser.parse_args()
     if (args.prepare is None) == (args.activate is None):
         parser.error('Choose --prepare or --activate')
+    if args.source is not None and args.prepare is None:parser.error('--source requires --prepare')
     if args.prepare:
-        print(json.dumps({'prepared': str(prepare_release(Path(__file__).resolve().parents[2], args.prepare))}))
+        print(json.dumps({'prepared': str(prepare_release(Path(__file__).resolve().parents[2], args.prepare,source=args.source))}))
     else:
         print(json.dumps(activate_release(args.activate)))

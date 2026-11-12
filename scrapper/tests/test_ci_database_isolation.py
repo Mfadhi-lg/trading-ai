@@ -7,6 +7,7 @@ ROOT = Path(__file__).resolve().parents[2]
 WORKFLOWS = (
     ROOT / ".github" / "workflows" / "migration-lineage.yml",
     ROOT / ".github" / "workflows" / "ml-readiness.yml",
+    ROOT / ".github" / "workflows" / "postgresql.yml",
 )
 ISOLATED_PATH_KEYS = (
     "SCRAPER_STORE_PATH",
@@ -32,6 +33,17 @@ class CiDatabaseIsolationTests(unittest.TestCase):
                 self.assertIn('echo "TRADING_AI_TEST_ROOT=$test_root"', content)
                 for key in ISOLATED_PATH_KEYS:
                     self.assertIn(f'echo "{key}=$test_root/', content)
+
+    def test_postgresql_service_and_backup_drill_are_disposable(self):
+        content = (ROOT / ".github/workflows/postgresql.yml").read_text()
+        self.assertIn("image: postgres:16.14-bookworm", content)
+        self.assertIn("TRADING_AI_POSTGRESQL_TEST_DSN: postgresql://postgres:postgres@127.0.0.1:5432/trading_ai_test", content)
+        self.assertIn("POSTGRES_DB: trading_ai_test", content)
+        self.assertIn("postgresql-client-16", content)
+        self.assertIn("-p 'test_postgresql*.py'", content)
+        self.assertNotIn("secrets.", content)
+        self.assertNotIn("volumes:", content)
+        self.assertNotIn("DATABASE_URL:", content)
 
     def test_ml_readiness_initializes_the_configured_database(self):
         workflow = (ROOT / ".github" / "workflows" / "ml-readiness.yml").read_text(

@@ -29,6 +29,24 @@ def isolated(tmp_path, monkeypatch):
     monkeypatch.setattr(lifecycle, 'PAUSE', state / 'lifecycle-paused.json')
     monkeypatch.setattr(lifecycle, 'PREVIOUS', state / 'previous.json')
     monkeypatch.setattr(lifecycle, 'ACTIVATION', activation)
+    # Synthetic prerequisites: never read the developer's credentials or rely
+    # on a macOS desktop/Chrome installation in an isolated checkout or CI.
+    monkeypatch.setattr(lifecycle, 'ROOT', tmp_path)
+    (tmp_path / '.screener_session').write_text('synthetic-test-session')
+    original_stat = lifecycle.os.stat
+    def fixture_stat(path, *args, **kwargs):
+        if str(path) == '/dev/console':
+            return SimpleNamespace(st_uid=lifecycle.os.getuid())
+        return original_stat(path, *args, **kwargs)
+    monkeypatch.setattr(lifecycle.os, 'stat', fixture_stat)
+    original_is_file = Path.is_file
+    def fixture_is_file(path):
+        if str(path) == '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome':
+            return True
+        return original_is_file(path)
+    monkeypatch.setattr(Path, 'is_file', fixture_is_file)
+    import nse_results
+    monkeypatch.setattr(nse_results, 'check_configuration', lambda: {'oci_index_digest': 'fixture-index'})
     monkeypatch.setattr(lifecycle, 'config', lambda: {'manifest': 'reviewed'})
     monkeypatch.setattr(lifecycle, 'loaded', lambda: True)
     monkeypatch.setattr(lifecycle, 'quiescent', lambda: {'database': {'leases': {'status': 'PASS'}}})

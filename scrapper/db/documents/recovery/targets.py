@@ -12,6 +12,7 @@ from urllib.parse import urlsplit
 from ....core.access_policy import BLOCKED_TERMS_HOSTS, host_matches_policy
 from ....documents.recovery import RECOVERY_CONTRACT_VERSION, DocumentOriginator, RecoveryTarget, RecoveryTargetStatus
 from ...repo import utc_now
+from scrapper.db.repository_backend import (execute, executemany, generated_id, statement, is_postgresql, atomic_repository, begin_immediate, commit, rollback, transaction as repository_transaction)
 
 def _json(value: Any) -> str:
     return json.dumps(value, sort_keys=True, separators=(",", ":"))
@@ -29,6 +30,7 @@ def _originator(host: str, *, _hooks: Any = None) -> DocumentOriginator | None:
     return None
 
 
+@atomic_repository('documents')
 def _blocked_artifacts(
     conn: sqlite3.Connection,
     artifact_ids: tuple[int, ...] | None = None,
@@ -43,7 +45,7 @@ def _blocked_artifacts(
         placeholders = ",".join("?" for _ in artifact_ids)
         artifact_filter = f" AND artifact.artifact_id IN ({placeholders})"
         parameters = artifact_ids
-    rows = conn.execute(
+    rows = execute(conn,
         f"""SELECT artifact.artifact_id, artifact.company_id,
                   artifact.artifact_type, artifact.event_date,
                   artifact.period_end, artifact.fiscal_year,
@@ -66,9 +68,10 @@ def _blocked_artifacts(
     )
 
 
+@atomic_repository('documents')
 def _identities(conn: sqlite3.Connection, company_id: int, *, _hooks: Any = None) -> dict[str, tuple[str, ...]]:
     sqlite3 = getattr(_hooks, "sqlite3", globals()["sqlite3"])
-    identifiers = conn.execute(
+    identifiers = execute(conn,
         """SELECT upper(identifier_type) AS kind, identifier_value
              FROM security_identifiers WHERE company_id=?
              ORDER BY is_current DESC, security_identifier_id""",
@@ -79,7 +82,7 @@ def _identities(conn: sqlite3.Connection, company_id: int, *, _hooks: Any = None
     isins = {str(row["identifier_value"]).upper() for row in identifiers if row["kind"] == "ISIN"}
     aliases: set[str] = set()
     try:
-        rows = conn.execute(
+        rows = execute(conn,
             """SELECT security.exchange, security.nse_symbol,
                       security.bse_scrip_code, security.current_isin,
                       version.name_raw
@@ -111,8 +114,9 @@ def _identities(conn: sqlite3.Connection, company_id: int, *, _hooks: Any = None
     }
 
 
+@atomic_repository('documents')
 def _rating_context(conn: sqlite3.Connection, artifact_id: int, *, _hooks: Any = None) -> dict[str, str | None]:
-    row = conn.execute(
+    row = execute(conn,
         """SELECT normalization.agency_code, normalization.action_date,
                   action.rating_code, action.outlook_code,
                   action.rating_action_code,
@@ -144,8 +148,9 @@ def _rating_context(conn: sqlite3.Connection, artifact_id: int, *, _hooks: Any =
     }
 
 
+@atomic_repository('documents')
 def _already_satisfied(conn: sqlite3.Connection, artifact_id: int, *, _hooks: Any = None) -> bool:
-    return conn.execute(
+    return execute(conn,
         """SELECT 1
              FROM artifact_contents AS content
              JOIN artifact_source_evidence_classifications AS evidence
@@ -164,6 +169,7 @@ def _already_satisfied(conn: sqlite3.Connection, artifact_id: int, *, _hooks: An
     ).fetchone() is not None
 
 
+@atomic_repository('documents')
 def _target_from_row(
     conn: sqlite3.Connection, row: sqlite3.Row, originator: DocumentOriginator,
     *, _hooks: Any = None,
@@ -219,6 +225,7 @@ def _target_from_row(
     )
 
 
+@atomic_repository('documents')
 def build_recovery_targets(
     conn: sqlite3.Connection,
     *,
@@ -296,7 +303,7 @@ def build_recovery_targets(
         target_plans.append((target, status))
 
     existing_ids = {
-        int(row[0]) for row in conn.execute(
+        int(row[0]) for row in execute(conn,
             "SELECT artifact_id FROM artifact_recovery_targets"
         )
     }
@@ -305,16 +312,16 @@ def build_recovery_targets(
         if status is RecoveryTargetStatus.PENDING and target.artifact_id not in existing_ids
     )
     if not dry_run:
-        with conn:
+        with repository_transaction(conn):
             if target_plans:
                 planned_ids = tuple(target.artifact_id for target, _ in target_plans)
                 placeholders = ",".join("?" for _ in planned_ids)
-                conn.execute(
+                execute(conn,
                     f"DELETE FROM artifact_recovery_quarantine WHERE artifact_id IN ({placeholders})",
                     planned_ids,
                 )
             for artifact_id, reason, evidence in quarantines:
-                conn.execute(
+                execute(conn,
                     """INSERT INTO artifact_recovery_quarantine
                        (artifact_id, reason_code, evidence_json,
                         quarantined_at_utc, updated_at_utc)
@@ -326,8 +333,8 @@ def build_recovery_targets(
                     (artifact_id, reason, _json(evidence), now, now),
                 )
             for target, status in target_plans:
-                conn.execute(
-                    """INSERT INTO artifact_recovery_targets
+                execute(conn,
+                    statement(conn, """INSERT INTO artifact_recovery_targets
                        (artifact_id, company_id, artifact_type,
                         document_originator, blocked_source_id,
                         blocked_source_url, blocked_source_host,
@@ -366,7 +373,44 @@ def build_recovery_targets(
                          basic_rating_coverage=MAX(
                            artifact_recovery_targets.basic_rating_coverage,
                            excluded.basic_rating_coverage),
-                         updated_at_utc=excluded.updated_at_utc""",
+                         updated_at_utc=excluded.updated_at_utc""", """INSERT INTO artifact_recovery_targets
+                       (artifact_id, company_id, artifact_type,
+                        document_originator, blocked_source_id,
+                        blocked_source_url, blocked_source_host,
+                        company_canonical_name, company_aliases_json,
+                        nse_symbols_json, bse_codes_json, isins_json,
+                        event_date, fiscal_period, rating, outlook,
+                        rating_action, instrument_or_facility, amount,
+                        amount_unit, source_confidence,
+                        field_provenance_json, contract_version, status,
+                        basic_rating_coverage, created_at_utc, updated_at_utc)
+                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                               ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                       ON CONFLICT(artifact_id) DO UPDATE SET
+                         company_canonical_name=excluded.company_canonical_name,
+                         company_aliases_json=excluded.company_aliases_json,
+                         nse_symbols_json=excluded.nse_symbols_json,
+                         bse_codes_json=excluded.bse_codes_json,
+                         isins_json=excluded.isins_json,
+                         event_date=COALESCE(artifact_recovery_targets.event_date,
+                                             excluded.event_date),
+                         fiscal_period=COALESCE(artifact_recovery_targets.fiscal_period,
+                                               excluded.fiscal_period),
+                         rating=COALESCE(artifact_recovery_targets.rating,
+                                         excluded.rating),
+                         outlook=COALESCE(artifact_recovery_targets.outlook,
+                                          excluded.outlook),
+                         rating_action=COALESCE(artifact_recovery_targets.rating_action,
+                                                excluded.rating_action),
+                         instrument_or_facility=COALESCE(
+                           artifact_recovery_targets.instrument_or_facility,
+                           excluded.instrument_or_facility),
+                         status=CASE
+                           WHEN excluded.status='ALREADY_SATISFIED'
+                             THEN 'ALREADY_SATISFIED'
+                           ELSE artifact_recovery_targets.status END,
+                         basic_rating_coverage=CASE WHEN artifact_recovery_targets.basic_rating_coverage IS NULL THEN NULL ELSE GREATEST(artifact_recovery_targets.basic_rating_coverage,excluded.basic_rating_coverage) END,
+                         updated_at_utc=excluded.updated_at_utc"""),
                     (
                         target.artifact_id, target.company_id, target.artifact_type,
                         target.document_originator.value, target.blocked_source_id,
@@ -382,7 +426,7 @@ def build_recovery_targets(
                         now, now,
                     ),
                 )
-                conn.execute(
+                execute(conn,
                     """UPDATE artifact_sources
                           SET automation_status='BLOCKED_TERMS',
                               document_originator=?
@@ -421,11 +465,12 @@ def build_recovery_targets(
     }
 
 
+@atomic_repository('documents')
 def load_recovery_target(conn: sqlite3.Connection, recovery_target_id: int, *, _hooks: Any = None) -> RecoveryTarget:
     DocumentOriginator = getattr(_hooks, "DocumentOriginator", globals()["DocumentOriginator"])
     RecoveryTarget = getattr(_hooks, "RecoveryTarget", globals()["RecoveryTarget"])
     json = getattr(_hooks, "json", globals()["json"])
-    row = conn.execute(
+    row = execute(conn,
         "SELECT * FROM artifact_recovery_targets WHERE recovery_target_id=?",
         (recovery_target_id,),
     ).fetchone()

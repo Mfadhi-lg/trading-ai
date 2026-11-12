@@ -1,6 +1,10 @@
 """Persistence and overlap-safe queue primitives for Screener discovery."""
 
 from __future__ import annotations
+from .repository_backend import (
+    atomic_repository, begin_immediate, commit, execute, executemany, generated_id,
+    is_postgresql, rollback, statement, transaction,
+)
 
 import json
 import sqlite3
@@ -68,6 +72,7 @@ class ClaimedCompany:
         }
 
 
+@atomic_repository('financial-repositories')
 def persist_screen(
     conn: sqlite3.Connection,
     parsed: ParsedResultScreen,
@@ -81,14 +86,9 @@ def persist_screen(
 ) -> tuple[int, bool]:
     if not query_role.strip():
         raise ValueError("query_role is required")
-    with conn:
-        cursor = conn.execute(
-            """INSERT OR IGNORE INTO screener_screen_runs
-               (query_role, query_raw, requested_url, fetch_id, blob_id,
-                parser_name, parser_version, observed_at_utc, result_count,
-                page_number, page_count, captured_row_count, coverage_status,
-                validation_status)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'passed')""",
+    with transaction(conn):
+        cursor = execute(conn,
+            statement(conn, "INSERT OR IGNORE INTO screener_screen_runs\n               (query_role, query_raw, requested_url, fetch_id, blob_id,\n                parser_name, parser_version, observed_at_utc, result_count,\n                page_number, page_count, captured_row_count, coverage_status,\n                validation_status)\n               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'passed')", "INSERT INTO screener_screen_runs\n               (query_role, query_raw, requested_url, fetch_id, blob_id,\n                parser_name, parser_version, observed_at_utc, result_count,\n                page_number, page_count, captured_row_count, coverage_status,\n                validation_status)\n               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'passed') ON CONFLICT DO NOTHING"),
             (
                 query_role.strip(), parsed.query_raw, parsed.requested_url,
                 fetch_id, blob_id, parser_name, parser_version, observed_at_utc,
@@ -97,7 +97,7 @@ def persist_screen(
             ),
         )
         created = cursor.rowcount == 1
-        row = conn.execute(
+        row = execute(conn,
             """SELECT screen_run_id FROM screener_screen_runs
                WHERE blob_id=? AND parser_name=? AND parser_version=? AND query_raw=?""",
             (blob_id, parser_name, parser_version, parsed.query_raw),
@@ -106,7 +106,7 @@ def persist_screen(
             raise RuntimeError("Failed to persist Screener screen run")
         screen_run_id = int(row["screen_run_id"])
         if created:
-            conn.executemany(
+            executemany(conn,
                 """INSERT INTO screener_screen_source_cells
                    (screen_run_id, row_position, column_position, row_label_raw,
                     column_label_raw, raw_text, normalized_display_text,
@@ -121,7 +121,7 @@ def persist_screen(
                     for cell in parsed.source_cells
                 ],
             )
-            conn.executemany(
+            executemany(conn,
                 """INSERT INTO screener_result_candidates
                    (screen_run_id, source_position, screen_row_company_id,
                     company_name_raw, company_href_raw, company_path_normalized,
@@ -142,6 +142,7 @@ def persist_screen(
     return screen_run_id, created
 
 
+@atomic_repository('financial-repositories')
 def persist_rejected_screen(
     conn: sqlite3.Connection,
     *,
@@ -155,20 +156,15 @@ def persist_rejected_screen(
     parser_version: str,
 ) -> int:
     """Retain permitted response evidence even when its structure is rejected."""
-    with conn:
-        conn.execute(
-            """INSERT OR IGNORE INTO screener_screen_runs
-               (query_role, query_raw, requested_url, fetch_id, blob_id,
-                parser_name, parser_version, observed_at_utc, result_count,
-                page_number, page_count, captured_row_count, coverage_status,
-                validation_status)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 1, 1, 0, 'rejected', 'failed')""",
+    with transaction(conn):
+        execute(conn,
+            statement(conn, "INSERT OR IGNORE INTO screener_screen_runs\n               (query_role, query_raw, requested_url, fetch_id, blob_id,\n                parser_name, parser_version, observed_at_utc, result_count,\n                page_number, page_count, captured_row_count, coverage_status,\n                validation_status)\n               VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 1, 1, 0, 'rejected', 'failed')", "INSERT INTO screener_screen_runs\n               (query_role, query_raw, requested_url, fetch_id, blob_id,\n                parser_name, parser_version, observed_at_utc, result_count,\n                page_number, page_count, captured_row_count, coverage_status,\n                validation_status)\n               VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 1, 1, 0, 'rejected', 'failed') ON CONFLICT DO NOTHING"),
             (
                 query_role, query_raw, requested_url, fetch_id, blob_id,
                 parser_name, parser_version, observed_at_utc,
             ),
         )
-    row = conn.execute(
+    row = execute(conn,
         """SELECT screen_run_id FROM screener_screen_runs
            WHERE blob_id=? AND parser_name=? AND parser_version=? AND query_raw=?""",
         (blob_id, parser_name, parser_version, query_raw),
@@ -180,7 +176,7 @@ def persist_rejected_screen(
 
 def has_accepted_quarter(conn, path: str, scope: str, period: str) -> bool:
     """A period watermark is insufficient; require accepted statement rows."""
-    return conn.execute(
+    return execute(conn,
         """SELECT 1 FROM accepted_page_versions a
            JOIN screener_company_collection_state s ON s.company_id=a.company_id
            JOIN financial_observations f ON f.parse_id=a.parse_id
@@ -202,14 +198,14 @@ def enqueue_complete_screen_pages(conn, screen_run_ids, *, now_utc):
     if not ids or len(ids)>100 or len(set(ids))!=len(ids):
         raise ValueError('Distinct bounded screen page IDs required')
     marks=','.join('?' for _ in ids)
-    pages=conn.execute('SELECT * FROM screener_screen_runs WHERE screen_run_id IN ('+marks+') ORDER BY page_number',ids).fetchall()
+    pages=execute(conn, 'SELECT * FROM screener_screen_runs WHERE screen_run_id IN ('+marks+') ORDER BY page_number',ids).fetchall()
     if len(pages)!=len(ids):raise ValueError('Missing screen page evidence')
     first=pages[0];count=int(first['result_count']);page_count=int(first['page_count'])
     if [r['page_number'] for r in pages]!=list(range(1,page_count+1)):
         raise ValueError('Incomplete screen pagination')
     if any(r['result_count']!=count or r['page_count']!=page_count or r['query_raw']!=first['query_raw'] or r['query_role']!=first['query_role'] or r['validation_status']!='passed' for r in pages):
         raise ValueError('Screen changed during pagination; no queue admission')
-    candidates=conn.execute('SELECT screen_row_company_id,company_path_normalized,result_period FROM screener_result_candidates WHERE screen_run_id IN ('+marks+')',ids).fetchall()
+    candidates=execute(conn, 'SELECT screen_row_company_id,company_path_normalized,result_period FROM screener_result_candidates WHERE screen_run_id IN ('+marks+')',ids).fetchall()
     if len(candidates)!=count or sum(r['captured_row_count'] for r in pages)!=count or len({r['screen_row_company_id'] for r in candidates})!=count:
         raise ValueError('Incomplete or duplicate company coverage; no queue admission')
     totals={key:0 for key in ('new','advanced','unchanged','stale','reused')}
@@ -230,7 +226,7 @@ def enqueue_recurring_screen_pages(conn, screen_run_ids, *, now_utc):
     if not ids or len(ids)>100 or len(set(ids))!=len(ids):
         raise ValueError('Distinct bounded screen page IDs required')
     marks=','.join('?' for _ in ids)
-    pages=conn.execute('SELECT * FROM screener_screen_runs WHERE screen_run_id IN ('+marks+') ORDER BY page_number',ids).fetchall()
+    pages=execute(conn, 'SELECT * FROM screener_screen_runs WHERE screen_run_id IN ('+marks+') ORDER BY page_number',ids).fetchall()
     if len(pages)!=len(ids):raise ValueError('Missing screen page evidence')
     first=pages[0]
     if [r['page_number'] for r in pages]!=list(range(1,first['page_count']+1)):
@@ -243,7 +239,7 @@ def enqueue_recurring_screen_pages(conn, screen_run_ids, *, now_utc):
         return enqueue_complete_screen_pages(conn,ids,now_utc=now_utc)
     identities=set()
     for page in pages:
-        rows=conn.execute('SELECT screen_row_company_id FROM screener_result_candidates WHERE screen_run_id=?',(page['screen_run_id'],)).fetchall()
+        rows=execute(conn, 'SELECT screen_row_company_id FROM screener_result_candidates WHERE screen_run_id=?',(page['screen_run_id'],)).fetchall()
         unique={r[0] for r in rows}
         if len(rows)!=page['captured_row_count'] or len(unique)!=len(rows):
             raise ValueError('Missing or duplicate company evidence within a screen page')
@@ -257,6 +253,7 @@ def enqueue_recurring_screen_pages(conn, screen_run_ids, *, now_utc):
         'source_count_range':[min(counts),max(counts)],'screen_run_ids':list(ids),'enqueue':totals}
 
 
+@atomic_repository('financial-repositories')
 def _enqueue_screen_candidates(
     conn: sqlite3.Connection,
     screen_run_id: int,
@@ -264,7 +261,7 @@ def _enqueue_screen_candidates(
     now_utc: str,
     verified_page_set: bool = False,
 ) -> dict[str, int]:
-    screen = conn.execute(
+    screen = execute(conn,
         "SELECT coverage_status FROM screener_screen_runs WHERE screen_run_id=?",
         (screen_run_id,),
     ).fetchone()
@@ -273,12 +270,12 @@ def _enqueue_screen_candidates(
     counts = {"new": 0, "advanced": 0, "unchanged": 0, "stale": 0, "reused": 0}
     if screen["coverage_status"] != "complete" and not verified_page_set:
         return counts
-    candidates = conn.execute(
+    candidates = execute(conn,
         """SELECT * FROM screener_result_candidates
            WHERE screen_run_id=? ORDER BY source_position""",
         (screen_run_id,),
     ).fetchall()
-    with conn:
+    with transaction(conn):
         for item in candidates:
             # A screen can show both technical page variants for one company.
             # They must collapse before becoming collection work.
@@ -288,7 +285,7 @@ def _enqueue_screen_candidates(
             # collection is explicitly redirected to the real standalone URL.
             scope = "standalone"
             period = str(item["result_period"])
-            state = conn.execute(
+            state = execute(conn,
                 """SELECT * FROM screener_company_collection_state
                    WHERE company_path_normalized=? AND reporting_scope=?""",
                 (path, scope),
@@ -296,17 +293,8 @@ def _enqueue_screen_candidates(
             accepted = str(state["latest_accepted_result_period"]) if state and state["latest_accepted_result_period"] else None
             discovered = str(state["latest_discovered_result_period"]) if state else None
             latest_discovered = max(filter(None, (period, discovered)))
-            conn.execute(
-                """INSERT INTO screener_company_collection_state
-                   (company_path_normalized, reporting_scope,
-                    latest_discovered_result_period, updated_at_utc)
-                   VALUES (?, ?, ?, ?)
-                   ON CONFLICT(company_path_normalized, reporting_scope) DO UPDATE SET
-                     latest_discovered_result_period=CASE
-                       WHEN excluded.latest_discovered_result_period > latest_discovered_result_period
-                       THEN excluded.latest_discovered_result_period
-                       ELSE latest_discovered_result_period END,
-                     updated_at_utc=excluded.updated_at_utc""",
+            execute(conn,
+                statement(conn, 'INSERT INTO screener_company_collection_state\n                   (company_path_normalized, reporting_scope,\n                    latest_discovered_result_period, updated_at_utc)\n                   VALUES (?, ?, ?, ?)\n                   ON CONFLICT(company_path_normalized, reporting_scope) DO UPDATE SET\n                     latest_discovered_result_period=CASE\n                       WHEN excluded.latest_discovered_result_period > latest_discovered_result_period\n                       THEN excluded.latest_discovered_result_period\n                       ELSE latest_discovered_result_period END,\n                     updated_at_utc=excluded.updated_at_utc', 'INSERT INTO screener_company_collection_state\n                   (company_path_normalized, reporting_scope,\n                    latest_discovered_result_period, updated_at_utc)\n                   VALUES (?, ?, ?, ?)\n                   ON CONFLICT(company_path_normalized, reporting_scope) DO UPDATE SET\n                     latest_discovered_result_period=CASE\n                       WHEN excluded.latest_discovered_result_period > screener_company_collection_state.latest_discovered_result_period\n                       THEN excluded.latest_discovered_result_period\n                       ELSE screener_company_collection_state.latest_discovered_result_period END,\n                     updated_at_utc=excluded.updated_at_utc'),
                 (path, scope, latest_discovered, now_utc),
             )
             captured = has_accepted_quarter(conn, path, scope, period)
@@ -317,20 +305,16 @@ def _enqueue_screen_candidates(
                 counts["unchanged"] += 1
                 continue
             reason = "new_company" if accepted is None else "result_period_advanced"
-            cursor = conn.execute(
-                """INSERT OR IGNORE INTO screener_company_queue
-                   (candidate_id, company_path_normalized, reporting_scope,
-                    result_period, queue_reason, status, attempt_count,
-                    next_attempt_at_utc, created_at_utc, updated_at_utc)
-                   VALUES (?, ?, ?, ?, ?, 'pending', 0, ?, ?, ?)""",
+            cursor = execute(conn,
+                statement(conn, "INSERT OR IGNORE INTO screener_company_queue\n                   (candidate_id, company_path_normalized, reporting_scope,\n                    result_period, queue_reason, status, attempt_count,\n                    next_attempt_at_utc, created_at_utc, updated_at_utc)\n                   VALUES (?, ?, ?, ?, ?, 'pending', 0, ?, ?, ?)", "INSERT INTO screener_company_queue\n                   (candidate_id, company_path_normalized, reporting_scope,\n                    result_period, queue_reason, status, attempt_count,\n                    next_attempt_at_utc, created_at_utc, updated_at_utc)\n                   VALUES (?, ?, ?, ?, ?, 'pending', 0, ?, ?, ?) ON CONFLICT DO NOTHING"),
                 (
                     int(item["candidate_id"]), path, scope, period, reason,
                     now_utc, now_utc, now_utc,
                 ),
-            )
+             returning='queue_item_id')
             if cursor.rowcount == 1:
-                queue_id = int(cursor.lastrowid)
-                conn.execute(
+                queue_id = int(generated_id(cursor, 'queue_item_id'))
+                execute(conn,
                     """INSERT INTO screener_company_queue_events
                        (queue_item_id, event_at_utc, from_status, to_status,
                         evidence_json) VALUES (?, ?, NULL, 'pending', ?)""",
@@ -347,22 +331,14 @@ def preview_due_companies(
 ) -> tuple[ClaimedCompany, ...]:
     if limit < 1:
         raise ValueError("limit must be positive")
-    rows = conn.execute(
-        """SELECT queue.*, '' AS claim_token FROM screener_company_queue AS queue
-           WHERE collection_disposition IS NULL
-           AND NOT EXISTS (SELECT 1 FROM screener_scope_aliases a
-             JOIN screener_collection_scope s ON s.company_path=a.scope_path
-             WHERE a.company_path=company_path_normalized AND s.eligibility='below_floor')
-           AND ((
-             status IN ('pending', 'failed_retryable')
-             AND (next_attempt_at_utc IS NULL OR next_attempt_at_utc <= ?)
-           ) OR (status IN ('claimed', 'running') AND claim_expires_at_utc <= ?))
-           ORDER BY result_period DESC, queue_item_id LIMIT ?""",
+    rows = execute(conn,
+        statement(conn, "SELECT queue.*, '' AS claim_token FROM screener_company_queue AS queue\n           WHERE collection_disposition IS NULL\n           AND NOT EXISTS (SELECT 1 FROM screener_scope_aliases a\n             JOIN screener_collection_scope s ON s.company_path=a.scope_path\n             WHERE a.company_path=company_path_normalized AND s.eligibility='below_floor')\n           AND ((\n             status IN ('pending', 'failed_retryable')\n             AND (next_attempt_at_utc IS NULL OR next_attempt_at_utc <= ?)\n           ) OR (status IN ('claimed', 'running') AND claim_expires_at_utc <= ?))\n           ORDER BY result_period DESC, queue_item_id LIMIT ?", "SELECT queue.*, '' AS claim_token FROM screener_company_queue AS queue\n           WHERE collection_disposition IS NULL\n           AND NOT EXISTS (SELECT 1 FROM screener_scope_aliases a\n             JOIN screener_collection_scope s ON s.company_path=a.scope_path\n             WHERE a.company_path=company_path_normalized AND s.eligibility='below_floor')\n           AND ((\n             status IN ('pending', 'failed_retryable')\n             AND (next_attempt_at_utc IS NULL OR CAST(next_attempt_at_utc AS timestamptz) <= CAST(? AS timestamptz))\n           ) OR (status IN ('claimed', 'running') AND CAST(claim_expires_at_utc AS timestamptz) <= CAST(? AS timestamptz)))\n           ORDER BY result_period DESC, queue_item_id LIMIT ?"),
         (now_utc, now_utc, limit),
     ).fetchall()
     return tuple(ClaimedCompany.from_row(row) for row in rows)
 
 
+@atomic_repository('financial-repositories')
 def claim_due_companies(
     conn: sqlite3.Connection,
     *,
@@ -378,13 +354,13 @@ def claim_due_companies(
             len(set(queue_item_ids)) != limit or any(i < 1 for i in queue_item_ids)):
         raise ValueError("Selected queue identities must be distinct and match the limit")
     expires = (_parse_utc(now_utc) + timedelta(seconds=lease_seconds)).isoformat()
-    conn.execute("BEGIN IMMEDIATE")
+    begin_immediate(conn, lock='financial-repositories')
     try:
         selection = "" if queue_item_ids is None else " AND queue_item_id IN (" + ",".join("?" for _ in queue_item_ids) + ")"
         ids = [
             int(row["queue_item_id"])
-            for row in conn.execute(
-                f"""SELECT queue_item_id FROM screener_company_queue
+            for row in execute(conn,
+                statement(conn, f"""SELECT queue_item_id FROM screener_company_queue
                    WHERE collection_disposition IS NULL
            AND NOT EXISTS (SELECT 1 FROM screener_scope_aliases a
              JOIN screener_collection_scope s ON s.company_path=a.scope_path
@@ -393,7 +369,7 @@ def claim_due_companies(
                      status IN ('pending', 'failed_retryable')
                      AND (next_attempt_at_utc IS NULL OR next_attempt_at_utc <= ?)
                    ) OR (status IN ('claimed', 'running') AND claim_expires_at_utc <= ?))
-                   {selection} ORDER BY result_period DESC, queue_item_id LIMIT ?""",
+                   {selection} ORDER BY result_period DESC, queue_item_id LIMIT ?""", f"SELECT queue_item_id FROM screener_company_queue\n                   WHERE collection_disposition IS NULL\n           AND NOT EXISTS (SELECT 1 FROM screener_scope_aliases a\n             JOIN screener_collection_scope s ON s.company_path=a.scope_path\n             WHERE a.company_path=company_path_normalized AND s.eligibility='below_floor')\n           AND ((\n                     status IN ('pending', 'failed_retryable')\n                     AND (next_attempt_at_utc IS NULL OR CAST(next_attempt_at_utc AS timestamptz) <= CAST(? AS timestamptz))\n                   ) OR (status IN ('claimed', 'running') AND CAST(claim_expires_at_utc AS timestamptz) <= CAST(? AS timestamptz)))\n                   {selection} ORDER BY result_period DESC, queue_item_id LIMIT ?"),
                 (now_utc, now_utc, *(queue_item_ids or ()), limit),
             ).fetchall()
         ]
@@ -405,64 +381,65 @@ def claim_due_companies(
             # Attach provenance atomically with the selected claim; retain the
             # original candidate reference in the existing event history.
             for queue_id in ids:
-                old_row=conn.execute("SELECT * FROM screener_company_queue WHERE queue_item_id=?",(queue_id,)).fetchone()
+                old_row=execute(conn, "SELECT * FROM screener_company_queue WHERE queue_item_id=?",(queue_id,)).fetchone()
                 if old_row['origin']!='screener_screen':continue
-                filing=conn.execute('''SELECT f.filing_id FROM exchange_screener_enqueues e
+                filing=execute(conn, '''SELECT f.filing_id FROM exchange_screener_enqueues e
                   JOIN exchange_result_filings f USING(filing_id) WHERE e.queue_item_id=?
                   AND e.company_path_normalized=? AND e.reporting_scope=? AND e.result_period=?
                   AND f.result_period=? ORDER BY f.broadcast_at_utc DESC,f.filing_id DESC LIMIT 1''',
                   (queue_id,old_row['company_path_normalized'],old_row['reporting_scope'],old_row['result_period'],old_row['result_period'])).fetchone()
                 if filing is None:continue
-                conn.execute("UPDATE screener_company_queue SET origin='exchange_filing',candidate_id=NULL,exchange_filing_id=? WHERE queue_item_id=?",(filing['filing_id'],queue_id))
-                conn.execute('''INSERT INTO screener_company_queue_events
+                execute(conn, "UPDATE screener_company_queue SET origin='exchange_filing',candidate_id=NULL,exchange_filing_id=? WHERE queue_item_id=?",(filing['filing_id'],queue_id))
+                execute(conn, '''INSERT INTO screener_company_queue_events
                   (queue_item_id,event_at_utc,from_status,to_status,worker_id,evidence_json)
                   VALUES(?,?,?,?,?,?)''',(queue_id,now_utc,old_row['status'],old_row['status'],worker_id,
                   _json({'reason':'official_source_attached','filing_id':filing['filing_id'],
                          'previous_candidate_id':old_row['candidate_id'],'previous_origin':old_row['origin']})))
         claimed: list[ClaimedCompany] = []
         for queue_id in ids:
-            old = conn.execute(
+            old = execute(conn,
                 "SELECT status FROM screener_company_queue WHERE queue_item_id=?",
                 (queue_id,),
             ).fetchone()
             token = f"{worker_id}:{uuid.uuid4().hex}"
-            conn.execute(
+            execute(conn,
                 """UPDATE screener_company_queue SET status='claimed',
                    claim_token=?, claimed_at_utc=?, claim_expires_at_utc=?,
                    updated_at_utc=? WHERE queue_item_id=?""",
                 (token, now_utc, expires, now_utc, queue_id),
             )
-            conn.execute(
+            execute(conn,
                 """INSERT INTO screener_company_queue_events
                    (queue_item_id, event_at_utc, from_status, to_status,
                     worker_id, evidence_json)
                    VALUES (?, ?, ?, 'claimed', ?, ?)""",
                 (queue_id, now_utc, old["status"], worker_id, _json({"claim_expires_at_utc": expires})),
             )
-            row = conn.execute(
+            row = execute(conn,
                 "SELECT * FROM screener_company_queue WHERE queue_item_id=?",
                 (queue_id,),
             ).fetchone()
             claimed.append(ClaimedCompany.from_row(row))
-        conn.commit()
+        commit(conn)
         return tuple(claimed)
     except Exception:
-        conn.rollback()
+        rollback(conn)
         raise
 
 
+@atomic_repository('financial-repositories')
 def mark_running(
     conn: sqlite3.Connection, item: ClaimedCompany, *, worker_id: str, now_utc: str
 ) -> None:
-    with conn:
-        cursor = conn.execute(
+    with transaction(conn):
+        cursor = execute(conn,
             """UPDATE screener_company_queue SET status='running', updated_at_utc=?
                WHERE queue_item_id=? AND status='claimed' AND claim_token=?""",
             (now_utc, item.queue_item_id, item.claim_token),
         )
         if cursor.rowcount != 1:
             raise RuntimeError("Queue claim is no longer owned by this worker")
-        conn.execute(
+        execute(conn,
             """INSERT INTO screener_company_queue_events
                (queue_item_id, event_at_utc, from_status, to_status, worker_id)
                VALUES (?, ?, 'claimed', 'running', ?)""",
@@ -470,6 +447,7 @@ def mark_running(
         )
 
 
+@atomic_repository('financial-repositories')
 def skip_if_already_accepted(
     conn: sqlite3.Connection,
     item: ClaimedCompany,
@@ -477,10 +455,10 @@ def skip_if_already_accepted(
     worker_id: str,
     now_utc: str,
 ) -> bool:
-    reason = conn.execute("SELECT last_error_json FROM screener_company_queue WHERE queue_item_id=?", (item.queue_item_id,)).fetchone()
+    reason = execute(conn, "SELECT last_error_json FROM screener_company_queue WHERE queue_item_id=?", (item.queue_item_id,)).fetchone()
     if reason and json.loads(reason[0] or "{}").get("reason") == "market_cap_reentry":
         return False
-    state = conn.execute(
+    state = execute(conn,
         """SELECT latest_accepted_result_period
            FROM screener_company_collection_state
            WHERE company_path_normalized=? AND reporting_scope=?""",
@@ -495,8 +473,8 @@ def skip_if_already_accepted(
     if not has_accepted_quarter(conn, item.company_path_normalized,
                                 item.reporting_scope, item.result_period):
         return False
-    with conn:
-        cursor = conn.execute(
+    with transaction(conn):
+        cursor = execute(conn,
             """UPDATE screener_company_queue
                SET status='skipped_already_accepted', claim_token=NULL,
                    claimed_at_utc=NULL, claim_expires_at_utc=NULL, updated_at_utc=?
@@ -505,7 +483,7 @@ def skip_if_already_accepted(
         )
         if cursor.rowcount != 1:
             raise RuntimeError("Queue claim is no longer owned by this worker")
-        conn.execute(
+        execute(conn,
             """INSERT INTO screener_company_queue_events
                (queue_item_id, event_at_utc, from_status, to_status, worker_id,
                 evidence_json)
@@ -518,6 +496,7 @@ def skip_if_already_accepted(
     return True
 
 
+@atomic_repository('financial-repositories')
 def complete_company(
     conn: sqlite3.Connection,
     item: ClaimedCompany,
@@ -528,13 +507,13 @@ def complete_company(
     worker_id: str,
     now_utc: str,
 ) -> None:
-    accepted = conn.execute(
+    accepted = execute(conn,
         """SELECT resolved_source_period FROM accepted_page_versions
            WHERE company_id=? AND source='screener' AND reporting_scope=?
              AND parse_id=? ORDER BY resolved_source_period DESC LIMIT 1""",
         (company_id, item.reporting_scope, parse_id),
     ).fetchone()
-    requested_present = item.result_period == "1970-01" or conn.execute(
+    requested_present = item.result_period == "1970-01" or execute(conn,
         """SELECT 1 FROM financial_observations WHERE parse_id=?
            AND section_code='quarters' AND reporting_scope=?
            AND substr(period_end,1,7)=? LIMIT 1""",
@@ -543,8 +522,8 @@ def complete_company(
     if accepted is None or not requested_present:
         raise ValueError("Queue acceptance requires the full company pipeline's accepted parse and requested quarter")
     resolved_period = str(accepted["resolved_source_period"])
-    with conn:
-        cursor = conn.execute(
+    with transaction(conn):
+        cursor = execute(conn,
             """UPDATE screener_company_queue SET status='accepted',
                attempt_count=attempt_count+1, accepted_parse_id=?, accepted_export_path=?,
                claim_token=NULL, claimed_at_utc=NULL, claim_expires_at_utc=NULL,
@@ -554,7 +533,7 @@ def complete_company(
         )
         if cursor.rowcount != 1:
             raise RuntimeError("Queue claim is no longer owned by this worker")
-        conn.execute(
+        execute(conn,
             """UPDATE screener_company_collection_state SET
                company_id=?,
                latest_accepted_result_period=CASE
@@ -571,14 +550,14 @@ def complete_company(
                 item.company_path_normalized, item.reporting_scope,
             ),
         )
-        conn.execute(
+        execute(conn,
             """INSERT INTO screener_company_queue_events
                (queue_item_id, event_at_utc, from_status, to_status, worker_id,
                 evidence_json) VALUES (?, ?, 'running', 'accepted', ?, ?)""",
             (item.queue_item_id, now_utc, worker_id, _json({"parse_id": parse_id, "company_id": company_id})),
         )
         if item.exchange_filing_id is not None and item.result_period != "1970-01":
-            filing = conn.execute(
+            filing = execute(conn,
                 """SELECT filing_id, exchange, exchange_key, result_period,
                           period_end_date, broadcast_at_utc
                    FROM exchange_result_filings WHERE filing_id=?""",
@@ -606,7 +585,7 @@ def complete_company(
         # Preserve each accepted reporting view for the unified company-period
         # identity.  This is deliberately additive: it must not replace the
         # other scope merely because consolidated is the preferred ML view.
-        conn.execute(
+        execute(conn,
             """INSERT INTO company_period_scope_policy
                (company_id, period, reporting_scope, parse_id, accepted_at_utc)
                VALUES (?, ?, ?, ?, ?)
@@ -616,6 +595,7 @@ def complete_company(
         )
 
 
+@atomic_repository('financial-repositories')
 def fail_company(
     conn: sqlite3.Connection,
     item: ClaimedCompany,
@@ -635,8 +615,8 @@ def fail_company(
     excluded = is_scope_exclusion(error.get("message", ""))
     if excluded:
         status, retry_at = "failed_terminal", None
-    with conn:
-        cursor = conn.execute(
+    with transaction(conn):
+        cursor = execute(conn,
             """UPDATE screener_company_queue SET status=?,
                attempt_count=attempt_count+1, next_attempt_at_utc=?,
                claim_token=NULL, claimed_at_utc=NULL, claim_expires_at_utc=NULL,
@@ -647,21 +627,21 @@ def fail_company(
         )
         if cursor.rowcount != 1:
             raise RuntimeError("Queue claim is no longer owned by this worker")
-        conn.execute(
+        execute(conn,
             """INSERT INTO screener_company_queue_events
                (queue_item_id, event_at_utc, from_status, to_status, worker_id,
                 evidence_json) VALUES (?, ?, 'running', ?, ?, ?)""",
             (item.queue_item_id, now_utc, status, worker_id, _json(evidence)),
         )
         if excluded:
-            alias = conn.execute("SELECT scope_path FROM screener_scope_aliases WHERE company_path=?", (item.company_path_normalized,)).fetchone()
+            alias = execute(conn, "SELECT scope_path FROM screener_scope_aliases WHERE company_path=?", (item.company_path_normalized,)).fetchone()
             path = alias[0] if alias else item.company_path_normalized
-            state = conn.execute("SELECT company_id FROM screener_company_collection_state WHERE company_path_normalized=? AND reporting_scope='standalone'", (item.company_path_normalized,)).fetchone()
+            state = execute(conn, "SELECT company_id FROM screener_company_collection_state WHERE company_path_normalized=? AND reporting_scope='standalone'", (item.company_path_normalized,)).fetchone()
             record_scope(conn,path=path,company_id=state[0] if state else None,
                          value=error.get("market_cap_crore"),observed_at=now_utc,
                          evidence=evidence,legacy_below=True)
-            conn.execute("INSERT OR IGNORE INTO screener_scope_aliases VALUES (?,?,?)", (item.company_path_normalized,path,"worker_scope_observation"))
-            conn.execute("UPDATE screener_company_queue SET collection_disposition='below_market_cap' WHERE queue_item_id=?", (item.queue_item_id,))
+            execute(conn, statement(conn, 'INSERT OR IGNORE INTO screener_scope_aliases VALUES (?,?,?)', 'INSERT INTO screener_scope_aliases VALUES (?,?,?) ON CONFLICT DO NOTHING'), (item.company_path_normalized,path,"worker_scope_observation"))
+            execute(conn, "UPDATE screener_company_queue SET collection_disposition='below_market_cap' WHERE queue_item_id=?", (item.queue_item_id,))
 
 
 
@@ -676,7 +656,7 @@ def preview_requeue_candidates(
     limit: int | None = None,
 ) -> tuple[dict[str, Any], ...]:
     """List the settled failures a requeue would move back to pending."""
-    rows = conn.execute(*_requeue_select(statuses, paths, limit)).fetchall()
+    rows = execute(conn, *_requeue_select(statuses, paths, limit)).fetchall()
     return tuple(
         {
             "queue_item_id": int(row["queue_item_id"]),
@@ -720,6 +700,7 @@ def _requeue_select(
     return sql, tuple(params)
 
 
+@atomic_repository('financial-repositories')
 def requeue_failed_companies(
     conn: sqlite3.Connection,
     *,
@@ -741,9 +722,9 @@ def requeue_failed_companies(
     if not candidates:
         return ()
     requeued: list[dict[str, Any]] = []
-    with conn:
+    with transaction(conn):
         for item in candidates:
-            cursor = conn.execute(
+            cursor = execute(conn,
                 """UPDATE screener_company_queue SET status='pending',
                    next_attempt_at_utc=?, claim_token=NULL, claimed_at_utc=NULL,
                    claim_expires_at_utc=NULL, updated_at_utc=?
@@ -752,7 +733,7 @@ def requeue_failed_companies(
             )
             if cursor.rowcount != 1:
                 continue
-            conn.execute(
+            execute(conn,
                 """INSERT INTO screener_company_queue_events
                    (queue_item_id, event_at_utc, from_status, to_status,
                     evidence_json) VALUES (?, ?, ?, 'pending', ?)""",
@@ -821,7 +802,7 @@ def preview_incomplete_metric_candidates(
     limit: int | None = None,
 ) -> tuple[dict[str, Any], ...]:
     """List accepted companies whose accepted parse never fetched the ratio panel."""
-    rows = conn.execute(*_incomplete_metric_select(paths, limit)).fetchall()
+    rows = execute(conn, *_incomplete_metric_select(paths, limit)).fetchall()
     return tuple(
         {
             "queue_item_id": int(row["queue_item_id"]),
@@ -837,6 +818,7 @@ def preview_incomplete_metric_candidates(
     )
 
 
+@atomic_repository('financial-repositories')
 def requeue_incomplete_metric_companies(
     conn: sqlite3.Connection,
     *,
@@ -856,9 +838,9 @@ def requeue_incomplete_metric_companies(
     if not candidates:
         return ()
     requeued: list[dict[str, Any]] = []
-    with conn:
+    with transaction(conn):
         for item in candidates:
-            cursor = conn.execute(
+            cursor = execute(conn,
                 """UPDATE screener_company_queue SET status='pending',
                    next_attempt_at_utc=?, claim_token=NULL, claimed_at_utc=NULL,
                    claim_expires_at_utc=NULL, updated_at_utc=?
@@ -867,7 +849,7 @@ def requeue_incomplete_metric_companies(
             )
             if cursor.rowcount != 1:
                 continue
-            conn.execute(
+            execute(conn,
                 """INSERT INTO screener_company_queue_events
                    (queue_item_id, event_at_utc, from_status, to_status,
                     evidence_json) VALUES (?, ?, 'accepted', 'pending', ?)""",
@@ -889,6 +871,7 @@ def requeue_incomplete_metric_companies(
     return tuple(requeued)
 
 
+@atomic_repository('financial-repositories')
 def release_claims(
     conn: sqlite3.Connection,
     items: tuple[ClaimedCompany, ...],
@@ -896,16 +879,16 @@ def release_claims(
     worker_id: str,
     now_utc: str,
 ) -> None:
-    with conn:
+    with transaction(conn):
         for item in items:
-            cursor = conn.execute(
+            cursor = execute(conn,
                 """UPDATE screener_company_queue SET status='pending', claim_token=NULL,
                    claimed_at_utc=NULL, claim_expires_at_utc=NULL, updated_at_utc=?
                    WHERE queue_item_id=? AND status='claimed' AND claim_token=?""",
                 (now_utc, item.queue_item_id, item.claim_token),
             )
             if cursor.rowcount:
-                conn.execute(
+                execute(conn,
                     """INSERT INTO screener_company_queue_events
                        (queue_item_id, event_at_utc, from_status, to_status,
                         worker_id, evidence_json)

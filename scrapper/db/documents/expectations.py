@@ -5,18 +5,20 @@ import sqlite3
 from typing import Any, Iterable
 from ...config import SCREENER_MIN_MARKET_CAP_CRORE
 from ...documents.availability import RetryPolicy, parse_utc
+from scrapper.db.repository_backend import (execute, executemany, generated_id, statement, is_postgresql, atomic_repository, begin_immediate, commit, rollback, transaction as repository_transaction)
 RESULT_ARTIFACT_TYPES = ("presentation", "transcript", "recording", "credit_rating")
 DELAYED_SCREENER_RESULT_TYPES = {"presentation", "transcript"}
+@atomic_repository('documents')
 def screener_market_cap_above_floor(
     conn: sqlite3.Connection, company_id: int,
     *,
     SCREENER_MIN_MARKET_CAP_CRORE=SCREENER_MIN_MARKET_CAP_CRORE,
 ) -> bool:
     """Use the latest accepted standalone Screener market cap for scope."""
-    scope = conn.execute("SELECT eligibility FROM screener_collection_scope WHERE company_id=? ORDER BY observed_at_utc DESC LIMIT 1", (company_id,)).fetchone()
+    scope = execute(conn, "SELECT eligibility FROM screener_collection_scope WHERE company_id=? ORDER BY observed_at_utc DESC LIMIT 1", (company_id,)).fetchone()
     if scope is not None:
         return scope[0] == "eligible"
-    row = conn.execute(
+    row = execute(conn,
         """SELECT metric.value_decimal
              FROM accepted_page_versions AS accepted
              JOIN company_metric_observations AS metric
@@ -42,6 +44,7 @@ def canonical_json(value: Any, *, json=json) -> str:
     return json.dumps(value, sort_keys=True, separators=(",", ":"))
 
 
+@atomic_repository('documents')
 def register_artifact_event(
     conn: sqlite3.Connection,
     *,
@@ -62,13 +65,17 @@ def register_artifact_event(
     parse_utc(evidenced_at_utc)
     if not event_key.strip() or not evidence_source.strip():
         raise ValueError("Event key and evidence source are required")
-    with conn:
-        conn.execute(
-            """INSERT OR IGNORE INTO artifact_events
+    with repository_transaction(conn):
+        execute(conn,
+            statement(conn, """INSERT OR IGNORE INTO artifact_events
                (company_id, event_key, event_type, event_date, period_end,
                 fiscal_year, fiscal_quarter, evidenced_at_utc, evidence_source,
                 evidence_json)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", """INSERT INTO artifact_events
+               (company_id, event_key, event_type, event_date, period_end,
+                fiscal_year, fiscal_quarter, evidenced_at_utc, evidence_source,
+                evidence_json)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT DO NOTHING"""),
             (
                 company_id,
                 event_key,
@@ -82,7 +89,7 @@ def register_artifact_event(
                 canonical_json(evidence),
             ),
         )
-    row = conn.execute(
+    row = execute(conn,
         "SELECT * FROM artifact_events WHERE company_id=? AND event_key=?",
         (company_id, event_key),
     ).fetchone()
@@ -104,6 +111,7 @@ def register_artifact_event(
     return int(row["event_id"])
 
 
+@atomic_repository('documents')
 def ensure_artifact_expectation(
     conn: sqlite3.Connection,
     *,
@@ -115,7 +123,7 @@ def ensure_artifact_expectation(
     policy: RetryPolicy,
     canonical_json=canonical_json, parse_utc=parse_utc,
 ) -> int:
-    event = conn.execute(
+    event = execute(conn,
         "SELECT company_id FROM artifact_events WHERE event_id=?", (event_id,)
     ).fetchone()
     if event is None:
@@ -125,13 +133,17 @@ def ensure_artifact_expectation(
     parse_utc(created_at_utc)
     next_check = policy.check_at(expected_after_utc, 0)
     schedule_json = canonical_json(policy.to_dict())
-    with conn:
-        conn.execute(
-            """INSERT OR IGNORE INTO artifact_expectations
+    with repository_transaction(conn):
+        execute(conn,
+            statement(conn, """INSERT OR IGNORE INTO artifact_expectations
                (company_id, artifact_type, event_id, expectation_basis,
                 expected_after_utc, availability_status, next_check_at_utc,
                 schedule_json, created_at_utc, updated_at_utc)
-               VALUES (?, ?, ?, ?, ?, 'expected_not_yet_published', ?, ?, ?, ?)""",
+               VALUES (?, ?, ?, ?, ?, 'expected_not_yet_published', ?, ?, ?, ?)""", """INSERT INTO artifact_expectations
+               (company_id, artifact_type, event_id, expectation_basis,
+                expected_after_utc, availability_status, next_check_at_utc,
+                schedule_json, created_at_utc, updated_at_utc)
+               VALUES (?, ?, ?, ?, ?, 'expected_not_yet_published', ?, ?, ?, ?) ON CONFLICT DO NOTHING"""),
             (
                 int(event["company_id"]),
                 artifact_type,
@@ -144,7 +156,7 @@ def ensure_artifact_expectation(
                 created_at_utc,
             ),
         )
-    row = conn.execute(
+    row = execute(conn,
         """SELECT expectation_id, expectation_basis, expected_after_utc,
                   first_checked_at_utc, attempt_count, terminal_reason,
                   schedule_json
@@ -167,6 +179,7 @@ def ensure_artifact_expectation(
     return int(row["expectation_id"])
 
 
+@atomic_repository('documents')
 def ensure_result_artifact_expectations(
     conn: sqlite3.Connection,
     *,
@@ -230,6 +243,7 @@ def ensure_result_artifact_expectations(
     )
 
 
+@atomic_repository('documents')
 def backfill_result_artifact_expectations(
     conn: sqlite3.Connection,
     *,
@@ -263,12 +277,19 @@ def backfill_result_artifact_expectations(
     if limit is not None:
         sql += " LIMIT ?"
         parameters = (limit,)
-    rows = conn.execute(sql, parameters).fetchall()
+    rows = execute(conn, sql, parameters).fetchall()
     event_count = 0
     expectation_count = 0
     for row in rows:
-        before = conn.total_changes
-        ensure_result_artifact_expectations(
+        event_before = execute(conn,
+            "SELECT event_id FROM artifact_events WHERE company_id=? AND event_key=?",
+            (int(row['company_id']), f"exchange-result-filing:{row['filing_id']}")).fetchone()
+        prior = set()
+        if event_before is not None:
+            prior = {int(item['expectation_id']) for item in execute(conn,
+                'SELECT expectation_id FROM artifact_expectations WHERE event_id=?',
+                (event_before['event_id'],))}
+        registered = ensure_result_artifact_expectations(
             conn,
             company_id=int(row["company_id"]),
             filing_id=int(row["filing_id"]),
@@ -282,9 +303,11 @@ def backfill_result_artifact_expectations(
         # One event plus four expectation rows on first registration.  Each
         # helper commits its own idempotent unit, so a large historical backfill
         # never monopolizes the shared SQLite database.
-        changed = conn.total_changes - before
-        event_count += int(changed >= 1)
-        expectation_count += min(4, max(0, changed - 1))
+        event_after = execute(conn,
+            "SELECT event_id FROM artifact_events WHERE company_id=? AND event_key=?",
+            (int(row['company_id']), f"exchange-result-filing:{row['filing_id']}")).fetchone()
+        event_count += int(event_before is None and event_after is not None)
+        expectation_count += len(set(registered) - prior)
     return {
         "accepted_result_count": len(rows),
         "registered_event_count": event_count,
@@ -292,6 +315,7 @@ def backfill_result_artifact_expectations(
     }
 
 
+@atomic_repository('documents')
 def ensure_discovered_artifact_expectations(
     conn: sqlite3.Connection,
     *,
@@ -308,7 +332,7 @@ def ensure_discovered_artifact_expectations(
     if not unique_ids:
         return ()
     placeholders = ",".join("?" for _ in unique_ids)
-    rows = conn.execute(
+    rows = execute(conn,
         f"""SELECT artifact_id, artifact_type, event_date, period_end,
                    fiscal_year, fiscal_quarter
             FROM document_artifacts
@@ -378,7 +402,7 @@ def ensure_discovered_artifact_expectations(
             evidence_source="d01_artifact_discovery",
             evidence={"artifact_ids": [int(row["artifact_id"]) for row in group]},
         )
-        event = conn.execute(
+        event = execute(conn,
             "SELECT evidenced_at_utc FROM artifact_events WHERE event_id=?",
             (event_id,),
         ).fetchone()

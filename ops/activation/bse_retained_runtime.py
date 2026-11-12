@@ -168,6 +168,8 @@ def _run_owned(owners):
         require(Path(path)==db,'Canonical writer selected an unexpected DB')
         c=connect(path)  # Existing production identity, FK and directory guards.
         def authorize(action,table,column,database,trigger):
+            if table == 'screener_queue_identities' and action in (sqlite3.SQLITE_INSERT, sqlite3.SQLITE_UPDATE, sqlite3.SQLITE_DELETE):
+                return sqlite3.SQLITE_OK if action == sqlite3.SQLITE_INSERT and trigger == 'trg_queue_identity_register' else sqlite3.SQLITE_DENY
             if action in (sqlite3.SQLITE_INSERT,sqlite3.SQLITE_UPDATE,sqlite3.SQLITE_DELETE):
                 if table not in write_tables or action==sqlite3.SQLITE_DELETE:
                     return sqlite3.SQLITE_DENY

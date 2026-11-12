@@ -37,12 +37,25 @@ class DownloadCompanion:
         return False
 
 
+
+def document_environment(environment):
+    result=dict(environment)
+    if result.get('TRADING_AI_DB_BACKEND')=='postgresql':
+        for source,destination in (
+            ('TRADING_AI_DOCUMENTS_DATABASE_URL','DATABASE_URL'),
+            ('TRADING_AI_DOCUMENTS_PGPASSFILE','PGPASSFILE'),
+            ('TRADING_AI_DOCUMENTS_RUNTIME_IDENTITY_FILE','TRADING_AI_RUNTIME_IDENTITY_FILE')):
+            if not result.get(source):raise RuntimeError('Native document companion target is missing')
+            result[destination]=result.pop(source)
+    return result
+
+
 def begin(plan):
     pair=plan['paired_downloads']
     if not 1<=pair['limit']<=30:raise ValueError('Paired downloads require 1–30 jobs')
     root=Path('/data/exports/paired-downloads');key=pair['id']
     if not key.isalnum():raise ValueError('Invalid paired identity')
-    env=os.environ.copy();env['PYTHONPATH']='/document_app:/activation'
+    env=document_environment(os.environ);env['PYTHONPATH']='/document_app:/activation'
     env['PAIRED_PARENT_PID']=str(os.getpid())
     return DownloadCompanion([sys.executable,'/activation/paired_download_runtime.py'],
         log_path=root/(key+'.log'),result_path=root/(key+'.json'),env=env,timeout=480)

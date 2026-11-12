@@ -12,6 +12,7 @@ from ..config import DOCUMENT_CONTENT_SNAPSHOTS
 from ..documents.media import MediaProbe, MediaValidation, NORMALIZED_AUDIO_MEDIA_TYPE
 from .document_artifact_repo import register_artifact_content
 from .document_download_repo import store_response_blob
+from scrapper.db.repository_backend import (execute, executemany, generated_id, statement, is_postgresql, atomic_repository, begin_immediate, commit, rollback, transaction as repository_transaction)
 
 
 def _json(value: Any) -> str:
@@ -25,6 +26,7 @@ class PersistedRecordingNormalization:
     normalization_status: str
 
 
+@atomic_repository('documents')
 def persist_recording_normalization(
     conn: sqlite3.Connection,
     *,
@@ -47,7 +49,7 @@ def persist_recording_normalization(
     """Store a complete success or an explicit failed attempt atomically."""
 
     options_json = _json(options)
-    existing = conn.execute(
+    existing = execute(conn,
         """SELECT normalization_id, normalized_content_id, normalization_status
            FROM recording_normalizations
            WHERE source_content_id=? AND probe_engine=? AND probe_engine_version=?
@@ -76,7 +78,7 @@ def persist_recording_normalization(
     passed = not error and validations and all(row.passed for row in validations)
     status = "accepted" if passed else "failed"
     normalized_content_id: int | None = None
-    with conn:
+    with repository_transaction(conn):
         if status == "accepted":
             if normalized_body is None or normalized_probe is None:
                 raise ValueError("Accepted recording normalization requires derived audio")
@@ -96,7 +98,7 @@ def persist_recording_normalization(
                 content_origin="generated_derivative",
                 created_at_utc=completed_at_utc,
             )
-            conn.execute(
+            execute(conn,
                 """INSERT INTO artifact_content_relationships
                    (artifact_id, source_content_id, derived_content_id,
                     relationship_type, created_at_utc)
@@ -120,7 +122,7 @@ def persist_recording_normalization(
             if normalized_probe
             else []
         )
-        cursor = conn.execute(
+        cursor = execute(conn,
             """INSERT INTO recording_normalizations
                (artifact_id, source_content_id, normalized_content_id,
                 resolution_basis, probe_engine, probe_engine_version,
@@ -152,9 +154,9 @@ def persist_recording_normalization(
                 _json(normalized_streams),
                 _json(error),
             ),
-        )
-        normalization_id = int(cursor.lastrowid)
-        conn.executemany(
+         returning='normalization_id')
+        normalization_id = generated_id(cursor, 'normalization_id')
+        executemany(conn,
             """INSERT INTO recording_normalization_validations
                (normalization_id, rule_code, severity, status, expected_value,
                 actual_value, details_json)
@@ -175,7 +177,7 @@ def persist_recording_normalization(
         if status == "accepted":
             # The source recording remains preferred; normalization is a linked
             # derivative and never replaces the publisher's original bytes.
-            conn.execute(
+            execute(conn,
                 """UPDATE document_artifacts
                    SET preferred_content_id=?, acquisition_status='validated'
                    WHERE artifact_id=?""",
@@ -188,16 +190,17 @@ def persist_recording_normalization(
     )
 
 
+@atomic_repository('documents')
 def recording_normalization_payload(
     conn: sqlite3.Connection, normalization_id: int
 ) -> dict[str, Any]:
-    row = conn.execute(
+    row = execute(conn,
         "SELECT * FROM recording_normalizations WHERE normalization_id=?",
         (normalization_id,),
     ).fetchone()
     if row is None:
         raise ValueError(f"Unknown recording normalization: {normalization_id}")
-    source = conn.execute(
+    source = execute(conn,
         """SELECT content.content_id, content.media_type, content.content_sha256,
                   content.byte_size, content.is_official, content.content_origin,
                   blob.local_path
@@ -209,7 +212,7 @@ def recording_normalization_payload(
     derived = None
     relationship = None
     if row["normalized_content_id"] is not None:
-        derived = conn.execute(
+        derived = execute(conn,
             """SELECT content.content_id, content.media_type,
                       content.content_sha256, content.byte_size,
                       content.is_official, content.content_origin, blob.local_path
@@ -218,12 +221,12 @@ def recording_normalization_payload(
                WHERE content.content_id=?""",
             (row["normalized_content_id"],),
         ).fetchone()
-        relationship = conn.execute(
+        relationship = execute(conn,
             """SELECT * FROM artifact_content_relationships
                WHERE source_content_id=? AND derived_content_id=?""",
             (row["source_content_id"], row["normalized_content_id"]),
         ).fetchone()
-    provenance = conn.execute(
+    provenance = execute(conn,
         """SELECT DISTINCT attempt.download_attempt_id, source.artifact_source_id,
                   source.discovered_from_source, source.discovery_page_url,
                   source.document_url, source.publisher_claim,
@@ -236,7 +239,7 @@ def recording_normalization_payload(
            ORDER BY attempt.download_attempt_id, source.artifact_source_id""",
         (row["source_content_id"],),
     ).fetchall()
-    validations = conn.execute(
+    validations = execute(conn,
         """SELECT * FROM recording_normalization_validations
            WHERE normalization_id=? ORDER BY rule_code""",
         (normalization_id,),

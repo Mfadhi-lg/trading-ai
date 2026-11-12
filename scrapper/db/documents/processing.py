@@ -7,6 +7,8 @@ exact parser/OCR/options contract; failed cache entries remain failed.
 from dataclasses import dataclass
 from ..document_work_claims import claim_extraction, ExtractionBusy
 from ...documents.extraction import canonical_json
+from ..repository_backend import is_postgresql
+from scrapper.db.repository_backend import (execute, executemany, generated_id, statement, is_postgresql, atomic_repository, begin_immediate, commit, rollback, transaction as repository_transaction)
 
 
 @dataclass(frozen=True)
@@ -35,27 +37,31 @@ class ProcessingVersion:
         return canonical_json([content_id, *self.values()])
 
 
+@atomic_repository('documents')
 def reconcile_processing(conn, *, content_ids, version, now):
     """Recover missed handoffs and post-persistence crashes for <=100 selected IDs.
 
     Requires explicitly applied 072. One short transaction; no filesystem, OCR,
     network, migration, default version or automatic re-extraction.
     """
+    if is_postgresql(conn):
+        from ..postgresql_workers import reconcile_processing as native
+        return native(conn, content_ids=content_ids, version=version, now=now)
     ids = tuple(dict.fromkeys(content_ids))
     if not 1 <= len(ids) <= 100 or any(type(x) is not int or x <= 0 for x in ids):
         raise ValueError('Select between 1 and 100 positive content IDs')
     if conn.in_transaction:
         raise ValueError('Reconciliation needs an idle connection')
-    conn.execute('BEGIN IMMEDIATE')
+    begin_immediate(conn, lock='documents')
     result = []
     try:
         for content_id in ids:
-            content = conn.execute('''SELECT c.*, a.artifact_type FROM artifact_contents c
+            content = execute(conn, '''SELECT c.*, a.artifact_type FROM artifact_contents c
                 JOIN document_artifacts a USING(artifact_id) WHERE c.content_id=?''',
                 (content_id,)).fetchone()
             if content is None:
                 raise ValueError(f'Unknown content {content_id}')
-            conn.execute('INSERT OR IGNORE INTO document_processing_inbox VALUES (?,?)',
+            execute(conn, statement(conn, 'INSERT OR IGNORE INTO document_processing_inbox VALUES (?,?)', 'INSERT INTO document_processing_inbox VALUES (?,?) ON CONFLICT DO NOTHING'),
                          (content_id, content['created_at_utc']))
             supported = content['media_type'] in (
                 'application/pdf', 'application/vnd.ms-powerpoint',
@@ -64,33 +70,39 @@ def reconcile_processing(conn, *, content_ids, version, now):
             if not supported:
                 continue
             key = version.key(content_id)
-            conn.execute('''INSERT OR IGNORE INTO document_processing_work
+            execute(conn, statement(conn, '''INSERT OR IGNORE INTO document_processing_work
                 (content_id,parser_name,parser_version,ocr_engine,ocr_engine_version,
-                 options_json,resource_key,created_at_utc) VALUES (?,?,?,?,?,?,?,?)''',
+                 options_json,resource_key,created_at_utc) VALUES (?,?,?,?,?,?,?,?)''', """INSERT INTO document_processing_work
+                (content_id,parser_name,parser_version,ocr_engine,ocr_engine_version,
+                 options_json,resource_key,created_at_utc) VALUES (?,?,?,?,?,?,?,?) ON CONFLICT DO NOTHING"""),
                 (content_id, *version.values(), key, now))
-            cached = conn.execute('''SELECT extraction_id FROM document_extractions
+            cached = execute(conn, '''SELECT extraction_id FROM document_extractions
                 WHERE content_id=? AND parser_name=? AND parser_version=? AND
                 ocr_engine=? AND ocr_engine_version=? AND options_json=?''',
                 (content_id, *version.values())).fetchone()
             if cached is not None:
-                conn.execute('UPDATE document_processing_work SET extraction_id=? WHERE resource_key=?',
+                execute(conn, 'UPDATE document_processing_work SET extraction_id=? WHERE resource_key=?',
                              (cached['extraction_id'], key))
-            result.append(dict(conn.execute('SELECT * FROM document_processing_work WHERE resource_key=?',
+            result.append(dict(execute(conn, 'SELECT * FROM document_processing_work WHERE resource_key=?',
                                             (key,)).fetchone()))
-        conn.commit()
+        commit(conn)
         return result
     except BaseException:
-        conn.rollback()
+        rollback(conn)
         raise
 
 
+@atomic_repository('documents')
 def claim_processing(conn, *, work_id, seconds=600, now=None):
     """Use the same fence as legacy extraction; no separate competing ownership.
 
     Consumers persist through the existing fenced extraction repository and then
     reconcile the exact version. A crash at either boundary leaves recoverable work.
     """
-    row = conn.execute('SELECT * FROM document_processing_work WHERE work_id=?',
+    if is_postgresql(conn):
+        from ..postgresql_workers import claim_processing as native
+        return native(conn, work_id=work_id, seconds=seconds, now=now)
+    row = execute(conn, 'SELECT * FROM document_processing_work WHERE work_id=?',
                        (work_id,)).fetchone()
     if row is None:
         raise ValueError('Unknown processing work')
@@ -99,6 +111,7 @@ def claim_processing(conn, *, work_id, seconds=600, now=None):
     return claim_extraction(conn, row['resource_key'], seconds=seconds, now=now)
 
 
+@atomic_repository('documents')
 def automatic_processing_contents(conn, *, version, now, epoch, limit=2,
                                   historical_limit=0,
                                   artifact_types=('presentation', 'transcript'), artifact_ids=None, focus_company_ids=()):
@@ -155,6 +168,6 @@ def automatic_processing_contents(conn, *, version, now, epoch, limit=2,
     ):
         if predicate == 'c.created_at_utc<?' and not historical_limit:
             continue
-        rows.extend(dict(r) for r in conn.execute(common+' AND '+predicate+
+        rows.extend(dict(r) for r in execute(conn, common+' AND '+predicate+
             ' ORDER BY '+focus_order+'c.created_at_utc,c.content_id LIMIT ?', (*params,*args,limit)))
     return bounded_lanes(rows,limit=limit,historical_limit=historical_limit,epoch=epoch,now=now)

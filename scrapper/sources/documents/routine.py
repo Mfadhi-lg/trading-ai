@@ -14,6 +14,7 @@ from ...db.document_artifact_repo import persist_discovery_plan
 from ...db.host_permits import reviewed_policy
 from ...documents.revisions import enqueue_revision
 from .discovery import _parse_page,DiscoveryPlan
+from ...db.repository_backend import atomic_repository, statement
 
 
 def allowed_page(conn,url):
@@ -29,10 +30,10 @@ def company_pages(conn,company_id,*,permitted_only=True,now=None):
         FROM artifact_discovery_pages WHERE company_id=? AND discovered_from_source IN ('company_ir','nse','bse')
         GROUP BY discovered_from_source,discovery_page_url ORDER BY max(first_observed_at_utc) DESC LIMIT 2''',(company_id,))]
     if not pages:
-        pages=[('company_ir',r[0]) for r in conn.execute('''SELECT DISTINCT p.source_url
+        pages=[('company_ir',r[0]) for r in conn.execute('''SELECT p.source_url
             FROM company_profile_links p JOIN accepted_page_versions a USING(parse_id)
             WHERE a.company_id=? AND a.source='screener' AND p.link_type='website'
-            ORDER BY a.accepted_at_utc DESC LIMIT 1''',(company_id,))]
+            GROUP BY p.source_url ORDER BY max(a.accepted_at_utc) DESC LIMIT 1''',(company_id,))]
     symbol=conn.execute("SELECT identifier_value FROM security_identifiers WHERE company_id=? AND identifier_type='NSE' AND is_current=1 LIMIT 1",(company_id,)).fetchone()
     if symbol:
         from datetime import timedelta
@@ -45,6 +46,7 @@ def company_pages(conn,company_id,*,permitted_only=True,now=None):
     return [(source,url) for source,url in pages if not permitted_only or allowed_page(conn,url)]
 
 
+@atomic_repository('official-page-persistence')
 def ingest_page(conn, *, company_id, source, url, body, now, snapshot_root):
     if source not in {'company_ir','nse','bse','rating_agency'} or not allowed_page(conn,url):
         raise ValueError('Official source access blocked')
@@ -143,6 +145,7 @@ def refresh_official_pages(conn, *, company_ids, now, snapshot_root, session, re
     return {'requests':requested,'observations':results}
 
 
+@atomic_repository('revision-patrol')
 def revision_patrol(conn, *, now, limit=1):
     """At most one retained URL/week, within 180 days of source publication.
 
@@ -154,14 +157,24 @@ def revision_patrol(conn, *, now, limit=1):
     if limit not in (0,1): raise ValueError('Revision patrol budget is zero or one')
     instant=parse_utc(now)
     cutoff=format_utc(instant-timedelta(days=180));due=format_utc(instant-timedelta(days=7))
-    rows=conn.execute('''SELECT s.artifact_id,s.document_url,s.artifact_source_id FROM artifact_sources s
+    rows=conn.execute(statement(conn, '''SELECT s.artifact_id,s.document_url,s.artifact_source_id FROM artifact_sources s
         JOIN document_artifacts a USING(artifact_id)
         WHERE a.artifact_type IN ('presentation','transcript','credit_rating')
           AND s.last_checked_at_utc<=? AND COALESCE(a.published_at_utc,a.first_observed_at_utc)>=?
           AND s.availability_status='available'
           AND EXISTS(SELECT 1 FROM artifact_contents c WHERE c.artifact_id=a.artifact_id)
           AND EXISTS(SELECT 1 FROM screener_collection_scope sc WHERE sc.company_id=a.company_id AND sc.eligibility='eligible')
-        ORDER BY s.last_checked_at_utc,a.period_end DESC,s.artifact_source_id LIMIT ?''',(due,cutoff,limit)).fetchall()
+        ORDER BY s.last_checked_at_utc,a.period_end DESC,s.artifact_source_id LIMIT ?''',
+        '''SELECT s.artifact_id,s.document_url,s.artifact_source_id FROM artifact_sources s
+        JOIN document_artifacts a USING(artifact_id)
+        WHERE a.artifact_type IN ('presentation','transcript','credit_rating')
+          AND s.last_checked_at_utc::timestamptz<=CAST(? AS timestamptz)
+          AND COALESCE(a.published_at_utc,a.first_observed_at_utc)::timestamptz>=CAST(? AS timestamptz)
+          AND s.availability_status='available'
+          AND EXISTS(SELECT 1 FROM artifact_contents c WHERE c.artifact_id=a.artifact_id)
+          AND EXISTS(SELECT 1 FROM screener_collection_scope sc WHERE sc.company_id=a.company_id AND sc.eligibility='eligible')
+        ORDER BY s.last_checked_at_utc::timestamptz,a.period_end DESC NULLS LAST,s.artifact_source_id LIMIT ?'''),
+        (due,cutoff,limit)).fetchall()
     results=[]
     for row in rows:
         if not allowed_page(conn,row['document_url']): continue

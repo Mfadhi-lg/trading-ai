@@ -4,13 +4,15 @@ import json
 import sqlite3
 from typing import Any
 from ..document_download_queue_repo import queue_counts
+from scrapper.db.repository_backend import (execute, executemany, generated_id, statement, is_postgresql, atomic_repository, begin_immediate, commit, rollback, transaction as repository_transaction)
 
 DOWNLOAD_QUEUE_REPORT_SCHEMA_VERSION = "1.0.0"
 
+@atomic_repository('documents')
 def _scope_policy(conn: sqlite3.Connection, scope_id: str | None) -> dict[str, Any]:
     if scope_id is None:
         return {}
-    row = conn.execute(
+    row = execute(conn,
         "SELECT policy_json FROM artifact_download_scopes WHERE scope_id=?",
         (scope_id,),
     ).fetchone()
@@ -19,6 +21,7 @@ def _scope_policy(conn: sqlite3.Connection, scope_id: str | None) -> dict[str, A
     return dict(json.loads(row["policy_json"]))
 
 
+@atomic_repository('documents')
 def build_download_queue_report(
     conn: sqlite3.Connection, *, scope_id: str | None,
     queue_counts=queue_counts, schema_version=DOWNLOAD_QUEUE_REPORT_SCHEMA_VERSION,
@@ -27,7 +30,7 @@ def build_download_queue_report(
 
     scope_filter = " WHERE queue.scope_id=?" if scope_id is not None else ""
     parameters = (scope_id,) if scope_id is not None else ()
-    attempt = conn.execute(
+    attempt = execute(conn,
         f"""SELECT COUNT(*) AS attempt_count,
                    COALESCE(SUM(download.byte_size), 0) AS response_bytes,
                    COALESCE(SUM(CASE WHEN download.result_status='validated'
@@ -39,7 +42,7 @@ def build_download_queue_report(
               {scope_filter}""",
         parameters,
     ).fetchone()
-    unique = conn.execute(
+    unique = execute(conn,
         f"""SELECT COUNT(*) AS content_count,
                    COALESCE(SUM(byte_size), 0) AS content_bytes
               FROM (
@@ -58,7 +61,7 @@ def build_download_queue_report(
             "job_count": int(row["job_count"]),
             "validated_job_count": int(row["validated_job_count"]),
         }
-        for row in conn.execute(
+        for row in execute(conn,
             f"""SELECT queue.target_host, COUNT(*) AS job_count,
                        SUM(CASE WHEN queue.status='SUCCEEDED' THEN 1 ELSE 0 END)
                          AS validated_job_count
@@ -73,7 +76,7 @@ def build_download_queue_report(
             "job_count": int(row["job_count"]),
             "validated_job_count": int(row["validated_job_count"]),
         }
-        for row in conn.execute(
+        for row in execute(conn,
             f"""SELECT artifact.artifact_type, COUNT(*) AS job_count,
                        SUM(CASE WHEN queue.status='SUCCEEDED' THEN 1 ELSE 0 END)
                          AS validated_job_count
