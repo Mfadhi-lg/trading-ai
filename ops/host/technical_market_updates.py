@@ -27,9 +27,11 @@ def status(now=None,output=OUT):
     grant_path=recurring/'OWNER_GRANT.json';proposal=recurring/'PROPOSED_MANIFEST.json';timer=recurring/'TIMER_STATUS.json'
     approved=json.loads(grant_path.read_text()) if grant_path.exists() else {}
     timer_state=json.loads(timer.read_text()) if timer.exists() else {}
-    authorized=bool(approved and proposal.exists() and approved.get('manifest_sha256')==sha(proposal.read_bytes()))
+    from experiments.technical_fix_v2.schedule import status as scheduled_status
+    scheduled = scheduled_status(now, output=recurring)
+    authorized = scheduled['status'] == 'AUTHORIZED'
     enabled=authorized and timer_state.get('loaded',False)
-    return dict(checkpoints_ist=CHECKPOINTS,weekly='Reconcile only completed source intervals; special Sunday can extend the week',
+    return dict(scheduled_updates=scheduled, checkpoints_ist=CHECKPOINTS,weekly='Reconcile only completed source intervals; special Sunday can extend the week',
         finite_batch_state=state.get('status','NOT_STARTED'),requests_saved=len(state.get('requests',{})),
         recurring_acquisition_enabled=enabled,recurring_trial_authorized=authorized,
         recurring_trial=approved if authorized else None,timer=timer_state,

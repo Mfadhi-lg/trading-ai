@@ -1,5 +1,8 @@
 # Retained research documents
 
+The opt-in [quantitative validation and backtesting APIs](quantitative-validation.md)
+provide offline chronological evaluation and explicit daily execution assumptions.
+
 Current source ownership is documented in the
 [experiment lifecycle register](../../experiments/README.md) and
 [technical indicator definition map](technical-indicators.md). These describe

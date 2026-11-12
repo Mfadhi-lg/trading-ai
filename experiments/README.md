@@ -1,7 +1,8 @@
 # Experiment lifecycle
 
-This index resolves issues #20 and #25 against source at `c0025bac6`, inspected
-12 November 2026. It records code dependencies, not live runtime health or new
+This index originated with issues #20 and #25 against source at `c0025bac6`,
+inspected 12 November 2026. The same-day daily-indicator integration adds the
+read-only imports described below. It records code dependencies, not live runtime health or new
 execution authorization. [lifecycle.json](lifecycle.json) is the complete register
 of immediate experiment directories, accountable owner roles, intended interfaces,
 validation blockers and direct operational imports. Owner roles are maintenance
@@ -46,8 +47,14 @@ remain required.
   and build helpers, and `technical_integration_v1` context helpers. The V2
   chart renderer also imports `technical_fix_v1.repair.SECTOR_BRIDGE`.
   Operational reachability is not validation of their complete research runners.
-- No direct `experiments` imports were found under `scrapper/` at this baseline.
-  Its financial facade `scrapper.research.features.company_quarter_features`
+- `scrapper.research.features.technical.daily_indicators` imports
+  `earnings_reaction_v1.indicators` for existing Decimal averaging/RVOL arithmetic
+  and `historical_candle_archive_v1.access` for calendar coverage and validated
+  indicator segments. This read-only, host-side interface does not open a store
+  or authorize acquisition. See the [indicator contract](../docs/research/daily-indicator-engine.md)
+  for packaging, calendar, provenance and adjustment limits. These imports do
+  not promote the complete earnings experiment to production.
+  The financial facade `scrapper.research.features.company_quarter_features`
   remains the financial selection authority; the finance pilot does not replace it.
 
 The register test scans Python source without importing or executing these

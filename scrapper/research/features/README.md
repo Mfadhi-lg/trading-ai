@@ -1,5 +1,9 @@
 # Financial feature interface — C25.1
 
+The separate `technical.daily_indicators` read-only API provides validated daily
+SMA, EMA, ATR and RVOL over the canonical historical candle store. See the
+[formula and safety contract](../../../docs/research/daily-indicator-engine.md).
+
 Use `scrapper.research.features.company_quarter_features` with a caller-owned read-only SQLite connection, company identity, aware decision time, explicit standalone scope and feature version v1. Optional source disambiguates accepted sources; no parser or provider client is required. This is the reviewed B1 implementation, preserving units/scales, null/applicability statuses, immutable parse/blob/observation references, signed values and capture/acceptance cutoff eligibility. The legacy snapshot exporter and `scrapper.pipeline.ml_contracts` imports remain compatible.
 
 B1 disposition: forward-ported offline, without copied supporting code. The 29-row/464-value retained-export cohort remains EXPLORATORY_BACKFILL, and original database/source-byte reconciliation remains PARTIAL. PIT_SAFE_FROM_CAPTURE certifies stored capture eligibility only; it does not prove historical filing-time availability, universe membership or sector governance. No newest revision is backdated. Completeness is engineering coverage, not a selection decision. The original B1 dictionary, patch, reports and C03 archive remain historical evidence at their original paths. No historical report is rewritten as a fresh live result.

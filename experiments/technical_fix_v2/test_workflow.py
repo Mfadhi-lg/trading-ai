@@ -18,6 +18,11 @@ class WorkflowTests(unittest.TestCase):
     def setUp(self):
         self.tmp=tempfile.TemporaryDirectory();self.addCleanup(self.tmp.cleanup)
         self.path=Path(self.tmp.name);self.output=self.path/'output'
+        # Offline tests must not depend on the operator's retained pause files.
+        from experiments.historical_candle_archive_v1 import control
+        for name in ('PAUSE', 'SHARED_PAUSE'):
+            patcher=patch.object(control,name,self.path/name)
+            patcher.start();self.addCleanup(patcher.stop)
         self.discovery=patch.object(storage,'discover',return_value=(self.path,{'VolumeUUID':'fixture'}));self.discovery.start();self.addCleanup(self.discovery.stop)
         self.guard=patch.object(storage,'verify');self.guard.start();self.addCleanup(self.guard.stop)
         for module in (access,):
@@ -100,6 +105,38 @@ class WorkflowTests(unittest.TestCase):
             self.assertEqual(storage.sha((s.root/path).read_bytes()),digest)
             self.assertEqual(pq.read_table(s.root/path).to_pylist()[0]['close'],11)
         finally:s.close()
+
+    def test_daily_schedule_recovers_saved_response_and_reuses_completed_batch(self):
+        from .schedule import tick, status
+        query=self.query(day='2026-10-30',checkpoint='16:00',intraday=False)
+        recurring=self.path/'recurring'
+        storage.dump(recurring/'PROPOSED_MANIFEST.json',dict(first_day='2026-10-30',
+            last_day='2026-10-30',max_requests=1,requests=[query]))
+        storage.dump(recurring/'OWNER_GRANT.json',dict(max_requests=1,
+            manifest_sha256=storage.sha((recurring/'PROPOSED_MANIFEST.json').read_bytes())))
+        fetch=Mock(return_value=(self.body([['2026-10-30T00:00:00+05:30',10,12,9,11,100,0]]),200))
+        interrupted=True
+        def runner(**kwargs):
+            nonlocal interrupted
+            kwargs.update(fetch=fetch,supplier=lambda:'fixture',pace=0,interrupt_after_raw=interrupted)
+            interrupted=False
+            return update.execute(**kwargs)
+        now=datetime.fromisoformat('2026-10-30T16:30:00+05:30')
+        options=dict(output=recurring,runner=runner,readiness=lambda:True)
+        with self.assertRaises(InterruptedError):tick(now,**options)
+        self.assertEqual(status(now,output=recurring)['batches'][0]['recovery'],'RESUME_SAVED_RESPONSE')
+        self.assertEqual(tick(now,**options)['checkpoints'][0]['status'],'COMPLETE')
+        self.assertEqual(tick(now,**options)['checkpoints'][0]['status'],'REUSED_COMPLETE')
+        self.assertEqual(fetch.call_count,1)
+        report=status(now,output=recurring)
+        self.assertEqual(report['latest_valid_observation_at'],'2026-10-30T00:00:00+05:30')
+        self.assertEqual(report['observation_age_seconds'],16.5*3600)
+        self.assertEqual(report['incomplete_batches'],0)
+        store=access.HistoricalStore()
+        try:
+            self.assertEqual(store.db.execute('SELECT COUNT(*) FROM candle_observations').fetchone()[0],1)
+            self.assertEqual(store.db.execute('PRAGMA integrity_check').fetchone()[0],'ok')
+        finally:store.close()
 
     def test_developing_four_hour_prefix_never_reads_later_minute_values(self):
         start=datetime.fromisoformat('2026-10-30T13:15:00+05:30')

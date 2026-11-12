@@ -3,7 +3,9 @@
 Source inspection: 12 November 2026, baseline `c0025bac6`. This is the canonical
 definition and reuse map for the current implementations, not certification of
 TradingView parity or a production signal engine. There is no separate indicator
-engine under `scrapper/`. Existing operational chart consumers import the shared
+signal engine under `scrapper/`. The [daily historical indicator engine](daily-indicator-engine.md)
+now provides a read-only application interface for SMA, EMA, ATR and RVOL over
+canonical archive windows. Existing operational chart consumers import the shared
 arithmetic from `experiments/earnings_reaction_v1`; the
 [experiment lifecycle](../../experiments/README.md) identifies those consumers.
 

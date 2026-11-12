@@ -58,6 +58,8 @@ def persist_stock(a, q, rec, raw):
     a.parquet(rows,params,rec['sha256'],rec['received_at'])
     a.db.execute("UPDATE requests SET status='SUCCESS',row_count=? WHERE request_id=?",(len(rows),q['request_id']))
     a.db.commit()
+    valid = [r['start'] for r in rows if r['quality'] == 'OHLC_VALID']
+    rec['latest_valid_observation_at'] = max(valid) if valid else None
     rec.update(accepted=sum(r['quality']=='OHLC_VALID' for r in rows),quarantined=sum(r['quality']!='OHLC_VALID' for r in rows),issues=issues)
 
 
