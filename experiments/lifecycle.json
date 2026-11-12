@@ -1,0 +1,126 @@
+{
+  "schema_version": 1,
+  "reviewed_on": "2026-11-12",
+  "baseline": "c0025bac6",
+  "owner_policy": "Accountable repository maintenance roles, not personal assignments or execution approval.",
+  "experiments": [
+    {
+      "name": "earnings_reaction_v1",
+      "status": "pending_validation",
+      "owner": "Technical research maintainer",
+      "interface": "events.py; candles.py; indicators.py; simple_volume.py; indicator_alternatives.py",
+      "validation_gate": "Independent source/chart parity, calendar and point-in-time validation remain incomplete."
+    },
+    {
+      "name": "finance_only_v1",
+      "status": "research_only",
+      "owner": "Financial research maintainer",
+      "interface": "engine.py; pilot.py",
+      "validation_gate": "ACCEPTANCE.md accepts four-company local review only; source originals, screening calibration and broader validation remain incomplete."
+    },
+    {
+      "name": "historical_candle_archive_v1",
+      "status": "production",
+      "owner": "Acquisition operations maintainer",
+      "interface": "control.py; storage.py; access.py via ops/host/historical_candle_lifecycle.py",
+      "validation_gate": "Only existing bounded archive lifecycle is operationally integrated; partial calendar, source/adjustment and indicator limits remain."
+    },
+    {
+      "name": "subsector_index_v1",
+      "status": "research_only",
+      "owner": "Technical research maintainer",
+      "interface": "core.py; build.py; study.py",
+      "validation_gate": "Retrospective membership, corporate actions and selection evidence require review before causal use."
+    },
+    {
+      "name": "subsector_index_v2",
+      "status": "research_only",
+      "owner": "Technical research maintainer",
+      "interface": "build.py reusing subsector_index_v1.core",
+      "validation_gate": "Complete primary action/suspension audit and historical selection evidence remain unavailable."
+    },
+    {
+      "name": "technical_fix_v1",
+      "status": "research_only",
+      "owner": "Technical research maintainer",
+      "interface": "policy.py; repair.py; reconcile.py",
+      "validation_gate": "Retained source admission repairs and SECTOR_BRIDGE reuse do not validate all market history."
+    },
+    {
+      "name": "technical_fix_v2",
+      "status": "production",
+      "owner": "Acquisition operations maintainer",
+      "interface": "integrate.main; update.execute through scripts/technical-data and ops/host/technical_market_updates.py",
+      "validation_gate": "Existing manifest-gated acquisition and charts only; recurring grants and independent research validation remain separate."
+    },
+    {
+      "name": "technical_integration_v1",
+      "status": "research_only",
+      "owner": "Technical research maintainer",
+      "interface": "build.py; charts.py; replay.py",
+      "validation_gate": "Retained market context, conceptual close times and provider dates do not prove historical availability."
+    },
+    {
+      "name": "technical_integration_v2",
+      "status": "pending_validation",
+      "owner": "Technical research maintainer",
+      "interface": "build.rotation; narrowed_validation.validate; execute_narrowed.strict_payload/classify_error",
+      "validation_gate": "Selected helpers support operational charts/updates; quote units, delivery, licensed history and broader context remain unverified."
+    },
+    {
+      "name": "tradingview_scraper_poc",
+      "status": "research_only",
+      "owner": "Technical research maintainer",
+      "interface": "offline.import_csv; offline.normalize_studies; run_offline.py",
+      "validation_gate": "Synthetic/offline normalization only; no authenticated extraction or proprietary indicator semantics certified."
+    },
+    {
+      "name": "unified_financial_pilot",
+      "status": "pending_validation",
+      "owner": "Document intelligence maintainer",
+      "interface": "runner.py; schema.py; evaluate.py",
+      "validation_gate": "Original-source independent annotations and complete material-reference evaluation required; source anchoring alone is insufficient."
+    },
+    {
+      "name": "upstox_fundamentals_pilot",
+      "status": "pending_validation",
+      "owner": "Source integrations maintainer",
+      "interface": "00_access_and_scope.md; BLOCKED_STATUS.md (documentation only)",
+      "validation_gate": "Historical blocked pilot; current access/retention permission and bounded scope need confirmation before implementation."
+    }
+  ],
+  "operational_imports": [
+    {
+      "consumer": "ops/host/historical_candle_lifecycle.py",
+      "module": "experiments.historical_candle_archive_v1"
+    },
+    {
+      "consumer": "ops/host/historical_candle_lifecycle.py",
+      "module": "experiments.historical_candle_archive_v1.storage"
+    },
+    {
+      "consumer": "ops/host/technical_market_updates.py",
+      "module": "experiments.historical_candle_archive_v1.calendar"
+    },
+    {
+      "consumer": "ops/host/technical_market_updates.py",
+      "module": "experiments.historical_candle_archive_v1.control"
+    },
+    {
+      "consumer": "ops/host/technical_market_updates.py",
+      "module": "experiments.historical_candle_archive_v1.storage"
+    },
+    {
+      "consumer": "ops/host/technical_market_updates.py",
+      "module": "experiments.technical_fix_v2.update"
+    },
+    {
+      "consumer": "scripts/technical-data",
+      "module": "experiments.technical_fix_v2.integrate"
+    },
+    {
+      "consumer": "scripts/technical-data",
+      "module": "experiments.technical_fix_v2.update"
+    }
+  ]
+}
