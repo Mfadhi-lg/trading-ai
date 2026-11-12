@@ -25,6 +25,15 @@ Do not read the entire repository by default. Use targeted search, imports, entr
 - Preserve CLI commands, aliases, flags, Python import paths, database migration identities, source provenance and accepted data contracts unless the task explicitly requires a compatible change.
 - Existing workflow definitions and operational records are evidence, not proof of current live runtime health. State which source was checked and when.
 
+## Branch workflow
+
+- Keep `main` as the normal local working branch. Start each task from an updated `main`, preserving all existing local changes and untracked files.
+- Maintain only `main` and the reusable `fuad` branch. Do not create a branch for each fix, task, review or agent.
+- Existing branches supporting open pull requests may remain until those pull requests are merged; remove them afterward once their work is preserved.
+- Use `fuad` when a pull request branch is required by the existing protection on `main`. Reuse it for subsequent pull requests after the previous work is merged; do not bypass branch protection or force-push shared history.
+- Preserve untracked files in the local checkout and every linked worktree. Branch cleanup must not delete worktree directories, run `git clean`, discard changes or remove local data.
+- Before removing an old branch, account for unmerged commits and open pull requests. Preserve their history and any local changes before deleting branch references.
+
 ## Mandatory task lifecycle
 
 1. **Clarify scope internally.** Extract expected behavior, constraints, acceptance criteria and forbidden side effects. Ask the user only if a missing decision blocks safe progress.

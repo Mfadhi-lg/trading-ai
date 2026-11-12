@@ -376,7 +376,9 @@ def resolve_credit_rating(
                 if result.final_url and urlsplit(result.final_url).hostname != urlsplit(original_url).hostname:
                     status = "TEMPORARY_OBJECT_REPORT_VALIDATED"
                 return CreditRatingResolution(status, original_url, selected, tuple(steps))
-            if result.detected_media_type == "text/html" and result.http_status == 200 and result.body:
+            if (result.result_status == "rejected_unexpected_html"
+                    and result.detected_media_type == "text/html"
+                    and result.http_status == 200 and result.body):
                 genuine, evidence = is_genuine_html_credit_report(
                     result.body, final_url=result.final_url or candidate.url
                 )

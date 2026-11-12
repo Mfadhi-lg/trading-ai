@@ -1,0 +1,20 @@
+{
+  "operation_image": "sha256:1a310808f878911b4bd0a324beaf2948f215e3743238c981a531656cf0eecbf9",
+  "application_hashes": {
+    "scrapper/config.py": "187cfe4571710801e9ea18926e027f5351bf3c1a788a348ec1c0cb1adb0a47e8",
+    "scrapper/runtime_identity.py": "798a6a4f2a3f38b162afcc1c5c804d7b1b4d6abf96e90e41697f69a46dbaf6a1",
+    "scrapper/core/http.py": "2bf2d96d82088135e5208dbfe14a9bb0a27e75b03354b6a74b96ae6ad0c76209",
+    "scrapper/db/database.py": "bdda272cee762a11876dcdd7f7da8a6ab6d55595b8069dc67c42b95ef7ecc3fb",
+    "scrapper/db/exchange/filings.py": "a30d50cc5d648e74110681d0a2774e1eb125a21b2712b2e6073fcb8e03de9031",
+    "scrapper/db/exchange/snapshots.py": "d86d1f11c468d95916df8937afdb2d881cc739c95e6e3bffe457cad1f9da3f1f",
+    "scrapper/db/repo.py": "92638ffa8216d498fcf95dbcc4b11240bb748f77485c40bc956619977304df98",
+    "scrapper/db/screener_discovery_repo.py": "458ba689befea28ccfd12fc8be577bcef9146dbb47714c2ad07119fbd2ede2ba",
+    "scrapper/sources/exchange/result_filings.py": "0c4ea0ca298c7fe1e6e63e8cdb1ebd56c94bab74f7a8f015610d664c6315f9f7",
+    "scrapper/sources/exchange/tabular.py": "613eab097a0d0b4e34eb31e7aa994eafb8e8a44ac54589f76f5d1387a8c498fa",
+    "scrapper/sources/exchange/snapshot_guard.py": "4d98d703d964f166d0c7cd730eb708fe9be792c11e5d52eec33663916fcadb12",
+    "scrapper/sources/exchange/transport.py": "8fe00850592caf4e0a3b3018ee7dab550b87e13f4c0f14c40b4170882ea905f2",
+    "scrapper/workflows/exchange/universe.py": "d54bd5bbf5e01e885169e62745b3dd3777b42fa7948af7c3befe3868e16e5b6f",
+    "scrapper/operations/coordinator/exchange.py": "db3fae5b76fa0b605074e1f3c2cdb95080dbaa2fa31941e53560338fb93a181f",
+    "scrapper/sources/exchange/browser_results.py": "3ac35f3fb6ec23f3e2c65148e5971a8ee6cd5c36d45167ca440cd36f2625bab2"
+  }
+}
