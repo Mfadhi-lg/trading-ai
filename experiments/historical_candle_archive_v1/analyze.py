@@ -15,7 +15,7 @@ from .observations import aggregate_minutes,boundaries,select_asof
 FIELDS=('open','high','low','close','volume')
 
 def comparable(row):
-    return tuple(Decimal(row[k]) for k in FIELDS)
+    return tuple(Decimal(row[k]) for k in (*FIELDS,'open_interest'))
 
 def load(a):
     manifest=json.loads((OUT/'pilot-manifest.json').read_text())
@@ -92,21 +92,29 @@ def coverage(groups,pilot):
             by_day=defaultdict(list)
             for r in rows: by_day[r['start'][:10]].append(r)
             present={r['start'][:10] for r in rows}
-            missing=[];unexpected=[];bad_grids=0
-            if rows and tf!='Weekly':
+            missing=[];unexpected=[];unresolved=[];grid_differences=[];bad_grids=0
+            if tf!='Weekly':
                 listing=date.fromisoformat(company['listing_date'][:10]) if company['listing_date'] else date(2022,1,1)
                 d=max(date(2022,1,1),listing)
                 last=END
                 while d<=last:
                     record=day_record(d)
                     expected=bool(record['sessions'])
+                    if not expected and record['status']!='CLOSED':
+                        unresolved.append(str(d))
+                        d+=timedelta(days=1)
+                        continue
                     if expected and str(d) not in present: missing.append(str(d))
                     if not expected and str(d) in present: unexpected.append(str(d))
                     if expected and tf in ('1-hour','4-hour') and str(d) in present:
                         actual=[r['start'] for r in by_day[str(d)]]
                         starts=[s.isoformat() for session in record['sessions']
                                 for s,e in boundaries(session['opens_at'],session['closes_at'],60 if tf=='1-hour' else 240)]
-                        if actual!=starts: bad_grids+=1
+                        if sorted(actual)!=sorted(starts):
+                            bad_grids+=1
+                            grid_differences.append(dict(day=str(d),
+                                missing_starts=sorted(set(starts)-set(actual)),
+                                unexpected_starts=sorted(set(actual)-set(starts))))
                     d+=timedelta(days=1)
             result.append(dict(company_id=cid,symbol=company['symbol'],timeframe=tf,rows=len(rows),
                 first_start=rows[0]['start'] if rows else None,last_start=rows[-1]['start'] if rows else None,
@@ -115,11 +123,14 @@ def coverage(groups,pilot):
                 ohlc_invalid=sum(r['quality']=='QUARANTINED_OHLC' for r in rows),
                 ambiguous_daily_bucket_rows=sum(r['quality']=='AMBIGUOUS_DAILY_SESSION_BUCKET' for r in rows),
                 missing_scheduled_sessions_since2022=len(missing),unexpected_session_dates=len(unexpected),
+                unresolved_calendar_dates=len(unresolved),
+                session_coverage_status='NOT_EVALUATED_WEEKLY' if tf=='Weekly' else 'PARTIAL_CALENDAR_SINCE2022',
                 native_session_grid_differences=bad_grids,corporate_action_status='UNKNOWN_PROVIDER_ADJUSTMENT_BASIS',
                 completeness='RETURNED_COVERAGE_MEASURED; CALENDAR_EXCEPTION_REVIEW_PARTIAL; PRE2022_GAPS_UNCERTIFIED'))
-            if missing or unexpected:
+            if missing or unexpected or unresolved or grid_differences:
                 gaps.append(dict(company_id=cid,symbol=company['symbol'],timeframe=tf,
-                                 missing_dates=missing,unexpected_dates=unexpected))
+                                 missing_dates=missing,unexpected_dates=unexpected,
+                                 unresolved_dates=unresolved,grid_differences=grid_differences))
         hourly=groups.get((cid,'1-hour'),[]);four={r['start']:r for r in groups.get((cid,'4-hour'),[])}
         hourly_by_day=defaultdict(list)
         for r in hourly: hourly_by_day[r['start'][:10]].append(r)
