@@ -46,7 +46,8 @@ def prepare(original=None):
         'original_receipt_preserved':True,'reinterpretation':'Retained bytes revalidated under the corrected canonical parser; no source period is invented'}
     save('verification.json',verification)
     RetainedBSEBrowserResults.load(receipt_path=OUT/'receipt.json',raw_path=OUT/'response.raw',verification_path=OUT/'verification.json')
-    base=json.loads((ROOT/'artifacts/bse-production-ingestion-ownership-fixed-2026-10-09/manifest.json').read_text())
+    from bse_production import production_config
+    base=production_config()
     hashes=dict(base['application_hashes'])
     hashes['scrapper/sources/exchange/result_filings.py']=hashlib.sha256((ROOT/'scrapper/sources/exchange/result_filings.py').read_bytes()).hexdigest()
     save('checks.json',{'application_hashes':hashes,'operator_hashes':{name:hashlib.sha256((HERE/name).read_bytes()).hexdigest() for name in ('nse_results_runtime.py','bse_scheduled_runtime.py','production_ownership.py','sqlite_sidecar_guard.py')}})
