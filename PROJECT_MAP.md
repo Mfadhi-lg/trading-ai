@@ -16,8 +16,12 @@ files below before moving or deleting anything.
 - `artifacts/earnings-reaction-v1/` — inputs, results and reference material for
   these experiments. Some scripts and tests read it directly.
 
-The experiment folder and Pine scripts are currently untracked by Git. SVP HD
-is a reconstruction; TradingView parity and automatic resolution are unresolved.
+The experiment folder and Pine references are tracked in the reviewed baseline.
+See the [experiment lifecycle register](experiments/README.md) for ownership,
+validation status and existing operational dependencies, and the
+[indicator definition map](docs/research/technical-indicators.md) for shared
+arithmetic and distinct research alternatives. SVP HD is a reconstruction;
+TradingView parity and automatic resolution are unresolved.
 
 ## Scraper and acquisition
 

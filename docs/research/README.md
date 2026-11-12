@@ -1,5 +1,11 @@
 # Retained research documents
 
+Current source ownership is documented in the
+[experiment lifecycle register](../../experiments/README.md) and
+[technical indicator definition map](technical-indicators.md). These describe
+supported interfaces and validation limits without authorizing research execution
+or promoting historical studies to production decisions.
+
 These two documents were relocated unchanged in C07.2. Their embedded status,
 source observations and proposed schema describe the original research; they
 are background evidence, not current acquisition authorization or instructions
