@@ -57,6 +57,17 @@ remain required.
   The financial facade `scrapper.research.features.company_quarter_features`
   remains the financial selection authority; the finance pilot does not replace it.
 
+- `scrapper.indices.production` and `frames_build` reuse the canonical archive
+  access and calendar interfaces. `indices.official` uses the same calendar;
+  `indices.timeframes` also uses the archive's session-boundary iterator.
+  The production builder imports the retained V1 business evidence and V2 peer
+  sets; it does not invoke their acquisition or build runners. The equal-weight
+  calculation itself is maintained in `scrapper.indices.core`, with the V1
+  experiment retaining a compatibility import. These dependencies are read-only
+  and preserve retrospective/provider-adjustment limitations; they do not
+  promote the entire index experiments or authorize runtime activation. See
+  [the index application contract](../scrapper/indices/README.md).
+
 The register test scans Python source without importing or executing these
 modules. It fails on a new experiment directory or an unrecorded direct import
 from `scrapper/`, `ops/` or `scripts/`. It does not prove absence of dynamic
