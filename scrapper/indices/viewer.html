@@ -1,0 +1,14 @@
+<!doctype html><meta charset="utf-8"><title>Subsector index explorer</title>
+<style>body{background:#101826;color:#eee;font:16px system-ui;margin:24px}select{padding:8px}#chart{height:420px}#breadth,#activity{height:200px}pre{white-space:pre-wrap}</style>
+<h1>Subsector index explorer</h1><p>Retrospective fixed membership. Activity is a custom ₹ crore proxy, not exchange index volume or institutional buying.</p>
+<label>Company <select id="company"></select></label> <label>Subsector <select id="group"></select></label>
+<div id="chart"></div><div id="breadth"></div><div id="activity"></div><pre id="details"></pre>
+<script src="lightweight-charts.js"></script><script src="data.js"></script><script>
+const D=window.INDEX_DATA,L=LightweightCharts,charts=[];
+const groups=Object.keys(D.datasets), symbols=[...new Set(groups.flatMap(g=>D.datasets[g].members))].sort();
+function options(id,values){const el=document.getElementById(id);el.replaceChildren(...values.map(v=>{let o=document.createElement('option');o.value=v;o.textContent=v;return o}));return el}
+const company=options('company',symbols),group=options('group',groups);
+function panel(id,rows,fields){let c=L.createChart(document.getElementById(id),{autoSize:true,layout:{background:{color:'#101826'},textColor:'#ddd'}});charts.push(c);for(let [field,color] of fields){let s=c.addSeries(L.LineSeries,{color,title:field});s.setData(rows.map(r=>r[field]===null||r[field]===undefined?{time:r.date}:{time:r.date,value:Number(r[field])}))}c.timeScale().fitContent()}
+function draw(){charts.splice(0).forEach(c=>c.remove());if(!group.value)return;const d=D.datasets[group.value],r=d.daily;panel('chart',r,[['index_close','#fff'],['ema10','#ffc857'],['ema20','#56cfe1']]);panel('breadth',r,[['pct_above_ema20','#56cfe1'],['pct_rising','#ffc857']]);panel('activity',r,[['traded_value_proxy_crore','#56cfe1'],['aggregate_activity_ratio20','#ffc857']]);document.getElementById('details').textContent=JSON.stringify({membership:d.evidence,coverage:D.coverage.find(x=>x.code===group.value),last_observation:r.at(-1),limitations:D.limitations},null,2)}
+company.onchange=()=>{group.value=groups.find(g=>D.datasets[g].members.includes(company.value));draw()};group.onchange=draw;draw();
+</script>
