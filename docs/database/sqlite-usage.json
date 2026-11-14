@@ -151,7 +151,7 @@
         {"path": "compose.browser-recovery.yml","line": 18},
         {"path": "compose.browser-recovery.yml","line": 30},
         {"path": "compose.browser-recovery.yml","line": 42},
-        {"path": "ops/host/runtime_status.py","line": 193},
+        {"path": "ops/host/runtime_status.py","line": 230},
         {"path": "scripts/audit/check_compose_release.py","line": 82},
         {"path": "scripts/audit/check_compose_release.py","line": 182},
         {"path": "scripts/audit/check_compose_release.py","line": 184}
@@ -1098,7 +1098,9 @@
         {"path": "ops/host/acquisition_live_reader.py","line": 46},
         {"path": "ops/host/acquisition_quarter_queries.py","line": 4},
         {"path": "ops/host/acquisition_queries.py","line": 8},
-        {"path": "ops/host/acquisition_queries.py","line": 248}
+        {"path": "ops/host/acquisition_queries.py","line": 248},
+        {"path": "ops/host/financial_diagnostic_reader.py","line": 7},
+        {"path": "ops/host/runtime_status.py","line": 77}
       ]
     },
     {
@@ -1235,11 +1237,10 @@
         {"path": "ops/host/acquisition_db_status.py","line": 9},
         {"path": "ops/host/acquisition_queries.py","line": 12},
         {"path": "ops/host/actual_download_audit.py","line": 16},
-        {"path": "ops/host/diagnose_financial_pending.py","line": 9},
         {"path": "ops/host/document_backlog_audit.py","line": 85},
         {"path": "ops/host/download_batch_evidence.py","line": 9},
         {"path": "ops/host/download_failure_evidence.py","line": 5},
-        {"path": "ops/host/financial_queue_eligibility.py","line": 11},
+        {"path": "ops/host/financial_diagnostic_reader.py","line": 8},
         {"path": "ops/host/phase3_local_benchmark.py","line": 6}
       ]
     },
@@ -1407,7 +1408,7 @@
         {"line": 33,"symbol": "census","kind": "dynamic query","sha256": "dead3d656849b7fa6b9dd04abb8c0a76c9d408bca1bf37cf5ac98469c585a542","scope_sha256": "6f3f1b462fad1f9da95eccb3971f609641cafe53136e5e3d95769409cffa5ead","branch_hints": []}
       ],
       "caller_references": [
-        {"path": "ops/activation/postgresql_release.py","line": 186},
+        {"path": "ops/activation/postgresql_release.py","line": 189},
         {"path": "ops/host/acquisition_lifecycle.py","line": 159},
         {"path": "ops/host/acquisition_lifecycle.py","line": 166},
         {"path": "ops/host/acquisition_live_reader.py","line": 19}
@@ -1428,11 +1429,13 @@
         {"line": 1,"symbol": "<module>","kind": "SQLite SQL","sha256": "2181f2f9c480174769f49d8184dfbad0254a99eaea0a4c8c1c5405d061490423","scope_sha256": "2181f2f9c480174769f49d8184dfbad0254a99eaea0a4c8c1c5405d061490423","branch_hints": []}
       ],
       "caller_references": [
-        {"path": "ops/activation/postgresql_release.py","line": 187},
+        {"path": "ops/activation/postgresql_release.py","line": 190},
         {"path": "ops/activation/production_ownership.py","line": 46},
         {"path": "ops/activation/production_ownership.py","line": 92},
         {"path": "ops/host/acquisition_lifecycle.py","line": 175},
-        {"path": "ops/host/acquisition_lifecycle.py","line": 179}
+        {"path": "ops/host/acquisition_lifecycle.py","line": 179},
+        {"path": "ops/host/financial_diagnostic_reader.py","line": 9},
+        {"path": "ops/host/runtime_status.py","line": 78}
       ]
     },
     {
@@ -1482,7 +1485,7 @@
         {"line": 254,"symbol": "inspect","kind": "SQLite SQL","sha256": "c7e424fda0967e4cdffa4a79aceeca2eabc5718445a3f9cd9b6c2706503b38fe","scope_sha256": "c0027b29c4e6b01d8d20ba29558e6d994142d8625fbfa6be8adbf6bb69a25379","branch_hints": []}
       ],
       "caller_references": [
-        {"path": "ops/activation/postgresql_release.py","line": 187},
+        {"path": "ops/activation/postgresql_release.py","line": 190},
         {"path": "ops/host/acquisition_db_status.py","line": 46},
         {"path": "ops/host/acquisition_lifecycle.py","line": 165},
         {"path": "ops/host/acquisition_live_reader.py","line": 22},
@@ -1511,25 +1514,6 @@
       ],
       "caller_references": [
         {"path": "ops/host/run_actual_download_audit.py","line": 35}
-      ]
-    },
-    {
-      "path": "ops/host/diagnose_financial_pending.py",
-      "source_sha256": "7f08d04b113bee95445ef474e753f4aed7be10071a39e64494c1b71041272bce",
-      "owner": "Maintainers of ops/host",
-      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/107",
-      "reviewed_source_sha256": "7f08d04b113bee95445ef474e753f4aed7be10071a39e64494c1b71041272bce",
-      "classification": "live application",
-      "store": "explicit SQLite application snapshot, commonly /data/scraper.db; document_backlog_audit also compares a prior snapshot",
-      "intent": "Static SQL/query candidates: PRAGMA, SELECT; dynamic queries require caller review.",
-      "backend_guard": "No native backend guard established. Immutable/read-only/admission/sidecar guards do not prove PostgreSQL compatibility.",
-      "disposition": "Retained/manual operational reader baseline, not approved for native use. Trace callers and port or explicitly retire/disposition under #107 before selecting for native runtime.",
-      "sites": [
-        {"line": 13,"symbol": "<module>","kind": "direct connection","sha256": "3edaf5343ce3eeab4784af1c34bb4685d0adb5a81b6f23efd500a15e51f7e18e","scope_sha256": "3edaf5343ce3eeab4784af1c34bb4685d0adb5a81b6f23efd500a15e51f7e18e","branch_hints": []},
-        {"line": 15,"symbol": "<module>","kind": "SQLite SQL","sha256": "a28b203f21249ab8312986428d3b09520123b2d7328839a8a7a3b5f61f02af8f","scope_sha256": "a28b203f21249ab8312986428d3b09520123b2d7328839a8a7a3b5f61f02af8f","branch_hints": []},
-        {"line": 16,"symbol": "<module>","kind": "SQLite SQL","sha256": "c7e424fda0967e4cdffa4a79aceeca2eabc5718445a3f9cd9b6c2706503b38fe","scope_sha256": "c7e424fda0967e4cdffa4a79aceeca2eabc5718445a3f9cd9b6c2706503b38fe","branch_hints": []}
-      ],
-      "caller_references": [
       ]
     },
     {
@@ -1607,21 +1591,24 @@
       ]
     },
     {
-      "path": "ops/host/financial_queue_eligibility.py",
-      "source_sha256": "1b5f56847951e03921ddf66c29bc8659624d90c1c1aba1fd604be617dd27b467",
-      "owner": "Maintainers of ops/host",
-      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/107",
-      "reviewed_source_sha256": "1b5f56847951e03921ddf66c29bc8659624d90c1c1aba1fd604be617dd27b467",
+      "path": "ops/host/financial_diagnostic_reader.py",
+      "source_sha256": "d4dde390168c67ea347c399ebb7e3862898c85a76542dfdc269d33720eab0ebe",
+      "owner": "operations/database maintainers",
+      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/98",
+      "reviewed_source_sha256": "d4dde390168c67ea347c399ebb7e3862898c85a76542dfdc269d33720eab0ebe",
       "classification": "live application",
-      "store": "explicit SQLite application snapshot, commonly /data/scraper.db; document_backlog_audit also compares a prior snapshot",
-      "intent": "Static SQL/query candidates: PRAGMA, SELECT; dynamic queries require caller review.",
-      "backend_guard": "No native backend guard established. Immutable/read-only/admission/sidecar guards do not prove PostgreSQL compatibility.",
-      "disposition": "Retained/manual operational reader baseline, not approved for native use. Trace callers and port or explicitly retire/disposition under #107 before selecting for native runtime.",
+      "store": "explicit authoritative PostgreSQL application target or distinctly labeled quiescent SQLite snapshot",
+      "intent": "read-only financial diagnosis and schema/status observations",
+      "backend_guard": "observation: selected_backend chooses verified native read_connection before any SQLite gate/file access; only explicit frozen snapshot overrides native selection; whole-operation and query deadlines",
+      "disposition": "Issue #98: preserve restricted native identity/lineage checks, read-only MVCC, fail closed without SQLite fallback; preserve quiescent immutable snapshot contracts and timestamps. Tested through public commands on disposable restricted native target.",
       "sites": [
-        {"line": 93,"symbol": "<module>","kind": "direct connection","sha256": "bcf293e0e9a685d5e94a111f4fc0f9b3745f97474541d4c3193ca6f00c72054c","scope_sha256": "bcf293e0e9a685d5e94a111f4fc0f9b3745f97474541d4c3193ca6f00c72054c","branch_hints": []},
-        {"line": 95,"symbol": "<module>","kind": "SQLite SQL","sha256": "a28b203f21249ab8312986428d3b09520123b2d7328839a8a7a3b5f61f02af8f","scope_sha256": "a28b203f21249ab8312986428d3b09520123b2d7328839a8a7a3b5f61f02af8f","branch_hints": []}
+        {"line": 46,"symbol": "observation","kind": "direct connection","sha256": "774dbc8245e59c07d2744370558eff0383c70d148190e3a60d5933c3e36c7463","scope_sha256": "9d4873093cd9e1ffd7f217761f9fcfc24eb6d9b1f4240cc1c4f3a8b7e3c8c388","branch_hints": []},
+        {"line": 48,"symbol": "observation","kind": "SQLite SQL","sha256": "a28b203f21249ab8312986428d3b09520123b2d7328839a8a7a3b5f61f02af8f","scope_sha256": "9d4873093cd9e1ffd7f217761f9fcfc24eb6d9b1f4240cc1c4f3a8b7e3c8c388","branch_hints": []},
+        {"line": 49,"symbol": "observation","kind": "SQLite SQL","sha256": "c7e424fda0967e4cdffa4a79aceeca2eabc5718445a3f9cd9b6c2706503b38fe","scope_sha256": "9d4873093cd9e1ffd7f217761f9fcfc24eb6d9b1f4240cc1c4f3a8b7e3c8c388","branch_hints": []}
       ],
       "caller_references": [
+        {"path": "ops/host/diagnose_financial_pending.py","line": 12},
+        {"path": "ops/host/financial_queue_eligibility.py","line": 12}
       ]
     },
     {
@@ -1670,18 +1657,18 @@
     },
     {
       "path": "ops/host/runtime_status.py",
-      "source_sha256": "15098675ccf4786d95ab190bd7ff14a9d04455155c5207bd68018aa78a2a68fc",
-      "owner": "Maintainers of ops/host",
-      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/107",
-      "reviewed_source_sha256": "15098675ccf4786d95ab190bd7ff14a9d04455155c5207bd68018aa78a2a68fc",
-      "classification": "historical snapshot",
-      "store": "explicitly selected quiescent migration ledger",
-      "intent": "Static SQL/query candidates: PRAGMA, SELECT; dynamic queries require caller review.",
-      "backend_guard": "Offline/snapshot research contract, not native application routing; source selection, read-only URI modes and copy guards must be reviewed at the listed symbols.",
-      "disposition": "Preserve source bytes, provenance, offline fixtures and retained research outputs. Classification does not authorize running historical mutation scripts.",
+      "source_sha256": "2e769cc8ef8b344d8c2c2b78ae20f3154b09c992e948d081d7f5e3996498d6d5",
+      "owner": "operations/database maintainers",
+      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/98",
+      "reviewed_source_sha256": "2e769cc8ef8b344d8c2c2b78ae20f3154b09c992e948d081d7f5e3996498d6d5",
+      "classification": "live application",
+      "store": "explicit authoritative PostgreSQL application target or distinctly labeled quiescent SQLite snapshot",
+      "intent": "read-only financial diagnosis and schema/status observations",
+      "backend_guard": "migrations: configured PostgreSQL plus explicit observation selection routes to native_migrations; --sqlite-snapshot is distinctly labeled; default has no target access",
+      "disposition": "Issue #98: preserve restricted native identity/lineage checks, read-only MVCC, fail closed without SQLite fallback; preserve quiescent immutable snapshot contracts and timestamps. Tested through public commands on disposable restricted native target.",
       "sites": [
-        {"line": 95,"symbol": "migrations","kind": "direct connection","sha256": "75cee266b5c9c96eae9c825a0de8868e4c2cc77e9b96e6758469d883796c1762","scope_sha256": "d3db8bbfab394db8627c67f4b96eb390da7be01d92c58f8eddc79feed085a294","branch_hints": []},
-        {"line": 97,"symbol": "migrations","kind": "SQLite SQL","sha256": "a28b203f21249ab8312986428d3b09520123b2d7328839a8a7a3b5f61f02af8f","scope_sha256": "d3db8bbfab394db8627c67f4b96eb390da7be01d92c58f8eddc79feed085a294","branch_hints": []}
+        {"line": 132,"symbol": "migrations","kind": "direct connection","sha256": "75cee266b5c9c96eae9c825a0de8868e4c2cc77e9b96e6758469d883796c1762","scope_sha256": "41b4d4105b4a5d162864db5cf7a9b047132a0ba7b7a8933139512f0811f9d836","branch_hints": []},
+        {"line": 134,"symbol": "migrations","kind": "SQLite SQL","sha256": "a28b203f21249ab8312986428d3b09520123b2d7328839a8a7a3b5f61f02af8f","scope_sha256": "41b4d4105b4a5d162864db5cf7a9b047132a0ba7b7a8933139512f0811f9d836","branch_hints": []}
       ],
       "caller_references": [
         {"path": "scripts/runtime-status","line": 7}
@@ -1917,8 +1904,10 @@
         {"path": "ops/docker/canary/ar013_readonly_db.py","line": 100},
         {"path": "ops/docker/postgresql/Dockerfile","line": 14},
         {"path": "ops/host/document_backlog_audit.py","line": 87},
+        {"path": "ops/host/financial_diagnostic_reader.py","line": 14},
         {"path": "ops/host/postgresql_health.py","line": 30},
         {"path": "ops/host/report_actual_download_recovery.py","line": 1},
+        {"path": "ops/host/runtime_status.py","line": 79},
         {"path": "scrapper/cli_groups/operations.py","line": 12},
         {"path": "scrapper/commands/browser_rating_probe.py","line": 16},
         {"path": "scrapper/commands/browser_rating_progress.py","line": 16},

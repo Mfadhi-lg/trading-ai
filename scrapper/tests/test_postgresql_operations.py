@@ -159,6 +159,19 @@ class NativeReleaseWiringTests(unittest.TestCase):
         self.assertTrue(self.release.is_reader_command(health))
         self.assertFalse(self.release.is_reader_command(health+['--execute']))
         self.assertFalse(self.release.is_reader_command(health[:-1]))
+        for script, flags in (
+            ('diagnose_financial_pending.py', []),
+            ('financial_queue_eligibility.py', []),
+            ('financial_queue_eligibility.py', ['--screen-evidence']),
+            ('financial_queue_eligibility.py', ['--accepted-versions']),
+        ):
+            diagnostic = ['docker', *self.release.reader_prefix(), '/host/'+script, *flags]
+            self.assertTrue(self.release.is_reader_command(diagnostic))
+            self.assertFalse(self.release.is_reader_command(diagnostic+['--sqlite-snapshot','/data/scraper.db']))
+            self.assertFalse(self.release.is_reader_command(diagnostic+['--execute']))
+            self.assertIn('--network=none', diagnostic)
+            self.assertTrue(any('volume-subpath=roles/reader,readonly' in part for part in diagnostic))
+
 
     def test_document_companion_uses_its_own_native_login_identity_and_passfile(self):
         import json
