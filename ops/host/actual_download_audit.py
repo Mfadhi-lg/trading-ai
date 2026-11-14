@@ -6,22 +6,24 @@ import csv
 from datetime import datetime, timezone
 import json
 from pathlib import Path
-import sqlite3
 import sys
 
 sys.path[:0] = ['/activation', '/app', '/host']
 
 
 def main():
-    from sqlite_sidecar_guard import assert_safe_empty_wal, snapshot
+    from document_audit_reader import observation
+    with observation(Path('/data/scraper.db')) as (conn, source):
+        evidence = audit(conn, Path('/evidence'), source)
+    # Publish a success receipt only after the observation closes successfully.
+    from document_backlog_audit import redact_tree
+    (Path('/evidence')/'raw/live-audit.json').write_text(json.dumps(redact_tree(evidence),indent=2)+'\n')
+    print(json.dumps({k:evidence[k] for k in ('observed_at_utc','accepted_september','accepted_distinct','eligible_unique_artifacts','eligible_post_epoch_jobs','link_types')}))
+
+
+def audit(c, out, source):
     from production_ownership import assert_no_conflicting_leases
-    db = Path('/data/scraper.db')
-    guard = assert_safe_empty_wal(db)
-    out = Path('/evidence')
-    c = sqlite3.connect(f'file:{db}?mode=ro&immutable=1', uri=True)
-    c.row_factory = sqlite3.Row
-    c.execute('PRAGMA query_only=ON')
-    c.execute('PRAGMA temp_store=MEMORY')
+    from scrapper.db.repository_backend import is_postgresql
     now = datetime.now(timezone.utc).isoformat()
     assert_no_conflicting_leases(c, now=now)
     def rows(sql, args=()):
@@ -30,7 +32,7 @@ def main():
         FROM accepted_page_versions p WHERE p.source='screener' AND EXISTS
         (SELECT 1 FROM financial_observations f WHERE f.parse_id=p.parse_id
          AND f.section_code='quarters' AND f.period_type='quarter' AND f.period_end='2026-09-30')"""
-    evidence = {'observed_at_utc': now, 'guard': guard}
+    evidence = {'observed_at_utc': now, 'source': source}
     queries = {
         'accepted_september': 'SELECT reporting_scope,count(DISTINCT company_id) companies,max(accepted_at_utc) latest FROM ('+accepted+') GROUP BY reporting_scope',
         'accepted_distinct': 'SELECT count(DISTINCT company_id) companies FROM ('+accepted+')',
@@ -40,7 +42,7 @@ def main():
             FROM credit_rating_download_queue q JOIN document_artifacts a USING(artifact_id)
             JOIN companies co USING(company_id) WHERE q.created_at_utc>='2026-10-09T00:00:00+00:00'
             AND q.status IN ('PENDING','RETRYABLE_FAILURE')
-            AND (q.next_attempt_at_utc IS NULL OR q.next_attempt_at_utc<=strftime('%Y-%m-%dT%H:%M:%S+00:00','now'))
+            AND (q.next_attempt_at_utc IS NULL OR q.next_attempt_at_utc<=?)
             AND NOT EXISTS(SELECT 1 FROM artifact_contents c WHERE c.artifact_id=a.artifact_id)
             AND EXISTS(SELECT 1 FROM screener_collection_scope s WHERE s.company_id=a.company_id AND s.eligibility='eligible')
             AND NOT EXISTS(SELECT 1 FROM credit_rating_host_policy p WHERE p.automation_status='BLOCKED_TERMS'
@@ -77,8 +79,12 @@ def main():
             FROM artifact_contents c JOIN response_blobs b USING(blob_id)
             WHERE c.created_at_utc>='2026-10-30T11:25:35+00:00' ORDER BY c.content_id""",
     }
+    if is_postgresql(c):
+        queries['response_blob_schema'] = """SELECT column_name,data_type,is_nullable
+            FROM information_schema.columns WHERE table_schema=current_schema()
+            AND table_name='response_blobs' ORDER BY ordinal_position"""
     for key, sql in queries.items():
-        evidence[key] = rows(sql)
+        evidence[key] = rows(sql, (now,) if key == 'rating_candidates' else ())
     from document_backlog_audit import verify
     evidence['fresh_content_verification']=[]
     for r in rows('''SELECT c.*,b.local_path FROM artifact_contents c JOIN response_blobs b USING(blob_id)
@@ -99,7 +105,9 @@ def main():
         soup=BeautifulSoup(body,'html.parser')
         heading, fields, links=_parse_documents(soup)
         section=soup.select_one('section#documents')
-        if len(saved)<8:(out/f'raw/documents-{p["company_id"]}-{p["parse_id"]}.html').write_text(str(section))
+        if len(saved)<8:
+            from document_backlog_audit import redact_tree
+            (out/f'raw/documents-{p["company_id"]}-{p["parse_id"]}.html').write_text(redact_tree(str(section)))
         from scrapper.documents.discovery.promotion import call_matches_result_window
         for l in links:
             if l.document_type not in ('concall_ppt','concall_transcript') or not l.source_url or not call_matches_result_window(l.period_label_raw,'2026-09-30'):continue
@@ -143,9 +151,10 @@ def main():
             'no_generic_job' if not r['download_job_id'] else
             'pre_epoch_zero_historical_allowance' if r['job_created_at_utc']<'2026-10-09T00:00:00+00:00' else r['job_status'])
     def csvfile(name, records):
+        from document_backlog_audit import redact_tree
         with (out/name).open('w') as f:
-            w=csv.DictWriter(f, fieldnames=list(records[0]) if records else ['no_candidates'])
-            w.writeheader();w.writerows(records)
+            w=csv.DictWriter(f, fieldnames=list(dict.fromkeys(k for r in redact_tree(records) for k in r)) if records else ['no_candidates'])
+            w.writeheader();w.writerows(redact_tree(records))
     csvfile('SCREENER_DOCUMENT_LINK_AUDIT.csv', audit)
     csvfile('RATING_DOWNLOAD_CANDIDATES.csv',evidence['rating_candidates'])
     csvfile('CURRENT_QUARTER_LINK_CANDIDATES.csv',current_links)
@@ -179,10 +188,7 @@ def main():
     evidence['candidates']=chosen
     from acquisition_quarter_queries import monitor
     evidence['quarter_monitor']=monitor(c,'2026-09')
-    c.close()
-    if snapshot(db)!=guard['files']:raise RuntimeError('Database changed during audit')
-    (out/'raw/live-audit.json').write_text(json.dumps(evidence,indent=2)+'\n')
-    print(json.dumps({k:evidence[k] for k in ('observed_at_utc','accepted_september','accepted_distinct','eligible_unique_artifacts','eligible_post_epoch_jobs','link_types')}))
+    return evidence
 
 
 if __name__=='__main__':main()

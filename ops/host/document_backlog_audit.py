@@ -25,7 +25,7 @@ CONTENT_SQL = """SELECT c.content_id,c.artifact_id,c.content_sha256,c.byte_size,
  FROM artifact_contents c JOIN response_blobs b USING(blob_id)
  JOIN document_artifacts a USING(artifact_id) ORDER BY c.content_id"""
 
-SENSITIVE_QUERY = re.compile(r'([?&](?:access_token|auth_token|api_key|password|sessionid|x-amz-signature|signature|token)=)(?!<redacted>)([^&#\s"\\]+)',re.I)
+SENSITIVE_QUERY = re.compile(r'([?&](?:amp;)?(?:access_token|auth_token|api_key|password|sessionid|x-amz-signature|signature|token)=)(?!<redacted>)([^&#\s"\\]+)',re.I)
 
 
 def redact_query_values(record):
@@ -36,6 +36,16 @@ def redact_query_values(record):
             result.setdefault(key+'_sha256',hashlib.sha256(value.encode()).hexdigest())
             result[key]=SENSITIVE_QUERY.sub(lambda match:match[1]+'<redacted>',value)
     return result
+
+
+def redact_tree(value):
+    if isinstance(value, dict):
+        return {key:redact_tree(item) for key,item in redact_query_values(value).items()}
+    if isinstance(value, (list, tuple)):
+        return [redact_tree(item) for item in value]
+    if isinstance(value, str):
+        return SENSITIVE_QUERY.sub(lambda match:match[1]+'<redacted>',value)
+    return value
 
 
 def supported(row):
@@ -79,27 +89,39 @@ def write(path, data):
     temporary.replace(path)
 
 
+def page_metrics(conn, content_id, extraction_id):
+    from scrapper.db.repository_backend import is_postgresql
+    if not is_postgresql(conn):
+        return dict(conn.execute("""SELECT count(*) count,sum(length(selected_text)) text_characters,
+            min(page_or_slide_number) first_page,max(page_or_slide_number) last_page,
+            sum(CASE WHEN content_id<>? THEN 1 ELSE 0 END) cross_content_pages
+            FROM document_pages WHERE extraction_id=?""", (content_id,extraction_id)).fetchone())
+    # Native source text is lossless BYTEA and may contain NUL. SQLite length
+    # counts Unicode characters only up to the first NUL; byte length differs.
+    from scrapper.db.postgresql_source_text import decode_source_text
+    count=0;characters=None;first=None;last=None;cross=None
+    for row in conn.execute('''SELECT content_id,page_or_slide_number,selected_text
+            FROM document_pages WHERE extraction_id=?''',(extraction_id,)):
+        count+=1
+        if row['selected_text'] is not None:
+            characters=(characters or 0)+len(decode_source_text(row['selected_text']).split('\0',1)[0])
+        number=row['page_or_slide_number']
+        first=number if first is None else min(first,number)
+        last=number if last is None else max(last,number)
+        cross=(cross or 0)+int(row['content_id']!=content_id)
+    return dict(count=count,text_characters=characters,first_page=first,last_page=last,cross_content_pages=cross)
+
+
 def census(db, out):
     if (out/'inventory.json').exists():raise ValueError('Preserve existing census; use a new refresh directory')
     sys.path[:0]=['/activation','/app']
-    from sqlite_sidecar_guard import assert_safe_empty_wal, snapshot
-    from production_ownership import assert_no_conflicting_leases
-    from scrapper.db.database import check_schema_compatibility
+    from document_audit_reader import observation
     from scrapper.pipeline.extract_document import processing_version
     from scrapper.documents.ocr import TesseractOcr
-    guard=assert_safe_empty_wal(db)
-    baseline=json.loads(Path('/activation/production-baseline.json').read_text())
-    if db.stat().st_ino!=baseline['db_after']['inode']:raise RuntimeError('Database identity differs')
+    from scrapper.db.repository_backend import is_postgresql
     version=processing_version(TesseractOcr())
-    with closing(sqlite3.connect('file:'+str(db)+'?mode=ro&immutable=1',uri=True)) as c:
-        c.row_factory=sqlite3.Row
-        c.execute('PRAGMA query_only=ON');c.execute('PRAGMA temp_store=MEMORY')
-        c.execute('BEGIN')
-        check_schema_compatibility(c)
-        if [dict(r) for r in c.execute('SELECT * FROM schema_migrations ORDER BY version')]!=baseline['ledger']:
-            raise RuntimeError('Migration ledger differs')
+    with observation(db, baseline_required=True) as (c, source):
         now=datetime.now(timezone.utc).isoformat()
-        assert_no_conflicting_leases(c,now=now)
         queries={
             'totals':"""SELECT (SELECT count(*) FROM artifact_download_queue) generic_jobs,
              (SELECT count(*) FROM credit_rating_download_queue) rating_jobs,
@@ -112,7 +134,7 @@ def census(db, out):
              (SELECT count(DISTINCT company_id) FROM document_artifacts JOIN artifact_contents USING(artifact_id)) covered_companies""",
             'generic_states':'SELECT status,count(*) jobs FROM artifact_download_queue GROUP BY status',
             'rating_states':'SELECT status,count(*) jobs FROM credit_rating_download_queue GROUP BY status',
-            'duplicate_scopes':"""SELECT count(*) groups,sum(n-1) extra_rows FROM
+            'duplicate_scopes':"""SELECT count(*) groups,CAST(sum(n-1) AS BIGINT) extra_rows FROM
              (SELECT artifact_id,requested_url,count(*) n FROM artifact_download_queue
              GROUP BY artifact_id,requested_url HAVING count(*)>1)""",
             'pending_associations':"""SELECT q.status,
@@ -126,39 +148,44 @@ def census(db, out):
                 e.extraction_status,c.extraction_status content_status,c.artifact_id,c.content_sha256,
                 e.error_json FROM document_extractions e LEFT JOIN artifact_contents c USING(content_id)
                 WHERE e.extraction_status='failed' ORDER BY e.extraction_id""",
-            'multiple_versions':"""SELECT count(*) artifacts,sum(n-1) extra_contents FROM
-             (SELECT artifact_id,count(*) n FROM artifact_contents GROUP BY artifact_id HAVING n>1)""",
-            'hash_aliases':"""SELECT count(*) hashes,sum(n-1) extra_content_ids FROM
-             (SELECT content_sha256,count(*) n FROM artifact_contents GROUP BY content_sha256 HAVING n>1)""",
-            'same_hash_multiple_urls':"""SELECT count(*) hashes,coalesce(sum(n-1),0) extra_urls FROM
+            'multiple_versions':"""SELECT count(*) artifacts,CAST(sum(n-1) AS BIGINT) extra_contents FROM
+             (SELECT artifact_id,count(*) n FROM artifact_contents GROUP BY artifact_id HAVING count(*)>1)""",
+            'hash_aliases':"""SELECT count(*) hashes,CAST(sum(n-1) AS BIGINT) extra_content_ids FROM
+             (SELECT content_sha256,count(*) n FROM artifact_contents GROUP BY content_sha256 HAVING count(*)>1)""",
+            'same_hash_multiple_urls':"""SELECT count(*) hashes,coalesce(CAST(sum(n-1) AS BIGINT),0) extra_urls FROM
                 (SELECT content_sha256,count(DISTINCT requested_url) n FROM artifact_download_attempts
                 WHERE result_status='validated' GROUP BY content_sha256 HAVING count(DISTINCT requested_url)>1)""",
             'queue_scopes':"SELECT scope_id,status,count(*) jobs FROM artifact_download_queue GROUP BY scope_id,status",
             'financial_scope_source_aliases':"""SELECT count(*) artifact_url_groups,
-                sum(standalone=1 AND consolidated=1) both_financial_scopes,
-                sum(standalone=1) standalone_groups,sum(consolidated=1) consolidated_groups FROM (
+                sum(CASE WHEN standalone=1 AND consolidated=1 THEN 1 ELSE 0 END) both_financial_scopes,
+                sum(CASE WHEN standalone=1 THEN 1 ELSE 0 END) standalone_groups,sum(CASE WHEN consolidated=1 THEN 1 ELSE 0 END) consolidated_groups FROM (
                 SELECT artifact_id,document_url,
-                max(discovery_page_url LIKE '%/company/%' AND discovery_page_url NOT LIKE '%/consolidated/%') standalone,
-                max(discovery_page_url LIKE '%/company/%/consolidated/%') consolidated
+                max(CASE WHEN discovery_page_url LIKE '%/company/%' AND discovery_page_url NOT LIKE '%/consolidated/%' THEN 1 ELSE 0 END) standalone,
+                max(CASE WHEN discovery_page_url LIKE '%/company/%/consolidated/%' THEN 1 ELSE 0 END) consolidated
                 FROM artifact_sources WHERE discovered_from_source='screener'
                 GROUP BY artifact_id,document_url)""",
             'policy':'SELECT * FROM credit_rating_host_policy',
             'cooldowns':'SELECT * FROM artifact_download_host_health WHERE blocked_until_utc > ?',
-            'access_holds':'SELECT * FROM exchange_source_access_events ORDER BY rowid DESC LIMIT 5',
+            'access_holds':'SELECT * FROM exchange_source_access_events ORDER BY event_id DESC LIMIT 5',
             'recent_rating_jobs':"""SELECT q.download_job_id,q.artifact_id,q.target_host,q.requested_url,q.status,
                 q.last_result_status,q.last_error,q.updated_at_utc,a.company_id,a.publisher,a.event_date,
                 a.first_observed_at_utc,a.title_raw FROM credit_rating_download_queue q
                 JOIN document_artifacts a USING(artifact_id) ORDER BY q.updated_at_utc DESC LIMIT 8""",
         }
-        result={'observed_at_utc':now,'guard':guard,'processing_version':dict(zip(
+        result={'observed_at_utc':now,'source':source,'processing_version':dict(zip(
             ('parser_name','parser_version','ocr_engine','ocr_engine_version','options_json'),version.values())),
             'queries':queries,'network_requests':0,'production_writes':0}
+        from postgresql_runtime import table_names
+        tables=set(table_names(c))
         for name,sql in queries.items():
+            if name=='access_holds' and 'exchange_source_access_events' not in tables:
+                result[name]={'query_error':'optional table unavailable'}
+                continue
             # Optional source-access schema varies by baseline; report a failed
             # optional query explicitly, never invent a policy state.
             try:result[name]=[dict(r) for r in c.execute(sql,(now,) if name=='cooldowns' else ())]
             except sqlite3.OperationalError as exc:
-                if name!='access_holds':raise
+                if name!='access_holds':raise RuntimeError('Document census query failed: '+name) from exc
                 result[name]={'query_error':str(exc)}
         cache={r['content_id']:dict(r) for r in c.execute('''SELECT content_id,extraction_id,extraction_status,
             page_or_slide_count FROM document_extractions WHERE parser_name=? AND parser_version=?
@@ -171,7 +198,11 @@ def census(db, out):
         result['content_query']=CONTENT_SQL
         result['backups']=[{'name':p.name,'bytes':p.stat().st_size} for p in Path('/data/backups').glob('*.db')]
         prior=Path('/data/backups/acquisition-recovery-20261026-20261026T094742Z.db')
-        if prior.is_file():
+        result['historical_comparison']={'mode':'historical_sqlite_snapshot',
+            'status':'not_opened_in_native_mode' if is_postgresql(c) else 'snapshot_unavailable'}
+        if not is_postgresql(c) and prior.is_file():
+            result['historical_comparison'].update(status='compared', path=str(prior),
+                snapshot_mtime_utc=datetime.fromtimestamp(prior.stat().st_mtime,timezone.utc).isoformat())
             with closing(sqlite3.connect(prior.as_uri()+'?mode=ro&immutable=1',uri=True)) as historical:
                 historical.row_factory=sqlite3.Row;historical.execute('PRAGMA query_only=ON')
                 old_ids={r[0] for r in historical.execute('SELECT download_job_id FROM artifact_download_queue')}
@@ -232,10 +263,7 @@ def census(db, out):
                 if any(item[k]!=selected[k] for k in ('content_id','artifact_id','company_id','content_sha256','byte_size')):
                     raise RuntimeError('Pilot immutable identity differs')
                 if item['extraction_id'] is not None:
-                    item['pages']=dict(c.execute('''SELECT count(*) count,sum(length(selected_text)) text_characters,
-                        min(page_or_slide_number) first_page,max(page_or_slide_number) last_page,
-                        sum(content_id<>?) cross_content_pages FROM document_pages WHERE extraction_id=?''',
-                        (selected['content_id'],item['extraction_id'])).fetchone())
+                    item['pages']=page_metrics(c,selected['content_id'],item['extraction_id'])
                     item['exact_extraction_count']=c.execute('''SELECT count(*) FROM document_extractions
                         WHERE content_id=? AND parser_name=? AND parser_version=? AND ocr_engine=?
                         AND ocr_engine_version=? AND options_json=?''',(selected['content_id'],*version.values())).fetchone()[0]
@@ -258,9 +286,8 @@ def census(db, out):
                 EXISTS(SELECT 1 FROM screener_collection_scope s WHERE s.company_id=a.company_id AND s.eligibility='eligible') eligible
                 FROM credit_rating_download_queue q JOIN document_artifacts a USING(artifact_id) ORDER BY q.download_job_id'''):
                 stream.write(json.dumps(redact_query_values({**dict(row),'queue_kind':'rating','committed_content_id':None}))+'\n')
-    if snapshot(db)!=guard['files']:raise RuntimeError('Production changed during snapshot')
     result['contents_sha256']=hashlib.sha256((out/'contents.jsonl').read_bytes()).hexdigest()
-    write(out/'inventory.json',result)
+    write(out/'inventory.json',redact_tree(result))
     return result['totals']
 
 

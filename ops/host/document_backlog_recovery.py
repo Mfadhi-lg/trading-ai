@@ -73,6 +73,8 @@ def audit(action, limit, seconds):
                 # physical-byte claim or storage-readiness exemption for work.
                 mount='type=bind,source='+str(STORE)+',target=/documents,readonly'
                 index=args.index(mount);del args[index-1:index+1]
+            from document_audit_reader import container_command
+            args=container_command(args,evidence=raw,store=None if metadata_only else STORE,campaign=OUT)
             start=time.monotonic()
             r=subprocess.run(args,capture_output=True,text=True,timeout=180)
             stamp=datetime.now().strftime('%Y%m%dT%H%M%S')

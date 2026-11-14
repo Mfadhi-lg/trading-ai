@@ -313,8 +313,8 @@
         {"path": "experiments/technical_fix_v2/finish.py","line": 56},
         {"path": "experiments/technical_fix_v2/integrate.py","line": 16},
         {"path": "experiments/technical_fix_v2/verify.py","line": 7},
-        {"path": "ops/host/document_backlog_report.py","line": 348},
-        {"path": "ops/host/document_backlog_report.py","line": 370},
+        {"path": "ops/host/document_backlog_report.py","line": 357},
+        {"path": "ops/host/document_backlog_report.py","line": 379},
         {"path": "scrapper/indices/frames_build.py","line": 9},
         {"path": "scrapper/indices/production.py","line": 16},
         {"path": "scrapper/market_refresh/service.py","line": 12},
@@ -339,9 +339,9 @@
         {"path": "experiments/historical_candle_archive_v1/rollout.py","line": 429},
         {"path": "experiments/historical_candle_archive_v1/rollout.py","line": 432},
         {"path": "experiments/technical_fix_v2/report.py","line": 53},
-        {"path": "ops/host/document_backlog_recovery.py","line": 202},
-        {"path": "ops/host/document_backlog_report.py","line": 259},
-        {"path": "ops/host/document_backlog_report.py","line": 261}
+        {"path": "ops/host/document_backlog_recovery.py","line": 204},
+        {"path": "ops/host/document_backlog_report.py","line": 268},
+        {"path": "ops/host/document_backlog_report.py","line": 270}
       ]
     },
     {
@@ -549,7 +549,8 @@
         {"path": "ops/activation/nse_results.py","line": 57},
         {"path": "ops/activation/phase4_trial_snapshot_runtime.py","line": 50},
         {"path": "ops/activation/step3_financial.py","line": 61},
-        {"path": "ops/host/actual_download_audit.py","line": 82},
+        {"path": "ops/host/actual_download_audit.py","line": 88},
+        {"path": "ops/host/document_audit_reader.py","line": 50},
         {"path": "ops/host/historical_candle_lifecycle.py","line": 13},
         {"path": "ops/host/postgresql_backup.py","line": 21},
         {"path": "ops/host/postgresql_cli.py","line": 15},
@@ -1099,6 +1100,7 @@
         {"path": "ops/host/acquisition_quarter_queries.py","line": 4},
         {"path": "ops/host/acquisition_queries.py","line": 8},
         {"path": "ops/host/acquisition_queries.py","line": 248},
+        {"path": "ops/host/document_backlog_audit.py","line": 178},
         {"path": "ops/host/financial_diagnostic_reader.py","line": 7},
         {"path": "ops/host/runtime_status.py","line": 77}
       ]
@@ -1162,8 +1164,8 @@
         {"path": "ops/host/acquisition_lifecycle.py","line": 188},
         {"path": "ops/host/acquisition_observations.py","line": 213},
         {"path": "ops/host/acquisition_queries.py","line": 257},
-        {"path": "ops/host/actual_download_audit.py","line": 17},
-        {"path": "ops/host/document_backlog_audit.py","line": 86},
+        {"path": "ops/host/actual_download_audit.py","line": 25},
+        {"path": "ops/host/document_audit_reader.py","line": 12},
         {"path": "ops/host/document_backlog_recovery.py","line": 32},
         {"path": "ops/host/local_document_campaign.py","line": 69},
         {"path": "ops/host/postgresql_cli.py","line": 17},
@@ -1236,10 +1238,6 @@
         {"path": "ops/benchmarks/phase4_throughput.py","line": 10},
         {"path": "ops/host/acquisition_db_status.py","line": 9},
         {"path": "ops/host/acquisition_queries.py","line": 12},
-        {"path": "ops/host/actual_download_audit.py","line": 16},
-        {"path": "ops/host/document_backlog_audit.py","line": 85},
-        {"path": "ops/host/download_batch_evidence.py","line": 9},
-        {"path": "ops/host/download_failure_evidence.py","line": 5},
         {"path": "ops/host/financial_diagnostic_reader.py","line": 8},
         {"path": "ops/host/phase3_local_benchmark.py","line": 6}
       ]
@@ -1459,7 +1457,7 @@
         {"path": "ops/host/acquisition_queries.py","line": 102},
         {"path": "ops/host/acquisition_queries.py","line": 105},
         {"path": "ops/host/acquisition_queries.py","line": 137},
-        {"path": "ops/host/actual_download_audit.py","line": 180}
+        {"path": "ops/host/actual_download_audit.py","line": 189}
       ]
     },
     {
@@ -1495,97 +1493,91 @@
     },
     {
       "path": "ops/host/actual_download_audit.py",
-      "source_sha256": "9a8e7c92006b312b36cccba21ccb5ae5e4baa2a56ce9b178166d131ac7c813a7",
+      "source_sha256": "bd3a28e14ea1e6bad7f968c1e8bbaab73b25ce1fd2ccf3c05c6608454df67f0e",
       "owner": "Maintainers of ops/host",
-      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/107",
-      "reviewed_source_sha256": "9a8e7c92006b312b36cccba21ccb5ae5e4baa2a56ce9b178166d131ac7c813a7",
+      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/99",
+      "reviewed_source_sha256": "bd3a28e14ea1e6bad7f968c1e8bbaab73b25ce1fd2ccf3c05c6608454df67f0e",
       "classification": "live application",
       "store": "explicit SQLite application snapshot, commonly /data/scraper.db; document_backlog_audit also compares a prior snapshot",
       "intent": "Static SQL/query candidates: PRAGMA, SELECT; dynamic queries require caller review.",
-      "backend_guard": "No native backend guard established. Immutable/read-only/admission/sidecar guards do not prove PostgreSQL compatibility.",
-      "disposition": "Retained/manual operational reader baseline, not approved for native use. Trace callers and port or explicitly retire/disposition under #107 before selecting for native runtime.",
+      "backend_guard": "document_audit_reader.observation uses configured restricted PostgreSQL repeatable-read reader; legacy SQLite is immutable and guarded. Native branches never open SQLite. Explicit freshness --snapshot and SQLite census prior comparison are historical only.",
+      "disposition": "Ported under #99 with disposable restricted-reader native parity tests required by native_runtime_smoke; preserve explicit historical SQLite mode, exact job identities, physical verification and redaction. No production activation.",
       "sites": [
-        {"line": 21,"symbol": "main","kind": "direct connection","sha256": "74f434711c295c79f0e6486893f3f45f970fae728de3c4faa023874185fc7ec2","scope_sha256": "0f972c293770d114206e43e27c141ed02662b8f38cf9f198835837ee7fe2f638","branch_hints": []},
-        {"line": 23,"symbol": "main","kind": "SQLite SQL","sha256": "a28b203f21249ab8312986428d3b09520123b2d7328839a8a7a3b5f61f02af8f","scope_sha256": "0f972c293770d114206e43e27c141ed02662b8f38cf9f198835837ee7fe2f638","branch_hints": []},
-        {"line": 24,"symbol": "main","kind": "SQLite SQL","sha256": "c7e424fda0967e4cdffa4a79aceeca2eabc5718445a3f9cd9b6c2706503b38fe","scope_sha256": "0f972c293770d114206e43e27c141ed02662b8f38cf9f198835837ee7fe2f638","branch_hints": []},
-        {"line": 28,"symbol": "main.rows","kind": "dynamic query","sha256": "5408b7a929d8c0fdaa8b4013e3e481013601dab8f1037539bb8c0a47b85bc99c","scope_sha256": "6ca68415025e4163670fe47b0a15a5584ecb96aad4d3009a0eea638a105c1012","branch_hints": []},
-        {"line": 39,"symbol": "main","kind": "SQLite SQL","sha256": "876a7759141f9b8bd36897e8eaad485a2d5b3fc9ca7ba8d9aebd2ecc28f2b2ef","scope_sha256": "0f972c293770d114206e43e27c141ed02662b8f38cf9f198835837ee7fe2f638","branch_hints": []},
-        {"line": 54,"symbol": "main","kind": "SQLite SQL","sha256": "933fbf675b34fd60688e482b844ffda03babd67ffe2c1fe53012de9b1459a46f","scope_sha256": "0f972c293770d114206e43e27c141ed02662b8f38cf9f198835837ee7fe2f638","branch_hints": []}
+        {"line": 30,"symbol": "audit.rows","kind": "dynamic query","sha256": "5408b7a929d8c0fdaa8b4013e3e481013601dab8f1037539bb8c0a47b85bc99c","scope_sha256": "6ca68415025e4163670fe47b0a15a5584ecb96aad4d3009a0eea638a105c1012","branch_hints": []},
+        {"line": 56,"symbol": "audit","kind": "SQLite SQL","sha256": "933fbf675b34fd60688e482b844ffda03babd67ffe2c1fe53012de9b1459a46f","scope_sha256": "125e5b984dc938769c0a999242504e8926b4144c31da653b044fa46e6d337e33","branch_hints": []}
       ],
       "caller_references": [
-        {"path": "ops/host/run_actual_download_audit.py","line": 35}
+        {"path": "ops/host/run_actual_download_audit.py","line": 36}
       ]
     },
     {
       "path": "ops/host/document_backlog_audit.py",
-      "source_sha256": "8ef4db0ae95c9fa2868de8ea92ee979748d74e93d71ae1ad743d71215a32f702",
+      "source_sha256": "403fc77f64f204e839dd902d86aced651eefe7786b36e78d74a50f352e2b01e8",
       "owner": "Maintainers of ops/host",
-      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/107",
-      "reviewed_source_sha256": "8ef4db0ae95c9fa2868de8ea92ee979748d74e93d71ae1ad743d71215a32f702",
+      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/99",
+      "reviewed_source_sha256": "403fc77f64f204e839dd902d86aced651eefe7786b36e78d74a50f352e2b01e8",
       "classification": "live application",
       "store": "explicit SQLite application snapshot, commonly /data/scraper.db; document_backlog_audit also compares a prior snapshot",
       "intent": "Static SQL/query candidates: PRAGMA, SELECT; dynamic queries require caller review.",
-      "backend_guard": "No native backend guard established. Immutable/read-only/admission/sidecar guards do not prove PostgreSQL compatibility.",
-      "disposition": "Retained/manual operational reader baseline, not approved for native use. Trace callers and port or explicitly retire/disposition under #107 before selecting for native runtime.",
+      "backend_guard": "document_audit_reader.observation uses configured restricted PostgreSQL repeatable-read reader; legacy SQLite is immutable and guarded. Native branches never open SQLite. Explicit freshness --snapshot and SQLite census prior comparison are historical only.",
+      "disposition": "Ported under #99 with disposable restricted-reader native parity tests required by native_runtime_smoke; preserve explicit historical SQLite mode, exact job identities, physical verification and redaction. No production activation.",
       "sites": [
-        {"line": 94,"symbol": "census","kind": "direct connection","sha256": "bcf293e0e9a685d5e94a111f4fc0f9b3745f97474541d4c3193ca6f00c72054c","scope_sha256": "a02ffdd88635f7794dcbfaa9b3e77a223f30052b024529d88774cf5c53ea39d8","branch_hints": []},
-        {"line": 96,"symbol": "census","kind": "SQLite SQL","sha256": "a28b203f21249ab8312986428d3b09520123b2d7328839a8a7a3b5f61f02af8f","scope_sha256": "a02ffdd88635f7794dcbfaa9b3e77a223f30052b024529d88774cf5c53ea39d8","branch_hints": []},
-        {"line": 96,"symbol": "census","kind": "SQLite SQL","sha256": "c7e424fda0967e4cdffa4a79aceeca2eabc5718445a3f9cd9b6c2706503b38fe","scope_sha256": "a02ffdd88635f7794dcbfaa9b3e77a223f30052b024529d88774cf5c53ea39d8","branch_hints": []},
-        {"line": 159,"symbol": "census","kind": "dynamic query","sha256": "85c2eb435772af63a185299e4cefa891735e55d12d492ef221c48aca71d89b65","scope_sha256": "a02ffdd88635f7794dcbfaa9b3e77a223f30052b024529d88774cf5c53ea39d8","branch_hints": []},
-        {"line": 167,"symbol": "census","kind": "dynamic query","sha256": "de2247d7de4f0e4512ce24d6d06209fffe081a83819ff87bed398a8672a52d4a","scope_sha256": "a02ffdd88635f7794dcbfaa9b3e77a223f30052b024529d88774cf5c53ea39d8","branch_hints": []},
-        {"line": 175,"symbol": "census","kind": "direct connection","sha256": "c71045b83395b30d6d50d6e474f738902178d727156c494f653db4160aec4c0b","scope_sha256": "a02ffdd88635f7794dcbfaa9b3e77a223f30052b024529d88774cf5c53ea39d8","branch_hints": []},
-        {"line": 176,"symbol": "census","kind": "SQLite SQL","sha256": "a28b203f21249ab8312986428d3b09520123b2d7328839a8a7a3b5f61f02af8f","scope_sha256": "a02ffdd88635f7794dcbfaa9b3e77a223f30052b024529d88774cf5c53ea39d8","branch_hints": []},
-        {"line": 179,"symbol": "census","kind": "dynamic query","sha256": "59281b5ed55eb80b2edc610ef9e704a60cf894d3a88b08f7adbc203ee69d6aa0","scope_sha256": "a02ffdd88635f7794dcbfaa9b3e77a223f30052b024529d88774cf5c53ea39d8","branch_hints": []},
-        {"line": 192,"symbol": "census","kind": "dynamic query","sha256": "cedaeb0012bf707d2713dabfefd946aab1330106c771ac789cda265eff678f49","scope_sha256": "a02ffdd88635f7794dcbfaa9b3e77a223f30052b024529d88774cf5c53ea39d8","branch_hints": []},
-        {"line": 193,"symbol": "census","kind": "dynamic query","sha256": "be34c2a226d072b9acef8acc65ee110c0225e39f3f64d0b2f3483c831f096b89","scope_sha256": "a02ffdd88635f7794dcbfaa9b3e77a223f30052b024529d88774cf5c53ea39d8","branch_hints": []},
-        {"line": 202,"symbol": "census","kind": "dynamic query","sha256": "1138d78df18613bbf180e82144078731aadd19a25d429f14e93f1fcf3a9a1e04","scope_sha256": "a02ffdd88635f7794dcbfaa9b3e77a223f30052b024529d88774cf5c53ea39d8","branch_hints": []},
-        {"line": 203,"symbol": "census","kind": "dynamic query","sha256": "71ce5f70c3319f755abd788c34475919d3d21f807430a242f71eaa1af5f8fa5f","scope_sha256": "a02ffdd88635f7794dcbfaa9b3e77a223f30052b024529d88774cf5c53ea39d8","branch_hints": []},
-        {"line": 209,"symbol": "census","kind": "dynamic query","sha256": "c3c0a1a79dbe47b8a7f0241111c493f084eabc18116c7046645cd03e2d376dee","scope_sha256": "a02ffdd88635f7794dcbfaa9b3e77a223f30052b024529d88774cf5c53ea39d8","branch_hints": []},
-        {"line": 210,"symbol": "census","kind": "dynamic query","sha256": "90c66bc2bd693a337069dbaf7ea394a0d0a3143256f7d8c49213c01aae418593","scope_sha256": "a02ffdd88635f7794dcbfaa9b3e77a223f30052b024529d88774cf5c53ea39d8","branch_hints": []}
+        {"line": 186,"symbol": "census","kind": "dynamic query","sha256": "85c2eb435772af63a185299e4cefa891735e55d12d492ef221c48aca71d89b65","scope_sha256": "249af9b729d56bc821903dad92627617087bf3425e4db0533b9b868b023d3504","branch_hints": []},
+        {"line": 194,"symbol": "census","kind": "dynamic query","sha256": "de2247d7de4f0e4512ce24d6d06209fffe081a83819ff87bed398a8672a52d4a","scope_sha256": "249af9b729d56bc821903dad92627617087bf3425e4db0533b9b868b023d3504","branch_hints": []},
+        {"line": 206,"symbol": "census","kind": "direct connection","sha256": "c71045b83395b30d6d50d6e474f738902178d727156c494f653db4160aec4c0b","scope_sha256": "249af9b729d56bc821903dad92627617087bf3425e4db0533b9b868b023d3504","branch_hints": [{"condition_sha256": "86216d5b3a694eb0f81bcf8a263bcee776941fb31751969ef3718236f6b83c75","arm": "body","line": 203}]},
+        {"line": 207,"symbol": "census","kind": "SQLite SQL","sha256": "a28b203f21249ab8312986428d3b09520123b2d7328839a8a7a3b5f61f02af8f","scope_sha256": "249af9b729d56bc821903dad92627617087bf3425e4db0533b9b868b023d3504","branch_hints": [{"condition_sha256": "86216d5b3a694eb0f81bcf8a263bcee776941fb31751969ef3718236f6b83c75","arm": "body","line": 203}]},
+        {"line": 210,"symbol": "census","kind": "dynamic query","sha256": "59281b5ed55eb80b2edc610ef9e704a60cf894d3a88b08f7adbc203ee69d6aa0","scope_sha256": "249af9b729d56bc821903dad92627617087bf3425e4db0533b9b868b023d3504","branch_hints": [{"condition_sha256": "86216d5b3a694eb0f81bcf8a263bcee776941fb31751969ef3718236f6b83c75","arm": "body","line": 203}]},
+        {"line": 223,"symbol": "census","kind": "dynamic query","sha256": "cedaeb0012bf707d2713dabfefd946aab1330106c771ac789cda265eff678f49","scope_sha256": "249af9b729d56bc821903dad92627617087bf3425e4db0533b9b868b023d3504","branch_hints": [{"condition_sha256": "86216d5b3a694eb0f81bcf8a263bcee776941fb31751969ef3718236f6b83c75","arm": "body","line": 203}]},
+        {"line": 224,"symbol": "census","kind": "dynamic query","sha256": "be34c2a226d072b9acef8acc65ee110c0225e39f3f64d0b2f3483c831f096b89","scope_sha256": "249af9b729d56bc821903dad92627617087bf3425e4db0533b9b868b023d3504","branch_hints": [{"condition_sha256": "86216d5b3a694eb0f81bcf8a263bcee776941fb31751969ef3718236f6b83c75","arm": "body","line": 203}]},
+        {"line": 233,"symbol": "census","kind": "dynamic query","sha256": "1138d78df18613bbf180e82144078731aadd19a25d429f14e93f1fcf3a9a1e04","scope_sha256": "249af9b729d56bc821903dad92627617087bf3425e4db0533b9b868b023d3504","branch_hints": [{"condition_sha256": "86216d5b3a694eb0f81bcf8a263bcee776941fb31751969ef3718236f6b83c75","arm": "body","line": 203}]},
+        {"line": 234,"symbol": "census","kind": "dynamic query","sha256": "71ce5f70c3319f755abd788c34475919d3d21f807430a242f71eaa1af5f8fa5f","scope_sha256": "249af9b729d56bc821903dad92627617087bf3425e4db0533b9b868b023d3504","branch_hints": [{"condition_sha256": "86216d5b3a694eb0f81bcf8a263bcee776941fb31751969ef3718236f6b83c75","arm": "body","line": 203}]},
+        {"line": 240,"symbol": "census","kind": "dynamic query","sha256": "c3c0a1a79dbe47b8a7f0241111c493f084eabc18116c7046645cd03e2d376dee","scope_sha256": "249af9b729d56bc821903dad92627617087bf3425e4db0533b9b868b023d3504","branch_hints": [{"condition_sha256": "86216d5b3a694eb0f81bcf8a263bcee776941fb31751969ef3718236f6b83c75","arm": "body","line": 203}]},
+        {"line": 241,"symbol": "census","kind": "dynamic query","sha256": "90c66bc2bd693a337069dbaf7ea394a0d0a3143256f7d8c49213c01aae418593","scope_sha256": "249af9b729d56bc821903dad92627617087bf3425e4db0533b9b868b023d3504","branch_hints": [{"condition_sha256": "86216d5b3a694eb0f81bcf8a263bcee776941fb31751969ef3718236f6b83c75","arm": "body","line": 203}]}
       ],
       "caller_references": [
-        {"path": "ops/host/actual_download_audit.py","line": 82},
+        {"path": "ops/host/actual_download_audit.py","line": 19},
+        {"path": "ops/host/actual_download_audit.py","line": 88},
+        {"path": "ops/host/actual_download_audit.py","line": 109},
+        {"path": "ops/host/actual_download_audit.py","line": 154},
         {"path": "ops/host/document_backlog_recovery.py","line": 54},
         {"path": "ops/host/document_backlog_recovery.py","line": 70},
-        {"path": "ops/host/document_backlog_report.py","line": 24},
-        {"path": "ops/host/document_backlog_report.py","line": 257}
+        {"path": "ops/host/document_backlog_report.py","line": 33},
+        {"path": "ops/host/document_backlog_report.py","line": 266},
+        {"path": "ops/host/download_batch_evidence.py","line": 7},
+        {"path": "ops/host/download_failure_evidence.py","line": 7}
       ]
     },
     {
       "path": "ops/host/download_batch_evidence.py",
-      "source_sha256": "b49cc712442583afd7462c77f0b236b1a0b6649e55014de36f087b85375a3b43",
+      "source_sha256": "cfcaeb5f4ad7fcd82f6309ddbd7e5426d9b7fa0af4e9f173467e48bb586e9a2f",
       "owner": "Maintainers of ops/host",
-      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/107",
-      "reviewed_source_sha256": "b49cc712442583afd7462c77f0b236b1a0b6649e55014de36f087b85375a3b43",
+      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/99",
+      "reviewed_source_sha256": "cfcaeb5f4ad7fcd82f6309ddbd7e5426d9b7fa0af4e9f173467e48bb586e9a2f",
       "classification": "live application",
       "store": "explicit SQLite application snapshot, commonly /data/scraper.db; document_backlog_audit also compares a prior snapshot",
       "intent": "Static SQL/query candidates: PRAGMA, SELECT; dynamic queries require caller review.",
-      "backend_guard": "No native backend guard established. Immutable/read-only/admission/sidecar guards do not prove PostgreSQL compatibility.",
-      "disposition": "Retained/manual operational reader baseline, not approved for native use. Trace callers and port or explicitly retire/disposition under #107 before selecting for native runtime.",
+      "backend_guard": "document_audit_reader.observation uses configured restricted PostgreSQL repeatable-read reader; legacy SQLite is immutable and guarded. Native branches never open SQLite. Explicit freshness --snapshot and SQLite census prior comparison are historical only.",
+      "disposition": "Ported under #99 with disposable restricted-reader native parity tests required by native_runtime_smoke; preserve explicit historical SQLite mode, exact job identities, physical verification and redaction. No production activation.",
       "sites": [
-        {"line": 18,"symbol": "<module>","kind": "direct connection","sha256": "bcf293e0e9a685d5e94a111f4fc0f9b3745f97474541d4c3193ca6f00c72054c","scope_sha256": "bcf293e0e9a685d5e94a111f4fc0f9b3745f97474541d4c3193ca6f00c72054c","branch_hints": []},
-        {"line": 20,"symbol": "<module>","kind": "SQLite SQL","sha256": "a28b203f21249ab8312986428d3b09520123b2d7328839a8a7a3b5f61f02af8f","scope_sha256": "a28b203f21249ab8312986428d3b09520123b2d7328839a8a7a3b5f61f02af8f","branch_hints": []},
-        {"line": 23,"symbol": "<module>","kind": "dynamic query","sha256": "691acbeeaf955d4095e63a0c8a29d662814cbe019652d26867c8d97b9dacb436","scope_sha256": "691acbeeaf955d4095e63a0c8a29d662814cbe019652d26867c8d97b9dacb436","branch_hints": []}
+        {"line": 13,"symbol": "inspect","kind": "dynamic query","sha256": "1f0871d37e03ca5dd5638cc5c5a8601bca618f03756cc80bd12eeb42b6761f34","scope_sha256": "124a710647d0180e23f8b093393ba1e625305e960efa2f016846914969a8b9e6","branch_hints": []}
       ],
       "caller_references": [
       ]
     },
     {
       "path": "ops/host/download_failure_evidence.py",
-      "source_sha256": "668f0961e4ef48b3253543a9c126ac650e70032800e29449ae39ddd793583fbc",
+      "source_sha256": "d2a629db70de48f282f0c6aa5e84f651a165d97d806747feaef8dcf6964cb257",
       "owner": "Maintainers of ops/host",
-      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/107",
-      "reviewed_source_sha256": "668f0961e4ef48b3253543a9c126ac650e70032800e29449ae39ddd793583fbc",
+      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/99",
+      "reviewed_source_sha256": "d2a629db70de48f282f0c6aa5e84f651a165d97d806747feaef8dcf6964cb257",
       "classification": "live application",
       "store": "explicit SQLite application snapshot, commonly /data/scraper.db; document_backlog_audit also compares a prior snapshot",
       "intent": "Static SQL/query candidates: PRAGMA, SELECT; dynamic queries require caller review.",
-      "backend_guard": "No native backend guard established. Immutable/read-only/admission/sidecar guards do not prove PostgreSQL compatibility.",
-      "disposition": "Retained/manual operational reader baseline, not approved for native use. Trace callers and port or explicitly retire/disposition under #107 before selecting for native runtime.",
+      "backend_guard": "document_audit_reader.observation uses configured restricted PostgreSQL repeatable-read reader; legacy SQLite is immutable and guarded. Native branches never open SQLite. Explicit freshness --snapshot and SQLite census prior comparison are historical only.",
+      "disposition": "Ported under #99 with disposable restricted-reader native parity tests required by native_runtime_smoke; preserve explicit historical SQLite mode, exact job identities, physical verification and redaction. No production activation.",
       "sites": [
-        {"line": 15,"symbol": "<module>","kind": "direct connection","sha256": "bcf293e0e9a685d5e94a111f4fc0f9b3745f97474541d4c3193ca6f00c72054c","scope_sha256": "bcf293e0e9a685d5e94a111f4fc0f9b3745f97474541d4c3193ca6f00c72054c","branch_hints": []},
-        {"line": 16,"symbol": "<module>","kind": "SQLite SQL","sha256": "a28b203f21249ab8312986428d3b09520123b2d7328839a8a7a3b5f61f02af8f","scope_sha256": "a28b203f21249ab8312986428d3b09520123b2d7328839a8a7a3b5f61f02af8f","branch_hints": []},
-        {"line": 22,"symbol": "<module>","kind": "dynamic query","sha256": "8ab07d9f7086724763c8363cc054329c901cfda4e9c00b83d9dc14aad1a5e52a","scope_sha256": "8ab07d9f7086724763c8363cc054329c901cfda4e9c00b83d9dc14aad1a5e52a","branch_hints": []},
-        {"line": 25,"symbol": "<module>","kind": "dynamic query","sha256": "953f7ba9b4aa2720dd6ad6aea10c3ad491cdadc9c3eed4a80025aefd285dfb0e","scope_sha256": "953f7ba9b4aa2720dd6ad6aea10c3ad491cdadc9c3eed4a80025aefd285dfb0e","branch_hints": []}
+        {"line": 19,"symbol": "inspect","kind": "dynamic query","sha256": "8ab07d9f7086724763c8363cc054329c901cfda4e9c00b83d9dc14aad1a5e52a","scope_sha256": "5e2b503ce61a93775ee392808143fb535c6c3fd1be232a5c03463026b6e1ddf3","branch_hints": []},
+        {"line": 22,"symbol": "inspect","kind": "dynamic query","sha256": "8b74edeab628a2454a5db87f52199dd5605dfa1003b28a1e316d356836d09264","scope_sha256": "5e2b503ce61a93775ee392808143fb535c6c3fd1be232a5c03463026b6e1ddf3","branch_hints": []}
       ],
       "caller_references": [
       ]
@@ -1608,6 +1600,7 @@
       ],
       "caller_references": [
         {"path": "ops/host/diagnose_financial_pending.py","line": 12},
+        {"path": "ops/host/document_audit_reader.py","line": 6},
         {"path": "ops/host/financial_queue_eligibility.py","line": 12}
       ]
     },
@@ -1742,7 +1735,7 @@
         {"path": "ops/activation/step3_financial.py","line": 56},
         {"path": "ops/activation/step3_financial_runtime.py","line": 148},
         {"path": "ops/activation/step3_financial_runtime.py","line": 234},
-        {"path": "ops/host/document_backlog_report.py","line": 162},
+        {"path": "ops/host/document_backlog_report.py","line": 171},
         {"path": "ops/host/verify_actual_financial_overlay.py","line": 6},
         {"path": "scrapper/commands/screener_period_coverage.py","line": 95},
         {"path": "scrapper/commands/screener_period_coverage.py","line": 206},
@@ -1903,7 +1896,8 @@
         {"path": "ops/docker/canary/ar013_readonly_db.py","line": 98},
         {"path": "ops/docker/canary/ar013_readonly_db.py","line": 100},
         {"path": "ops/docker/postgresql/Dockerfile","line": 14},
-        {"path": "ops/host/document_backlog_audit.py","line": 87},
+        {"path": "ops/host/document_audit_reader.py","line": 11},
+        {"path": "ops/host/document_audit_reader.py","line": 22},
         {"path": "ops/host/financial_diagnostic_reader.py","line": 14},
         {"path": "ops/host/postgresql_health.py","line": 30},
         {"path": "ops/host/report_actual_download_recovery.py","line": 1},
@@ -2101,8 +2095,8 @@
         {"path": "ops/activation/acquisition_recovery_inspect_runtime.py","line": 76},
         {"path": "ops/activation/phase4_routine_preflight_runtime.py","line": 9},
         {"path": "ops/activation/phase4_schedule.py","line": 179},
-        {"path": "ops/host/document_backlog_report.py","line": 241},
-        {"path": "ops/host/document_backlog_report.py","line": 348},
+        {"path": "ops/host/document_backlog_report.py","line": 250},
+        {"path": "ops/host/document_backlog_report.py","line": 357},
         {"path": "scrapper/commands/browser_rating_recovery.py","line": 49},
         {"path": "scrapper/commands/processing_campaign.py","line": 50},
         {"path": "scrapper/operations/workers/document_processing.py","line": 3},
@@ -2539,6 +2533,7 @@
       "caller_references": [
         {"path": "ops/activation/postgresql_runtime.py","line": 122},
         {"path": "ops/activation/postgresql_runtime.py","line": 123},
+        {"path": "ops/host/document_backlog_audit.py","line": 101},
         {"path": "scrapper/cli_groups/operations.py","line": 15},
         {"path": "scrapper/db/credit_rating_repo.py","line": 18},
         {"path": "scrapper/db/database.py","line": 57},
@@ -2745,6 +2740,9 @@
         {"path": "ops/activation/step3_financial.py","line": 60},
         {"path": "ops/host/acquisition_quarter_queries.py","line": 5},
         {"path": "ops/host/acquisition_queries.py","line": 9},
+        {"path": "ops/host/actual_download_audit.py","line": 26},
+        {"path": "ops/host/document_backlog_audit.py","line": 93},
+        {"path": "ops/host/document_backlog_audit.py","line": 121},
         {"path": "ops/host/verify_actual_financial_overlay.py","line": 6},
         {"path": "ops/host/verify_actual_financial_overlay.py","line": 9},
         {"path": "scrapper/commands/browser_rating_recovery.py","line": 58},
@@ -2886,6 +2884,9 @@
         {"path": "ops/activation/postgresql_runtime.py","line": 59},
         {"path": "ops/host/acquisition_quarter_queries.py","line": 5},
         {"path": "ops/host/acquisition_queries.py","line": 9},
+        {"path": "ops/host/actual_download_audit.py","line": 26},
+        {"path": "ops/host/document_backlog_audit.py","line": 93},
+        {"path": "ops/host/document_backlog_audit.py","line": 121},
         {"path": "scrapper/commands/browser_rating_progress.py","line": 2},
         {"path": "scrapper/commands/collection_scope.py","line": 6},
         {"path": "scrapper/commands/exchange_bulk_enqueue.py","line": 16},
@@ -3013,7 +3014,7 @@
         {"path": "experiments/technical_integration_v2/report_narrowed.py","line": 62},
         {"path": "ops/activation/step3_financial.py","line": 47},
         {"path": "ops/host/acquisition_terminal.py","line": 22},
-        {"path": "ops/host/document_backlog_report.py","line": 370},
+        {"path": "ops/host/document_backlog_report.py","line": 379},
         {"path": "scrapper/db/repo.py","line": 19},
         {"path": "scrapper/indices/timeframes.py","line": 13},
         {"path": "scrapper/market_live/engine.py","line": 16}
@@ -3104,7 +3105,7 @@
       "caller_references": [
         {"path": "ops/activation/step3_financial.py","line": 53},
         {"path": "ops/activation/step3_financial.py","line": 60},
-        {"path": "ops/host/actual_download_audit.py","line": 103},
+        {"path": "ops/host/actual_download_audit.py","line": 111},
         {"path": "ops/host/verify_actual_financial_overlay.py","line": 9},
         {"path": "scrapper/documents/discovery/period_recovery.py","line": 10},
         {"path": "scrapper/documents/recovery/rating_metadata_refresh.py","line": 18},
@@ -3545,7 +3546,7 @@
         {"path": "ops/activation/phase4_offline_lifecycle.py","line": 14},
         {"path": "ops/activation/phase4_routine_preflight_runtime.py","line": 8},
         {"path": "ops/activation/phase4_routine_runtime.py","line": 50},
-        {"path": "ops/host/document_backlog_audit.py","line": 212},
+        {"path": "ops/host/document_backlog_audit.py","line": 243},
         {"path": "scrapper/commands/automatic_documents.py","line": 5}
       ]
     },
@@ -3590,11 +3591,11 @@
       ],
       "caller_references": [
         {"path": "ops/activation/local_document_campaign_runtime.py","line": 18},
-        {"path": "ops/host/document_backlog_recovery.py","line": 161},
-        {"path": "ops/host/document_backlog_recovery.py","line": 178},
-        {"path": "ops/host/document_backlog_recovery.py","line": 202},
-        {"path": "ops/host/document_backlog_report.py","line": 259},
-        {"path": "ops/host/document_backlog_report.py","line": 261},
+        {"path": "ops/host/document_backlog_recovery.py","line": 163},
+        {"path": "ops/host/document_backlog_recovery.py","line": 180},
+        {"path": "ops/host/document_backlog_recovery.py","line": 204},
+        {"path": "ops/host/document_backlog_report.py","line": 268},
+        {"path": "ops/host/document_backlog_report.py","line": 270},
         {"path": "ops/host/local_document_campaign.py","line": 25},
         {"path": "ops/host/local_document_campaign.py","line": 70}
       ]
@@ -4525,7 +4526,7 @@
         {"path": "ops/activation/step3_financial_runtime.py","line": 196},
         {"path": "ops/activation/step3_financial_runtime.py","line": 213},
         {"path": "ops/activation/step3_financial_runtime.py","line": 225},
-        {"path": "ops/host/actual_download_audit.py","line": 88},
+        {"path": "ops/host/actual_download_audit.py","line": 94},
         {"path": "scrapper/cli/__init__.py","line": 25},
         {"path": "scrapper/commands/collection_scope.py","line": 19},
         {"path": "scrapper/commands/screener_period_coverage.py","line": 14},
@@ -4642,7 +4643,7 @@
         {"path": "ops/host/acquisition_queries.py","line": 137},
         {"path": "ops/host/acquisition_terminal.py","line": 23},
         {"path": "ops/host/acquisition_terminal.py","line": 375},
-        {"path": "ops/host/actual_download_audit.py","line": 180},
+        {"path": "ops/host/actual_download_audit.py","line": 189},
         {"path": "ops/host/technical_market_updates.py","line": 34},
         {"path": "scrapper/operations/coordinator/collection.py","line": 14},
         {"path": "scrapper/view/__init__.py","line": 11},
@@ -4887,18 +4888,18 @@
     },
     {
       "path": "scripts/document-freshness",
-      "source_sha256": "fbcc5d68639c7fe6a0ce10d68dcfe44c1bc3aaa685ae1e816c664cb466656288",
+      "source_sha256": "9391a2f58ee41d91f6071a4025bfd4019a438b4ae79e645eafee2e7b07a09ca2",
       "owner": "Maintainers of scripts",
-      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/107",
-      "reviewed_source_sha256": "fbcc5d68639c7fe6a0ce10d68dcfe44c1bc3aaa685ae1e816c664cb466656288",
-      "classification": "historical snapshot",
+      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/99",
+      "reviewed_source_sha256": "9391a2f58ee41d91f6071a4025bfd4019a438b4ae79e645eafee2e7b07a09ca2",
+      "classification": "live application",
       "store": "required --snapshot quiescent SQLite input",
       "intent": "Static SQL/query candidates: PRAGMA; dynamic queries require caller review.",
-      "backend_guard": "Offline/snapshot research contract, not native application routing; source selection, read-only URI modes and copy guards must be reviewed at the listed symbols.",
-      "disposition": "Preserve source bytes, provenance, offline fixtures and retained research outputs. Classification does not authorize running historical mutation scripts.",
+      "backend_guard": "document_audit_reader.observation uses configured restricted PostgreSQL repeatable-read reader; legacy SQLite is immutable and guarded. Native branches never open SQLite. Explicit freshness --snapshot and SQLite census prior comparison are historical only.",
+      "disposition": "Ported under #99 with disposable restricted-reader native parity tests required by native_runtime_smoke; preserve explicit historical SQLite mode, exact job identities, physical verification and redaction. No production activation.",
       "sites": [
-        {"line": 23,"symbol": "main","kind": "direct connection","sha256": "df4fae2c4ebff1cecb1bd9eaa0dc888795f7b32a6ef43aeea0906cd154dcc588","scope_sha256": "74e0946ccde876ece3b09f9724ec753269a4c06b81420f3425726647d913d1d7","branch_hints": []},
-        {"line": 25,"symbol": "main","kind": "SQLite SQL","sha256": "a28b203f21249ab8312986428d3b09520123b2d7328839a8a7a3b5f61f02af8f","scope_sha256": "74e0946ccde876ece3b09f9724ec753269a4c06b81420f3425726647d913d1d7","branch_hints": []}
+        {"line": 44,"symbol": "main","kind": "direct connection","sha256": "df4fae2c4ebff1cecb1bd9eaa0dc888795f7b32a6ef43aeea0906cd154dcc588","scope_sha256": "dfbe110051060d20b27cf780fe2bf0d05b4d917cf1bde6f48749940c7164706d","branch_hints": []},
+        {"line": 46,"symbol": "main","kind": "SQLite SQL","sha256": "a28b203f21249ab8312986428d3b09520123b2d7328839a8a7a3b5f61f02af8f","scope_sha256": "dfbe110051060d20b27cf780fe2bf0d05b4d917cf1bde6f48749940c7164706d","branch_hints": []}
       ],
       "caller_references": [
       ]

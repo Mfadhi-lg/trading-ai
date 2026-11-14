@@ -19,6 +19,15 @@ def save(name,value):
 def markdown(name,text):(OUT/name).write_text(text.strip()+'\n')
 
 
+def unpaired_observation(latest, totals):
+    attached=sum(row['jobs'] for row in latest.get('pending_associations',[])
+                 if row['status']=='PENDING' and row['eligible'] and row['attached'])
+    source=latest.get('source',{})
+    return (f"The {source.get('mode','retained observation')} at {latest['observed_at_utc']} "
+            f"contains {totals['generic_jobs']} generic jobs and {attached} eligible pending attached-content jobs. "
+            "No paired historical SQLite comparison was performed; changes from earlier receipts remain unknown.")
+
+
 def main():
     sys.path.insert(0,str(ROOT/'ops/host'))
     from document_backlog_audit import redact_query_values
@@ -150,7 +159,7 @@ def main():
     if discrepancy:
         save('attachment-discrepancy.json',discrepancy)
         discrepancy_text=(f"The verified backup contains {discrepancy.get('backup_eligible_pending_attached','see backup_associations')} eligible pending attached-content jobs; "
-            f"the current snapshot contains {discrepancy.get('current_eligible_pending_attached',22214)}. "
+            f"the current snapshot contains {discrepancy.get('current_eligible_pending_attached','unknown')}. "
             f"Added attached-job IDs: {discrepancy.get('added_attached_job_ids','see new_job_rows')}; "
             f"removed IDs: {discrepancy.get('removed_attached_job_ids',[])}. "
             f"The backup has {discrepancy['backup_jobs']} generic jobs; the live total is {totals['generic_jobs']}. "
@@ -161,7 +170,7 @@ def main():
             and r['before']['last_result_status']=='SCOPE_BELOW_MARKET_CAP_FLOOR' and r['after']['status']=='PENDING' for r in changes):
             discrepancy_text+=' The four rows were scope-floor holds for company 3960, released by the existing market-cap reentry API. The retained 26 October 17:00 monitor receipt records /company/539518/ moving from below_floor to eligible at 701 crore against the unchanged 580-crore floor. `scrapper/commands/collection_scope.py:apply_observation` reopens only SCOPE_BELOW_MARKET_CAP_FLOOR document holds. This explains both +4 pending jobs and +4 attached pending jobs with no new queue rows or downloads; publisher restrictions and Focus List rules were not changed.'
     else:
-        discrepancy_text='The live count is 22,214. Earlier runtime receipts contain a lower total; a direct backup-to-live comparison is needed to identify the exact four-row difference. No loss or deletion is inferred.'
+        discrepancy_text=unpaired_observation(latest,totals)
     save('inventory-summary.json',summary)
     save('pilot-database-validation.json',{'observed_at_utc':latest['observed_at_utc'],'records':latest.get('pilot_results',[])})
     selected=len(manifest['contents']);counts=Counter(r['extraction_status'] for r in receipts)
