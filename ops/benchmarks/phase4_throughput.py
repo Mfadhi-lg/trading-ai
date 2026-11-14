@@ -50,6 +50,9 @@ def batch(rows, label):
 
 
 def main():
+    sys.path.insert(0, "/activation")
+    from legacy_sqlite_guard import require_snapshot
+    require_snapshot()
     started=time.monotonic();db=Path('/data/scraper.db');before=assert_safe_empty_wal(db)
     c=sqlite3.connect('file:/data/scraper.db?mode=ro&immutable=1',uri=True);c.row_factory=sqlite3.Row
     def q(sql):return [dict(r) for r in c.execute(sql)]

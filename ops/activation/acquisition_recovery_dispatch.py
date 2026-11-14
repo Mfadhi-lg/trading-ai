@@ -23,6 +23,8 @@ def main():
     if not args.execute:
         print(json.dumps({'status':'READ_ONLY','message':'--execute is required; no work dispatched'}))
         return 0
+    from legacy_sqlite_guard import reject_native
+    reject_native(scheduler.ROOT)
     if not args.document_stage:raise ValueError('Select one document stage')
     if args.local_historical_processing and args.document_stage!='processing':
         raise ValueError('Local historical mode is processing only')

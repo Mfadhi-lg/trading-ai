@@ -1,4 +1,8 @@
 """One new recovery copy; no checkpoint, schema application, or source writes."""
+
+# Retained campaign input boundary; original SQL/identity/sidecar checks follow.
+from legacy_sqlite_guard import require_snapshot
+require_snapshot()
 from contextlib import closing
 from datetime import datetime, timezone
 import json
@@ -44,7 +48,7 @@ def backup():
     try:os.fsync(fd)
     finally:os.close(fd)
     if snapshot(db)!=guard['files']:raise RuntimeError('Source changed during backup')
-    return {'status':'PASS','source':str(db),'source_guard':guard,'backup':str(target),
+    return {'status':'PASS','source_scope':'historical_snapshot_only','source':str(db),'source_guard':guard,'backup':str(target),
         'bytes':target.stat().st_size,'quick_check':'ok','source_unchanged':True,
         'free_before_bytes':free,'elapsed_seconds':time.monotonic()-started}
 

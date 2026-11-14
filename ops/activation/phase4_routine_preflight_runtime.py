@@ -1,4 +1,8 @@
 """Read-only selectors against actual production and current candidate source."""
+
+# Retained campaign input boundary; original SQL/identity/sidecar checks follow.
+from legacy_sqlite_guard import require_snapshot
+require_snapshot()
 from pathlib import Path
 import sys,sqlite3,json
 from datetime import datetime,timezone

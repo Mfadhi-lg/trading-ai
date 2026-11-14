@@ -1,4 +1,11 @@
 """Guarded read-only offline benchmark; never activates production schedules."""
+
+if __name__ == "__main__":
+    import sys as _legacy_sys
+    from pathlib import Path as _LegacyPath
+    _legacy_sys.path.insert(0, str(_LegacyPath(__file__).resolve().parents[2] / "ops/activation"))
+    from legacy_sqlite_guard import retired_launcher
+    retired_launcher()
 import fcntl, json, subprocess, sys, time
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[2]
@@ -7,6 +14,8 @@ from production_ownership import owner_gate
 from phase4_documents import IMAGE, STORE, storage_preflight
 
 def main():
+    from legacy_sqlite_guard import retired_launcher
+    retired_launcher()
     mode='metrics' if '--metrics-only' in sys.argv else 'census' if '--census-only' in sys.argv else None
     out=ROOT/'artifacts/phase4/throughput-review'/('offline-'+mode if mode else 'offline')
     out.mkdir(parents=True,exist_ok=False)

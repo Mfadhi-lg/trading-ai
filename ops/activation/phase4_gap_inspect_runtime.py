@@ -1,4 +1,8 @@
 """Read-only targeted lineage census, using the existing guarded snapshot."""
+
+# Retained campaign input boundary; original SQL/identity/sidecar checks follow.
+from legacy_sqlite_guard import require_snapshot
+require_snapshot()
 from pathlib import Path
 source=Path('/activation/phase4_trial_snapshot_runtime.py').read_text()
 injection="""

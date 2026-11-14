@@ -1,4 +1,8 @@
 """Focused immutable read-only admission preflight; no downloader or claims."""
+
+# Retained campaign input boundary; original SQL/identity/sidecar checks follow.
+from legacy_sqlite_guard import require_snapshot
+require_snapshot()
 import hashlib,json,sqlite3,sys
 from pathlib import Path
 from datetime import datetime,timezone

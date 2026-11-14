@@ -1,4 +1,11 @@
 """Read-only canary evidence, under the existing shared acquisition lock."""
+
+if __name__ == "__main__":
+    import sys as _legacy_sys
+    from pathlib import Path as _LegacyPath
+    _legacy_sys.path.insert(0, str(_LegacyPath(__file__).resolve().parents[2] / "ops/activation"))
+    from legacy_sqlite_guard import retired_launcher
+    retired_launcher()
 import argparse
 import fcntl
 import json
@@ -11,6 +18,8 @@ OUT=HERE.parents[1]/'artifacts/step3-financial-canary-2026-10-09'
 
 
 def main():
+    from legacy_sqlite_guard import retired_launcher
+    retired_launcher()
     global OUT
     p=argparse.ArgumentParser();p.add_argument('phase',choices=['before','after','source','details']);p.add_argument('--retry',action='store_true');args=p.parse_args()
     if args.retry:OUT=HERE.parents[1]/'artifacts/step3-financial-retry-2026-10-09'

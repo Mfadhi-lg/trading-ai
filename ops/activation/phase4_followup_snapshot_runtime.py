@@ -1,4 +1,8 @@
 """Read-only follow-up census, reusing the existing safety snapshot unchanged."""
+
+# Retained campaign input boundary; original SQL/identity/sidecar checks follow.
+from legacy_sqlite_guard import require_snapshot
+require_snapshot()
 from pathlib import Path
 source=Path('/activation/phase4_trial_snapshot_runtime.py').read_text()
 source=source.replace("verify(c,receipts='/receipts',epoch=epoch)","verify(c,receipts='/receipts',epoch=epoch,expires=json.loads(Path('/activation/phase4_schedule.json').read_text())['expires_at_utc'])")

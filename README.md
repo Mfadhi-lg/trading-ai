@@ -51,6 +51,8 @@ validates and resumes that same schedule. Shutdown/wake do not restore the old
 continuous worker set. Eject My Passport through Finder after a successful guarded
 shutdown, and reconnect the correct drive before wake.
 
+Root Compose production roles are retired and refuse startup; see the
+[classified legacy launcher inventory](docs/operations/legacy-sqlite-launchers.md).
 Do not substitute a root Compose startup or rebuild for the pinned acquisition
 images. The historical [C06 record](docs/cleanup/chunks/C06.md) and
 [C05.3 release evidence](docs/cleanup/chunks/C05.3.md) remain dated evidence of the

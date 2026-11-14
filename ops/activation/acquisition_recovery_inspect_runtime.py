@@ -1,4 +1,8 @@
 """Cold read-only recovery evidence. Run only under the existing host locks."""
+
+# Retained campaign input boundary; original SQL/identity/sidecar checks follow.
+from legacy_sqlite_guard import require_snapshot
+require_snapshot()
 from contextlib import closing
 from datetime import datetime, timezone
 import json

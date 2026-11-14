@@ -1,4 +1,8 @@
 """Read-only comparison of full scan and enforced write-boundary admission."""
+
+# Retained campaign input boundary; original SQL/identity/sidecar checks follow.
+from legacy_sqlite_guard import require_snapshot
+require_snapshot()
 from contextlib import closing
 import json
 from pathlib import Path

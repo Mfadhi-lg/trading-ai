@@ -27,9 +27,17 @@ class ManualCliContracts(unittest.TestCase):
             self.assertEqual(result.returncode,exit_code,result.stderr)
             return json.loads(capture.read_text())
 
-    def test_literal_arguments_and_nonzero_exit(self):
-        args=['exchange-refresh-universe','--dataset','nse_equity_master','--file','/inbox/file with spaces; $(touch forbidden).csv']
-        self.assertEqual(self.invoke(args,23),['compose','--profile','manual','run','--rm','cli',*args])
+    def test_retired_manual_fallback_never_invokes_docker(self):
+        root = Path(__file__).resolve().parents[2]
+        activation = root / 'ops/activation'
+        import sys
+        from unittest.mock import patch
+        import runpy
+        sys.path.insert(0, str(activation))
+        with tempfile.TemporaryDirectory() as temporary, patch('acquisition_release.active_root', return_value=Path(temporary)), patch.object(sys, 'argv', ['run_acquisition_lifecycle.py', 'manual', 'exchange-refresh-universe', '--file', '/inbox/file with spaces; $(touch forbidden).csv']), patch('subprocess.run') as docker:
+            with self.assertRaisesRegex(RuntimeError, 'snapshot-only launcher retired'):
+                runpy.run_path(str(root / 'ops/host/run_acquisition_lifecycle.py'), run_name='__main__')
+            docker.assert_not_called()
 
     def test_no_arguments_opens_current_host_shell(self):
         self.assertEqual(self.invoke([],7,program='python3'),['-B','ops/host/run_acquisition_lifecycle.py','shell'])

@@ -1,4 +1,8 @@
 """Immutable selected-lifecycle verification after the authorized one-shot."""
+
+# Retained campaign input boundary; original SQL/identity/sidecar checks follow.
+from legacy_sqlite_guard import require_snapshot
+require_snapshot()
 import json,sqlite3,sys
 from pathlib import Path
 from datetime import datetime,timezone
