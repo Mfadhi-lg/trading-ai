@@ -194,12 +194,19 @@ def enable_processing_companion(out,plan,config,now):
     return True
 
 
+def missing_container_error(stderr, expected):
+    """Accept only Docker's exact absence diagnostic for the selected object."""
+    import re
+    pattern=r"\s*(?:error(?: response from daemon)?\s*:\s*)?no such (?:object|container):\s*"+re.escape(expected)+r"\s*"
+    return bool(re.fullmatch(pattern,stderr,flags=re.IGNORECASE))
+
+
 def cleanup_timed_out_container(out):
     """Verify ownership and termination; a failure before creation is not a stop failure."""
     name='trading-ai-phase4-routine'
     checked=subprocess.run(['docker','inspect',name],capture_output=True,text=True,timeout=30)
     if checked.returncode:
-        if 'No such object:' not in checked.stderr and 'No such container:' not in checked.stderr:
+        if not missing_container_error(checked.stderr,name):
             raise RuntimeError('Cannot verify timed-out document container: '+checked.stderr.strip())
         save(out,'timeout-cleanup.json',{'container':name,'status':'not_created','terminated':True})
         return
@@ -213,7 +220,7 @@ def cleanup_timed_out_container(out):
         subprocess.run(['docker','stop','-t','15',row['Id']],check=True,timeout=30)
     after=subprocess.run(['docker','inspect',row['Id']],capture_output=True,text=True,timeout=30)
     if after.returncode:
-        if 'No such object:' not in after.stderr and 'No such container:' not in after.stderr:
+        if not missing_container_error(after.stderr,row['Id']):
             raise RuntimeError('Cannot verify document container termination')
     elif json.loads(after.stdout)[0]['State']['Status'] not in ('exited','dead','created'):
         raise RuntimeError('Timed-out document container still active')

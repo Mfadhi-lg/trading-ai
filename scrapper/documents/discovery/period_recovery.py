@@ -36,7 +36,7 @@ def saved_pdf_headers(conn, artifact_id, *, timeout):
 
 
 def recover_period_batch(conn, *, state_path, limit=100, seconds=5,
-                         corrected_at_utc=None, stopped=lambda: False):
+                         corrected_at_utc=None, stopped=lambda: False, legacy_state_path=None):
     """Call under the automatic processing owner; never download or re-extract.
 
     A fixed high watermark ensures new arrivals cannot starve earlier unresolved
@@ -47,7 +47,8 @@ def recover_period_batch(conn, *, state_path, limit=100, seconds=5,
     if type(limit) is not int or not 1 <= limit <= 1000 or seconds <= 0:
         raise ValueError('Positive bounded recovery budget required')
     state_path = Path(state_path)
-    state = json.loads(state_path.read_text()) if state_path.exists() else {}
+    source=state_path if state_path.exists() else Path(legacy_state_path) if legacy_state_path else state_path
+    state = json.loads(source.read_text()) if source.exists() else {}
     after = state.get('after_artifact_id', 0)
     ceiling = state.get('through_artifact_id', 0)
     if any(type(value) is not int or value < 0 for value in (after, ceiling)) or after > ceiling:

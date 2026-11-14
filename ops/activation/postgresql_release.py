@@ -11,8 +11,8 @@ ROLES={'exchange':'trading_ai_exchange','financial':'trading_ai_financial',
        'documents':'trading_ai_documents','reader':'trading_ai_reader','backup':'trading_ai_backup'}
 
 
-def target():
-    path=HERE/'postgresql-target.json'
+def target(release_root=None):
+    path=(Path(release_root)/'ops/activation' if release_root else HERE)/'postgresql-target.json'
     if not path.exists():return None
     value=json.loads(path.read_text())
     if (value.get('format')!=1 or value.get('database')!='trading_ai'
@@ -81,8 +81,8 @@ def verify():
     return value
 
 
-def environment(role):
-    value=target()
+def environment(role, release_root=None):
+    value=target(release_root)
     if value is None:raise RuntimeError('No native release is configured')
     login=ROLES[role]
     return {'TRADING_AI_DB_BACKEND':'postgresql',
@@ -126,28 +126,42 @@ def configure(compose,service,role,identity_path):
     path.write_text(json.dumps(identity(json.loads(path.read_text()),role),indent=2)+'\n')
 
 
-def reader_prefix():
-    value=target()
+def reader_prefix(release_root=None):
+    value=target(release_root)
+    root=Path(release_root) if release_root else ROOT
+    here=root/'ops/activation' if release_root else HERE
     if value is None:raise RuntimeError('No native release is configured')
     args=['run','--label','com.trading-ai.role=monitor-reader','--rm','--pull=never',
         '--network=none','--read-only','--cap-drop=ALL','--security-opt=no-new-privileges',
         '--cpus=.5','--memory=1536m','--tmpfs','/tmp:rw,noexec,nosuid,size=32m',
         '--mount','type=volume,source=trading-ai_scraper-data,target=/data,readonly',
-        '--mount','type=bind,source='+str(HERE)+',target=/activation,readonly',
-        '--mount','type=bind,source='+str(ROOT/'ops/host')+',target=/host,readonly',
-        '--mount','type=bind,source='+str(ROOT/'scrapper/view/render.py')+',target=/acquisition_financial_renderer.py,readonly',
+        '--mount','type=bind,source='+str(here)+',target=/activation,readonly',
+        '--mount','type=bind,source='+str(root/'ops/host')+',target=/host,readonly',
+        '--mount','type=bind,source='+str(root/'scrapper/view/render.py')+',target=/acquisition_financial_renderer.py,readonly',
         '--mount','type=volume,src='+value['socket_volume']+',dst=/var/run/trading-ai-postgresql,readonly',
         '--mount','type=volume,src='+value['secrets_volume']+',dst=/run/postgresql-credentials,volume-subpath=roles/reader,readonly',
-        '--mount','type=bind,src='+str(HERE/'runtime-identity-postgresql-reader.json')+',dst=/run/trading-ai/runtime-identity.json,readonly']
-    for key,item in {**environment('reader'),'TRADING_AI_ENV':'production',
+        '--mount','type=bind,src='+str(here/'runtime-identity-postgresql-reader.json')+',dst=/run/trading-ai/runtime-identity.json,readonly']
+    for key,item in {**environment('reader',release_root),'TRADING_AI_ENV':'production',
         'TRADING_AI_RUNTIME_IDENTITY_FILE':'/run/trading-ai/runtime-identity.json',
         'PYTHONDONTWRITEBYTECODE':'1'}.items():args += ['--env',key+'='+item]
     return [*args,'--entrypoint','python',value['image']]
 
 
 def is_reader_command(parts):
-    if not parts or Path(parts[0]).name not in ('docker','com.docker.cli') or target() is None:return False
-    prefix=reader_prefix()
+    if not parts or Path(parts[0]).name not in ('docker','com.docker.cli'):return False
+    release=None
+    if target() is None:
+        from acquisition_release import active_root
+        selected=active_root(ROOT)
+        if selected==ROOT or target(selected) is None:return False
+        # A workspace observer must use the same pinned profile as the actual
+        # deployed reader, rather than relaxing recognition for arbitrary docker.
+        path=selected/'ops/activation/postgresql-target.json'
+        manifest=json.loads((selected/'ops/activation/automatic-acquisition-manifest.json').read_text())
+        if manifest['files'].get('ops/activation/postgresql-target.json')!=hashlib.sha256(path.read_bytes()).hexdigest():
+            raise RuntimeError('Active reader target is not manifest-bound')
+        release=selected
+    prefix=reader_prefix(release)
     if parts[1:1+len(prefix)]!=prefix:return False
     tail=parts[1+len(prefix):]
     if not tail:return False

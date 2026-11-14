@@ -40,3 +40,33 @@ def test_last_snapshot_survives_a_busy_refresh(tmp_path,monkeypatch):
     assert result['data']==first['data']
     assert result['updated_at']==first['updated_at']
     assert result['stale'] is True
+
+
+def test_native_monitor_skips_sqlite_gate_and_bounds_startup(monkeypatch):
+    import acquisition_live_reader as reader
+    import postgresql_runtime as native
+    import time,pytest
+    monkeypatch.setattr(native,'enabled',lambda:True)
+    calls=[]
+    monkeypatch.setattr(reader,'main',lambda:calls.append('native'))
+    monkeypatch.setattr(reader.Path,'open',lambda *_a,**_k:(_ for _ in ()).throw(AssertionError('SQLite gate opened')))
+    reader.run_reader()
+    assert calls==['native']
+    monkeypatch.setattr(reader,'main',lambda:time.sleep(.2))
+    with pytest.raises(TimeoutError,match='wall-clock budget'):
+        reader.run_reader(seconds=.02)
+
+
+def test_request_deadline_cannot_be_extended_per_statement(monkeypatch):
+    import postgresql_runtime as native
+    from types import SimpleNamespace
+    from unittest.mock import Mock
+    import pytest
+    conn=SimpleNamespace(raw=SimpleNamespace(execute=Mock()))
+    monkeypatch.setattr('scrapper.db.repository_backend.is_postgresql',lambda _:True)
+    values=iter([10.,11.,12.,13.,14.])
+    monkeypatch.setattr(native.time,'monotonic',lambda:next(values))
+    with native.request_deadline(2):
+        native.query_deadline(conn,100.)
+        with pytest.raises(TimeoutError):native.query_deadline(conn,100.)
+    assert conn.raw.execute.call_count==1

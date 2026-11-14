@@ -105,3 +105,16 @@ class SweepTests(unittest.TestCase):
         self.assertFalse(self.state.exists())
         self.assertEqual(self.batch()['recovered'], 1)
         self.assertEqual(self.conn.execute('SELECT count(*) FROM artifact_period_corrections').fetchone()[0], 2)
+
+    def test_writable_cursor_continues_retained_readonly_legacy_state(self):
+        first=self.artifact('Unresolved')
+        second=self.artifact('Q2FY26')
+        legacy=self.fixture.root/'legacy-readonly-cursor.json'
+        original=json.dumps({'after_artifact_id':first,'through_artifact_id':second})
+        legacy.write_text(original);legacy.chmod(0o444)
+        new=self.fixture.root/'campaigns'/'document-period-recovery.json'
+        result=recover_period_batch(self.conn,state_path=new,legacy_state_path=legacy)
+        self.assertEqual(result['checked'],1)
+        self.assertEqual(result['recovered'],1)
+        self.assertEqual(legacy.read_text(),original)
+        self.assertTrue(new.is_file())
