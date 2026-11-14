@@ -360,3 +360,26 @@ class NativeFinancialPriorityTests(DisposablePostgreSQLTestCase):
                 self.assertTrue(priority.unaccepted_refresh(native,row['queue_item_id'],row['exchange_filing_id']))
                 native.execute("INSERT INTO screener_company_queue_events(queue_item_id,event_at_utc,to_status,evidence_json) VALUES(?,'2026-10-11T00:00:01+00:00','accepted','{}')",(row['queue_item_id'],))
                 self.assertFalse(priority.unaccepted_refresh(native,row['queue_item_id'],row['exchange_filing_id']))
+
+
+class ReaderCutoverTests(unittest.TestCase):
+    setUp=NativeReleaseWiringTests.setUp
+    write_target=NativeReleaseWiringTests.write_target
+
+    def test_immediately_previous_sealed_reader_can_finish_after_cutover(self):
+        import shutil,json,hashlib
+        self.write_target()
+        previous=self.root/'artifacts/acquisition-releases/previous'
+        shutil.copytree(self.release.HERE,previous/'ops/activation')
+        (previous/'.acquisition-release.json').write_text(json.dumps({'workspace_root':str(self.root)}))
+        old=['docker',*self.release.reader_prefix(previous),'/host/acquisition_live_reader.py','quarter_monitor','{}']
+        self.target['image']='sha256:'+'c'*64
+        self.write_target()
+        manifest=self.release.HERE/'automatic-acquisition-manifest.json'
+        value=json.loads(manifest.read_text());value['previous_release']=str(previous);manifest.write_text(json.dumps(value))
+        self.assertTrue(self.release.is_reader_command(old))
+        bad=list(old);bad[bad.index('--network=none')]='--network=bridge'
+        self.assertFalse(self.release.is_reader_command(bad))
+        target=previous/'ops/activation/postgresql-target.json'
+        content=json.loads(target.read_text());content['target_id']='00000000-0000-0000-0000-000000000000';target.write_text(json.dumps(content))
+        self.assertFalse(self.release.is_reader_command(old))

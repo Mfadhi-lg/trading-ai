@@ -148,30 +148,48 @@ def reader_prefix(release_root=None):
 
 
 def is_reader_command(parts):
+    """Exact sealed current/previous reader profiles support a rolling cutover.
+
+    Old terminal clients may finish their read-only requests after activation.
+    Their credentials/mount/security/action contract must still match exactly;
+    only the immediately previous release for the SAME native target is allowed.
+    """
     if not parts or Path(parts[0]).name not in ('docker','com.docker.cli'):return False
-    release=None
-    if target() is None:
-        from acquisition_release import active_root
-        selected=active_root(ROOT)
-        if selected==ROOT or target(selected) is None:return False
-        # A workspace observer must use the same pinned profile as the actual
-        # deployed reader, rather than relaxing recognition for arbitrary docker.
-        path=selected/'ops/activation/postgresql-target.json'
-        manifest=json.loads((selected/'ops/activation/automatic-acquisition-manifest.json').read_text())
-        if manifest['files'].get('ops/activation/postgresql-target.json')!=hashlib.sha256(path.read_bytes()).hexdigest():
+    from acquisition_release import active_root, workspace_root
+    selected=active_root(ROOT)
+    active=target(selected) if selected!=ROOT else target()
+    if active is None:return False
+    candidates=[selected]
+    manifest_path=selected/'ops/activation/automatic-acquisition-manifest.json'
+    manifest=json.loads(manifest_path.read_text())
+    previous=manifest.get('previous_release')
+    if previous:
+        old=Path(previous)
+        workspace=workspace_root(selected)
+        if (old.parent==workspace/'artifacts/acquisition-releases'
+            and workspace_root(old)==workspace and old!=selected):
+            candidates.append(old)
+    for root in candidates:
+        profile=target(root)
+        if profile is None:continue
+        if any(profile[k]!=active[k] for k in ('database','schema','roles','target_id','socket_volume','secrets_volume')):
+            continue
+        path=root/'ops/activation/postgresql-target.json'
+        sealed=json.loads((root/'ops/activation/automatic-acquisition-manifest.json').read_text())
+        if sealed['files'].get('ops/activation/postgresql-target.json')!=hashlib.sha256(path.read_bytes()).hexdigest():
             raise RuntimeError('Active reader target is not manifest-bound')
-        release=selected
-    prefix=reader_prefix(release)
-    if parts[1:1+len(prefix)]!=prefix:return False
-    tail=parts[1+len(prefix):]
-    if not tail:return False
-    if tail==['/host/postgresql_health.py','--probe']:return True
-    if tail[0]=='/host/acquisition_db_status.py':return tail[1:] in ([],['--summary'])
-    if tail[0] not in ('/host/acquisition_live_reader.py','/host/acquisition_queries.py') or len(tail)!=3:return False
-    if tail[1] not in {'census','quarter_monitor','quarter_options','quarter_coverage_export','summary',
-        'search','company','company_report','company_catalog','financials','download_diagnostics'}:return False
-    try:return isinstance(json.loads(tail[2]),dict)
-    except ValueError:return False
+        prefix=reader_prefix(root)
+        if parts[1:1+len(prefix)]!=prefix:continue
+        tail=parts[1+len(prefix):]
+        if not tail:return False
+        if tail==['/host/postgresql_health.py','--probe']:return True
+        if tail[0]=='/host/acquisition_db_status.py':return tail[1:] in ([],['--summary'])
+        if tail[0] not in ('/host/acquisition_live_reader.py','/host/acquisition_queries.py') or len(tail)!=3:return False
+        if tail[1] not in {'census','quarter_monitor','quarter_options','quarter_coverage_export','summary',
+            'search','company','company_report','company_catalog','financials','download_diagnostics'}:return False
+        try:return isinstance(json.loads(tail[2]),dict)
+        except ValueError:return False
+    return False
 
 
 def configure_document_companion(compose,service,out):
