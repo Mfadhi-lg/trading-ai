@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-"""Read timings from one explicitly selected quiescent SQLite snapshot."""
+"""Read timings from explicit native PostgreSQL or a quiescent historical SQLite snapshot."""
 import argparse
+from contextlib import closing
 import json
 from pathlib import Path
 import sqlite3
@@ -11,23 +12,48 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--snapshot', type=Path, required=True,
+    mode = parser.add_mutually_exclusive_group(required=True)
+    mode.add_argument('--native', action='store_true', help='Require explicitly configured PostgreSQL; no SQLite fallback')
+    mode.add_argument('--snapshot', type=Path,
                         help='Explicitly authorized consistent snapshot; never an active writer')
     parser.add_argument('--since', required=True, help='Inclusive UTC timestamp with offset')
     parser.add_argument('--limit', type=int, default=1000)
     args = parser.parse_args()
+    if args.native:
+        import os
+        if os.environ.get('TRADING_AI_DB_BACKEND') != 'postgresql':
+            parser.error('--native requires TRADING_AI_DB_BACKEND=postgresql')
+        sys.path[:0] = [str(Path(__file__).resolve().parents[1]/'ops/host'),
+                       str(Path(__file__).resolve().parents[1]/'ops/activation')]
+        from document_audit_reader import observation
+        from scrapper.db.documents.freshness import acquisition_freshness_report
+        try:
+            with observation(None) as (conn, source):
+                report = acquisition_freshness_report(conn, since_utc=args.since, limit=args.limit)
+        except Exception:
+            print(json.dumps({'status':'unknown','backend':'postgresql',
+                'detail':'Native freshness observation unavailable; no SQLite fallback.'}))
+            return 1
+        report['database_source'] = source
+        print(json.dumps(report, indent=2))
+        return
     path = args.snapshot.resolve(strict=True)
     if not path.is_file() or any(Path(str(path) + suffix).exists() for suffix in ('-wal', '-shm', '-journal')):
         parser.error('A quiescent snapshot without journal/WAL/SHM sidecars is required')
     from scrapper.db.documents.freshness import acquisition_freshness_report
-    with sqlite3.connect(path.as_uri() + '?mode=ro&immutable=1', uri=True) as conn:
+    with closing(sqlite3.connect(path.as_uri() + '?mode=ro&immutable=1', uri=True)) as conn:
         conn.row_factory = sqlite3.Row
         conn.execute('PRAGMA query_only=ON')
         allowed = {sqlite3.SQLITE_SELECT, sqlite3.SQLITE_READ, sqlite3.SQLITE_FUNCTION}
         conn.set_authorizer(lambda action, *_: sqlite3.SQLITE_OK if action in allowed else sqlite3.SQLITE_DENY)
         report = acquisition_freshness_report(conn, since_utc=args.since, limit=args.limit)
+        from datetime import datetime, timezone
+        report['database_source'] = {'backend':'sqlite', 'mode':'historical_sqlite_snapshot',
+            'snapshot_path':str(path),
+            'snapshot_mtime_utc':datetime.fromtimestamp(path.stat().st_mtime, timezone.utc).isoformat(),
+            'observed_at_utc':datetime.now(timezone.utc).isoformat()}
         print(json.dumps(report, indent=2))
 
 
 if __name__ == '__main__':
-    main()
+    raise SystemExit(main())

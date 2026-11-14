@@ -14,6 +14,7 @@ MODULES = (
     'scrapper.tests.test_native_operational_readers',
     'scrapper.tests.test_postgresql_acquisition_gate',
     'scrapper.tests.test_postgresql_financial_diagnostics',
+    'scrapper.tests.test_postgresql_document_audits.NativeDocumentAuditTests',
 )
 
 

@@ -164,3 +164,15 @@ prerequisites were corrected before the passing runs above. No safety guard was
 weakened. No production database, persistent runtime, deployment or acquisition
 was accessed or changed. No migration or rollback is required for this source-only
 guardrail; reverting its added files/workflow commands removes it.
+
+
+## Document observation port (#99)
+
+The document audit tools now use the verified restricted native reader when
+PostgreSQL is selected. `scripts/document-freshness --native` never opens SQLite;
+its explicit `--snapshot` mode remains a historical, immutable input. Native
+census never opens the automatic retained SQLite comparison. See
+[reader contracts and validation](../operations/document-audit-readers.md).
+`test_postgresql_document_audits.NativeDocumentAuditTests` is required by the
+native smoke gate. Inventory acknowledgments cover these source branches and
+callers, not current production observations or authorization to activate them.

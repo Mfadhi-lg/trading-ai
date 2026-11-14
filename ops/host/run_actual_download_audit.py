@@ -23,7 +23,8 @@ def main():
             try:storage=storage_preflight()
             except RuntimeError as exc:storage={'status':'BLOCKED','reason':str(exc)}
             (out/'raw/preflight.json').write_text(json.dumps({'owner':owner,'volume':volume,'storage':storage},indent=2)+'\n')
-            result=subprocess.run(['docker','run','--rm','--pull=never','--network=none','--read-only',
+            from document_audit_reader import container_command
+            command=['docker','run','--rm','--pull=never','--network=none','--read-only',
                 '--cap-drop=ALL','--security-opt=no-new-privileges','--memory=1536m',
                 '--mount',f'type=volume,source={VOLUME},target=/data,readonly',
                 '--mount',f'type=bind,source={ROOT / "ops/activation"},target=/activation,readonly',
@@ -32,7 +33,10 @@ def main():
                 *(['--mount',f'type=bind,source={STORE},target=/documents,readonly'] if storage.get('status')!='BLOCKED' else []),
                 '--mount',f'type=bind,source={out},target=/evidence',
                 '--env','PYTHONDONTWRITEBYTECODE=1','--entrypoint','python',IMAGE,
-                '/host/actual_download_audit.py'],capture_output=True,text=True,timeout=90)
+                '/host/actual_download_audit.py']
+            result=subprocess.run(container_command(command,evidence=out,
+                store=STORE if storage.get('status')!='BLOCKED' else None),
+                capture_output=True,text=True,timeout=90)
             (out/'raw/audit-process.json').write_text(json.dumps({'exit_code':result.returncode,'stdout':result.stdout,'stderr':result.stderr},indent=2)+'\n')
             print(result.stdout or result.stderr)
             result.check_returncode()
