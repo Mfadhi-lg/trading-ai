@@ -52,6 +52,11 @@ The headline distinguishes **RUNNING** (observed batch process), **WAITING**
 (recent scheduler heartbeat and no observed batch), **CHECKING** (missing or stale
 heartbeat/process observation), and **PAUSED** (new batches disabled).
 BSE and other stage blockers remain visible even while other stages run.
+Blockers are retained safety stops, not a count of new failures on each refresh.
+When a stop receipt has no error text, the monitor reads the matching batch's
+`stop` or `execution_failure` log record to show its cause. This display never
+clears a stop or resumes a worker. A source fix in the editable checkout also
+does not update the separately pinned active acquisition release.
 
 The candle section refreshes local backfill receipts on each monitor refresh.
 It shows source rows by timeframe, companies with nonempty history, companies
