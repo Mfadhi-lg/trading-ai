@@ -84,3 +84,21 @@ class DiscoverySelectionTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError,'budget exhausted'):
                 client._get('https://www.screener.in/company/C/')
         self.assertEqual(get.call_count,2)
+
+    def test_official_link_is_queued_even_when_independent_screener_refresh_fails(self):
+        from scrapper.sources.documents.routine import ingest_page
+        self.expectations(2,'2026-09-30',EPOCH)
+        def official(conn, **kwargs):
+            body = b'<a href="https://fixture.example/fresh.pdf" data-period-end="2026-09-30" data-published-at-utc="2026-10-11T14:55:00+00:00">Earnings transcript</a>'
+            return ingest_page(conn, company_id=self.fixture.company_id, source='company_ir',
+                url='https://fixture.example/investors', body=body, now=NOW,
+                snapshot_root=self.fixture.root/'pages')
+        with patch('scrapper.sources.documents.routine.refresh_official_pages',side_effect=official), \
+             patch('scrapper.workflows.documents.reconciliation.reconcile_artifacts',side_effect=RuntimeError('synthetic parse failure')):
+            with self.assertRaisesRegex(RuntimeError,'synthetic parse failure'):
+                run_automatic_discovery(db_path=self.fixture.db_path,epoch=EPOCH,
+                    now_utc=lambda:NOW,official_request_limit=1,snapshot_root=self.fixture.root/'pages')
+        job=self.c.execute('SELECT * FROM artifact_download_queue').fetchone()
+        self.assertIsNotNone(job)
+        self.assertEqual(job['requested_url'],'https://fixture.example/fresh.pdf')
+        self.assertEqual(job['status'],'PENDING')

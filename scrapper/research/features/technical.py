@@ -12,7 +12,8 @@ VERSION = 'historical-daily-indicators-v1'
 
 def daily_indicators(store, company_id, *, start, end, decision_time,
                      mode='strict_delivery', revision_asof=None,
-                     price_period=20, atr_period=14, volume_period=20):
+                     price_period=20, atr_period=14, volume_period=20,
+                     reviewed_calendar=None):
     """Caller owns store lifetime; never opens a database or writes output.
 
     Returns source rows and receipt metadata alongside Decimal indicator values.
@@ -25,8 +26,19 @@ def daily_indicators(store, company_id, *, start, end, decision_time,
     cutoff = datetime.fromisoformat(decision_time)
     if cutoff.utcoffset() is None:
         raise ValueError('aware decision_time required')
-    if not date(2022, 1, 1) <= first <= last <= CALENDAR_REVIEW_THROUGH:
+    if not date(2022, 1, 1) <= first <= last:
         raise ValueError('window outside reviewed archive calendar')
+    if last > CALENDAR_REVIEW_THROUGH:
+        if reviewed_calendar is None:
+            raise ValueError('window outside reviewed archive calendar')
+        from datetime import timedelta
+        day = first
+        while day <= last:
+            record = reviewed_calendar(day)
+            if record.get('verified') is not True or (
+                    not record.get('sessions') and record.get('status') != 'CLOSED'):
+                raise ValueError('window contains unverified calendar dates')
+            day += timedelta(days=1)
     result = store.read(company_id, 'Daily', start=start, end=end, mode=mode,
                         decision_time=decision_time, revision_asof=revision_asof,
                         definition='owner')

@@ -99,6 +99,26 @@ class OfficialIndexTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'escapes'):
             self.load()
 
+    def test_incremental_receipts_update_official_history(self):
+        from scrapper.market_refresh.planner import digest as plan_digest
+        self.save([['2026-11-02T00:00:00+05:30',100,102,99,101,0,0]])
+        raw=json.dumps(dict(data=dict(candles=[['2026-11-03T00:00:00+05:30',101,103,100,102,0,0]]))).encode()
+        (self.archive/'incremental.gz').write_bytes(gzip.compress(raw))
+        query=dict(self.query,request_id='LIVE_FRESH_fixture',from_date='2026-11-03',to_date='2026-11-03')
+        plan=dict(requests=[query])
+        receipt=dict(self.receipt,request_id=query['request_id'],raw_path='incremental.gz',sha256=digest(raw),
+                     query_sha256=plan_digest(query))
+        state=self.root/'freshness';run=state/'runs/fixture';run.mkdir(parents=True)
+        (run/'manifest.json').write_text(json.dumps(plan))
+        (run/'UPDATE_LEDGER.json').write_text(json.dumps(dict(manifest_sha256=plan_digest(plan),requests={query['request_id']:receipt})))
+        result=self.load(incremental_state=state)
+        self.assertEqual([r['date'] for r in result['bars'][KEY]],['2026-11-02','2026-11-03'])
+        self.assertEqual(result['inventory'][0]['missing_dates'],['2026-11-04'])
+        receipt['query_sha256']='changed'
+        (run/'UPDATE_LEDGER.json').write_text(json.dumps(dict(manifest_sha256=plan_digest(plan),requests={query['request_id']:receipt})))
+        with self.assertRaisesRegex(ValueError,'identity mismatch'):
+            self.load(incremental_state=state)
+
     def test_original_unknown_receipt_is_explicit_retrospective(self):
         base=self.root/'artifacts/technical-integration-v2'
         raw=json.dumps(dict(data=dict(candles=[['2026-11-02T00:00:00+05:30',100,102,99,101,0,0]]))).encode()

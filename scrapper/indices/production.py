@@ -86,7 +86,8 @@ def membership(root=ROOT):
     return groups
 
 
-def build(destination, *, start='2025-12-01', end='2026-11-06', reuse_candles=None, action_review=None):
+def build(destination, *, start='2025-12-01', end='2026-11-06', reuse_candles=None, action_review=None,
+          incremental_state=None, reviewed_calendar=None):
     destination=Path(destination)
     if destination.exists():raise ValueError('Use a new output directory; retained builds are immutable')
     destination.mkdir(parents=True)
@@ -94,15 +95,22 @@ def build(destination, *, start='2025-12-01', end='2026-11-06', reuse_candles=No
     groups=membership(); save(destination/'membership.json',groups)
     actions=action_inputs(additional=action_review);save(destination/'action-evidence.json',actions)
     store=HistoricalStore()
+    if reviewed_calendar:
+        from scrapper.market_refresh.derived import VerifiedStore
+        store=VerifiedStore(store, reviewed_calendar)
     try:
         from .official import load_official
-        official=load_official(store,start=start,end=end,asof=cutoff)
+        official=load_official(store,start=start,end=end,asof=cutoff,
+                               incremental_state=incremental_state,reviewed_calendar=reviewed_calendar)
         save(destination/'official.json',official)
         benchmark_key='NSE_INDEX|NIFTY MIDSML 400'
         benchmark={r['date']:r['close'] for r in official['bars'].get(benchmark_key,[])}
         calendar=[];d=date.fromisoformat(start)
         while str(d)<=end:
-            if day_record(d)['sessions']:calendar.append(str(d))
+            record=reviewed_calendar(d) if reviewed_calendar else day_record(d)
+            if reviewed_calendar and record.get('verified') is not True:
+                raise ValueError('Unverified constituent calendar window')
+            if record['sessions']:calendar.append(str(d))
             d+=timedelta(days=1)
         prices={}; sources={}; coverage=[]; datasets={}
         candidates=[g for g in groups if len(g['members'])>=2 and not g['unresolved']]

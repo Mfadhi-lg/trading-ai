@@ -215,10 +215,17 @@ def _filing(row: SourceRow, *, exchange: str, headers: tuple[str, ...]) -> Resul
     # a standalone discovery signal; the subsequent company-page/result
     # validation remains authoritative for accepted financial data.
     scope = normalize_reporting_scope(scope_raw or "standalone")
-    broadcast_raw = clean_text(row.value("broadcast")) or clean_text(
-        row.value("revised_broadcast")
-    )
-    broadcast = parse_ist_timestamp(broadcast_raw, field="broadcast date/time")
+    broadcast_raw = clean_text(row.value("broadcast"))
+    revised_raw = clean_text(row.value("revised_broadcast"))
+    candidates = [(raw, parse_ist_timestamp(raw, field="broadcast date/time"))
+                  for raw in (broadcast_raw, revised_raw) if raw]
+    if not candidates:
+        # Retain the existing classified error for a missing broadcast.
+        parse_ist_timestamp('', field="broadcast date/time")
+    # Integrated NSE revisions may retain the original broadcast column.
+    # Their later official revision instant is the new immutable filing key;
+    # both original source cells remain in raw_row/raw_cells.
+    broadcast_raw, broadcast = max(candidates, key=lambda item: item[1])
     isin_raw = clean_text(row.value("isin"))
     return ResultFiling(
         row_position=row.row_position,

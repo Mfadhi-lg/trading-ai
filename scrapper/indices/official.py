@@ -46,7 +46,7 @@ def _aware(value):
     return result
 
 
-def _daily(raw_rows, query, receipt, *, asof):
+def _daily(raw_rows, query, receipt, *, asof, reviewed_calendar=None):
     """Validate source values exactly, quarantine all duplicated bucket dates."""
     rows, excluded = [], []
     received_at = receipt['received_at']
@@ -77,7 +77,9 @@ def _daily(raw_rows, query, receipt, *, asof):
                 raise ValueError('INVALID_OHLC')
             if volume < 0 or oi < 0 or volume != volume.to_integral_value() or oi != oi.to_integral_value():
                 raise ValueError('INVALID_VOLUME_OR_OPEN_INTEREST')
-            record = day_record(day)
+            record = reviewed_calendar(date.fromisoformat(day)) if reviewed_calendar else day_record(day)
+            if reviewed_calendar and record.get('verified') is not True:
+                raise ValueError('UNVERIFIED_NSE_CALENDAR')
             if not record['sessions']:
                 raise ValueError('NO_VERIFIED_NSE_SESSION')
             completion = max(_aware(s['closes_at']) for s in record['sessions'])
@@ -128,7 +130,8 @@ def _ledgers(root):
             yield plan, saved
 
 
-def load_official(store, *, root=ROOT, asof=None, start='2025-12-01', end=None):
+def load_official(store, *, root=ROOT, asof=None, start='2025-12-01', end=None,
+                  incremental_state=None, reviewed_calendar=None):
     """Return catalog and exact-key daily histories without mutating any source.
 
     `store.root` is the canonical HistoricalStore archive root. `asof` limits
@@ -164,7 +167,7 @@ def load_official(store, *, root=ROOT, asof=None, start='2025-12-01', end=None):
         query = dict(instrument_key=key,from_date='0001-01-01',to_date='9999-12-31')
         receipt = dict(received_at=row['retrieved_at'],source_file=source,sha256=digest,
                        allow_unknown_original_receipt=True)
-        accepted, bad = _daily(candles, query, receipt, asof=cutoff)
+        accepted, bad = _daily(candles, query, receipt, asof=cutoff, reviewed_calendar=reviewed_calendar)
         exclusions.extend(bad)
         for r in accepted:
             bars[key,r['date']] = r
@@ -181,6 +184,24 @@ def load_official(store, *, root=ROOT, asof=None, start='2025-12-01', end=None):
                 if q['instrument_key'] not in lookup:
                     raise ValueError('Acquired NSE key absent from retained catalog')
                 records.append((receipt.get('received_at',''), ident, q, receipt))
+    if incremental_state is not None:
+        from scrapper.market_refresh.planner import digest
+        seen = set()
+        for ledger in sorted((Path(incremental_state)/'runs').glob('*/UPDATE_LEDGER.json')):
+            manifest = ledger.parent/'manifest.json'
+            plan = _json(manifest.read_bytes())
+            state = _json(ledger.read_bytes())
+            if state.get('manifest_sha256') != digest(plan):
+                raise ValueError('Incremental NSE manifest checksum mismatch')
+            queries = {q['request_id']:q for q in plan['requests']}
+            for ident, rec in state['requests'].items():
+                q = queries[ident]
+                if q['kind'] != 'NSE_INDEX' or ident in seen:
+                    continue
+                if q['instrument_key'] not in lookup or rec.get('query_sha256') != digest(q):
+                    raise ValueError('Incremental NSE identity mismatch')
+                seen.add(ident)
+                records.append((rec.get('received_at',''), ident, q, rec))
     for _, ident, q, rec in sorted(records):
         key = q['instrument_key']
         if q['unit'] != 'days' or q['interval'] != 1:
@@ -195,7 +216,7 @@ def load_official(store, *, root=ROOT, asof=None, start='2025-12-01', end=None):
         if _hash(raw) != rec['sha256']:
             raise ValueError('Acquired NSE source checksum mismatch')
         receipt = dict(rec,source_file=str(path),request_id=ident)
-        accepted, bad = _daily(_json(raw)['data']['candles'],q,receipt,asof=cutoff)
+        accepted, bad = _daily(_json(raw)['data']['candles'],q,receipt,asof=cutoff,reviewed_calendar=reviewed_calendar)
         exclusions.extend(bad)
         # A later corrupted/duplicated observation invalidates the earlier day.
         for r in bad:
@@ -207,7 +228,10 @@ def load_official(store, *, root=ROOT, asof=None, start='2025-12-01', end=None):
     calendar = []
     d = date.fromisoformat(start)
     while str(d) <= through:
-        if day_record(d)['sessions']:
+        record = reviewed_calendar(d) if reviewed_calendar else day_record(d)
+        if reviewed_calendar and record.get('verified') is not True:
+            raise ValueError('Unverified official-index calendar window')
+        if record['sessions']:
             calendar.append(str(d))
         d += timedelta(days=1)
     grouped = {key: sorted((r for (k,d),r in bars.items() if k==key and start<=d<=through),key=lambda r:r['date']) for key in lookup}

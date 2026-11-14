@@ -1,0 +1,19 @@
+{
+  "owner_approved": false,
+  "activation_ref": "OWNER_APPROVAL_REFERENCE_REQUIRED",
+  "active_from": "2026-11-16T00:00:00+05:30",
+  "active_until": "2026-11-17T00:00:00+05:30",
+  "state_dir": "/ABSOLUTE/ISOLATED/market-live-state",
+  "watchlist_path": "/ABSOLUTE/REVIEWED/live-watchlist.json",
+  "identity_path": "/ABSOLUTE/REVIEWED/current-instruments.json",
+  "identity_sha256": "VERIFIED_IDENTITY_SHA256",
+  "calendar_path": "/ABSOLUTE/REVIEWED/nse-calendar.json",
+  "calendar_sha256": "REVIEWED_CALENDAR_SHA256",
+  "provider_quota_path": "/ABSOLUTE/SHARED/UPSTOX/REST-quota.json",
+  "stale_seconds": 90,
+  "max_reconnects": 8,
+  "sleep_gap_seconds": 30,
+  "poll_seconds": 5,
+  "refresh_interval_seconds": 300,
+  "identity_refresh_enabled": false
+}

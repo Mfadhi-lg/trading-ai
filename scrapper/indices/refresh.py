@@ -18,16 +18,33 @@ def seal(base):
     return files
 
 
+def build_export(output, *, start, end, intraday_start, action_review=None,
+                 incremental_state=None, reviewed_calendar=None):
+    """Bounded maintained builder used by both CLI and approved refresh service."""
+    base=build(output,start=start,end=end,action_review=action_review,
+               incremental_state=incremental_state,reviewed_calendar=reviewed_calendar)
+    extend(base,intraday_start=intraday_start)
+    entry=export(base);seal(base)
+    return entry
+
+
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('output',type=Path)
     p.add_argument('--start',default='2025-12-01');p.add_argument('--end',default='2026-11-06')
     p.add_argument('--intraday-start',default='2026-08-17')
     p.add_argument('--action-review',type=Path)
+    p.add_argument('--incremental-state',type=Path,
+                   help='Explicit LIVE-FRESH receipt root; checked alongside retained histories')
+    p.add_argument('--reviewed-calendar',type=Path,
+                   help='Explicit verified calendar JSON for current source completion')
     a=p.parse_args()
-    base=build(a.output,start=a.start,end=a.end,action_review=a.action_review)
-    extend(base,intraday_start=a.intraday_start)
-    entry=export(base);seal(base)
+    calendar=None
+    if a.reviewed_calendar:
+        from scrapper.market_refresh.service import load_calendar
+        calendar=load_calendar(a.reviewed_calendar)
+    entry=build_export(a.output,start=a.start,end=a.end,intraday_start=a.intraday_start,
+                       action_review=a.action_review,incremental_state=a.incremental_state,reviewed_calendar=calendar)
     print(entry.resolve())
 
 

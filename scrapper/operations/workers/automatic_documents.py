@@ -227,6 +227,10 @@ def run_automatic_discovery(*, db_path, epoch, limit=2, historical_limit=0,
                     check=lambda:None,wait_seconds=0) as session:
                 official=refresh_official_pages(conn,company_ids=companies,now=now,
                     snapshot_root=snapshot_root or SNAPSHOTS,session=session,request_limit=official_request_limit)
+            # Official links do not wait for Screener parsing to succeed.
+            from ...pipeline.accepted_document_downloads import enqueue_discovered_documents
+            official_enqueued = enqueue_discovered_documents(conn, epoch=epoch, now=now,
+                limit=limit, historical_limit=historical_limit)
             # IDs come only from SQLite integers; values cannot introduce SQL.
             if is_postgresql(conn):
                 selection = _DUE_SELECT_NATIVE.replace('WHERE expectation.next_check_at_utc',
@@ -245,8 +249,14 @@ def run_automatic_discovery(*, db_path, epoch, limit=2, historical_limit=0,
                 connect=connection_factory,document_connection_factory=connection_factory,
                 preview_due_expectations=lambda c,**kw:preview_due_expectations(c,_DUE_SELECT=selection,**kw),
                 claim_due_expectations=lambda c,**kw:claim_due_expectations(c,_DUE_SELECT=selection,**kw))
+            # Materialize links now, independently of financial parsing and the
+            # next downloader slot. This is canonical deduplicated queueing,
+            # never a download or an extension of the source request budget.
+            enqueued = official_enqueued + enqueue_discovered_documents(conn, epoch=epoch, now=now,
+                limit=limit, historical_limit=historical_limit)
             return {'selected':[{'expectation_id':r['expectation_id'],'priority':lane} for r,lane in selected],
-                    'discovery':result,'official':official,'long_tail_extended':extended,'capacity':capacity}
+                    'discovery':result,'official':official,'long_tail_extended':extended,'capacity':capacity,
+                    'enqueued':enqueued}
     finally: conn.close()
 
 

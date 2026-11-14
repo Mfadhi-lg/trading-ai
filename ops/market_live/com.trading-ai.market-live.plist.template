@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+  <key>Label</key><string>com.trading-ai.market-live</string>
+  <key>ProgramArguments</key><array>
+    <string>/ABSOLUTE/APPROVED/PYTHON</string><string>-B</string>
+    <string>/ABSOLUTE/REPO/scripts/market-live</string><string>supervise</string>
+    <string>--config</string><string>/ABSOLUTE/REVIEWED/service.json</string>
+    <string>--authorize</string><string>OWNER_APPROVED_CONFIG_SHA256</string>
+  </array>
+  <key>WorkingDirectory</key><string>/ABSOLUTE/REPO</string>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+  <key>ThrottleInterval</key><integer>30</integer>
+  <key>LimitLoadToSessionType</key><string>Aqua</string>
+  <key>ProcessType</key><string>Background</string>
+  <key>EnvironmentVariables</key><dict><key>PYTHONDONTWRITEBYTECODE</key><string>1</string></dict>
+  <key>StandardOutPath</key><string>/ABSOLUTE/STATE/market-live.log</string>
+  <key>StandardErrorPath</key><string>/ABSOLUTE/STATE/market-live.err</string>
+</dict></plist>

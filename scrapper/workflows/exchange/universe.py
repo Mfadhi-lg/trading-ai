@@ -51,6 +51,7 @@ from ...sources.exchange import (
     CORPORATE_CHANGE_PARSER_NAME,
     EXCHANGE_PARSER_VERSION,
     RESULT_FILING_PARSER_NAME,
+    RESULT_FILING_PARSER_VERSION,
     SECURITY_MASTER_PARSER_NAME,
 )
 from ...sources.exchange.corporate_changes import (
@@ -350,6 +351,17 @@ def _ingest(
     response, acquisition_mode, source_label = _acquire(
         dataset=dataset, file=file, url=url, fetcher=fetcher
     )
+    received_at = getattr(response, 'received_at_utc', None)
+    if received_at is not None:
+        # Maintained bounded polling transports retain the instant the complete
+        # source response arrived. Do not backdate detection to slot admission.
+        from datetime import datetime
+        received = datetime.fromisoformat(received_at)
+        started = datetime.fromisoformat(observed_at)
+        checked = datetime.fromisoformat(now_utc())
+        if received.utcoffset() is None or not started <= received <= checked:
+            raise ValueError('Invalid exchange response receipt timestamp')
+        observed_at = received_at
     if response.fetch_status == "not_found":
         raise DatasetNotPublished(
             f"{dataset} has no published artifact at {source_label}: "
@@ -365,6 +377,7 @@ def _ingest(
             f"status={response.status_code} classification={response.fetch_status}"
         )
     parsed, compression = _parse(dataset, response.content, result_period=result_period)
+    parser_version = RESULT_FILING_PARSER_VERSION if dataset in RESULT_FILING_DATASETS else EXCHANGE_PARSER_VERSION
     base = {
         "schema_version": EXCHANGE_SCHEMA_VERSION,
         "mode": "dry_run" if dry_run else "persisted",
@@ -448,7 +461,7 @@ def _ingest(
             fetch_id=fetch_id,
             blob_id=blob_id,
             parser_name=_parser_name(dataset),
-            parser_version=EXCHANGE_PARSER_VERSION,
+            parser_version=parser_version,
             source_encoding=parsed.encoding,
             observed_at_utc=observed_at,
             headers=parsed.headers,
@@ -479,7 +492,7 @@ def _ingest(
         "snapshot_id": snapshot_id,
         "created": created,
         "parser_name": _parser_name(dataset),
-        "parser_version": EXCHANGE_PARSER_VERSION,
+        "parser_version": parser_version,
         "validation": verdict.as_dict(),
     }
     return payload, parsed, conn, run_id

@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "enabled": false,
+  "cadence_minutes": 10,
+  "monitored_start_ist": "09:00",
+  "monitored_end_ist": "23:00",
+  "max_new_queue_entries": 100,
+  "sources": {
+    "nse_financial_results": {
+      "requests_max_per_day": 1,
+      "source_policy_evidence": "REPLACE_WITH_REVIEWED_SOURCE_RATE_AND_ACCESS_EVIDENCE"
+    }
+  },
+  "db_path": "/REPLACE_WITH_APPROVED_DATABASE",
+  "snapshot_root": "/REPLACE_WITH_APPROVED_SNAPSHOTS",
+  "state_dir": "/REPLACE_WITH_INDEPENDENT_RESULT_POLL_RECEIPTS",
+  "acquisition_owner_lock": "/REPLACE_WITH_EXISTING_DISPATCHER_OWNER_LOCK"
+}

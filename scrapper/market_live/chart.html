@@ -1,0 +1,19 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Focus market freshness</title>
+<style>body{font:16px system-ui;background:#101821;color:#e3edf5;margin:2rem}button,select{font:inherit;padding:.5rem;background:#233747;color:inherit;border:1px solid #567}canvas{width:100%;height:400px}p{color:#bdcbd6}.badge{color:#ffcd72}</style>
+<h1>Focus market freshness</h1><p>Validated completed candles and separate developing observations. Loads the newest local candle export every five seconds. You can also select a saved chart.json.</p>
+<input id="file" type="file" accept="application/json"><select id="stock"></select><select id="tf"><option>1-hour</option><option>4-hour</option><option>Daily</option></select>
+<p id="status" class="badge">UNKNOWN — load chart.json</p><canvas id="plot" width="1400" height="400"></canvas><p id="detail"></p>
+<script>
+let data,manual=false; const el=id=>document.getElementById(id);
+function apply(next){const selected=el('stock').value;data=next;el('stock').replaceChildren(...data.instruments.map(r=>new Option(r.instrument_key,r.instrument_key)));if(data.instruments.some(r=>r.instrument_key===selected))el('stock').value=selected;draw()}
+el('file').onchange=async e=>{manual=true;apply(JSON.parse(await e.target.files[0].text()))};
+function refresh(){if(manual)return;const script=document.createElement('script');script.src='chart.js?at='+Date.now();script.onload=()=>{if(window.FOCUS_CHART)apply(window.FOCUS_CHART);script.remove()};script.onerror=()=>script.remove();document.head.appendChild(script)}
+refresh();setInterval(refresh,5000);
+el('stock').onchange=draw;el('tf').onchange=draw;
+function draw(){if(!data)return;const row=data.instruments.find(r=>r.instrument_key===el('stock').value),tf=el('tf').value;
+el('status').textContent=`${row.status} · ${row.day} · latest completed minute ${row.latest_completed_minute||'UNKNOWN'}`;
+el('detail').textContent=`${row.missing_minutes.length} missing completed minutes. ${row.adjustment_status||''}. Receipt ${data.observed_at}. Dashed candles are developing or incomplete.`;
+const a=(row.completed[tf]||[]).map(x=>({...x,done:true})).concat(row.developing[tf]||[]).sort((a,b)=>a.start.localeCompare(b.start)),c=el('plot').getContext('2d');c.clearRect(0,0,1400,400);if(!a.length)return;
+const lo=Math.min(...a.map(x=>+x.low)),hi=Math.max(...a.map(x=>+x.high)),y=v=>360-(v-lo)/(hi-lo||1)*320,w=1300/a.length;
+a.forEach((r,i)=>{const x=50+(i+.5)*w;c.strokeStyle=+r.close>=+r.open?'#52d5b2':'#fa887d';c.setLineDash(r.done?[]:[4,4]);c.beginPath();c.moveTo(x,y(+r.high));c.lineTo(x,y(+r.low));c.stroke();c.strokeRect(x-Math.min(w*.3,20),y(Math.max(+r.open,+r.close)),Math.min(w*.6,40),Math.max(1,Math.abs(y(+r.open)-y(+r.close))));c.fillStyle='#bdcbd6';c.font='12px system-ui';c.fillText(r.start.slice(11,16),x-17,390)});c.setLineDash([]);}
+</script></html>

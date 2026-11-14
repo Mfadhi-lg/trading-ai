@@ -23,6 +23,10 @@ validation status and existing operational dependencies, and the
 arithmetic and distinct research alternatives. SVP HD is a reconstruction;
 TradingView parity and automatic resolution are unresolved.
 
+- `scrapper/market_live/` — opt-in maintained focus feed, minute evidence, recovery, chart and offline replay.
+- `scrapper/market_refresh/` — bounded incremental daily plans, canonical archive receipts, coverage and derived publication.
+- `ops/market_live/` — independent uninstalled market supervisor and Aqua template.
+
 ## Scraper and acquisition
 
 - `scraper` — the `./scraper` entry point. It passes commands to
