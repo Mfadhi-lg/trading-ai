@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "reviewed_on": "2026-11-12",
+  "reviewed_on": "2026-11-13",
   "baseline": "c0025bac6",
   "owner_policy": "Accountable repository maintenance roles, not personal assignments or execution approval.",
   "experiments": [
@@ -137,6 +137,42 @@
     {
       "consumer": "scripts/technical-data",
       "module": "experiments.technical_fix_v2.schedule"
+    },
+    {
+      "consumer": "scrapper/indices/production.py",
+      "module": "experiments.historical_candle_archive_v1.access"
+    },
+    {
+      "consumer": "scrapper/indices/production.py",
+      "module": "experiments.historical_candle_archive_v1.calendar"
+    },
+    {
+      "consumer": "scrapper/indices/production.py",
+      "module": "experiments.subsector_index_v1.sources"
+    },
+    {
+      "consumer": "scrapper/indices/production.py",
+      "module": "experiments.subsector_index_v2.build"
+    },
+    {
+      "consumer": "scrapper/indices/frames_build.py",
+      "module": "experiments.historical_candle_archive_v1.access"
+    },
+    {
+      "consumer": "scrapper/indices/frames_build.py",
+      "module": "experiments.historical_candle_archive_v1.calendar"
+    },
+    {
+      "consumer": "scrapper/indices/official.py",
+      "module": "experiments.historical_candle_archive_v1.calendar"
+    },
+    {
+      "consumer": "scrapper/indices/timeframes.py",
+      "module": "experiments.historical_candle_archive_v1.calendar"
+    },
+    {
+      "consumer": "scrapper/indices/timeframes.py",
+      "module": "experiments.historical_candle_archive_v1.observations"
     }
   ]
 }

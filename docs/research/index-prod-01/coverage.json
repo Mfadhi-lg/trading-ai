@@ -1,0 +1,2473 @@
+{
+  "build": "artifacts/index-prod-01/build-20261113-v4",
+  "start": "2025-12-01",
+  "end": "2026-11-06",
+  "counts": {
+    "UNAVAILABLE": 309,
+    "PARTIAL": 36,
+    "COMPLETED_PROVISIONAL": 5
+  },
+  "official_catalog": 139,
+  "official_histories": 135,
+  "official_unavailable": [
+    {
+      "instrument_key": "NSE_INDEX|BHARATBOND-APR31",
+      "reason": "NO_ACCEPTED_RETAINED_HISTORY"
+    },
+    {
+      "instrument_key": "NSE_INDEX|BHARATBOND-APR32",
+      "reason": "NO_ACCEPTED_RETAINED_HISTORY"
+    },
+    {
+      "instrument_key": "NSE_INDEX|BHARATBOND-APR30",
+      "reason": "NO_ACCEPTED_RETAINED_HISTORY"
+    },
+    {
+      "instrument_key": "NSE_INDEX|BHARATBOND-APR33",
+      "reason": "NO_ACCEPTED_RETAINED_HISTORY"
+    }
+  ],
+  "coverage": [
+    {
+      "code": "ABRASIVES",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "ACETIC_CHEMICALS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "ADHESIVES",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "ADVERTISING",
+      "expected_constituents": 1,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "AEROSPACE_COMPONENTS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "AGRI_EQUIPMENT",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "AGRI_SEEDS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "AGRI_TRADING",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "AGRO_TECHNICALS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "AIRLINES",
+      "expected_constituents": 2,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "AIRPORTS",
+      "expected_constituents": 1,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "AIR_CARGO",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "AIR_CONDITIONING",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "AIR_PURIFICATION",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "ALKYL_AMINES",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "ALUMINIUM",
+      "expected_constituents": 5,
+      "status": "UNAVAILABLE",
+      "reason": "NO_VALID_CANDLES",
+      "missing_members": [
+        "MAANALU"
+      ]
+    },
+    {
+      "code": "ALUMINIUM_PANELS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "ANIMAL_FEED",
+      "expected_constituents": 4,
+      "status": "UNAVAILABLE",
+      "reason": "NO_VALID_CANDLES",
+      "missing_members": [
+        "KSE"
+      ]
+    },
+    {
+      "code": "ANIMAL_HEALTH",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "API",
+      "expected_constituents": 1,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "APPAREL_PRODUCTS",
+      "expected_constituents": 12,
+      "status": "PARTIAL",
+      "valid_levels": 230,
+      "expected_bars": 232,
+      "first_date": "2025-12-01",
+      "last_date": "2026-11-06",
+      "last_valid_date": "2026-11-04",
+      "certification": "RETROSPECTIVE_MEMBERSHIP;PROVIDER_ACTION_BASIS_UNCERTIFIED",
+      "intraday_status": "NOT_BUILT"
+    },
+    {
+      "code": "APPAREL_RETAIL",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "AQUACULTURE",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "ASSET_MANAGEMENT",
+      "expected_constituents": 8,
+      "status": "UNAVAILABLE",
+      "reason": "NO_VALID_CANDLES",
+      "missing_members": [
+        "GAJA"
+      ]
+    },
+    {
+      "code": "AUTO_AXLES",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "AUTO_BRAKES",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "AUTO_DEALERS",
+      "expected_constituents": 2,
+      "status": "PARTIAL",
+      "valid_levels": 230,
+      "expected_bars": 232,
+      "first_date": "2025-12-01",
+      "last_date": "2026-11-06",
+      "last_valid_date": "2026-11-04",
+      "certification": "RETROSPECTIVE_MEMBERSHIP;PROVIDER_ACTION_BASIS_UNCERTIFIED",
+      "intraday_status": "NOT_BUILT"
+    },
+    {
+      "code": "AUTO_DIECAST",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "AUTO_FORGINGS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "AUTO_HARNESSES",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "AUTO_LIGHTING",
+      "expected_constituents": 1,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "AUTO_PISTONS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "AUTO_STAMPINGS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "AUTO_TRANSMISSION",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "BAKERY",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "BANKING_SOFTWARE",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "BATHWARE",
+      "expected_constituents": 2,
+      "status": "PARTIAL",
+      "valid_levels": 230,
+      "expected_bars": 232,
+      "first_date": "2025-12-01",
+      "last_date": "2026-11-06",
+      "last_valid_date": "2026-11-04",
+      "certification": "RETROSPECTIVE_MEMBERSHIP;PROVIDER_ACTION_BASIS_UNCERTIFIED",
+      "intraday_status": "NOT_BUILT"
+    },
+    {
+      "code": "BATTERY_LEAD",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "BATTERY_LITHIUM",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "BEARINGS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "BEER",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "BIOMASS_POWER",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "BIOPHARMA",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "BIO_FERTILIZER",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "BOILERS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "BPM",
+      "expected_constituents": 35,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "BROADBAND",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "BUILDING_EPC",
+      "expected_constituents": 52,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "BUSINESS_SUPPORT",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "CABLE_TV",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "CARBON_BLACK",
+      "expected_constituents": 2,
+      "status": "COMPLETED_PROVISIONAL",
+      "valid_levels": 232,
+      "expected_bars": 232,
+      "first_date": "2025-12-01",
+      "last_date": "2026-11-06",
+      "last_valid_date": "2026-11-06",
+      "certification": "RETROSPECTIVE_MEMBERSHIP;PROVIDER_ACTION_BASIS_UNCERTIFIED",
+      "intraday_status": "NOT_BUILT"
+    },
+    {
+      "code": "CARBON_MATERIALS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "CASTOR_DERIVATIVES",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "CAST_IRON_PIPES",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "CATALYSTS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "CEMENT",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "CERAMICS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "CHEMICAL_DISTRIBUTION",
+      "expected_constituents": 1,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "CHLORALKALI",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "CINEMA",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "CLINICAL_RESEARCH",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "CLOCKS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "COAL_MINING",
+      "expected_constituents": 4,
+      "status": "UNAVAILABLE",
+      "reason": "NO_VALID_CANDLES",
+      "missing_members": [
+        "CMLL"
+      ]
+    },
+    {
+      "code": "COATED_METALS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "COFFEE",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "COMMERCIAL_LEASING",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "COMMERCIAL_REALTY",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "COMMERCIAL_VEHICLES",
+      "expected_constituents": 4,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "COMPRESSORS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "CONDOMS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "CONDUCTORS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "CONFECTIONERY",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "CONSTRUCTION_EQUIPMENT",
+      "expected_constituents": 5,
+      "status": "UNAVAILABLE",
+      "reason": "NO_VALID_CANDLES",
+      "missing_members": [
+        "INDOFARM"
+      ]
+    },
+    {
+      "code": "CONSUMER_CREDIT",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "CONTAINER_LOGISTICS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "COPPER",
+      "expected_constituents": 3,
+      "status": "UNAVAILABLE",
+      "reason": "NO_VALID_CANDLES",
+      "missing_members": [
+        "BHAGYANGR"
+      ]
+    },
+    {
+      "code": "COTTON_YARN",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "COUNTRY_LIQUOR",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "CREDIT_RATING",
+      "expected_constituents": 3,
+      "status": "PARTIAL",
+      "valid_levels": 230,
+      "expected_bars": 232,
+      "first_date": "2025-12-01",
+      "last_date": "2026-11-06",
+      "last_valid_date": "2026-11-04",
+      "certification": "RETROSPECTIVE_MEMBERSHIP;PROVIDER_ACTION_BASIS_UNCERTIFIED",
+      "intraday_status": "NOT_BUILT"
+    },
+    {
+      "code": "CUTTING_TOOLS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "CYBERSECURITY",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "CYCLING",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "DAIRY",
+      "expected_constituents": 9,
+      "status": "UNAVAILABLE",
+      "reason": "NO_VALID_CANDLES",
+      "missing_members": [
+        "MILKYMIST"
+      ]
+    },
+    {
+      "code": "DEFENCE_ELECTRONICS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "DEFENCE_SIMULATION",
+      "expected_constituents": 1,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "DEPOSITORIES",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "DETERGENTS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "DIAGNOSTICS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "DIALYSIS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "DIAMONDS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "DIAMOND_JEWELLERY",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "DISTILLERY",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "DREDGING",
+      "expected_constituents": 2,
+      "status": "UNAVAILABLE",
+      "reason": "NO_VALID_CANDLES",
+      "missing_members": [
+        "KMEW"
+      ]
+    },
+    {
+      "code": "DRILLING",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "DYES_PIGMENTS",
+      "expected_constituents": 7,
+      "status": "PARTIAL",
+      "valid_levels": 137,
+      "expected_bars": 139,
+      "first_date": "2026-04-20",
+      "last_date": "2026-11-06",
+      "last_valid_date": "2026-11-04",
+      "certification": "RETROSPECTIVE_MEMBERSHIP;PROVIDER_ACTION_BASIS_UNCERTIFIED",
+      "intraday_status": "NOT_BUILT"
+    },
+    {
+      "code": "EDIBLE_OILS",
+      "expected_constituents": 4,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "EDUCATION",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "EDUCATION_SOFTWARE",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "ELECTRICAL_DISTRIBUTION",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "ELECTRICITY_GENERATION",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "EMS",
+      "expected_constituents": 4,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "ENGINEERING_POLYMERS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "ENGINEERING_RD",
+      "expected_constituents": 2,
+      "status": "PARTIAL",
+      "valid_levels": 230,
+      "expected_bars": 232,
+      "first_date": "2025-12-01",
+      "last_date": "2026-11-06",
+      "last_valid_date": "2026-11-04",
+      "certification": "RETROSPECTIVE_MEMBERSHIP;PROVIDER_ACTION_BASIS_UNCERTIFIED",
+      "intraday_status": "NOT_BUILT"
+    },
+    {
+      "code": "EPC_WATER",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "ERP_SOFTWARE",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "ETHANOL",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "EVENTS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "EV_CHARGING",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "EWASTE",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "EXPLOSIVES",
+      "expected_constituents": 3,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "EXPRESS_LOGISTICS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "EXTRUSION_MACHINERY",
+      "expected_constituents": 1,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "E_RETAIL",
+      "expected_constituents": 14,
+      "status": "UNAVAILABLE",
+      "reason": "NO_VALID_CANDLES",
+      "missing_members": [
+        "SHIPROCKET"
+      ]
+    },
+    {
+      "code": "FABRIC_WEAVING",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "FACILITY_MANAGEMENT",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "FANS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "FASTENERS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "FERRO_ALLOYS",
+      "expected_constituents": 2,
+      "status": "PARTIAL",
+      "valid_levels": 230,
+      "expected_bars": 232,
+      "first_date": "2025-12-01",
+      "last_date": "2026-11-06",
+      "last_valid_date": "2026-11-04",
+      "certification": "RETROSPECTIVE_MEMBERSHIP;PROVIDER_ACTION_BASIS_UNCERTIFIED",
+      "intraday_status": "NOT_BUILT"
+    },
+    {
+      "code": "FIBRE_CEMENT",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "FILM_PRODUCTION",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "FLAVOURS_FRAGRANCES",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "FLEXIBLE_PACKAGING",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "FLEX_CREDIT",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "FLEX_WORKSPACE",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "FLOW_PRODUCTS",
+      "expected_constituents": 1,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "FLUOROCHEMICALS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "FOOD_INGREDIENTS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "FOOTWEAR",
+      "expected_constituents": 5,
+      "status": "PARTIAL",
+      "valid_levels": 230,
+      "expected_bars": 232,
+      "first_date": "2025-12-01",
+      "last_date": "2026-11-06",
+      "last_valid_date": "2026-11-04",
+      "certification": "RETROSPECTIVE_MEMBERSHIP;PROVIDER_ACTION_BASIS_UNCERTIFIED",
+      "intraday_status": "NOT_BUILT"
+    },
+    {
+      "code": "FORMULATIONS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "FREIGHT_FORWARDING",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "FURNITURE",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "GAS_DISTRIBUTION",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "GAS_PIPELINES",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "GENERAL_INSURANCE",
+      "expected_constituents": 6,
+      "status": "PARTIAL",
+      "valid_levels": 230,
+      "expected_bars": 232,
+      "first_date": "2025-12-01",
+      "last_date": "2026-11-06",
+      "last_valid_date": "2026-11-04",
+      "certification": "RETROSPECTIVE_MEMBERSHIP;PROVIDER_ACTION_BASIS_UNCERTIFIED",
+      "intraday_status": "NOT_BUILT"
+    },
+    {
+      "code": "GENERATORS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "GLASS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "GLASS_PACKAGING",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "GOLD_LOANS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "GPU_CLOUD",
+      "expected_constituents": 1,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "GRAPHITE",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "GROCERY_RETAIL",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "HEALTH_INSURANCE",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "HEAT_EXCHANGERS",
+      "expected_constituents": 1,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "HOME_APPLIANCES",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "HOME_TEXTILES",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "HORTICULTURE",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "HOSPITALITY_FINANCE",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "HOSPITALS",
+      "expected_constituents": 22,
+      "status": "UNAVAILABLE",
+      "reason": "NO_VALID_CANDLES",
+      "missing_members": [
+        "MANIPALHOS"
+      ]
+    },
+    {
+      "code": "HOSPITAL_FACILITIES",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "HOTELS",
+      "expected_constituents": 25,
+      "status": "UNAVAILABLE",
+      "reason": "NO_VALID_CANDLES",
+      "missing_members": [
+        "PRAVEG"
+      ]
+    },
+    {
+      "code": "HOUSING_FINANCE",
+      "expected_constituents": 12,
+      "status": "PARTIAL",
+      "valid_levels": 230,
+      "expected_bars": 232,
+      "first_date": "2025-12-01",
+      "last_date": "2026-11-06",
+      "last_valid_date": "2026-11-04",
+      "certification": "RETROSPECTIVE_MEMBERSHIP;PROVIDER_ACTION_BASIS_UNCERTIFIED",
+      "intraday_status": "NOT_BUILT"
+    },
+    {
+      "code": "HYDRO_POWER",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "HYGIENE",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "INDUSTRIAL_AUTOMATION",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "INDUSTRIAL_ENZYMES",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "INDUSTRIAL_GASES",
+      "expected_constituents": 3,
+      "status": "PARTIAL",
+      "valid_levels": 230,
+      "expected_bars": 232,
+      "first_date": "2025-12-01",
+      "last_date": "2026-11-06",
+      "last_valid_date": "2026-11-04",
+      "certification": "RETROSPECTIVE_MEMBERSHIP;PROVIDER_ACTION_BASIS_UNCERTIFIED",
+      "intraday_status": "NOT_BUILT"
+    },
+    {
+      "code": "INDUSTRIAL_MOTORS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "INFRA_FINANCE",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "INJECTABLES",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "INSURANCE_BROKING",
+      "expected_constituents": 1,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "INTERNET_CLASSIFIEDS",
+      "expected_constituents": 1,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "INVESTMENT_BANKING",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "INVESTMENT_HOLDING",
+      "expected_constituents": 24,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "IRON_ORE_MINING",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "IRRIGATION",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "IT_INFRA",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "IT_SERVICES",
+      "expected_constituents": 33,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "JEWELLERY_MANUFACTURING",
+      "expected_constituents": 1,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "JEWELLERY_RETAIL",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "JUTE",
+      "expected_constituents": 2,
+      "status": "PARTIAL",
+      "valid_levels": 230,
+      "expected_bars": 232,
+      "first_date": "2025-12-01",
+      "last_date": "2026-11-06",
+      "last_valid_date": "2026-11-04",
+      "certification": "RETROSPECTIVE_MEMBERSHIP;PROVIDER_ACTION_BASIS_UNCERTIFIED",
+      "intraday_status": "NOT_BUILT"
+    },
+    {
+      "code": "KNIT_GARMENTS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "LAMINATES",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "LEATHER_PROCESSING",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "LED_LUMINAIRES",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "LIFE_INSURANCE",
+      "expected_constituents": 6,
+      "status": "UNAVAILABLE",
+      "reason": "NO_VALID_CANDLES",
+      "missing_members": [
+        "ICICIPRULI"
+      ]
+    },
+    {
+      "code": "LIGHTING",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "LOCAL_SEARCH",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "LOGISTICS_3PL",
+      "expected_constituents": 21,
+      "status": "UNAVAILABLE",
+      "reason": "NO_VALID_CANDLES",
+      "missing_members": [
+        "SNOWMAN",
+        "GLOTTIS",
+        "AGL",
+        "SKYWAYS"
+      ]
+    },
+    {
+      "code": "LUBRICANTS",
+      "expected_constituents": 6,
+      "status": "PARTIAL",
+      "valid_levels": 230,
+      "expected_bars": 232,
+      "first_date": "2025-12-01",
+      "last_date": "2026-11-06",
+      "last_valid_date": "2026-11-04",
+      "certification": "RETROSPECTIVE_MEMBERSHIP;PROVIDER_ACTION_BASIS_UNCERTIFIED",
+      "intraday_status": "NOT_BUILT"
+    },
+    {
+      "code": "LUGGAGE",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "MARINE_CHARTERING",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "MARITIME_SHIPPING",
+      "expected_constituents": 4,
+      "status": "PARTIAL",
+      "valid_levels": 230,
+      "expected_bars": 232,
+      "first_date": "2025-12-01",
+      "last_date": "2026-11-06",
+      "last_valid_date": "2026-11-04",
+      "certification": "RETROSPECTIVE_MEMBERSHIP;PROVIDER_ACTION_BASIS_UNCERTIFIED",
+      "intraday_status": "NOT_BUILT"
+    },
+    {
+      "code": "MASTERBATCHES",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "MATERIAL_HANDLING",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "MDF",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "MEAT_PROCESSING",
+      "expected_constituents": 3,
+      "status": "PARTIAL",
+      "valid_levels": 230,
+      "expected_bars": 232,
+      "first_date": "2025-12-01",
+      "last_date": "2026-11-06",
+      "last_valid_date": "2026-11-04",
+      "certification": "RETROSPECTIVE_MEMBERSHIP;PROVIDER_ACTION_BASIS_UNCERTIFIED",
+      "intraday_status": "NOT_BUILT"
+    },
+    {
+      "code": "MEDICAL_DEVICES",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "MEDICAL_IMAGING",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "METAL_PACKAGING",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "METAL_TRADING",
+      "expected_constituents": 2,
+      "status": "PARTIAL",
+      "valid_levels": 230,
+      "expected_bars": 232,
+      "first_date": "2025-12-01",
+      "last_date": "2026-11-06",
+      "last_valid_date": "2026-11-04",
+      "certification": "RETROSPECTIVE_MEMBERSHIP;PROVIDER_ACTION_BASIS_UNCERTIFIED",
+      "intraday_status": "NOT_BUILT"
+    },
+    {
+      "code": "MF_DISTRIBUTION",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "MICROFINANCE",
+      "expected_constituents": 5,
+      "status": "PARTIAL",
+      "valid_levels": 230,
+      "expected_bars": 232,
+      "first_date": "2025-12-01",
+      "last_date": "2026-11-06",
+      "last_valid_date": "2026-11-04",
+      "certification": "RETROSPECTIVE_MEMBERSHIP;PROVIDER_ACTION_BASIS_UNCERTIFIED",
+      "intraday_status": "NOT_BUILT"
+    },
+    {
+      "code": "MILITARY_SHIPBUILDING",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "MINERAL_PROCESSING",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "MINING_EQUIPMENT",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "MOTHER_BABY_RETAIL",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "MUSIC_RIGHTS",
+      "expected_constituents": 1,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "NUTRACEUTICALS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "OFFSHORE_SERVICES",
+      "expected_constituents": 2,
+      "status": "PARTIAL",
+      "valid_levels": 230,
+      "expected_bars": 232,
+      "first_date": "2025-12-01",
+      "last_date": "2026-11-06",
+      "last_valid_date": "2026-11-04",
+      "certification": "RETROSPECTIVE_MEMBERSHIP;PROVIDER_ACTION_BASIS_UNCERTIFIED",
+      "intraday_status": "NOT_BUILT"
+    },
+    {
+      "code": "OIL_GAS_EP",
+      "expected_constituents": 7,
+      "status": "UNAVAILABLE",
+      "reason": "NO_VALID_CANDLES",
+      "missing_members": [
+        "GNRL"
+      ]
+    },
+    {
+      "code": "OIL_GAS_TRADING",
+      "expected_constituents": 1,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "OLEOCHEMICALS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "ONCOLOGY_FORMULATIONS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "OPTICAL_FIBRE",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "OPTICAL_RETAIL",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "PAINTS",
+      "expected_constituents": 7,
+      "status": "UNAVAILABLE",
+      "reason": "NO_VALID_CANDLES",
+      "missing_members": [
+        "JSWDULUX"
+      ]
+    },
+    {
+      "code": "PAPERBOARD",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "PASSENGER_VEHICLES",
+      "expected_constituents": 7,
+      "status": "PARTIAL",
+      "valid_levels": 108,
+      "expected_bars": 110,
+      "first_date": "2026-06-02",
+      "last_date": "2026-11-06",
+      "last_valid_date": "2026-11-04",
+      "certification": "RETROSPECTIVE_MEMBERSHIP;PROVIDER_ACTION_BASIS_UNCERTIFIED",
+      "intraday_status": "NOT_BUILT"
+    },
+    {
+      "code": "PAYMENTS_BANKS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "PAYMENT_PROCESSING",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "PCB",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "PERFORMANCE_CHEMICALS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "PERSONAL_CARE",
+      "expected_constituents": 9,
+      "status": "PARTIAL",
+      "valid_levels": 230,
+      "expected_bars": 232,
+      "first_date": "2025-12-01",
+      "last_date": "2026-11-06",
+      "last_valid_date": "2026-11-04",
+      "certification": "RETROSPECTIVE_MEMBERSHIP;PROVIDER_ACTION_BASIS_UNCERTIFIED",
+      "intraday_status": "NOT_BUILT"
+    },
+    {
+      "code": "PESTICIDE_FORMULATION",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "PETROLEUM_PRODUCTS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "PETROLEUM_STORAGE",
+      "expected_constituents": 2,
+      "status": "PARTIAL",
+      "valid_levels": 230,
+      "expected_bars": 232,
+      "first_date": "2025-12-01",
+      "last_date": "2026-11-06",
+      "last_valid_date": "2026-11-04",
+      "certification": "RETROSPECTIVE_MEMBERSHIP;PROVIDER_ACTION_BASIS_UNCERTIFIED",
+      "intraday_status": "NOT_BUILT"
+    },
+    {
+      "code": "PET_BOTTLES",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "PET_RECYCLING",
+      "expected_constituents": 1,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "PHARMACY_RETAIL",
+      "expected_constituents": 2,
+      "status": "PARTIAL",
+      "valid_levels": 230,
+      "expected_bars": 232,
+      "first_date": "2025-12-01",
+      "last_date": "2026-11-06",
+      "last_valid_date": "2026-11-04",
+      "certification": "RETROSPECTIVE_MEMBERSHIP;PROVIDER_ACTION_BASIS_UNCERTIFIED",
+      "intraday_status": "NOT_BUILT"
+    },
+    {
+      "code": "PHARMA_CDMO",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "PHARMA_DISTRIBUTION",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "PHARMA_INTERMEDIATES",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "PHOSPHATIC_FERTILIZER",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "PIG_IRON",
+      "expected_constituents": 1,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "PLASTIC_FLEXIBLES",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "PLASTIC_MOULDINGS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "PLASTIC_PIPES",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "PLYWOOD",
+      "expected_constituents": 1,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "POLYESTER_FILMS",
+      "expected_constituents": 1,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "PORTS",
+      "expected_constituents": 4,
+      "status": "PARTIAL",
+      "valid_levels": 230,
+      "expected_bars": 232,
+      "first_date": "2025-12-01",
+      "last_date": "2026-11-06",
+      "last_valid_date": "2026-11-04",
+      "certification": "RETROSPECTIVE_MEMBERSHIP;PROVIDER_ACTION_BASIS_UNCERTIFIED",
+      "intraday_status": "NOT_BUILT"
+    },
+    {
+      "code": "POTABLE_WATER",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "POWER_CABLES",
+      "expected_constituents": 10,
+      "status": "UNAVAILABLE",
+      "reason": "NO_VALID_CANDLES",
+      "missing_members": [
+        "LASERPOWER",
+        "LUMINO"
+      ]
+    },
+    {
+      "code": "POWER_DISTRIBUTION",
+      "expected_constituents": 1,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "POWER_EPC",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "POWER_PLANT_EQUIPMENT",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "POWER_TRADING",
+      "expected_constituents": 1,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "POWER_TRANSMISSION",
+      "expected_constituents": 1,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "PRECISION_ENGINEERING",
+      "expected_constituents": 1,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "PRIMARY_DEALERS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "PRINTING",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "PRINTING_INKS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "PRINT_MEDIA",
+      "expected_constituents": 5,
+      "status": "UNAVAILABLE",
+      "reason": "NO_VALID_CANDLES",
+      "missing_members": [
+        "HMVL",
+        "HTMEDIA"
+      ]
+    },
+    {
+      "code": "PRIVATE_BANKS",
+      "expected_constituents": 20,
+      "status": "COMPLETED_PROVISIONAL",
+      "valid_levels": 232,
+      "expected_bars": 232,
+      "first_date": "2025-12-01",
+      "last_date": "2026-11-06",
+      "last_valid_date": "2026-11-06",
+      "certification": "RETROSPECTIVE_MEMBERSHIP;PROVIDER_ACTION_BASIS_UNCERTIFIED",
+      "intraday_status": "NOT_BUILT"
+    },
+    {
+      "code": "PROPERTY_DEVELOPMENT",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "PROPERTY_SERVICES",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "PROTEIN_INGREDIENTS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "PUBLIC_BANKS",
+      "expected_constituents": 12,
+      "status": "COMPLETED_PROVISIONAL",
+      "valid_levels": 232,
+      "expected_bars": 232,
+      "first_date": "2025-12-01",
+      "last_date": "2026-11-06",
+      "last_valid_date": "2026-11-06",
+      "certification": "RETROSPECTIVE_MEMBERSHIP;PROVIDER_ACTION_BASIS_UNCERTIFIED",
+      "intraday_status": "NOT_BUILT"
+    },
+    {
+      "code": "PULSES",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "PUMPS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "RAIL_INFRA",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "RAIL_ROLLING_STOCK",
+      "expected_constituents": 4,
+      "status": "PARTIAL",
+      "valid_levels": 55,
+      "expected_bars": 57,
+      "first_date": "2026-08-17",
+      "last_date": "2026-11-06",
+      "last_valid_date": "2026-11-04",
+      "certification": "RETROSPECTIVE_MEMBERSHIP;PROVIDER_ACTION_BASIS_UNCERTIFIED",
+      "intraday_status": "NOT_BUILT"
+    },
+    {
+      "code": "RAIL_SPRINGS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "REFINERIES",
+      "expected_constituents": 6,
+      "status": "PARTIAL",
+      "valid_levels": 230,
+      "expected_bars": 232,
+      "first_date": "2025-12-01",
+      "last_date": "2026-11-06",
+      "last_valid_date": "2026-11-04",
+      "certification": "RETROSPECTIVE_MEMBERSHIP;PROVIDER_ACTION_BASIS_UNCERTIFIED",
+      "intraday_status": "NOT_BUILT"
+    },
+    {
+      "code": "REFINING_CRUDE",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "REFRACTORIES",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "REGISTRARS",
+      "expected_constituents": 1,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "RENEWABLE_POWER",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "RESIDENTIAL_REALTY",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "RESORTS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "RESTAURANTS",
+      "expected_constituents": 9,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "RETAIL_BROKING",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "RETAIL_MERCHANDISE",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "RICE_MILLING",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "ROAD_EPC",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "ROAD_FREIGHT",
+      "expected_constituents": 1,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "RUBBER_CHEMICALS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "RUBBER_PRODUCTS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "SALT",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "SATELLITE_COMMS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "SEAFOOD",
+      "expected_constituents": 2,
+      "status": "PARTIAL",
+      "valid_levels": 137,
+      "expected_bars": 139,
+      "first_date": "2026-04-20",
+      "last_date": "2026-11-06",
+      "last_valid_date": "2026-11-04",
+      "certification": "RETROSPECTIVE_MEMBERSHIP;PROVIDER_ACTION_BASIS_UNCERTIFIED",
+      "intraday_status": "NOT_BUILT"
+    },
+    {
+      "code": "SEAMLESS_PIPES",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "SECURITIES_DISTRIBUTION",
+      "expected_constituents": 2,
+      "status": "COMPLETED_PROVISIONAL",
+      "valid_levels": 232,
+      "expected_bars": 232,
+      "first_date": "2025-12-01",
+      "last_date": "2026-11-06",
+      "last_valid_date": "2026-11-06",
+      "certification": "RETROSPECTIVE_MEMBERSHIP;PROVIDER_ACTION_BASIS_UNCERTIFIED",
+      "intraday_status": "NOT_BUILT"
+    },
+    {
+      "code": "SENSORS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "SHIPBUILDING",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "SMALL_FINANCE_BANKS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "SMART_METERS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "SNACKS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "SOCKS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "SODA_ASH",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "SOFTWARE_TESTING",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "SOFT_DRINKS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "SOLAR_CELLS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "SOLAR_EPC",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "SOLAR_MODULES",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "SOLVENT_EXTRACTION",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "SPECIALTY_INTERMEDIATES",
+      "expected_constituents": 1,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "SPECIALTY_OILS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "SPICES",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "SPIRITS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "SPONGE_IRON",
+      "expected_constituents": 2,
+      "status": "PARTIAL",
+      "valid_levels": 230,
+      "expected_bars": 232,
+      "first_date": "2025-12-01",
+      "last_date": "2026-11-06",
+      "last_valid_date": "2026-11-04",
+      "certification": "RETROSPECTIVE_MEMBERSHIP;PROVIDER_ACTION_BASIS_UNCERTIFIED",
+      "intraday_status": "NOT_BUILT"
+    },
+    {
+      "code": "SPORTS_GOODS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "SPRINGS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "SSP_FERTILIZER",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "STAFFING",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "STEEL_CASTINGS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "STEEL_MAKING",
+      "expected_constituents": 14,
+      "status": "PARTIAL",
+      "valid_levels": 99,
+      "expected_bars": 101,
+      "first_date": "2026-06-15",
+      "last_date": "2026-11-06",
+      "last_valid_date": "2026-11-04",
+      "certification": "RETROSPECTIVE_MEMBERSHIP;PROVIDER_ACTION_BASIS_UNCERTIFIED",
+      "intraday_status": "NOT_BUILT"
+    },
+    {
+      "code": "STEEL_ROLLING",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "STEEL_TUBES",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "STOCK_BROKING",
+      "expected_constituents": 21,
+      "status": "UNAVAILABLE",
+      "reason": "NO_VALID_CANDLES",
+      "missing_members": [
+        "INDOTHAI"
+      ]
+    },
+    {
+      "code": "STOCK_EXCHANGES",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "STONE_MINING",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "STONE_PROCESSING",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "SUGAR",
+      "expected_constituents": 13,
+      "status": "PARTIAL",
+      "valid_levels": 230,
+      "expected_bars": 232,
+      "first_date": "2025-12-01",
+      "last_date": "2026-11-06",
+      "last_valid_date": "2026-11-04",
+      "certification": "RETROSPECTIVE_MEMBERSHIP;PROVIDER_ACTION_BASIS_UNCERTIFIED",
+      "intraday_status": "NOT_BUILT"
+    },
+    {
+      "code": "SULPHURIC_ACID",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "SURFACTANTS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "SYNTHETIC_YARN",
+      "expected_constituents": 1,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "TEA",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "TECHNICAL_TEXTILES",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "TELECOM_EQUIPMENT",
+      "expected_constituents": 5,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "TELECOM_TOWERS",
+      "expected_constituents": 5,
+      "status": "PARTIAL",
+      "valid_levels": 230,
+      "expected_bars": 232,
+      "first_date": "2025-12-01",
+      "last_date": "2026-11-06",
+      "last_valid_date": "2026-11-04",
+      "certification": "RETROSPECTIVE_MEMBERSHIP;PROVIDER_ACTION_BASIS_UNCERTIFIED",
+      "intraday_status": "NOT_BUILT"
+    },
+    {
+      "code": "TESTING_INSPECTION",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "TEXTILE_CHEMICALS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "TEXTILE_MACHINERY",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "TEXTILE_TRADING",
+      "expected_constituents": 1,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "THERMAL_POWER",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "TOBACCO",
+      "expected_constituents": 3,
+      "status": "PARTIAL",
+      "valid_levels": 137,
+      "expected_bars": 139,
+      "first_date": "2026-04-20",
+      "last_date": "2026-11-06",
+      "last_valid_date": "2026-11-04",
+      "certification": "RETROSPECTIVE_MEMBERSHIP;PROVIDER_ACTION_BASIS_UNCERTIFIED",
+      "intraday_status": "NOT_BUILT"
+    },
+    {
+      "code": "TOLL_ROADS",
+      "expected_constituents": 2,
+      "status": "UNAVAILABLE",
+      "reason": "NO_VALID_CANDLES",
+      "missing_members": [
+        "INNOVISION"
+      ]
+    },
+    {
+      "code": "TOYS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "TRACTORS",
+      "expected_constituents": 2,
+      "status": "PARTIAL",
+      "valid_levels": 230,
+      "expected_bars": 232,
+      "first_date": "2025-12-01",
+      "last_date": "2026-11-06",
+      "last_valid_date": "2026-11-04",
+      "certification": "RETROSPECTIVE_MEMBERSHIP;PROVIDER_ACTION_BASIS_UNCERTIFIED",
+      "intraday_status": "NOT_BUILT"
+    },
+    {
+      "code": "TRANSFORMERS",
+      "expected_constituents": 2,
+      "status": "COMPLETED_PROVISIONAL",
+      "valid_levels": 232,
+      "expected_bars": 232,
+      "first_date": "2025-12-01",
+      "last_date": "2026-11-06",
+      "last_valid_date": "2026-11-06",
+      "certification": "RETROSPECTIVE_MEMBERSHIP;PROVIDER_ACTION_BASIS_UNCERTIFIED",
+      "intraday_status": "NOT_BUILT"
+    },
+    {
+      "code": "TRANSFORMER_BUSHINGS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "TRAVEL_OTA",
+      "expected_constituents": 1,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "TRAVEL_SAAS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "TUBE_PACKAGING",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "TV_BROADCAST",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "TWO_WHEELERS",
+      "expected_constituents": 6,
+      "status": "PARTIAL",
+      "valid_levels": 230,
+      "expected_bars": 232,
+      "first_date": "2025-12-01",
+      "last_date": "2026-11-06",
+      "last_valid_date": "2026-11-04",
+      "certification": "RETROSPECTIVE_MEMBERSHIP;PROVIDER_ACTION_BASIS_UNCERTIFIED",
+      "intraday_status": "NOT_BUILT"
+    },
+    {
+      "code": "TYRES",
+      "expected_constituents": 1,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "UREA_FERTILIZER",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "VALVES",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "VEHICLE_FINANCE",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "VINYL_SURFACES",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "WAREHOUSING",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "WATCHES",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "WATER_PURIFICATION",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "WATER_TREATMENT",
+      "expected_constituents": 6,
+      "status": "UNAVAILABLE",
+      "reason": "NO_VALID_CANDLES",
+      "missing_members": [
+        "TECHNOCRAF"
+      ]
+    },
+    {
+      "code": "WEALTH_MANAGEMENT",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "WEIGHING",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "WELDED_PIPES",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "WELDING",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "WHEEL_RIMS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "WINDING_WIRES",
+      "expected_constituents": 1,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "WIND_TURBINES",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "WOOL",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "WRITING_INSTRUMENTS",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "WRITING_PAPER",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "YARN_SPINNING",
+      "expected_constituents": 0,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "ZINC",
+      "expected_constituents": 1,
+      "status": "UNAVAILABLE",
+      "reason": "INSUFFICIENT_VERIFIED_MEMBERS_OR_UNRESOLVED_IDENTITIES"
+    },
+    {
+      "code": "TYRES_REVIEWED_CORE",
+      "expected_constituents": 5,
+      "status": "PARTIAL",
+      "valid_levels": 230,
+      "expected_bars": 232,
+      "first_date": "2025-12-01",
+      "last_date": "2026-11-06",
+      "last_valid_date": "2026-11-04",
+      "certification": "RETROSPECTIVE_MEMBERSHIP;PROVIDER_ACTION_BASIS_UNCERTIFIED",
+      "intraday_status": "NOT_BUILT"
+    },
+    {
+      "code": "EMS_REVIEWED_CORE",
+      "expected_constituents": 4,
+      "status": "PARTIAL",
+      "valid_levels": 230,
+      "expected_bars": 232,
+      "first_date": "2025-12-01",
+      "last_date": "2026-11-06",
+      "last_valid_date": "2026-11-04",
+      "certification": "RETROSPECTIVE_MEMBERSHIP;PROVIDER_ACTION_BASIS_UNCERTIFIED",
+      "intraday_status": "NOT_BUILT"
+    },
+    {
+      "code": "TRANSFORMERS_REVIEWED_CORE",
+      "expected_constituents": 4,
+      "status": "PARTIAL",
+      "valid_levels": 230,
+      "expected_bars": 232,
+      "first_date": "2025-12-01",
+      "last_date": "2026-11-06",
+      "last_valid_date": "2026-11-04",
+      "certification": "RETROSPECTIVE_MEMBERSHIP;PROVIDER_ACTION_BASIS_UNCERTIFIED",
+      "intraday_status": "NOT_BUILT"
+    }
+  ],
+  "timeframe_counts": [
+    {
+      "timeframe": "1-hour",
+      "status": "COMPLETED_PROVISIONAL",
+      "count": 5
+    },
+    {
+      "timeframe": "1-hour",
+      "status": "PARTIAL",
+      "count": 36
+    },
+    {
+      "timeframe": "4-hour",
+      "status": "COMPLETED_PROVISIONAL",
+      "count": 5
+    },
+    {
+      "timeframe": "4-hour",
+      "status": "PARTIAL",
+      "count": 36
+    },
+    {
+      "timeframe": "Weekly",
+      "status": "COMPLETED_PROVISIONAL",
+      "count": 41
+    }
+  ],
+  "independent_checks": 5312,
+  "historical_membership": "RETROSPECTIVE_NOT_PIT_VERIFIED",
+  "corporate_actions": "PROVIDER_BASIS_AND_BROAD_ACTION_COMPLETENESS_UNCERTIFIED"
+}
