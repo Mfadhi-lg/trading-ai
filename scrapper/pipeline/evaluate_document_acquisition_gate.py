@@ -4,11 +4,15 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+import sqlite3
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 from ..config import DB_PATH, assert_configured_writable_targets
-from ..db.database import connect, init_db
+from ..db.database import connect, selected_backend
+from ..db.repository_backend import is_postgresql
 
 
 ACTIVE_QUEUE_STATES = ("PENDING", "LEASED", "RETRYABLE_FAILURE")
@@ -38,6 +42,78 @@ ACQUIRED_CLOSURE_STATES = (
 )
 
 UNRESOLVED_RECORDING_STATES = ("UNKNOWN_REQUIRES_RECONCILIATION",)
+
+# Reviewed against native 001_baseline.sql and SQLite migrations 023/042/046/049.
+# Explicit relationships detect a dropped FK even on an empty table.
+ACQUISITION_REFERENCES = {
+    "document_artifacts": {"company_id": ("companies", "company_id"),
+                           "preferred_content_id": ("artifact_contents", "content_id")},
+    "artifact_sources": {"artifact_id": ("document_artifacts", "artifact_id"),
+                         "discovery_page_id": ("artifact_discovery_pages", "discovery_page_id"),
+                         "recovery_target_id": ("artifact_recovery_targets", "recovery_target_id"),
+                         "recovery_candidate_id": ("artifact_recovery_candidates", "candidate_id")},
+    "artifact_contents": {"artifact_id": ("document_artifacts", "artifact_id"),
+                          "blob_id": ("response_blobs", "blob_id")},
+    "artifact_download_queue": {"artifact_id": ("document_artifacts", "artifact_id"),
+                                "scope_id": ("artifact_download_scopes", "scope_id")},
+    "artifact_recovery_targets": {"artifact_id": ("document_artifacts", "artifact_id"),
+                                  "company_id": ("companies", "company_id"),
+                                  "blocked_source_id": ("artifact_sources", "artifact_source_id")},
+    "document_acquisition_closure_states": {
+        "artifact_id": ("document_artifacts", "artifact_id"),
+        "scope_id": ("artifact_download_scopes", "scope_id")},
+}
+
+
+def _acquisition_integrity(conn: Any) -> dict[str, Any]:
+    if not is_postgresql(conn):
+        placeholders = ",".join("?" for _ in ACQUISITION_REFERENCES)
+        count = int(conn.execute(
+            'SELECT COUNT(*) FROM pragma_foreign_key_check WHERE "table" IN ('
+            + placeholders + ')', tuple(ACQUISITION_REFERENCES)
+        ).fetchone()[0])
+        return {"passed": count == 0, "violations": count, "source": "pragma_foreign_key_check"}
+
+    from psycopg import sql
+    schema = conn.schema
+    problems = []
+    violations = 0
+    # All names below come from the reviewed contract, never user SQL. Qualify
+    # relations so search_path shadowing cannot substitute different evidence.
+    for table, references in ACQUISITION_REFERENCES.items():
+        for column, (parent, key) in references.items():
+            constraints = conn.execute("""
+                SELECT c.convalidated,
+                    (SELECT count(*)=4 AND bool_and(t.tgenabled IN ('O','A'))
+                       FROM pg_catalog.pg_trigger t WHERE t.tgconstraint=c.oid) AS enforced
+                FROM pg_catalog.pg_constraint c
+                JOIN pg_catalog.pg_class child ON child.oid=c.conrelid
+                JOIN pg_catalog.pg_namespace cn ON cn.oid=child.relnamespace
+                JOIN pg_catalog.pg_class parent ON parent.oid=c.confrelid
+                JOIN pg_catalog.pg_namespace pn ON pn.oid=parent.relnamespace
+                JOIN pg_catalog.pg_attribute ca ON ca.attrelid=child.oid AND ca.attname=?
+                JOIN pg_catalog.pg_attribute pa ON pa.attrelid=parent.oid AND pa.attname=?
+                WHERE c.contype='f' AND cn.nspname=? AND pn.nspname=?
+                  AND child.relname=? AND parent.relname=?
+                  AND c.conkey=ARRAY[ca.attnum] AND c.confkey=ARRAY[pa.attnum]
+                  AND c.confmatchtype='s' AND child.relkind='r' AND parent.relkind='r'
+                  AND NOT child.relrowsecurity AND NOT parent.relrowsecurity
+                """, (column, key, schema, schema, table, parent)).fetchall()
+            if len(constraints) != 1 or not all(
+                row["convalidated"] and row["enforced"] for row in constraints
+            ):
+                problems.append(f"{table}.{column}")
+            # MATCH SIMPLE: a nullable reference is valid. Count FK violations,
+            # not distinct rows, matching SQLite's per-constraint pragma result.
+            query = sql.SQL("""SELECT count(*) FROM {} child
+                WHERE child.{} IS NOT NULL AND NOT EXISTS
+                (SELECT 1 FROM {} parent WHERE parent.{}=child.{})""").format(
+                    sql.Identifier(schema, table), sql.Identifier(column),
+                    sql.Identifier(schema, parent), sql.Identifier(key), sql.Identifier(column))
+            violations += int(conn.execute(query).fetchone()[0])
+    return {"passed": not problems and violations == 0, "violations": violations,
+            "source": "pg_catalog constraints/triggers and native orphan queries",
+            "invalid_constraints": problems}
 
 
 def _json(path: Path) -> dict[str, Any]:
@@ -105,8 +181,85 @@ def _reconciliation_counts(coverage: dict[str, Any]) -> tuple[int, int, int]:
     return transcript_unknown, recording_unknown, fallback_from_unresolved
 
 
+def _database_failure(error: Exception) -> dict[str, Any]:
+    # Preserve the public machine contract. Unknown counts are null, never zero.
+    checks = dict.fromkeys((
+        "database_queries_succeeded", "acquisition_foreign_keys", "production_db_path",
+        "external_store_fail_closed", "restart_resume", "final_content_integrity",
+        "content_deduplication", "blocked_cra_requests_zero", "transcript_reconciliation_resolved",
+        "recording_reconciliation_resolved", "recording_fallback_allowlist_respected",
+        "closure_states_all_governed", "full_scope_accounted",
+        "gate_inputs_present", "p0_company_count_30_to_50", "p0_recordings_excluded",
+        "p0_content_integrity", "p0_d03", "full_queue_processed", "rating_recovery_processed",
+        "no_unknown_called_recovered", "full_d03_processed", "transcript_coverage_created",
+        "recording_fallback_scope_created", "recording_fallback_processed",
+        "no_retryable_closure_state", "storage_reserve_respected", "d09_executed", "fg00_preserved",
+    ), False)
+    counts = dict.fromkeys((
+        "acquisition_fk_violations", "blocked_cra_request_count",
+        "transcript_unknown_reconciliation_count", "recording_unknown_reconciliation_count",
+        "active_retryable_acquisition_count", "explicit_terminal_residual_count",
+        "scoped_artifacts", "closure_rows", "active_queue_jobs", "active_recovery_targets",
+        "d03_pending_contents", "retryable_closure_states", "fallback_active_jobs",
+        "fallback_queued_from_unresolved_states", "acquired_closure_count",
+        "unclassified_closure_states", "missing_gate_inputs", "duplicate_blob_sha_count",
+        "duplicate_blob_path_count",
+    ))
+    return {"document_acquisition": "RED", "ready_for_research_intelligence": False,
+            "checks": checks, "counts": counts,
+            "gate_evidence": {"acquisition_foreign_keys": {
+                "passed": False, "violations": None, "error_type": type(error).__name__}}}
+
+
 def evaluate(
     conn: Any, *, output_dir: Path, scope_id: str, db_path: Path = DB_PATH
+) -> dict[str, Any]:
+    """Read one native snapshot; database failures are unknown evidence, never GREEN."""
+    native = is_postgresql(conn)
+    database_errors = (sqlite3.Error,)
+    if native:
+        from psycopg import Error
+        database_errors += (Error,)
+    source = {"backend": "postgresql" if native else "sqlite"}
+    try:
+        if native:
+            if conn.in_transaction:
+                raise sqlite3.OperationalError("gate requires an idle native connection")
+            with conn.raw.transaction():
+                # The application adapter wraps statements in savepoints;
+                # isolation must be set on the outer native transaction first.
+                conn.raw.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY")
+                identity = conn.execute("""SELECT current_database(),current_schema(),
+                    obj_description(oid,'pg_namespace') FROM pg_catalog.pg_namespace
+                    WHERE nspname=current_schema()""").fetchone()
+                if identity is None or identity[1] != conn.schema:
+                    raise sqlite3.OperationalError("gate schema does not match the selected connection")
+                source.update(database=identity[0], schema=identity[1])
+                try:
+                    marker = json.loads(identity[2] or "null")
+                except ValueError:
+                    marker = None
+                production = marker == {
+                    "application": "trading-ai", "environment": "production", "schema": conn.schema,
+                    "target_id": os.environ.get("TRADING_AI_POSTGRESQL_TARGET_ID"),
+                }
+                report = _evaluate(conn, output_dir=output_dir, scope_id=scope_id,
+                                   production_target=production)
+        else:
+            source["path"] = str(db_path)
+            report = _evaluate(conn, output_dir=output_dir, scope_id=scope_id,
+                               production_target=_is_production_db_path(db_path))
+        report["checks"]["database_queries_succeeded"] = True
+    except database_errors as error:
+        # Do not expose driver messages, SQL parameters, credentials or records.
+        report = _database_failure(error)
+    report["database_source"] = source
+    report["verified_at_utc"] = datetime.now(timezone.utc).isoformat()
+    return report
+
+
+def _evaluate(
+    conn: Any, *, output_dir: Path, scope_id: str, production_target: bool
 ) -> dict[str, Any]:
     missing_inputs: list[str] = []
     p0_manifest = _required_json(output_dir / "02_ACQUISITION_P0_MANIFEST.json", missing_inputs)
@@ -167,15 +320,8 @@ def evaluate(
                   AND candidate.content_class='UNKNOWN_RATING_DOCUMENT'"""
         ).fetchone()[0]
     )
-    acquisition_fk = int(
-        conn.execute(
-            """SELECT COUNT(*) FROM pragma_foreign_key_check
-                WHERE \"table\" IN (
-                  'document_artifacts','artifact_sources','artifact_contents',
-                  'artifact_download_queue','artifact_recovery_targets',
-                  'document_acquisition_closure_states')"""
-        ).fetchone()[0]
-    )
+    acquisition_integrity = _acquisition_integrity(conn)
+    acquisition_fk = acquisition_integrity["violations"]
     # Content-addressed reuse: one physical blob per SHA256 and one path per blob.
     duplicate_blob_shas = int(
         conn.execute(
@@ -230,7 +376,7 @@ def evaluate(
     )
     coverage_present = bool(coverage)
     checks = {
-        "production_db_path": _is_production_db_path(db_path),
+        "production_db_path": production_target,
         "gate_inputs_present": not missing_inputs,
         "p0_company_count_30_to_50": 30 <= len(p0_manifest.get("company_ids", [])) <= 50,
         "p0_recordings_excluded": bool(p0_manifest)
@@ -265,7 +411,7 @@ def evaluate(
         and duplicate_blob_paths == 0
         and not integrity.get("orphan_physical_files", ["unknown"]),
         "storage_reserve_respected": bool(storage.get("reserve_respected")),
-        "acquisition_foreign_keys": acquisition_fk == 0,
+        "acquisition_foreign_keys": acquisition_integrity["passed"],
         "d09_executed": (output_dir / "09_D09_RECONCILIATION_REPORT.json").is_file(),
         "fg00_preserved": Path("/workspace/artifacts/focus_ml/governance").is_dir()
         or Path("artifacts/focus_ml/governance").is_dir(),
@@ -296,6 +442,7 @@ def evaluate(
             "duplicate_blob_path_count": duplicate_blob_paths,
         },
         "gate_evidence": {
+            "acquisition_foreign_keys": acquisition_integrity,
             "external_store_fail_closed": store_evidence,
             "restart_resume": restart_evidence,
         },
@@ -312,6 +459,8 @@ def _machine_gate(report: dict[str, Any]) -> dict[str, Any]:
     counts = report["counts"]
     return {
         "schema_version": "1.0.0",
+        "database_source": report.get("database_source"),
+        "verified_at_utc": report.get("verified_at_utc"),
         "document_acquisition": report["document_acquisition"],
         "ready_for_research_intelligence": report["ready_for_research_intelligence"],
         "external_store_fail_closed": checks["external_store_fail_closed"],
@@ -355,6 +504,8 @@ def write_gate(report: dict[str, Any], output_dir: Path) -> None:
         "",
         f"DOCUMENT_ACQUISITION: **{report['document_acquisition']}**",
         f"READY_FOR_RESEARCH_INTELLIGENCE: **{'YES' if report['ready_for_research_intelligence'] else 'NO'}**",
+        f"Verified at UTC: {report.get('verified_at_utc')}",
+        f"Database source: {json.dumps(report.get('database_source'), sort_keys=True)}",
         "",
         "## Checks",
         "",
@@ -420,14 +571,18 @@ def main() -> int:
     parser.add_argument("--output-dir", type=Path, required=True)
     args = parser.parse_args()
     assert_configured_writable_targets(args.output_dir, db_path=args.db)
-    conn = connect(args.db)
     try:
-        init_db(conn)
-        report = evaluate(
-            conn, output_dir=args.output_dir, scope_id=args.scope_id, db_path=args.db
-        )
-    finally:
-        conn.close()
+        conn = connect(args.db, read_only=True)
+        try:
+            report = evaluate(
+                conn, output_dir=args.output_dir, scope_id=args.scope_id, db_path=args.db
+            )
+        finally:
+            conn.close()
+    except (sqlite3.Error, RuntimeError, ValueError, OSError) as error:
+        report = _database_failure(error)
+        report["database_source"] = {"backend": selected_backend(), "status": "unverified"}
+        report["verified_at_utc"] = datetime.now(timezone.utc).isoformat()
     write_gate(report, args.output_dir)
     machine = write_gate_json(report, args.output_dir)
     if report["ready_for_research_intelligence"]:
