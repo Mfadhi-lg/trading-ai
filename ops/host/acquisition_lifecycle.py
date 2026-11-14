@@ -178,7 +178,10 @@ def database_status(script="/host/acquisition_db_status.py", arguments=()):
         args=['docker',*reader_prefix(),
             *(['/host/acquisition_live_reader.py',*reader_args] if live else [script,*arguments])]
     elif live:args[2:2]=['--label','com.trading-ai.role=monitor-reader']
-    return json.loads(run(args, timeout=90).stdout)
+    try:
+        return json.loads(run(args, timeout=90).stdout)
+    except subprocess.TimeoutExpired:
+        raise RuntimeError('Monitor transport exceeded 90 seconds before a complete response; startup or reader failed; previous snapshot retained') from None
 
 
 def quiescent(include_summary=False):

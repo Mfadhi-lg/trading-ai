@@ -2,6 +2,7 @@
 from datetime import datetime
 import json
 import re
+from scrapper.db.repository_backend import is_postgresql
 from scrapper.sources.exchange.reporting_periods import IST, priority_result_periods
 
 
@@ -39,6 +40,10 @@ def select(conn, *, now_utc, activated_at, historical_slot=False, limit=2):
           LEFT JOIN screener_scope_aliases a ON a.company_path=q.company_path_normalized
           LEFT JOIN screener_collection_scope s ON s.company_path=a.scope_path
           WHERE q.queue_item_id IN ({marks})"""
+        if is_postgresql(conn):
+            query=query.replace("json_extract(e.evidence_json,'$.reason')","(e.evidence_json::jsonb ->> 'reason')")
+            query=query.replace("json_extract(e.evidence_json,'$.filing_id')=q.exchange_filing_id",
+                                "(e.evidence_json::jsonb ->> 'filing_id')=CAST(q.exchange_filing_id AS text)")
         metadata.update((r['queue_item_id'],r) for r in conn.execute(query,ids+ids+ids))
     lanes={1:[],2:[],3:[]}; identities=set()
     for row in rows:
@@ -106,13 +111,19 @@ def refresh_revisions(conn, *, now_utc, activated_at, limit=2):
                 # The old quarter may exist only in a newer accepted source snapshot.
                 # Use the existing UNIQUE(path,scope,period) queue contract, not a
                 # separate revision inbox. Source enqueue decision stays immutable.
-                conn.execute('''INSERT OR IGNORE INTO screener_company_queue
+                insert='''INSERT OR IGNORE INTO screener_company_queue
                   (origin,exchange_filing_id,company_path_normalized,reporting_scope,result_period,
                    queue_reason,status,attempt_count,next_attempt_at_utc,created_at_utc,updated_at_utc)
-                  VALUES('exchange_filing',?,?,'standalone',?,'result_period_advanced','skipped_already_accepted',0,?,?,?)''',
-                  (filing['filing_id'],filing['company_path_normalized'],filing['result_period'],now_utc,now_utc,now_utc))
+                  VALUES('exchange_filing',?,?,'standalone',?,'result_period_advanced','skipped_already_accepted',0,?,?,?)'''
+                if is_postgresql(conn):
+                    insert=insert.replace('INSERT OR IGNORE INTO','INSERT INTO')+' ON CONFLICT DO NOTHING'
+                conn.execute(insert,(filing['filing_id'],filing['company_path_normalized'],filing['result_period'],now_utc,now_utc,now_utc))
                 row=conn.execute("SELECT * FROM screener_company_queue WHERE company_path_normalized=? AND reporting_scope='standalone' AND result_period=?",(filing['company_path_normalized'],filing['result_period'])).fetchone()
-            event=conn.execute("SELECT 1 FROM screener_company_queue_events WHERE queue_item_id=? AND json_extract(evidence_json,'$.filing_id')=? AND json_extract(evidence_json,'$.reason')='source_filing_refresh'",(row['queue_item_id'],filing['filing_id'])).fetchone()
+            if is_postgresql(conn):
+                event_sql="SELECT 1 FROM screener_company_queue_events WHERE queue_item_id=? AND (evidence_json::jsonb ->> 'filing_id')=CAST(? AS text) AND (evidence_json::jsonb ->> 'reason')='source_filing_refresh'"
+            else:
+                event_sql="SELECT 1 FROM screener_company_queue_events WHERE queue_item_id=? AND json_extract(evidence_json,'$.filing_id')=? AND json_extract(evidence_json,'$.reason')='source_filing_refresh'"
+            event=conn.execute(event_sql,(row['queue_item_id'],filing['filing_id'])).fetchone()
             if event:continue
             # Retry/backoff or pending refresh is already owned by the canonical queue.
             if row['status'] in ('pending','failed_retryable') and unaccepted_refresh(conn,row['queue_item_id'],row['exchange_filing_id']):continue
@@ -137,12 +148,16 @@ def skip_accepted(conn,item,**options):
 
 def unaccepted_refresh(conn,queue_id,filing_id):
     if filing_id is None:return False
-    return conn.execute("""SELECT 1 FROM screener_company_queue_events refresh
+    query="""SELECT 1 FROM screener_company_queue_events refresh
       WHERE refresh.queue_item_id=? AND json_extract(refresh.evidence_json,'$.reason')='source_filing_refresh'
       AND json_extract(refresh.evidence_json,'$.filing_id')=?
       AND NOT EXISTS(SELECT 1 FROM screener_company_queue_events settled WHERE settled.queue_item_id=refresh.queue_item_id
         AND settled.to_status IN ('accepted','skipped_already_accepted') AND settled.queue_event_id>refresh.queue_event_id)
-      LIMIT 1""",(queue_id,filing_id)).fetchone() is not None
+      LIMIT 1"""
+    if is_postgresql(conn):
+        query=query.replace("json_extract(refresh.evidence_json,'$.reason')","(refresh.evidence_json::jsonb ->> 'reason')")
+        query=query.replace("json_extract(refresh.evidence_json,'$.filing_id')=?","(refresh.evidence_json::jsonb ->> 'filing_id')=CAST(? AS text)")
+    return conn.execute(query,(queue_id,filing_id)).fetchone() is not None
 
 
 def verified_source_target(conn,logical_path):

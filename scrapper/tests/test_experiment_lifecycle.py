@@ -36,7 +36,7 @@ class ExperimentLifecycleTests(unittest.TestCase):
         actual = set()
         for base in ('scrapper', 'ops', 'scripts'):
             for path in (ROOT / base).rglob('*'):
-                if not path.is_file() or path.name.startswith('test_'):
+                if not path.is_file() or path.name.startswith('test_') or '.venv' in path.relative_to(ROOT).parts:
                     continue
                 if path.suffix != '.py' and not (base == 'scripts' and not path.suffix):
                     continue

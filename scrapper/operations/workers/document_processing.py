@@ -82,8 +82,15 @@ def run_automatic_processing(*, db_path, epoch, ocr_engine, output_dir,
             selected = automatic_processing_contents(conn,version=version,
                 now=now_utc(),epoch=epoch,limit=limit,historical_limit=historical_limit,artifact_ids=artifact_ids,artifact_types=artifact_types,focus_company_ids=focus_company_ids)
             def recover_periods():
+                from ...db.repository_backend import is_postgresql
+                legacy=Path(db_path).with_name('document-period-recovery.json')
+                if is_postgresql(conn):
+                    from ...config import CAMPAIGNS
+                    state=CAMPAIGNS/'document-period-recovery.json'
+                else:
+                    state=legacy
                 return recover_period_batch(conn,
-                    state_path=Path(db_path).with_name('document-period-recovery.json'),
+                    state_path=state, legacy_state_path=legacy if state!=legacy else None,
                     corrected_at_utc=now_utc(),
                     stopped=lifecycle.is_set if lifecycle is not None else lambda: False)
             if not selected:

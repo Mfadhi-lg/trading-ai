@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "reviewed_on": "2026-11-13",
+  "reviewed_on": "2026-11-14",
   "baseline": "c0025bac6",
   "owner_policy": "Accountable repository maintenance roles, not personal assignments or execution approval.",
   "experiments": [
@@ -173,6 +173,86 @@
     {
       "consumer": "scrapper/indices/timeframes.py",
       "module": "experiments.historical_candle_archive_v1.observations"
+    },
+    {
+      "consumer": "scrapper/market_live/engine.py",
+      "module": "experiments.historical_candle_archive_v1.observations"
+    },
+    {
+      "consumer": "scrapper/market_live/engine.py",
+      "module": "experiments.historical_candle_archive_v1.storage"
+    },
+    {
+      "consumer": "scrapper/market_live/identity_refresh.py",
+      "module": "experiments.historical_candle_archive_v1.storage"
+    },
+    {
+      "consumer": "scrapper/market_live/indicators.py",
+      "module": "experiments.earnings_reaction_v1.indicators"
+    },
+    {
+      "consumer": "scrapper/market_live/recovery.py",
+      "module": "experiments.historical_candle_archive_v1.storage"
+    },
+    {
+      "consumer": "scrapper/market_live/recovery.py",
+      "module": "experiments.technical_fix_v2.update"
+    },
+    {
+      "consumer": "scrapper/market_live/service.py",
+      "module": "experiments.earnings_reaction_v1.execute_ta02d"
+    },
+    {
+      "consumer": "scrapper/market_live/service.py",
+      "module": "experiments.historical_candle_archive_v1.storage"
+    },
+    {
+      "consumer": "scrapper/market_live/watchlist.py",
+      "module": "experiments.historical_candle_archive_v1.identity"
+    },
+    {
+      "consumer": "scrapper/market_refresh/derived.py",
+      "module": "experiments.historical_candle_archive_v1.storage"
+    },
+    {
+      "consumer": "scrapper/market_refresh/explorer.py",
+      "module": "experiments.historical_candle_archive_v1.storage"
+    },
+    {
+      "consumer": "scrapper/market_refresh/planner.py",
+      "module": "experiments.earnings_reaction_v1.upstox_candles"
+    },
+    {
+      "consumer": "scrapper/market_refresh/quota.py",
+      "module": "experiments.historical_candle_archive_v1.storage"
+    },
+    {
+      "consumer": "scrapper/market_refresh/runner.py",
+      "module": "experiments.earnings_reaction_v1.upstox_candles"
+    },
+    {
+      "consumer": "scrapper/market_refresh/runner.py",
+      "module": "experiments.historical_candle_archive_v1.acquire"
+    },
+    {
+      "consumer": "scrapper/market_refresh/runner.py",
+      "module": "experiments.historical_candle_archive_v1.storage"
+    },
+    {
+      "consumer": "scrapper/market_refresh/runner.py",
+      "module": "experiments.technical_fix_v2.update"
+    },
+    {
+      "consumer": "scrapper/market_refresh/service.py",
+      "module": "experiments.earnings_reaction_v1.execute_ta02d"
+    },
+    {
+      "consumer": "scrapper/market_refresh/service.py",
+      "module": "experiments.historical_candle_archive_v1.access"
+    },
+    {
+      "consumer": "scrapper/market_refresh/service.py",
+      "module": "experiments.historical_candle_archive_v1.storage"
     }
   ]
 }

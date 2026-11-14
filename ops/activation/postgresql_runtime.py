@@ -1,5 +1,17 @@
 """Explicit native operational connections; importing never activates a target."""
-from contextlib import closing
+from contextlib import closing, contextmanager
+from contextvars import ContextVar
+import time
+
+_REQUEST_DEADLINE=ContextVar('monitor_request_deadline',default=None)
+
+
+@contextmanager
+def request_deadline(seconds):
+    token=_REQUEST_DEADLINE.set(time.monotonic()+seconds)
+    try:yield
+    finally:_REQUEST_DEADLINE.reset(token)
+
 import json
 import os
 from pathlib import Path
@@ -14,8 +26,12 @@ def read_connection(db, *, immutable=False):
     if enabled():
         from scrapper.db.database import connect
         connection=connect(db, read_only=True)
-        connection.raw.execute('BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY')
-        return connection
+        try:
+            connection.raw.execute('BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY')
+            return connection
+        except BaseException:
+            connection.close()
+            raise
     connection = sqlite3.connect('file:' + str(db) + '?mode=ro' + ('&immutable=1' if immutable else ''), uri=True, timeout=2)
     connection.row_factory = sqlite3.Row
     connection.execute('PRAGMA query_only=ON')
@@ -41,6 +57,10 @@ def table_names(conn):
 def query_deadline(conn, deadline, steps=10000):
     import time
     from scrapper.db.repository_backend import is_postgresql
+    whole=_REQUEST_DEADLINE.get()
+    if whole is not None:
+        deadline=min(deadline,whole)
+        if time.monotonic()>=deadline:raise TimeoutError('Monitor request query budget exhausted')
     if is_postgresql(conn):
         milliseconds = max(1, int((deadline - time.monotonic()) * 1000))
         # Connection setting only; never grants rights or rewrites application SQL.

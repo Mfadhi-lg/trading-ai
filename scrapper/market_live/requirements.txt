@@ -1,0 +1,2 @@
+# Opt-in live service dependency. Default offline replay needs only stdlib.
+websockets>=15,<17

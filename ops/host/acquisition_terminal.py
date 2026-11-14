@@ -371,6 +371,13 @@ def render_monitor(feed, inspection, view='all', compact=False):
     header = Text.assemble(('TRADING AI  ', 'bold cyan'), ('LIVE SCRAPER MONITOR', 'bold white'),
                            ('   ' + activity, STYLE[state]), ('\n' + at(feed['observed_at_utc']), 'dim'))
     parts = [header]
+    from scrapper.market_live.monitor import snapshot as market_snapshot
+    market = market_snapshot()
+    subscribed = len(market.get('stream', {}).get('subscribed_instruments', []))
+    daily = market.get('refresh', {}).get('result', {})
+    market_line = Text(f"Market: {market['status']} · focus subscriptions {subscribed} · "
+                      f"daily coverage {daily.get('counts', 'UNKNOWN')} · "
+                      f"missing sessions {daily.get('missing_sessions', 'UNKNOWN')}", style='cyan')
     next_job = feed['schedule'].get('next_scheduled_batch') or {}
     parts.append(Text(f"Heartbeat: {at(tick_at)}   |   Next: {next_job.get('job', 'unknown')} @ {at(next_job.get('next_at_ist'))}", style='cyan'))
     counts_title = f"QUEUE TOTALS · census {at(inspection.get('database_at'))}"
@@ -531,6 +538,7 @@ def render_monitor(feed, inspection, view='all', compact=False):
             if inspection.get('inspecting'):
                 mini.append(line('Guarded checks refreshing in background…', 'dim'))
             mini.append(line('/coverage: full quarterly view · /company: financials · Ctrl+C: exit', 'dim'))
+            mini.append(market_line)
             return Panel(Group(*mini), border_style='cyan', padding=(0,1))
         columns = Table.grid(expand=True, padding=(0, 2))
         if Console().width >= 110:
@@ -543,6 +551,7 @@ def render_monitor(feed, inspection, view='all', compact=False):
         parts = [header, parts[1], Text(activity, style=STYLE[state]), counts, parts[4], coverage_table(summary, 4), Text(''), worker,
                  Text(''), columns, Text(''), *parts[operations_start:]]
         parts.append(Text('./scraper status prints full history/schedules · /company TICKER shows financials', style='dim'))
+    parts.append(market_line)
     return Panel(Group(*parts), title='[bold green]LIVE SCRAPER PROCESS MONITOR[/bold green]',
         subtitle='Ctrl+C closes this view · schedule unchanged · counts keep their census timestamp',
         border_style='cyan', padding=(1, 2))

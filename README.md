@@ -29,6 +29,9 @@ Start with the [current-status and supersession index](docs/STATUS.md). Canonica
 The web control panel has been removed. The CLI uses the current bounded
 acquisition workflow. See [terminal commands and monitoring](docs/operations/terminal-monitor.md).
 For bounded technical market updates, see [daily market updates](docs/operations/daily-market-updates.md).
+The [LIVE-FRESH-01 implementation](docs/operations/live-fresh-01.md) adds independently
+supervised focus streaming, incremental coverage and fast filing/document lanes;
+its new services are prepared but uninstalled and unactivated.
 
 ## Runtime and operation
 

@@ -596,6 +596,79 @@ class RegistryTests(ExchangeCase):
 
 
 class ResultDiscoveryTests(ExchangeCase):
+    def test_filing_detection_uses_completed_response_receipt_instead_of_poll_start(self):
+        from dataclasses import dataclass
+        from scrapper.core.http import FetchResponse
+        @dataclass(frozen=True)
+        class TimedResponse(FetchResponse):
+            received_at_utc: str
+        self.build_universe()
+        feed=nse_results(('ALPHA,Alpha Industries Limited,Capital Goods,Quarterly,30-SEP-2026,Un-Audited,Non-cumulative,Standalone,05-Nov-2026 23:55:00',))
+        clock=iter(('2026-11-06T00:00:00+00:00','2026-11-06T00:00:46+00:00'))
+        def delayed(url,exchange):
+            return TimedResponse(url,url,200,feed,'text/csv','utf-8',None,None,'public','ok',
+                                 '2026-11-06T00:00:45+00:00')
+        result=discover_exchange_results(dataset='nse_financial_results',result_period='2026-09',
+            effective_date='2026-11-06',db_path=self.db,snapshot_root=self.snapshots,
+            now_utc=lambda:next(clock),fetcher=delayed,thresholds=registry_thresholds('nse_financial_results'))
+        self.assertEqual(result['observed_at_utc'],'2026-11-06T00:00:45+00:00')
+        self.assertEqual(self.rows('SELECT discovered_at_utc FROM exchange_result_filings')[0]['discovered_at_utc'],
+                         '2026-11-06T00:00:45+00:00')
+
+    def test_fresh_filing_queues_documents_before_financial_acceptance_and_repairs_handoff(self):
+        self.build_universe()
+        conn = connect(self.db)
+        try:
+            with conn:
+                company = conn.execute("INSERT INTO companies(current_legal_name,status) VALUES ('Synthetic Alpha','active')").lastrowid
+                conn.execute("INSERT INTO security_identifiers(company_id,identifier_type,identifier_value,is_current) VALUES (?,'NSE','ALPHA',1)", (company,))
+                conn.execute("""INSERT INTO screener_collection_scope(company_path,company_id,eligibility,
+                    floor_crore,observed_at_utc,evidence_json,next_check_at_utc)
+                    VALUES ('/company/ALPHA/',?,'eligible','580','2026-11-06T00:00:00+00:00','{}','2026-11-06T00:00:00+00:00')""", (company,))
+            feed = nse_results(('ALPHA,Alpha Industries Limited,Capital Goods,Quarterly,30-SEP-2026,Un-Audited,Non-cumulative,Standalone,05-Nov-2026 23:55:00',))
+            first = self.discover('nse_financial_results', feed, '2026-11-06', result_period='2026-09')
+            self.assertEqual(first['enqueue']['queued'], 1)
+            self.assertEqual(conn.execute('SELECT count(*) FROM accepted_page_versions').fetchone()[0], 0)
+            self.assertEqual(conn.execute('SELECT count(*) FROM artifact_expectations').fetchone()[0], 4)
+            with conn:
+                conn.execute("DELETE FROM artifact_expectations WHERE artifact_type='presentation'")
+            self.discover('nse_financial_results', feed, '2026-11-06', result_period='2026-09')
+            self.assertEqual(conn.execute('SELECT count(*) FROM artifact_expectations').fetchone()[0], 4)
+            self.assertEqual(conn.execute('SELECT count(*) FROM screener_company_queue').fetchone()[0], 1)
+        finally:
+            conn.close()
+
+    def test_sentinel_results_do_not_starve_valid_fresh_document_handoff(self):
+        self.build_universe()
+        conn = connect(self.db)
+        try:
+            with conn:
+                company = conn.execute("INSERT INTO companies(current_legal_name,status) VALUES ('Synthetic Alpha','active')").lastrowid
+                conn.execute("INSERT INTO security_identifiers(company_id,identifier_type,identifier_value,is_current) VALUES (?,'NSE','ALPHA',1)", (company,))
+                conn.execute("""INSERT INTO screener_collection_scope(company_path,company_id,eligibility,
+                    floor_crore,observed_at_utc,evidence_json,next_check_at_utc)
+                    VALUES ('/company/ALPHA/',?,'eligible','580','2026-11-06T00:00:00+00:00','{}','2026-11-06T00:00:00+00:00')""", (company,))
+            feed=nse_results(('ALPHA,Alpha Industries Limited,Capital Goods,Quarterly,30-SEP-2026,Un-Audited,Non-cumulative,Standalone,05-Nov-2026 23:55:00',))
+            self.discover('nse_financial_results',feed,'2026-11-06',result_period='2026-09')
+            original=dict(conn.execute('SELECT * FROM exchange_result_filings').fetchone())
+            with conn:
+                conn.execute('DELETE FROM artifact_expectations')
+                conn.execute('DELETE FROM artifact_events')
+                for index in range(101):
+                    filing={**original,'filing_id':1000+index,'filing_key':'sentinel-'+str(index),
+                        'period_end_date':'1970-01-01','broadcast_at_utc':'2026-11-06T00:00:00+00:00'}
+                    columns=','.join(filing)
+                    conn.execute('INSERT INTO exchange_result_filings ('+columns+') VALUES ('+','.join('?' for _ in filing)+')',tuple(filing.values()))
+                    conn.execute("""INSERT INTO exchange_screener_enqueues(filing_id,decision,decision_reason,
+                        company_path_normalized,reporting_scope,result_period,path_basis,created_at_utc)
+                        VALUES (?,'reused','synthetic','/company/ALPHA/','standalone','1970-01','nse_symbol','2026-11-06T00:00:00+00:00')""",(filing['filing_id'],))
+            from scrapper.db.documents.freshness import register_recent_filing_expectations
+            created=register_recent_filing_expectations(conn,now_utc='2026-11-06T00:05:00+00:00')
+            self.assertEqual(len(created),4)
+            self.assertEqual(conn.execute('SELECT count(*) FROM artifact_events').fetchone()[0],1)
+        finally:
+            conn.close()
+
     def test_priority_query_retains_delayed_earlier_filings_and_revisions(self):
         self.build_universe()
         late = (

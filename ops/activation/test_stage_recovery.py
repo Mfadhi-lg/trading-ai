@@ -81,3 +81,22 @@ def test_unstarted_container_removed_without_force_or_volume_deletion(tmp_path):
     with patch.object(documents.subprocess,'run',side_effect=responses) as run:
         documents.cleanup_timed_out_container(tmp_path)
     assert run.call_args_list[-1].args[0]==['docker','rm','owned-id']
+
+
+@pytest.mark.parametrize('message',[
+    'error: no such object: trading-ai-phase4-routine',
+    'Error response from daemon: No such container: trading-ai-phase4-routine\n',
+])
+def test_lowercase_missing_owned_container_is_not_cleanup_failure(tmp_path,message):
+    with patch.object(documents.subprocess,'run',return_value=completed(1,stderr=message)):
+        documents.cleanup_timed_out_container(tmp_path)
+    assert json.loads((tmp_path/'timeout-cleanup.json').read_text())['status']=='not_created'
+
+
+@pytest.mark.parametrize('message',[
+    'error: no such object: foreign-container',
+    'error: no such object: trading-ai-phase4-routine\nCannot connect to Docker daemon',
+])
+def test_absence_diagnostic_must_be_exact_and_exclusive(tmp_path,message):
+    with patch.object(documents.subprocess,'run',return_value=completed(1,stderr=message)):
+        with pytest.raises(RuntimeError,match='Cannot verify'):documents.cleanup_timed_out_container(tmp_path)

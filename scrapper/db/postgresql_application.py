@@ -340,6 +340,10 @@ def open_application(settings=None, *, schema=None, read_only=False, authorizer=
         from psycopg import sql
         from .postgresql_permissions import assert_safe_login
         _configure(raw)
+        for name, value in (("statement_timeout", settings.statement_timeout_ms),
+                            ("lock_timeout", settings.lock_timeout_ms),
+                            ("idle_in_transaction_session_timeout", settings.idle_transaction_timeout_ms)):
+            raw.execute("SELECT set_config(%s,%s,false)", (name, str(value)))
         marker = raw.execute("SELECT obj_description(oid, 'pg_namespace') AS identity FROM pg_namespace WHERE nspname=%s", (schema,)).fetchone()
         try:
             identity = json.loads(marker["identity"] or "") if marker else None
@@ -367,10 +371,6 @@ def open_application(settings=None, *, schema=None, read_only=False, authorizer=
         raw.execute(sql.SQL("SET search_path TO {}, pg_catalog, pg_temp").format(sql.Identifier(schema)))
         with raw.transaction():
             check_compatibility(raw, schema)
-        for name, value in (("statement_timeout", settings.statement_timeout_ms),
-                            ("lock_timeout", settings.lock_timeout_ms),
-                            ("idle_in_transaction_session_timeout", settings.idle_transaction_timeout_ms)):
-            raw.execute("SELECT set_config(%s,%s,false)", (name, str(value)))
         if read_only:
             raw.execute("SET default_transaction_read_only=on")
         conn = PostgreSQLApplicationConnection(raw, settings, schema, read_only=read_only)

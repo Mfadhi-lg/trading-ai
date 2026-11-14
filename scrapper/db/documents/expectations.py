@@ -210,7 +210,7 @@ def ensure_result_artifact_expectations(
     delayed_screener_documents_allowed = screener_market_cap_above_floor(
         conn, company_id
     )
-    policy = policy or RetryPolicy()
+    requested_policy = policy
     event_id = register_artifact_event(
         conn,
         company_id=company_id,
@@ -227,16 +227,34 @@ def ensure_result_artifact_expectations(
         },
     )
     basis = "accepted_exchange_result_filing_requires_primary_source_discovery"
-    return tuple(
-        ensure_artifact_expectation(
+    from ...documents.freshness import result_retry_policy
+    default_policy = requested_policy or result_retry_policy(
+        broadcast_at_utc=broadcast_at_utc, observed_at_utc=created_at_utc)
+
+    def ensure_one(artifact_type):
+        # A software update must not rewrite or reinterpret a persisted retry
+        # schedule. Explicit callers still receive the strict conflict check.
+        if requested_policy is None:
+            prior = execute(conn, 'SELECT * FROM artifact_expectations WHERE event_id=? AND artifact_type=?',
+                            (event_id, artifact_type)).fetchone()
+            if prior is not None:
+                rearmed = (prior['expectation_basis'] == basis and
+                           parse_utc(prior['expected_after_utc']) > parse_utc(broadcast_at_utc))
+                if prior['expected_after_utc'] != broadcast_at_utc and not rearmed:
+                    raise ValueError('Existing expectation has a conflicting expected-after time')
+                return int(prior['expectation_id'])
+        return ensure_artifact_expectation(
             conn,
             event_id=event_id,
             artifact_type=artifact_type,
             expectation_basis=basis,
             expected_after_utc=broadcast_at_utc,
             created_at_utc=created_at_utc,
-            policy=policy,
+            policy=default_policy,
         )
+
+    return tuple(
+        ensure_one(artifact_type)
         for artifact_type in RESULT_ARTIFACT_TYPES
         if artifact_type not in DELAYED_SCREENER_RESULT_TYPES
         or delayed_screener_documents_allowed

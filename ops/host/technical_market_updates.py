@@ -31,7 +31,8 @@ def status(now=None,output=OUT):
     scheduled = scheduled_status(now, output=recurring)
     authorized = scheduled['status'] == 'AUTHORIZED'
     enabled=authorized and timer_state.get('loaded',False)
-    return dict(scheduled_updates=scheduled, checkpoints_ist=CHECKPOINTS,weekly='Reconcile only completed source intervals; special Sunday can extend the week',
+    from scrapper.market_live.monitor import snapshot as live_status
+    return dict(live_freshness=live_status(now=now), scheduled_updates=scheduled, checkpoints_ist=CHECKPOINTS,weekly='Reconcile only completed source intervals; special Sunday can extend the week',
         finite_batch_state=state.get('status','NOT_STARTED'),requests_saved=len(state.get('requests',{})),
         recurring_acquisition_enabled=enabled,recurring_trial_authorized=authorized,
         recurring_trial=approved if authorized else None,timer=timer_state,

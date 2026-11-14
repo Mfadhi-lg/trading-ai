@@ -388,4 +388,9 @@ def enqueue_result_filings(
                     now_utc,
                 ),
             )
+    # A result establishes an expectation, not document availability. This
+    # separate idempotent handoff cannot commit a half-finished queue decision.
+    # It also repairs a previous interrupted handoff on the next bounded poll.
+    from ..documents.freshness import register_recent_filing_expectations
+    register_recent_filing_expectations(conn, now_utc=now_utc)
     return counts

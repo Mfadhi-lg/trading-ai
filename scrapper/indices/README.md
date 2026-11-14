@@ -58,6 +58,15 @@ using the existing symbol/ex_date/kind/provider_basis/share-multiplier contract.
 Conflicting action records fail closed. No supplied evidence is treated as a
 complete action feed merely because it exists.
 
+For a reviewed LIVE-FRESH incremental archive, additionally supply
+`--incremental-state /explicit/refresh-state --reviewed-calendar /explicit/calendar.json`.
+The loader validates the new official-index manifest/receipt hashes and current
+daily session completion while preserving previous exports and historical
+receipt lineage. Every requested daily calendar date must have explicit reviewed
+evidence. The intraday builder retains its existing complete-constituent and
+calendar/exclusion requirements. See [incremental refresh](../market_refresh/README.md)
+for acquisition/derived-output entry points and separate activation gates.
+
 For separate reviewable stages:
 
 ```sh

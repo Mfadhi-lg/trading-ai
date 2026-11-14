@@ -313,3 +313,73 @@ class LocalHealthControlTests(unittest.TestCase):
                     {'archive':str(root.parent/'fixture.dump.age')},{'encrypted_sha256':'invalid'}):
                 with self.subTest(change=change),self.assertRaises(RuntimeError):
                     backup_health({**receipt,**change},'selected',now,root)
+
+
+class ActiveReaderProfileTests(unittest.TestCase):
+    setUp=NativeReleaseWiringTests.setUp
+    write_target=NativeReleaseWiringTests.write_target
+    def test_workspace_observer_recognizes_only_pinned_active_native_reader(self):
+        import acquisition_release,hashlib,json
+        from unittest.mock import patch
+        self.write_target()
+        release_root=self.root
+        command=['docker',*self.release.reader_prefix(),'/host/acquisition_live_reader.py','quarter_monitor','{"quarter":"2026-09"}']
+        workspace=release_root/'workspace';(workspace/'ops/activation').mkdir(parents=True)
+        with patch.multiple(self.release,ROOT=workspace,HERE=workspace/'ops/activation'),patch.object(acquisition_release,'active_root',return_value=release_root):
+            self.assertTrue(self.release.is_reader_command(command))
+            bad=list(command);bad[bad.index('--network=none')]='--network=bridge'
+            self.assertFalse(self.release.is_reader_command(bad))
+            target=release_root/'ops/activation/postgresql-target.json'
+            target.write_text(target.read_text()+' ')
+            with self.assertRaisesRegex(RuntimeError,'manifest-bound'):self.release.is_reader_command(command)
+
+
+class NativeFinancialPriorityTests(DisposablePostgreSQLTestCase):
+    def test_priority_and_revision_events_match_sqlite_without_sqlite_json_functions(self):
+        import financial_priority as priority
+        from scrapper.tests.test_e01_exchange_universe import ExchangeCase,nse_results
+        fixture=ExchangeCase();fixture.setUp();self.addCleanup(fixture.tearDown)
+        fixture.build_universe()
+        line='ALPHA,Alpha Industries Limited,Capital Goods,Quarterly,30-SEP-2026,Un-Audited,Non-cumulative,Consolidated,05-Oct-2026 18:30:00'
+        fixture.discover('nse_financial_results',nse_results((line,)),'2026-10-06',result_period='2026-09')
+        from scrapper.db.database import connect as sqlite_connect
+        with closing(sqlite_connect(fixture.db)) as source:
+            with source:
+                source.execute("UPDATE screener_company_queue SET next_attempt_at_utc=NULL")
+                row=source.execute('SELECT queue_item_id,exchange_filing_id FROM screener_company_queue LIMIT 1').fetchone()
+                evidence='{"reason":"source_filing_refresh","filing_id":'+str(row['exchange_filing_id'])+'}'
+                source.execute("INSERT INTO screener_company_queue_events(queue_item_id,event_at_utc,to_status,evidence_json) VALUES(?,'2026-10-11T00:00:00+00:00','pending',?)",(row['queue_item_id'],evidence))
+            snapshot=fixture.db.parent/'native-snapshot.db'
+            report=export_snapshot(fixture.db,snapshot)
+            transfer(self.settings,snapshot,self.schema,expected_sha256=report['snapshot_sha256'])
+            with self.session() as native:
+                kwargs=dict(now_utc='2026-10-11T00:00:00+00:00',activated_at='2026-10-01T00:00:00+00:00')
+                expected=priority.select(source,**kwargs)
+                actual=priority.select(native,**kwargs)
+                self.assertEqual(actual,expected)
+                self.assertTrue(priority.unaccepted_refresh(native,row['queue_item_id'],row['exchange_filing_id']))
+                native.execute("INSERT INTO screener_company_queue_events(queue_item_id,event_at_utc,to_status,evidence_json) VALUES(?,'2026-10-11T00:00:01+00:00','accepted','{}')",(row['queue_item_id'],))
+                self.assertFalse(priority.unaccepted_refresh(native,row['queue_item_id'],row['exchange_filing_id']))
+
+
+class ReaderCutoverTests(unittest.TestCase):
+    setUp=NativeReleaseWiringTests.setUp
+    write_target=NativeReleaseWiringTests.write_target
+
+    def test_immediately_previous_sealed_reader_can_finish_after_cutover(self):
+        import shutil,json,hashlib
+        self.write_target()
+        previous=self.root/'artifacts/acquisition-releases/previous'
+        shutil.copytree(self.release.HERE,previous/'ops/activation')
+        (previous/'.acquisition-release.json').write_text(json.dumps({'workspace_root':str(self.root)}))
+        old=['docker',*self.release.reader_prefix(previous),'/host/acquisition_live_reader.py','quarter_monitor','{}']
+        self.target['image']='sha256:'+'c'*64
+        self.write_target()
+        manifest=self.release.HERE/'automatic-acquisition-manifest.json'
+        value=json.loads(manifest.read_text());value['previous_release']=str(previous);manifest.write_text(json.dumps(value))
+        self.assertTrue(self.release.is_reader_command(old))
+        bad=list(old);bad[bad.index('--network=none')]='--network=bridge'
+        self.assertFalse(self.release.is_reader_command(bad))
+        target=previous/'ops/activation/postgresql-target.json'
+        content=json.loads(target.read_text());content['target_id']='00000000-0000-0000-0000-000000000000';target.write_text(json.dumps(content))
+        self.assertFalse(self.release.is_reader_command(old))

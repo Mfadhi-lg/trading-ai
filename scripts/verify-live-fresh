@@ -1,0 +1,34 @@
+#!/usr/bin/env python3
+"""Run LIVE-FRESH offline regressions with every application write root isolated."""
+import argparse
+import os
+from pathlib import Path
+import sys
+import tempfile
+import unittest
+
+parser=argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--dependency-dir',action='append',default=[],help='Existing offline dependency directory')
+parser.add_argument('--full',action='store_true',help='Run the complete default offline suite')
+args=parser.parse_args()
+sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
+for path in args.dependency_dir:
+    sys.path.append(str(Path(path).resolve()))
+modules=['test_market_live','test_market_live_supervision','test_market_refresh',
+         'test_result_document_freshness','test_result_polling','test_e01_exchange_universe',
+         'test_phase4_discovery_selection','test_indices_official','test_indices_production',
+         'test_technical_features','test_daily_market_updates','test_runtime_status']
+with tempfile.TemporaryDirectory(prefix='live-fresh-offline-') as directory:
+    root=Path(directory)
+    os.environ['TRADING_AI_ENV']='test'
+    for name,relative in {'STORE':'store','FILES':'store/files','SNAPSHOTS':'store/snapshots',
+                          'EXPORTS':'store/exports','DB':'state/scraper.db','CAMPAIGNS':'store/campaigns',
+                          'LOGS':'store/logs','BROWSER_STATE':'store/browser-state','BACKUPS':'store/backups'}.items():
+        path=root/relative
+        (path.parent if name=='DB' else path).mkdir(parents=True,exist_ok=True)
+        os.environ['SCRAPER_'+name+'_PATH']=str(path)
+    os.environ.pop('SCRAPER_DOCUMENT_STORE_PATH',None)
+    suite=(unittest.defaultTestLoader.discover('scrapper/tests',top_level_dir='.') if args.full else
+           unittest.defaultTestLoader.loadTestsFromNames(['scrapper.tests.'+name for name in modules]))
+    result=unittest.TextTestRunner(verbosity=1).run(suite)
+    sys.exit(0 if result.wasSuccessful() else 1)
