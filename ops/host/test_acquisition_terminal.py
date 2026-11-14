@@ -59,6 +59,21 @@ def test_outcome_arrival_invalidates_receipt_cache(receipts):
     assert source.sample()['jobs'][0]['state']=='completed'
 
 
+@pytest.mark.parametrize('stage', ['stop', 'execution_failure'])
+def test_blocker_reports_worker_error_from_matching_retained_job(receipts, stage):
+    folder=save_job(receipts,'failed-financial')
+    stopped={'exchange':'FINANCIAL','exit_code':2,
+        'finished_at_utc':'2026-10-22T18:00:30+00:00'}
+    (receipts/'FINANCIAL.stopped.json').write_text(json.dumps(stopped))
+    with (folder/'runtime.log').open('a') as stream:
+        stream.write(json.dumps({'stage':stage,
+            'error':'PostgreSQL operation rejected (SQLSTATE 42883)'})+'\n')
+    before=(receipts/'FINANCIAL.stopped.json').read_bytes()
+    feed=terminal.ReceiptFeed().sample()
+    assert feed['blockers']['FINANCIAL.stopped.json']['error']=='PostgreSQL operation rejected (SQLSTATE 42883)'
+    assert (receipts/'FINANCIAL.stopped.json').read_bytes()==before
+
+
 def test_old_unfinished_receipt_does_not_claim_live_worker(receipts):
     save_job(receipts,'old',complete=False)
     feed=terminal.ReceiptFeed().sample()

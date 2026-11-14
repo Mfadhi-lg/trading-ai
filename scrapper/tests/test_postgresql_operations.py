@@ -335,6 +335,27 @@ class ActiveReaderProfileTests(unittest.TestCase):
 
 
 class NativeFinancialPriorityTests(DisposablePostgreSQLTestCase):
+    def test_screen_refresh_and_cooldown_use_native_json_and_preserve_config(self):
+        import json
+        import financial_screen_refresh as refresh
+        from ops.activation.test_financial_screen_refresh import body, Client, NOW
+        with tempfile.TemporaryDirectory() as directory, self.session() as conn:
+            clients=[]
+            def factory(c, **kwargs):
+                client=Client(c,responses=[body(1),body(2)],**kwargs)
+                clients.append(client)
+                return client
+            result=refresh.refresh_if_due(conn,now_utc=NOW,client_factory=factory,
+                snapshot_root=Path(directory)/'snapshots')
+            self.assertEqual(result['enqueue']['new'],2)
+            config=json.loads(conn.execute('SELECT config_json FROM scrape_runs WHERE code_version=?',
+                (refresh.RUN_VERSION,)).fetchone()[0])
+            self.assertIs(config['capture_complete'],True)
+            self.assertEqual(config['period'],'2026-09')
+            self.assertEqual(config['max_pages'],refresh.MAX_PAGES)
+            self.assertEqual(refresh.refresh_if_due(conn,now_utc=NOW,client_factory=factory)['status'],'not_due')
+            self.assertEqual(len(clients),1)
+
     def test_priority_and_revision_events_match_sqlite_without_sqlite_json_functions(self):
         import financial_priority as priority
         from scrapper.tests.test_e01_exchange_universe import ExchangeCase,nse_results

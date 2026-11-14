@@ -145,7 +145,8 @@ class ReceiptFeed:
                 stage=value.get('exchange')
                 job=next((j for j in jobs if j.get('exchange')==stage and j.get('updated_at')==value.get('finished_at_utc')),None)
                 if job:
-                    failure=next((r for r in reversed(log_records(state/job['id']/'runtime.log')) if r.get('stage')=='execution_failure'),{})
+                    failure=next((r for r in reversed(log_records(state/job['id']/'runtime.log'))
+                        if r.get('stage') in ('execution_failure','stop') and r.get('error')),{})
                     blockers[name]={**value,'error':failure.get('error') or f"Stage stopped (exit {value.get('exit_code','unknown')}); /logs --job {job['id']}"}
                 else:blockers[name]={**value,'error':f"Stage stopped (exit {value.get('exit_code','unknown')}); use /logs"}
 

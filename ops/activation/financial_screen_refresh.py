@@ -6,6 +6,7 @@ the existing screen capture/completeness checks. No independent scheduler/queue.
 import json
 from datetime import datetime, timezone
 from urllib.parse import urlsplit
+from scrapper.db.repository_backend import statement
 
 SCREEN_URL = 'https://www.screener.in/screens/3844820/new-results/'
 QUERY_ROLE = 'september_3844820'  # Preserve the existing immutable capture identity.
@@ -35,9 +36,11 @@ def refresh_if_due(conn, *, now_utc, client_factory=None, snapshot_root=None):
     period = priority_result_periods(now=instant)[0]
     year, month = map(int, period.split('-'))
     query = f'Last result date >{year:04d}{month-1:02d} AND Market Capitalization >{SCREENER_MIN_MARKET_CAP_CRORE:g}'
-    previous = conn.execute('''SELECT started_at_utc,status,config_json FROM scrape_runs
+    previous = conn.execute(statement(conn, '''SELECT started_at_utc,status,config_json FROM scrape_runs
         WHERE code_version=? AND json_extract(config_json,'$.period')=?
-        ORDER BY run_id DESC LIMIT 1''', (RUN_VERSION, period)).fetchone()
+        ORDER BY run_id DESC LIMIT 1''', '''SELECT started_at_utc,status,config_json FROM scrape_runs
+        WHERE code_version=? AND config_json::jsonb ->> 'period'=?
+        ORDER BY run_id DESC LIMIT 1'''), (RUN_VERSION, period)).fetchone()
     if previous:
         delay = REFRESH_SECONDS if previous['status']=='ok' and json.loads(previous['config_json']).get('capture_complete',True) else RETRY_SECONDS
         bounds_corrected=(previous['status']=='error' and
@@ -102,8 +105,10 @@ def refresh_if_due(conn, *, now_utc, client_factory=None, snapshot_root=None):
         # but do not discard individually validated, genuinely observed rows.
         result = enqueue_recurring_screen_pages(conn, ids, now_utc=now_utc)
         with conn:
-            conn.execute("UPDATE scrape_runs SET config_json=json_set(config_json,'$.capture_complete',json(?)) WHERE run_id=?",
-                ('true' if result['complete'] else 'false',run))
+            config = json.loads(conn.execute('SELECT config_json FROM scrape_runs WHERE run_id=?', (run,)).fetchone()[0])
+            config['capture_complete'] = result['complete']
+            conn.execute('UPDATE scrape_runs SET config_json=? WHERE run_id=?',
+                (json.dumps(config), run))
         finish_run(conn, run, 'ok')
         return {'status':'refreshed','period':period,'source_requests':requests,**result}
     except (ScreenChanged, ValueError) as exc:

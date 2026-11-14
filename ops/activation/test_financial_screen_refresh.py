@@ -2,6 +2,7 @@
 import json
 from pathlib import Path
 import sys
+from unittest.mock import patch
 import requests
 import pytest
 
@@ -56,7 +57,8 @@ def run(conn,tmp_path,html,now=NOW):
         client=Client(c,responses=html,**kwargs)
         clients.append(client)
         return client
-    result=refresh.refresh_if_due(conn,now_utc=now,client_factory=factory,snapshot_root=tmp_path/'snapshots')
+    with patch('scrapper.db.repo.utc_now',return_value=now):
+        result=refresh.refresh_if_due(conn,now_utc=now,client_factory=factory,snapshot_root=tmp_path/'snapshots')
     return result,clients
 
 
@@ -65,6 +67,10 @@ def test_dynamic_complete_screen_admits_once_and_respects_refresh_interval(datab
     assert result['status']=='refreshed' and result['captured_companies']==2
     assert result['source_requests']==2 and result['enqueue']['new']==2
     assert clients[0].closed
+    config=json.loads(database.execute('SELECT config_json FROM scrape_runs WHERE code_version=?',
+        (refresh.RUN_VERSION,)).fetchone()[0])
+    assert config['capture_complete'] is True
+    assert config['period']=='2026-09' and config['max_pages']==refresh.MAX_PAGES
     assert database.execute('SELECT count(*) FROM screener_company_queue').fetchone()[0]==2
     result,clients=run(database,tmp_path,[])
     assert result['status']=='not_due' and clients==[]
