@@ -12,6 +12,7 @@ from typing import Any
 
 from scrapper.db.database import connect, init_db
 from scrapper.pipeline.evaluate_document_acquisition_gate import (
+    ACQUISITION_REFERENCES,
     ACQUIRED_CLOSURE_STATES,
     ACTIVE_CLOSURE_STATES,
     EXPLICIT_TERMINAL_RESIDUAL_STATES,
@@ -191,6 +192,36 @@ class FinalGateTests(unittest.TestCase):
         self.assertTrue(report["ready_for_research_intelligence"])
         self.assertEqual(report["counts"]["explicit_terminal_residual_count"], 2)
         self.assertEqual(report["counts"]["active_retryable_acquisition_count"], 0)
+
+    def test_native_integrity_contract_covers_every_sqlite_reference(self) -> None:
+        for table, expected in ACQUISITION_REFERENCES.items():
+            with self.subTest(table=table):
+                actual = {row['from']: (row['table'], row['to']) for row in
+                          self.conn.execute(f'PRAGMA foreign_key_list("{table}")')}
+                self.assertEqual(actual, expected)
+
+    def test_sqlite_orphan_still_blocks_green(self) -> None:
+        self.conn.commit()
+        self.conn.execute('PRAGMA foreign_keys=OFF')
+        self.conn.execute('UPDATE document_artifacts SET company_id=999 WHERE artifact_id=1')
+        self.conn.commit()
+        self.conn.execute('PRAGMA foreign_keys=ON')
+        report = self.run_gate()
+        self.assertEqual(report['document_acquisition'], 'RED')
+        self.assertFalse(report['checks']['acquisition_foreign_keys'])
+        self.assertEqual(report['counts']['acquisition_fk_violations'], 1)
+
+    def test_sqlite_query_failure_writes_unknown_machine_report(self) -> None:
+        valid = self.run_gate()
+        self.conn.execute('DROP TABLE response_blobs')
+        machine = write_gate_json(self.run_gate(), self.output_dir)
+        self.assertEqual(machine['checks'].keys(), valid['checks'].keys())
+        self.assertEqual(machine['counts'].keys(), valid['counts'].keys())
+        self.assertEqual(machine['document_acquisition'], 'RED')
+        self.assertIsNone(machine['counts']['acquisition_fk_violations'])
+        self.assertFalse(machine['ready_for_research_intelligence'])
+        self.assertEqual(machine['database_source']['backend'], 'sqlite')
+        self.assertTrue(machine['verified_at_utc'])
 
     def test_development_db_is_never_production_closure(self) -> None:
         self.write_reports()

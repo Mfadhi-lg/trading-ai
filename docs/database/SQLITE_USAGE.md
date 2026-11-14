@@ -74,6 +74,10 @@ respectively; they are not subsystem port issues.
 
 ## Native execution evidence
 
+The [document acquisition integrity gate](DOCUMENT_ACQUISITION_GATE.md) now has
+explicit native FK constraint/enforcement and orphan validation under #97. Its
+public-factory reader/failure regressions are included in the required smoke suite.
+
 The existing PostgreSQL workflow retains its disposable PostgreSQL 16 service and
 job-specific storage roots. In addition to the application suite it runs:
 

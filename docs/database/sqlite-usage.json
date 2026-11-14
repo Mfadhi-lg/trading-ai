@@ -1950,7 +1950,7 @@
         {"path": "scrapper/pipeline/build_transcript_coverage.py","line": 13},
         {"path": "scrapper/pipeline/crosscheck_mfdata.py","line": 10},
         {"path": "scrapper/pipeline/discover_documents.py","line": 9},
-        {"path": "scrapper/pipeline/evaluate_document_acquisition_gate.py","line": 11},
+        {"path": "scrapper/pipeline/evaluate_document_acquisition_gate.py","line": 14},
         {"path": "scrapper/pipeline/exchange_universe.py","line": 29},
         {"path": "scrapper/pipeline/extract_document.py","line": 11},
         {"path": "scrapper/pipeline/fetch_documents.py","line": 30},
@@ -2980,6 +2980,7 @@
         {"path": "scrapper/pipeline/audit_acquisition_scope.py","line": 19},
         {"path": "scrapper/pipeline/build_transcript_coverage.py","line": 4},
         {"path": "scrapper/pipeline/credit_rating_downloads.py","line": 32},
+        {"path": "scrapper/pipeline/evaluate_document_acquisition_gate.py","line": 15},
         {"path": "scrapper/pipeline/reconcile_promoted_artifacts.py","line": 12},
         {"path": "scrapper/sources/documents/routine.py","line": 17},
         {"path": "scrapper/validation/screener.py","line": 4},
@@ -3759,6 +3760,24 @@
         {"path": "scrapper/operations/workers/rating.py","line": 36},
         {"path": "scrapper/pipeline/accepted_document_downloads.py","line": 11},
         {"path": "scrapper/sources/documents/routine.py","line": 98}
+      ]
+    },
+    {
+      "path": "scrapper/pipeline/evaluate_document_acquisition_gate.py",
+      "source_sha256": "674e73b9813c80439f68cd99eada40c615b44a8bc91ff10a8d473b1c395c030d",
+      "classification": "live application",
+      "store": "configured application database via public read-only database.connect; report output directory",
+      "intent": "Read-only acquisition FK metadata/orphan and closure evidence; writes JSON/Markdown reports only.",
+      "backend_guard": "_acquisition_integrity uses is_postgresql before the SQLite pragma query; native catalog/orphan queries use schema-qualified identifiers. evaluate wraps native reads in a read-only repeatable-read snapshot. main opens read_only=True without init_db.",
+      "owner": "Maintainers of scrapper/pipeline",
+      "disposition": "Issue #97: preserve SQLite FK violation semantics and fail-closed machine contract; native constraint/orphan checks tested through public factory with disposable restricted reader. No runtime activation.",
+      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/97",
+      "reviewed_source_sha256": "674e73b9813c80439f68cd99eada40c615b44a8bc91ff10a8d473b1c395c030d",
+      "sites": [
+        {"line": 71,"symbol": "_acquisition_integrity","kind": "dynamic query","sha256": "6bde12a92c780e8dab19ddf5708f370050ee7a125e086a152e09db20cd0fb37c","scope_sha256": "d59e728c548d82ae8aa511c6154497f308ac8720fb4948e36dc7b142045f15a6","branch_hints": [{"condition_sha256": "e90de1dc1aa3e2a2cb2b84cb99b13993dae959aad2b68be50ccc32e88ebd9118","arm": "body","line": 69}]},
+        {"line": 113,"symbol": "_acquisition_integrity","kind": "dynamic query","sha256": "9f9587b083317ce4ef3336428d545070ce342bb39a5932b6df70a54c6a097128","scope_sha256": "d59e728c548d82ae8aa511c6154497f308ac8720fb4948e36dc7b142045f15a6","branch_hints": []}
+      ],
+      "caller_references": [
       ]
     },
     {
