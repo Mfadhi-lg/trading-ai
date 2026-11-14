@@ -1,4 +1,4 @@
-"""Read-only observations. No application imports, runtime defaults or report writes."""
+"""Read-only observations. Native access is explicit; no initialization or report writes."""
 from __future__ import annotations
 
 import argparse
@@ -67,7 +67,44 @@ def repository(root, intended):
         return claim(source=source, method="git", detail="Repository revision could not be resolved.")
 
 
-def migrations(root, database):
+def native_migrations():
+    """Explicit configured target only; never consult the SQLite ledger."""
+    source = 'explicitly configured PostgreSQL target'
+    method = 'verified native identity, restricted reader, checksum and schema fingerprint'
+    try:
+        if os.environ.get('TRADING_AI_DB_BACKEND') != 'postgresql':
+            raise ValueError('Explicit native backend required')
+        from ops.activation.postgresql_runtime import read_connection, query_deadline, request_deadline
+        from ops.host.acquisition_live_reader import wall_clock_budget
+        from scrapper.db.database import check_schema_compatibility
+        import time
+        with wall_clock_budget(25), request_deadline(25):
+            connection = read_connection(None)
+            try:
+                query_deadline(connection, time.monotonic() + 20)
+                check_schema_compatibility(connection)
+                applied = [row[0] for row in connection.execute(
+                    'SELECT version FROM _postgresql_migrations ORDER BY version')]
+                # Correlate the verified target without exposing server/role paths.
+                identity = json.dumps([connection.raw.info.dbname, connection.schema,
+                                       os.environ['TRADING_AI_POSTGRESQL_TARGET_ID']])
+                return claim(dict(backend='postgresql', mode='native_current_observation',
+                                  identifier='sha256:' + hashlib.sha256(identity.encode()).hexdigest(),
+                                  applied_count=len(applied), latest_known=max(applied, default=None),
+                                  matches_expected=True), status='verified', source=source, method=method,
+                             detail='Point-in-time native schema observation; not worker health or data reconciliation.')
+            finally:
+                connection.close()
+    except Exception:
+        return claim(dict(backend='postgresql', matches_expected=None), source=source, method=method,
+                     detail='Native target identity, access or lineage could not be verified; no SQLite fallback.')
+
+
+def migrations(root, database, *, sqlite_snapshot=False, native=False):
+    if not sqlite_snapshot and os.environ.get('TRADING_AI_DB_BACKEND', 'sqlite') not in {'sqlite', 'postgresql'}:
+        return claim(detail='Unsupported database backend; no target opened.')
+    if not sqlite_snapshot and (native or (database is not None and os.environ.get('TRADING_AI_DB_BACKEND') == 'postgresql')):
+        return native_migrations()
     source = "scrapper/db/migrations/*.sql"
     try:
         expected = sorted(p.name for p in (root / "scrapper/db/migrations").glob("*.sql"))
@@ -108,12 +145,12 @@ def migrations(root, database):
         matches = not pending and not unknown_count and len(applied) == len(applied_set)
         # Only repository-known names are emitted; corrupt ledger strings can
         # contain private data and must never be copied into a shared report.
-        return claim(dict(backend="sqlite", identifier=path_id(database),
+        return claim(dict(backend="sqlite", mode="frozen_sqlite_snapshot", identifier=path_id(database),
                           applied_count=len(applied), latest_known=max(applied_set & set(expected), default=None),
                           pending=pending, unknown_identity_count=unknown_count,
                           duplicate_count=len(applied) - len(applied_set), matches_expected=matches),
                      status="verified" if matches else "warning", source=source, method=method,
-                     detail="Filename ledger only, not schema integrity or deployment proof. Target must remain quiescent during observation.")
+                     detail="Frozen SQLite observation only; never current PostgreSQL status. Filename ledger, not schema integrity or deployment proof. Target must remain quiescent during observation.")
     except FileNotFoundError:
         return claim(status="unavailable", source=source, method=method, detail="Selected database missing; nothing created.")
     except (OSError, RuntimeError, ValueError, sqlite3.Error):
@@ -233,7 +270,10 @@ def previous(path, max_age, now):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--intended-revision", default="HEAD", help="Explicit intended git ref; default is local HEAD, not remote main")
-    parser.add_argument("--database", type=Path, help="Explicit quiescent SQLite file or consistent snapshot; never auto-detected")
+    parser.add_argument("--database", type=Path, help="Select schema observation: configured PostgreSQL when selected, otherwise quiescent SQLite; never auto-detected")
+    selection = parser.add_mutually_exclusive_group()
+    selection.add_argument('--native', action='store_true', help='Observe explicitly configured PostgreSQL using its restricted reader login')
+    selection.add_argument('--sqlite-snapshot', type=Path, help='Explicit frozen SQLite inspection even when PostgreSQL is selected')
     parser.add_argument("--document-store", type=Path)
     parser.add_argument("--document-mount", type=Path, help="Expected mount enclosing document store")
     parser.add_argument("--container", help="Observe a selected live container's OCI revision label")
@@ -242,6 +282,8 @@ def main(argv=None):
     parser.add_argument("--previous-report", type=Path)
     parser.add_argument("--max-age-seconds", type=int, default=3600)
     args = parser.parse_args(argv)
+    if (args.native and os.environ.get('TRADING_AI_DB_BACKEND') != 'postgresql') or (args.sqlite_snapshot and args.database):
+        parser.error('--native requires TRADING_AI_DB_BACKEND=postgresql; --sqlite-snapshot cannot be combined with --database')
     if args.max_age_seconds < 0 or (args.document_mount and not args.document_store):
         parser.error("Age must be nonnegative; --document-mount requires --document-store")
     now = datetime.now(timezone.utc)
@@ -250,7 +292,8 @@ def main(argv=None):
                   freshness_policy=dict(max_age_seconds=args.max_age_seconds, live_claims_are_point_in_time=True),
                   claims=dict(repository=repo,
                               deployed_revision=container(args.container, (repo["value"] or {}).get("intended_commit")),
-                              schema=migrations(ROOT, args.database),
+                              schema=migrations(ROOT, args.sqlite_snapshot or args.database,
+                                                sqlite_snapshot=args.sqlite_snapshot is not None, native=args.native),
                               dispatcher=dispatcher(args.dispatcher), workers=workers(args.workers),
                               document_store=documents(args.document_store, args.document_mount),
                               last_observation=previous(args.previous_report, args.max_age_seconds, now),

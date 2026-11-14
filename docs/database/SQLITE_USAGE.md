@@ -78,6 +78,14 @@ The [document acquisition integrity gate](DOCUMENT_ACQUISITION_GATE.md) now has
 explicit native FK constraint/enforcement and orphan validation under #97. Its
 public-factory reader/failure regressions are included in the required smoke suite.
 
+The [financial diagnostics and native lineage observations](../operations/runtime-verification.md)
+now use the verified native reader boundary under #98. Direct connection sites
+in the two financial scripts were replaced by `financial_diagnostic_reader`;
+explicit frozen SQLite remains supported and labeled. Runtime status now has
+both an explicit native observation and a distinct frozen-snapshot mode. Their
+public entry-point, restricted-role and no-fallback checks run in required native
+smoke coverage. These two reader ports do not resolve #107's remaining readers.
+
 The existing PostgreSQL workflow retains its disposable PostgreSQL 16 service and
 job-specific storage roots. In addition to the application suite it runs:
 

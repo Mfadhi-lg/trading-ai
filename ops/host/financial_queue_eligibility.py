@@ -1,14 +1,15 @@
 """Read-only financial selection diagnosis under the existing host owner locks."""
 import json
-import fcntl
-import sqlite3
+import argparse
 import sys
 from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
 
-sys.path[:0] = ['/activation', '/app']
-from sqlite_sidecar_guard import _assert_safe_empty_wal, snapshot
+sys.path[:0] = [str(Path(__file__).resolve().parent),
+                str(Path(__file__).resolve().parents[1] / 'activation'),
+                str(Path(__file__).resolve().parents[2]), '/activation', '/app']
+from financial_diagnostic_reader import observation
 from scrapper.sources.exchange.reporting_periods import priority_result_periods
 
 
@@ -85,23 +86,27 @@ def screen_evidence(conn):
             for a in soup.select('.pagination a')][:15]}
 
 
-if __name__ == '__main__':
-    db = Path('/data/scraper.db')
-    gate = Path('/activation/.monitor-readers.lock').open('rb')
-    fcntl.flock(gate, fcntl.LOCK_EX)
-    before = _assert_safe_empty_wal(db)
-    conn = sqlite3.connect('file:' + str(db) + '?mode=ro&immutable=1', uri=True)
-    conn.row_factory = sqlite3.Row
-    conn.execute('PRAGMA query_only=ON')
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument('--accepted-versions', action='store_true')
+    mode.add_argument('--screen-evidence', action='store_true')
+    parser.add_argument('--sqlite-snapshot', type=Path, help='Explicit frozen SQLite input; never current native status')
+    args = parser.parse_args(argv)
+    now = datetime.now(timezone.utc).isoformat()
     try:
-        if '--accepted-versions' in sys.argv:
-            result={'rows':[dict(r) for r in conn.execute('SELECT * FROM accepted_page_versions')]}
-        else:
-            result = screen_evidence(conn) if '--screen-evidence' in sys.argv else inspect(conn, datetime.now(timezone.utc).isoformat())
-    finally:
-        conn.close()
-    if snapshot(db) != before['files']:
-        raise RuntimeError('Database changed during diagnosis; discard results: ' +
-            json.dumps({'before':before['files'], 'after':snapshot(db)}))
-    gate.close()
+        with observation(args.sqlite_snapshot or Path('/data/scraper.db'), sqlite_snapshot=args.sqlite_snapshot is not None) as (conn, source):
+            if args.accepted_versions:
+                result = {'rows':[dict(r) for r in conn.execute('SELECT * FROM accepted_page_versions')]}
+            else:
+                result = screen_evidence(conn) if args.screen_evidence else inspect(conn, now)
+            result.update(status='verified', database_source=source, observed_at_utc=now)
+    except Exception:
+        print(json.dumps({'status':'unknown','observed_at_utc':now,'detail':'Financial observation unavailable; no fallback performed.'}))
+        return 1
     print(json.dumps(result))
+    return 0
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())
