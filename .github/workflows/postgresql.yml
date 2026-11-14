@@ -61,5 +61,8 @@ jobs:
           echo "/usr/lib/postgresql/16/bin" >> "$GITHUB_PATH"
       - name: Native PostgreSQL contracts
         run: |
+          python -B scripts/audit/sqlite_usage.py
+          python -B -m unittest scrapper.tests.test_sqlite_usage_inventory -v
+          python -B scripts/audit/native_runtime_smoke.py
           python -B -m unittest discover -s scrapper/tests -t . -p 'test_postgresql*.py' -v
           python -B -m unittest scrapper.tests.test_repository_backend scrapper.tests.test_screener_observation_repo scrapper.tests.test_exchange_coordinator scrapper.tests.test_periodic_coordinator scrapper.tests.test_claim_fencing scrapper.tests.test_document_processing_work scrapper.tests.test_ci_database_isolation -v

@@ -42,6 +42,13 @@ The database-writing CI workflows include `.github/workflows/migration-lineage.y
 
 ## Portable software tests and retained-source audits
 
+The [SQLite source inventory and native runtime gate](../database/SQLITE_USAGE.md)
+classifies direct connections, dialect/dynamic-query sites and embedded/config
+references. PostgreSQL CI checks reviewed source evidence and runs required native
+operational smoke coverage on disposable storage; skipped native coverage fails
+that required command. Update inventory review acknowledgments only after tracing
+backend routing and caller impact.
+
 The default offline suite uses committed fixtures or explicitly synthetic inputs in temporary directories. It never opens production data or needs a developer's external drive. CI installs the locked test dependencies (including workbook builders) and Chromium; browser regressions intercept all outbound requests.
 
 Historical audits that certify specific original PDFs, frozen research databases, or operator-supplied workbooks require the original retained bundle. Run them explicitly with `TRADING_AI_RUN_RETAINED_AUDITS=1 python -B -m unittest discover -s scrapper/tests -t . -v` in an isolated checkout with the required bundle. Missing/corrupt evidence then fails normally. Default CI reports these as skipped, not passed; synthetic software checks do not certify historical source bytes or research outcomes. Retained research jobs that write outputs must use isolated copies and temporary output paths.
