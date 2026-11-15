@@ -4948,7 +4948,7 @@
     },
     {
       "path": "scrapper/db/candle_inventory_transfer.py",
-      "source_sha256": "7e165999017bab4eae52c1a2a0f567e06ad1e27cde5cc0624d6f82d8c6d91906",
+      "source_sha256": "ad6ef3d3c51aac61a537f9d948a4dccfd7fc1baad80813fe52824b162c0a64ea",
       "sites": [
         {"line": 26,"symbol": "source_tables","kind": "direct connection","sha256": "15de8f22bc76bef3142136f792454c6a5bf9098c84c4a620ff30c5391cb251dd","scope_sha256": "6b5d516ad8121279b088406aeb9929216bbb7b4d20dba283b11e87fae08d87a6","branch_hints": []},
         {"line": 27,"symbol": "source_tables","kind": "dynamic query","sha256": "5bf5696775fb127216c9da57b3a7512461172f79d57ea1a8ce9a89c717fa48fc","scope_sha256": "6b5d516ad8121279b088406aeb9929216bbb7b4d20dba283b11e87fae08d87a6","branch_hints": []},
@@ -4966,12 +4966,12 @@
         {"line": 154,"symbol": "inspect","kind": "dynamic query","sha256": "9f9587b083317ce4ef3336428d545070ce342bb39a5932b6df70a54c6a097128","scope_sha256": "943231082c070ede8a6cdb706e1d4ad3c15e0ae5186bbddfc1e87a0b7454395d","branch_hints": []},
         {"line": 162,"symbol": "export_snapshot","kind": "direct connection","sha256": "5bbf5b3abe5a33d21aa00cc6847b8a2501cd66b06165308bd03fcd6ba5d98e50","scope_sha256": "10f75905272598fa2039b7ec90d0a81319d650380977f41cc3eeb6f607c4122c","branch_hints": []},
         {"line": 164,"symbol": "export_snapshot","kind": "SQLite SQL","sha256": "919fcbb953f0ceb602e1ffe35fe82f3b925e994354fe6f97b388deaf00ba4587","scope_sha256": "10f75905272598fa2039b7ec90d0a81319d650380977f41cc3eeb6f607c4122c","branch_hints": []},
-        {"line": 185,"symbol": "transfer","kind": "SQLite SQL","sha256": "da3d64b15a1c1ef3d28c45d6683dbaaada70480095e1d18e68f40b22fe2be514","scope_sha256": "9b8bb62dc6ff9eb534f7be50bfc328ed759be338d13467aa53e4359d731c49e0","branch_hints": []},
-        {"line": 192,"symbol": "transfer","kind": "dynamic query","sha256": "915daf2c26af257a1afc4f4276d44858014d3bf4248aa8c52335e670cfecf383","scope_sha256": "9b8bb62dc6ff9eb534f7be50bfc328ed759be338d13467aa53e4359d731c49e0","branch_hints": []},
-        {"line": 194,"symbol": "transfer","kind": "dynamic query","sha256": "d61cd4c964d8bd2d26e581dd371678d0434bce767d9ad2788268d18cb98d26f2","scope_sha256": "9b8bb62dc6ff9eb534f7be50bfc328ed759be338d13467aa53e4359d731c49e0","branch_hints": []},
-        {"line": 195,"symbol": "transfer","kind": "dynamic query","sha256": "c008c5f1d46aeea192c662ae75ad5255ccdb8806119d39ae9c3db8c583788aa5","scope_sha256": "9b8bb62dc6ff9eb534f7be50bfc328ed759be338d13467aa53e4359d731c49e0","branch_hints": []},
-        {"line": 203,"symbol": "transfer","kind": "dynamic query","sha256": "823cf2ad03676475119fe58e037dd3345e0387c56cc32e99bfda4a60cb8510e8","scope_sha256": "9b8bb62dc6ff9eb534f7be50bfc328ed759be338d13467aa53e4359d731c49e0","branch_hints": []},
-        {"line": 210,"symbol": "transfer","kind": "dynamic query","sha256": "c9b3664c521b5b0bb7a9e19a2c0b7287c93cd2b37b5640a3f7d2e9fa32cbc4ed","scope_sha256": "9b8bb62dc6ff9eb534f7be50bfc328ed759be338d13467aa53e4359d731c49e0","branch_hints": []}
+        {"line": 183,"symbol": "transfer","kind": "SQLite SQL","sha256": "da3d64b15a1c1ef3d28c45d6683dbaaada70480095e1d18e68f40b22fe2be514","scope_sha256": "7b66eb5cc6570fd329533c6faacbf3d5115298818a7ddba54d5df287e7f90f2d","branch_hints": []},
+        {"line": 193,"symbol": "transfer","kind": "dynamic query","sha256": "915daf2c26af257a1afc4f4276d44858014d3bf4248aa8c52335e670cfecf383","scope_sha256": "7b66eb5cc6570fd329533c6faacbf3d5115298818a7ddba54d5df287e7f90f2d","branch_hints": []},
+        {"line": 195,"symbol": "transfer","kind": "dynamic query","sha256": "d61cd4c964d8bd2d26e581dd371678d0434bce767d9ad2788268d18cb98d26f2","scope_sha256": "7b66eb5cc6570fd329533c6faacbf3d5115298818a7ddba54d5df287e7f90f2d","branch_hints": []},
+        {"line": 196,"symbol": "transfer","kind": "dynamic query","sha256": "c008c5f1d46aeea192c662ae75ad5255ccdb8806119d39ae9c3db8c583788aa5","scope_sha256": "7b66eb5cc6570fd329533c6faacbf3d5115298818a7ddba54d5df287e7f90f2d","branch_hints": []},
+        {"line": 204,"symbol": "transfer","kind": "dynamic query","sha256": "823cf2ad03676475119fe58e037dd3345e0387c56cc32e99bfda4a60cb8510e8","scope_sha256": "7b66eb5cc6570fd329533c6faacbf3d5115298818a7ddba54d5df287e7f90f2d","branch_hints": []},
+        {"line": 211,"symbol": "transfer","kind": "dynamic query","sha256": "c9b3664c521b5b0bb7a9e19a2c0b7287c93cd2b37b5640a3f7d2e9fa32cbc4ed","scope_sha256": "7b66eb5cc6570fd329533c6faacbf3d5115298818a7ddba54d5df287e7f90f2d","branch_hints": []}
       ],
       "caller_references": [
       ],
@@ -4982,7 +4982,7 @@
       "owner": "Historical candle archive metadata transfer",
       "disposition": "Retain SQLite source as immutable transfer evidence; runtime remains unchanged",
       "follow_up": "Runtime archive port and production cutover require separate authorization",
-      "reviewed_source_sha256": "7e165999017bab4eae52c1a2a0f567e06ad1e27cde5cc0624d6f82d8c6d91906"
+      "reviewed_source_sha256": "ad6ef3d3c51aac61a537f9d948a4dccfd7fc1baad80813fe52824b162c0a64ea"
     }
   ]
 }

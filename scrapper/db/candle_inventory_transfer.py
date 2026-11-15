@@ -174,8 +174,6 @@ def _batch(value):
 
 def transfer(settings, snapshot, schema, root, *, expected_sha256, batch_size=1000, progress=None):
     """Atomic bounded load or exact verify-only retry. Never merges partial data."""
-    from psycopg import sql
-    from psycopg.rows import tuple_row
     _batch(batch_size)
     validate_schema_name(schema)
     if not expected_sha256 or file_sha256(snapshot) != expected_sha256:
@@ -187,6 +185,9 @@ def transfer(settings, snapshot, schema, root, *, expected_sha256, batch_size=10
         if file_sha256(snapshot) != expected_sha256:
             raise RuntimeError('Snapshot changed before read lock')
         before = inspect(source, root, batch_size)
+        # Optional native dependencies are needed only after offline validation.
+        from psycopg import sql
+        from psycopg.rows import tuple_row
         with connect(settings) as dest:
             dest.execute('SELECT pg_advisory_xact_lock(hashtextextended(%s,0))', ('candle-inventory:' + schema,))
             dest.execute(sql.SQL('LOCK TABLE {} IN ACCESS EXCLUSIVE MODE').format(sql.SQL(',').join(sql.Identifier(schema, name) for name in [*tables, '_candle_inventory_version'])))

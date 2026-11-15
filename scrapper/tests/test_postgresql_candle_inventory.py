@@ -1,5 +1,6 @@
 """Synthetic separate-store transfer and native restore proof; no drive access."""
 import ast
+import builtins
 from contextlib import closing
 from dataclasses import replace
 import gzip
@@ -12,6 +13,7 @@ import tempfile
 import unittest
 from urllib.parse import urlsplit, urlunsplit
 import uuid
+from unittest.mock import patch
 
 from scrapper.db import candle_inventory_transfer as inventory
 from scrapper.db.postgresql import connect
@@ -89,6 +91,16 @@ class InventorySourceTests(unittest.TestCase):
                     self.assertEqual(conn.execute("SELECT attempts FROM requests WHERE request_id='2'").fetchone(), (2,))
                 with self.assertRaisesRegex(RuntimeError, 'Standalone'):
                     inventory.transfer(None, source, 'test', files, expected_sha256=before)
+
+    def test_offline_preflight_never_imports_optional_driver(self):
+        original_import = builtins.__import__
+        def no_driver(name, *args, **kwargs):
+            if name == 'psycopg' or name.startswith('psycopg.'):
+                self.fail('Offline validation imported optional PostgreSQL driver')
+            return original_import(name, *args, **kwargs)
+        with patch('builtins.__import__', side_effect=no_driver):
+            self.test_authorization_and_bounds_fail_before_connect()
+            self.test_wal_backup_and_standalone_requirement()
 
     def test_authorization_and_bounds_fail_before_connect(self):
         with tempfile.TemporaryDirectory() as directory:
