@@ -188,3 +188,11 @@ execution rejects native selection before accepting an old SQLite backup receipt
 Current native preflight, reader and backup implementations are reused unchanged.
 The inventory reclassifies these fenced source sites and refreshes lexical caller
 locations; retained source SQL and migration identities remain unchanged.
+
+## Research input boundaries (#104)
+
+The [research input/store classification](../research/research-input-stores.md)
+accounts for current Focus/candle planning, frozen ER/finance/SS01–SS04/catalog
+reproduction, explicit projection and ephemeral FTS scratch. Current readers use
+verified native MVCC without retained fallback; explicit frozen replay binds
+SHA256, schema versions and input capture time. No retained data is rewritten.

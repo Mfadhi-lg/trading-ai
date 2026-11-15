@@ -14,7 +14,9 @@ import re
 import sqlite3
 import subprocess
 from collections import Counter, defaultdict
-from datetime import date
+from datetime import date, timedelta
+from ..input_reader import observation
+from ...db.repository_backend import is_postgresql
 from pathlib import Path
 from typing import Any, Iterable, Mapping
 
@@ -522,19 +524,20 @@ def _artifact_shape(
     config = QUARTERS[quarter]
     period_end = config["period_end"]
     cutoff = config["cutoff"]
+    lower = (date.fromisoformat(period_end) - timedelta(days=365)).isoformat()
     counts = {row[0]: int(row[1]) for row in conn.execute(
         """SELECT artifact_type,COUNT(*) FROM document_artifacts
             WHERE company_id=? AND (
               (artifact_type IN ('transcript','presentation','recording') AND period_end=?)
               OR (artifact_type='credit_rating' AND event_date<=?
-                  AND event_date>=date(?,'-365 days'))
+                  AND event_date>=?)
             ) GROUP BY artifact_type""",
-        (company_id, period_end, cutoff, period_end),
+        (company_id, period_end, cutoff, lower),
     )}
     recovery_count = conn.execute(
         """SELECT COUNT(*) FROM artifact_recovery_targets
-            WHERE company_id=? AND event_date<=? AND event_date>=date(?,'-365 days')""",
-        (company_id, cutoff, period_end),
+            WHERE company_id=? AND event_date<=? AND event_date>=?""",
+        (company_id, cutoff, lower),
     ).fetchone()[0]
     hosts = [str(row[0]) for row in conn.execute(
         """SELECT DISTINCT COALESCE(s.retrieval_host,'')
@@ -542,9 +545,9 @@ def _artifact_shape(
             WHERE a.company_id=? AND a.artifact_type IN ('transcript','presentation','credit_rating')
               AND ((a.artifact_type IN ('transcript','presentation') AND a.period_end=?)
                    OR (a.artifact_type='credit_rating' AND a.event_date<=?
-                       AND a.event_date>=date(?,'-365 days')))
+                       AND a.event_date>=?))
             ORDER BY 1""",
-        (company_id, period_end, cutoff, period_end),
+        (company_id, period_end, cutoff, lower),
     ) if row[0]]
     return {
         "transcript_artifact_count": counts.get("transcript", 0),
@@ -564,14 +567,15 @@ def _freeze_artifact_ids(
     quarter: str,
 ) -> dict[str, list[int]]:
     config = QUARTERS[quarter]
+    lower = (date.fromisoformat(config["period_end"]) - timedelta(days=365)).isoformat()
     rows = conn.execute(
         """SELECT artifact_id,artifact_type FROM document_artifacts
             WHERE company_id=? AND (
               (artifact_type IN ('transcript','presentation') AND period_end=?)
               OR (artifact_type='credit_rating' AND event_date<=?
-                  AND event_date>=date(?,'-365 days'))
+                  AND event_date>=?)
             ) ORDER BY artifact_type,artifact_id""",
-        (company_id, config["period_end"], config["cutoff"], config["period_end"]),
+        (company_id, config["period_end"], config["cutoff"], lower),
     ).fetchall()
     grouped = {"transcripts": [], "presentations": [], "credit_ratings": []}
     keys = {
@@ -915,18 +919,20 @@ def build_p0_governance(
     output_dir: Path,
     created_at_utc: str,
     require_production: bool = True,
+    database_source: dict | None = None,
     q4_ocr_evidence_path: Path | None = None,
     decision_approval_path: Path | None = None,
     archetype_approval_path: Path | None = None,
 ) -> dict[str, Any]:
-    database_path = str(conn.execute("PRAGMA database_list").fetchone()[2])
+    native = is_postgresql(conn)
+    database_path = "verified_native_application" if native else str(conn.execute("PRAGMA database_list").fetchone()[2])
     company_count = int(conn.execute("SELECT COUNT(*) FROM companies").fetchone()[0])
     artifact_count = int(
         conn.execute("SELECT COUNT(*) FROM document_artifacts").fetchone()[0]
     )
-    migration = conn.execute("SELECT MAX(version) FROM schema_migrations").fetchone()[0]
+    migration = conn.execute("SELECT MAX(version) FROM " + ("_postgresql_migrations" if native else "schema_migrations")).fetchone()[0]
     if require_production and (
-        database_path != "/data/scraper.db" or company_count < 1000 or artifact_count < 1
+        (not native and database_path != "/data/scraper.db") or company_count < 1000 or artifact_count < 1
     ):
         raise ValueError(
             f"Refusing non-production DB: path={database_path}, companies={company_count}, "
@@ -1346,6 +1352,7 @@ def build_p0_governance(
     if selected_rows and not invariants["all_automatic_artifact_types_represented"]:
         blocked_by.append("ARTIFACT_TYPE_COVERAGE")
     manifest = {
+        "database_source": database_source,
         "scope_id": "p0-fg00-v001" if gate == "GREEN" else "p0-fg00-v001-NOT-READY",
         "scope_kind": "P0",
         "gate": gate,
@@ -1395,7 +1402,7 @@ def build_p0_governance(
     )
     report = (
         "# P0 Governance Report v001\n\n"
-        f"Production DB: `{database_path}` ({company_count} companies, {artifact_count} artifacts, migration `{migration}`).\n\n"
+        f"Research input: `{database_path}` ({company_count} companies, {artifact_count} artifacts, migration `{migration}`).\n\n"
         "The source diagnosis is `PARTIAL_UNIVERSE_AVAILABLE`. Positive labels are frozen. "
         + report_status
         +
@@ -1475,6 +1482,7 @@ def build_p0_governance(
     )
     return {
         "database": database_path,
+        "database_source": database_source,
         "companies": company_count,
         "document_artifacts": artifact_count,
         "migration": migration,
@@ -1491,7 +1499,9 @@ def _main() -> int:
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--db", type=Path, default=Path("/data/scraper.db"))
+    parser.add_argument("--db", type=Path, help="Explicit frozen SQLite input")
+    parser.add_argument("--frozen-sha256")
+    parser.add_argument("--observed-at")
     parser.add_argument("--repository-root", type=Path, default=Path.cwd())
     parser.add_argument(
         "--output-dir",
@@ -1518,20 +1528,19 @@ def _main() -> int:
         outputs = write_parquet_exports(args.output_dir)
         print(json.dumps({"status": "ok", "outputs": [str(path) for path in outputs]}))
         return 0
-    conn = sqlite3.connect(args.db)
-    conn.row_factory = sqlite3.Row
-    try:
+    with observation(args.db, frozen_sha256=args.frozen_sha256,
+                     observed_at=args.observed_at) as (conn, source):
         payload = build_p0_governance(
             conn,
             repository_root=args.repository_root,
             output_dir=args.output_dir,
             created_at_utc=args.created_at_utc,
+            database_source=source,
+            require_production=source["mode"] != "frozen_sqlite_snapshot",
             q4_ocr_evidence_path=args.q4_ocr_evidence,
             decision_approval_path=args.decision_approvals,
             archetype_approval_path=args.archetype_approvals,
         )
-    finally:
-        conn.close()
     print(json.dumps(payload, sort_keys=True))
     return 0
 

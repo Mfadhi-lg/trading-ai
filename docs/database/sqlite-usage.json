@@ -367,21 +367,17 @@
     },
     {
       "path": "experiments/historical_candle_archive_v1/prepare.py",
-      "source_sha256": "1bb74c0bd94f711564441910116a2fe941c71483fcb016550eb459a2c697941c",
-      "owner": "Maintainers of experiments/historical_candle_archive_v1",
-      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/107",
-      "reviewed_source_sha256": "1bb74c0bd94f711564441910116a2fe941c71483fcb016550eb459a2c697941c",
-      "classification": "historical snapshot",
-      "store": "retained research SQLite source/catalog and isolated research copies/output; some functions also use :memory: comparison/metadata clones",
-      "intent": "Static SQL/query candidates: CREATE, INSERT, PRAGMA; dynamic queries require caller review.",
-      "backend_guard": "Offline/snapshot research contract, not native application routing; source selection, read-only URI modes and copy guards must be reviewed at the listed symbols.",
-      "disposition": "Preserve source bytes, provenance, offline fixtures and retained research outputs. Classification does not authorize running historical mutation scripts.",
+      "source_sha256": "9bf6d8ebad92692201111ba7d1de35c0af1d9a71fa33a76500b9bb5f6419b976",
+      "owner": "Research and acquisition maintainers",
+      "follow_up": "No runtime activation or retained research-store transfer authorized by #104.",
+      "reviewed_source_sha256": "9bf6d8ebad92692201111ba7d1de35c0af1d9a71fa33a76500b9bb5f6419b976",
+      "classification": "live application",
+      "store": "Verified native application observation; explicit checksummed frozen SQLite replay only",
+      "intent": "Read-only input observation/planning; isolated report outputs only",
+      "backend_guard": "input_reader.observation requires PostgreSQL by default through verified application factory; SQLite only with explicit path/SHA256/capture time and cold-file before/after checks",
+      "disposition": "Port current inputs; retain explicit frozen reproduction and standalone research stores. See docs/research/research-input-stores.md.",
       "sites": [
-        {"line": 53,"symbol": "main","kind": "direct connection","sha256": "15de8f22bc76bef3142136f792454c6a5bf9098c84c4a620ff30c5391cb251dd","scope_sha256": "6230273bf8b27dbde1702a0343e9ed2d72b015b2a0c660227bb72c8748d00137","branch_hints": []},
-        {"line": 58,"symbol": "main","kind": "dynamic query","sha256": "aef98367d91750145aa4394ebdfc7d18531a3ed93faa0ff848e4a6347a40808c","scope_sha256": "6230273bf8b27dbde1702a0343e9ed2d72b015b2a0c660227bb72c8748d00137","branch_hints": []},
-        {"line": 59,"symbol": "main","kind": "dynamic query","sha256": "7f4e620be72640f665e66edb3520556cf684c882956fe319148bddd9e33eb696","scope_sha256": "6230273bf8b27dbde1702a0343e9ed2d72b015b2a0c660227bb72c8748d00137","branch_hints": []},
-        {"line": 63,"symbol": "main","kind": "direct connection","sha256": "f94bdbce0b00ee514f529ea5ff2668740555873dd9f3c122bbb5bd2435c0f03a","scope_sha256": "6230273bf8b27dbde1702a0343e9ed2d72b015b2a0c660227bb72c8748d00137","branch_hints": []},
-        {"line": 65,"symbol": "main","kind": "SQLite SQL","sha256": "a28b203f21249ab8312986428d3b09520123b2d7328839a8a7a3b5f61f02af8f","scope_sha256": "6230273bf8b27dbde1702a0343e9ed2d72b015b2a0c660227bb72c8748d00137","branch_hints": []}
+        {"line": 58,"symbol": "main.bounded","kind": "dynamic query","sha256": "a06e7851542ea4dd22a83507872f41ad48d02cc59f10a68f2c52dab77012ee54","scope_sha256": "5f0e0167d989a8dda2dd34299d03e84fa3654dab0db068edb80ef96c3f5b770f","branch_hints": []}
       ],
       "caller_references": [
         {"path": "experiments/historical_candle_archive_v1/acquire.py","line": 15},
@@ -462,7 +458,7 @@
         {"path": "experiments/historical_candle_archive_v1/indicator_check.py","line": 7},
         {"path": "experiments/historical_candle_archive_v1/indicator_check.py","line": 104},
         {"path": "experiments/historical_candle_archive_v1/measure.py","line": 9},
-        {"path": "experiments/historical_candle_archive_v1/prepare.py","line": 8},
+        {"path": "experiments/historical_candle_archive_v1/prepare.py","line": 10},
         {"path": "experiments/historical_candle_archive_v1/references.py","line": 7},
         {"path": "experiments/historical_candle_archive_v1/repair_identity.py","line": 7},
         {"path": "experiments/historical_candle_archive_v1/repair_queue.py","line": 9},
@@ -1797,6 +1793,14 @@
     {
       "path": "scrapper/db/candle_inventory_transfer.py",
       "source_sha256": "61a21b6cb4194207fdee998e5c265e114c43aa3a334fca8f7ea40150d1cee718",
+      "classification": "transfer/admin",
+      "store": "Separate historical candle inventory SQLite snapshot and explicitly selected PostgreSQL target",
+      "intent": "Issue #101 reviewed schema, snapshot, bounded exact transfer and reconciliation; no runtime switch",
+      "backend_guard": "Explicit offline paths and settings; read-only SQLite snapshots, hash authorization, standalone journal guard, native PostgreSQL target only",
+      "owner": "Historical candle archive metadata transfer",
+      "disposition": "Explicit offline verified transfer; mutable target marker joins inventory/lock state exclusions. Runtime selection is separate and production transfer/cutover remains separately authorized.",
+      "follow_up": "Runtime archive port and production cutover require separate authorization",
+      "reviewed_source_sha256": "61a21b6cb4194207fdee998e5c265e114c43aa3a334fca8f7ea40150d1cee718",
       "sites": [
         {"line": 26,"symbol": "source_tables","kind": "direct connection","sha256": "15de8f22bc76bef3142136f792454c6a5bf9098c84c4a620ff30c5391cb251dd","scope_sha256": "6b5d516ad8121279b088406aeb9929216bbb7b4d20dba283b11e87fae08d87a6","branch_hints": []},
         {"line": 27,"symbol": "source_tables","kind": "dynamic query","sha256": "5bf5696775fb127216c9da57b3a7512461172f79d57ea1a8ce9a89c717fa48fc","scope_sha256": "6b5d516ad8121279b088406aeb9929216bbb7b4d20dba283b11e87fae08d87a6","branch_hints": []},
@@ -1824,15 +1828,7 @@
       "caller_references": [
         {"path": "scrapper/db/candle_inventory.py","line": 17},
         {"path": "scrapper/market_live/repository.py","line": 10}
-      ],
-      "classification": "transfer/admin",
-      "store": "Separate historical candle inventory SQLite snapshot and explicitly selected PostgreSQL target",
-      "intent": "Issue #101 reviewed schema, snapshot, bounded exact transfer and reconciliation; no runtime switch",
-      "backend_guard": "Explicit offline paths and settings; read-only SQLite snapshots, hash authorization, standalone journal guard, native PostgreSQL target only",
-      "owner": "Historical candle archive metadata transfer",
-      "disposition": "Explicit offline verified transfer; mutable target marker joins inventory/lock state exclusions. Runtime selection is separate and production transfer/cutover remains separately authorized.",
-      "follow_up": "Runtime archive port and production cutover require separate authorization",
-      "reviewed_source_sha256": "61a21b6cb4194207fdee998e5c265e114c43aa3a334fca8f7ea40150d1cee718"
+      ]
     },
     {
       "path": "scrapper/db/collection_scope_repo.py",
@@ -1978,6 +1974,7 @@
         {"path": "scrapper/pipeline/transcribe_recording.py","line": 15},
         {"path": "scrapper/pipeline/trendlyne_pilot.py","line": 16},
         {"path": "scrapper/pipeline/trendlyne_vertical.py","line": 18},
+        {"path": "scrapper/research/input_reader.py","line": 26},
         {"path": "scrapper/view/browser_rating_monitor.py","line": 96},
         {"path": "scrapper/view/shell.py","line": 32},
         {"path": "scrapper/workflows/documents/discovery.py","line": 9},
@@ -3013,6 +3010,7 @@
         {"path": "scrapper/pipeline/credit_rating_downloads.py","line": 32},
         {"path": "scrapper/pipeline/evaluate_document_acquisition_gate.py","line": 15},
         {"path": "scrapper/pipeline/reconcile_promoted_artifacts.py","line": 12},
+        {"path": "scrapper/research/focus/build_p0_governance.py","line": 19},
         {"path": "scrapper/sources/documents/routine.py","line": 17},
         {"path": "scrapper/validation/screener.py","line": 4},
         {"path": "scrapper/validation/trendlyne.py","line": 4},
@@ -3515,6 +3513,14 @@
     {
       "path": "scrapper/market_live/repository.py",
       "source_sha256": "797ccce11eb15c52a700630ee75a5b074e13f84d1159a0559dfea62dc2313c19",
+      "classification": "secondary operational store",
+      "store": "Independent live evidence store; explicit SQLite compatibility or verified PostgreSQL target",
+      "intent": "Preserve frames, observations, raw file references and exact payload text independently of application/archive stores.",
+      "backend_guard": "Explicit live_store configuration and target marker; no native fallback. Transfer requires snapshot hash and isolated target pin.",
+      "owner": "Maintainers of scrapper/market_live",
+      "disposition": "Runtime never provisions or transfers. SQLite is offline/legacy compatibility; transfers are separately authorized admin operations.",
+      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/103",
+      "reviewed_source_sha256": "797ccce11eb15c52a700630ee75a5b074e13f84d1159a0559dfea62dc2313c19",
       "sites": [
         {"line": 33,"symbol": "contract","kind": "dynamic query","sha256": "9e8b9c0ca7155ab30e1b1fda929be3da0b1f3f8d076c83e0e41e620e79421ab1","scope_sha256": "5a6a2ebf845549c6a5f7af832945b5cce232f2f44bead72762743f7b1971fbb5","branch_hints": []},
         {"line": 37,"symbol": "contract","kind": "dynamic query","sha256": "f035dc53e40300b271e21381942dd718a3a877d8564c0c859d1a2c241d78a96e","scope_sha256": "5a6a2ebf845549c6a5f7af832945b5cce232f2f44bead72762743f7b1971fbb5","branch_hints": []},
@@ -3545,19 +3551,19 @@
         {"path": "scrapper/documents/recovery/browser_rating/ledger.py","line": 9},
         {"path": "scrapper/market_live/engine.py","line": 47},
         {"path": "scrapper/market_live/transfer.py","line": 13}
-      ],
-      "classification": "secondary operational store",
+      ]
+    },
+    {
+      "path": "scrapper/market_live/transfer.py",
+      "source_sha256": "a615b68ec22edf8a8046aa2922d20a1f4fdc0124cb6170d67cc8eadda06a66b3",
+      "classification": "transfer/admin",
       "store": "Independent live evidence store; explicit SQLite compatibility or verified PostgreSQL target",
       "intent": "Preserve frames, observations, raw file references and exact payload text independently of application/archive stores.",
       "backend_guard": "Explicit live_store configuration and target marker; no native fallback. Transfer requires snapshot hash and isolated target pin.",
       "owner": "Maintainers of scrapper/market_live",
       "disposition": "Runtime never provisions or transfers. SQLite is offline/legacy compatibility; transfers are separately authorized admin operations.",
       "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/103",
-      "reviewed_source_sha256": "797ccce11eb15c52a700630ee75a5b074e13f84d1159a0559dfea62dc2313c19"
-    },
-    {
-      "path": "scrapper/market_live/transfer.py",
-      "source_sha256": "a615b68ec22edf8a8046aa2922d20a1f4fdc0124cb6170d67cc8eadda06a66b3",
+      "reviewed_source_sha256": "a615b68ec22edf8a8046aa2922d20a1f4fdc0124cb6170d67cc8eadda06a66b3",
       "sites": [
         {"line": 40,"symbol": "inspect","kind": "direct connection","sha256": "15de8f22bc76bef3142136f792454c6a5bf9098c84c4a620ff30c5391cb251dd","scope_sha256": "7a1aaaf2419bf1ed86590b6eb374998b0fb3fecf8edc43ad326bef48cdd9cbc9","branch_hints": []},
         {"line": 41,"symbol": "inspect","kind": "dynamic query","sha256": "993fffa60c04ea991bf7a82fbe357a0d183214072059519849119cce7e4f5baa","scope_sha256": "7a1aaaf2419bf1ed86590b6eb374998b0fb3fecf8edc43ad326bef48cdd9cbc9","branch_hints": []},
@@ -3577,15 +3583,7 @@
       "caller_references": [
         {"path": "scrapper/db/candle_inventory.py","line": 17},
         {"path": "scrapper/db/postgresql_migration.py","line": 48}
-      ],
-      "classification": "transfer/admin",
-      "store": "Independent live evidence store; explicit SQLite compatibility or verified PostgreSQL target",
-      "intent": "Preserve frames, observations, raw file references and exact payload text independently of application/archive stores.",
-      "backend_guard": "Explicit live_store configuration and target marker; no native fallback. Transfer requires snapshot hash and isolated target pin.",
-      "owner": "Maintainers of scrapper/market_live",
-      "disposition": "Runtime never provisions or transfers. SQLite is offline/legacy compatibility; transfers are separately authorized admin operations.",
-      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/103",
-      "reviewed_source_sha256": "a615b68ec22edf8a8046aa2922d20a1f4fdc0124cb6170d67cc8eadda06a66b3"
+      ]
     },
     {
       "path": "scrapper/operations/workers/automatic_documents.py",
@@ -4015,23 +4013,19 @@
     },
     {
       "path": "scrapper/research/focus/build_p0_governance.py",
-      "source_sha256": "58542f0f5883086f7e15f624a6a6a71a4eb521397bc59d0b4180b340930ea370",
-      "owner": "Maintainers of scrapper/research/focus",
-      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/107",
-      "reviewed_source_sha256": "58542f0f5883086f7e15f624a6a6a71a4eb521397bc59d0b4180b340930ea370",
-      "classification": "historical snapshot",
-      "store": "retained research SQLite source/catalog and isolated research copies/output; some functions also use :memory: comparison/metadata clones",
-      "intent": "Static SQL/query candidates: PRAGMA, SELECT; dynamic queries require caller review.",
-      "backend_guard": "Offline/snapshot research contract, not native application routing; source selection, read-only URI modes and copy guards must be reviewed at the listed symbols.",
-      "disposition": "Preserve source bytes, provenance, offline fixtures and retained research outputs. Classification does not authorize running historical mutation scripts.",
+      "source_sha256": "31edb3f8c48d9760ab0215f83979b346a6f2628112d6e6ecab21a9edb0d3b2e3",
+      "owner": "Research and acquisition maintainers",
+      "follow_up": "No runtime activation or retained research-store transfer authorized by #104.",
+      "reviewed_source_sha256": "31edb3f8c48d9760ab0215f83979b346a6f2628112d6e6ecab21a9edb0d3b2e3",
+      "classification": "live application",
+      "store": "Verified native application observation; explicit checksummed frozen SQLite replay only",
+      "intent": "Read-only input observation/planning; isolated report outputs only",
+      "backend_guard": "input_reader.observation requires PostgreSQL by default through verified application factory; SQLite only with explicit path/SHA256/capture time and cold-file before/after checks",
+      "disposition": "Port current inputs; retain explicit frozen reproduction and standalone research stores. See docs/research/research-input-stores.md.",
       "sites": [
-        {"line": 504,"symbol": "_result_availability","kind": "dynamic query","sha256": "a6dad26c04d5bfff897d129afd2719705f783288f4a7954f8ac0a4c128be0fa5","scope_sha256": "06e2b3f349a9147a13b8bbb8d46399394fcd4cb5bfc2e2ecb0c6d9622c76200a","branch_hints": []},
-        {"line": 526,"symbol": "_artifact_shape","kind": "SQLite SQL","sha256": "1bcd68b4170313f779e204c35078a5590442295f2ee9184dcfed6111e74f9af5","scope_sha256": "ba65e6f93e88f5d7f9c36cab6823dd3619af67422c0932021cff6e4cea273142","branch_hints": []},
-        {"line": 535,"symbol": "_artifact_shape","kind": "SQLite SQL","sha256": "8e3e5731a2ee31ae07716b8cd792a5dc886b126b24009744334962b4fe44f43e","scope_sha256": "ba65e6f93e88f5d7f9c36cab6823dd3619af67422c0932021cff6e4cea273142","branch_hints": []},
-        {"line": 540,"symbol": "_artifact_shape","kind": "SQLite SQL","sha256": "cb422957c4f07cb6d5cd450b85a2606ed500b70c769561c07533c51b2b3266d4","scope_sha256": "ba65e6f93e88f5d7f9c36cab6823dd3619af67422c0932021cff6e4cea273142","branch_hints": []},
-        {"line": 568,"symbol": "_freeze_artifact_ids","kind": "SQLite SQL","sha256": "cfec20fa97e26112401ad539fa2c73d085b5926f5361f504ec4bb0312b134ef2","scope_sha256": "4a9e010ea399f10e6aabe00ea9ad9acb993d94bca13bfe3b1be67bb1bec6be57","branch_hints": []},
-        {"line": 922,"symbol": "build_p0_governance","kind": "SQLite SQL","sha256": "569911c21cdde71f5e90460310cbd93fd53f788cadd9affcef4897743f3f929a","scope_sha256": "b63a51dc09b2d4ddebbd538d31b365cfc68d279da8d38b37bdbcfe9ebb360b8b","branch_hints": []},
-        {"line": 1521,"symbol": "_main","kind": "direct connection","sha256": "76e5ab2feae3618d6e83b039be22559afb666d31136d69d40c98e4c17bbb7439","scope_sha256": "a2bb61d14b7489f0cb082f8eb2404537f76ad02617eb61b2d20bfd7060262519","branch_hints": []}
+        {"line": 506,"symbol": "_result_availability","kind": "dynamic query","sha256": "a6dad26c04d5bfff897d129afd2719705f783288f4a7954f8ac0a4c128be0fa5","scope_sha256": "06e2b3f349a9147a13b8bbb8d46399394fcd4cb5bfc2e2ecb0c6d9622c76200a","branch_hints": []},
+        {"line": 928,"symbol": "build_p0_governance","kind": "SQLite SQL","sha256": "569911c21cdde71f5e90460310cbd93fd53f788cadd9affcef4897743f3f929a","scope_sha256": "1643f3bdbf60db687c96422a8d9c820702517b635d87184e8e8da96f60f3ae7f","branch_hints": []},
+        {"line": 933,"symbol": "build_p0_governance","kind": "dynamic query","sha256": "9f66a3e527e3f4a9f8d80cec7db0eebeaf2df2e036226ac2e9b9c05d932381c2","scope_sha256": "1643f3bdbf60db687c96422a8d9c820702517b635d87184e8e8da96f60f3ae7f","branch_hints": []}
       ],
       "caller_references": [
         {"path": "scrapper/pipeline/build_p0_governance.py","line": 2}
@@ -4055,8 +4049,28 @@
       "caller_references": [
         {"path": "scrapper/governance/__init__.py","line": 3},
         {"path": "scrapper/governance/focus_p0.py","line": 2},
-        {"path": "scrapper/research/focus/build_p0_governance.py","line": 23},
+        {"path": "scrapper/research/focus/build_p0_governance.py","line": 25},
         {"path": "scrapper/research/governance/__init__.py","line": 2}
+      ]
+    },
+    {
+      "path": "scrapper/research/input_reader.py",
+      "source_sha256": "260bea4a940bd3b188410605b7116b66dad06d6c4144a424de0bb4d37c3d8b20",
+      "classification": "live application",
+      "store": "Verified native application observation; explicit checksummed frozen SQLite replay only",
+      "intent": "Read-only input observation/planning; isolated report outputs only",
+      "backend_guard": "input_reader.observation requires PostgreSQL by default through verified application factory; SQLite only with explicit path/SHA256/capture time and cold-file before/after checks",
+      "owner": "Research and acquisition maintainers",
+      "disposition": "Port current inputs; retain explicit frozen reproduction and standalone research stores. See docs/research/research-input-stores.md.",
+      "follow_up": "No runtime activation or retained research-store transfer authorized by #104.",
+      "reviewed_source_sha256": "260bea4a940bd3b188410605b7116b66dad06d6c4144a424de0bb4d37c3d8b20",
+      "sites": [
+        {"line": 43,"symbol": "observation","kind": "direct connection","sha256": "df4fae2c4ebff1cecb1bd9eaa0dc888795f7b32a6ef43aeea0906cd154dcc588","scope_sha256": "782b38d5e042cbff3db8411ed18ddc8a264846ab560ce59244f872685fbb6c17","branch_hints": []},
+        {"line": 45,"symbol": "observation","kind": "SQLite SQL","sha256": "a28b203f21249ab8312986428d3b09520123b2d7328839a8a7a3b5f61f02af8f","scope_sha256": "782b38d5e042cbff3db8411ed18ddc8a264846ab560ce59244f872685fbb6c17","branch_hints": []}
+      ],
+      "caller_references": [
+        {"path": "experiments/historical_candle_archive_v1/prepare.py","line": 9},
+        {"path": "scrapper/research/focus/build_p0_governance.py","line": 18}
       ]
     },
     {
