@@ -1,4 +1,10 @@
 """Compressed capacity scenarios using the existing parser benchmark, no writes to production."""
+
+import sys as _legacy_sys
+from pathlib import Path as _LegacyPath
+_legacy_sys.path.insert(0, "/activation" if _LegacyPath("/activation").is_dir() else str(_LegacyPath(__file__).resolve().parents[2] / "ops/activation"))
+from legacy_sqlite_guard import require_snapshot
+require_snapshot()
 import json,sys,time,multiprocessing as mp
 from pathlib import Path
 sys.path[:0]=['/app','/activation','/bench']

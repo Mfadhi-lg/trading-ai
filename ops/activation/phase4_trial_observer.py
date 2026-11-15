@@ -3,6 +3,13 @@
 No scheduler ticks, source requests, queue changes or activation/resume operations.
 The existing dispatcher, permits/cooldowns and STOP latches enforce protections.
 """
+
+if __name__ == "__main__":
+    import sys as _legacy_sys
+    from pathlib import Path as _LegacyPath
+    _legacy_sys.path.insert(0, str(_LegacyPath(__file__).resolve().parents[2] / "ops/activation"))
+    from legacy_sqlite_guard import retired_launcher
+    retired_launcher()
 import hashlib,json,os,plistlib,subprocess,time
 from datetime import datetime,timezone
 from pathlib import Path
@@ -94,6 +101,8 @@ def resources():
     with (OUT/'resource-samples.jsonl').open('a') as f:f.write(json.dumps(sample)+'\n')
 
 def main():
+    from legacy_sqlite_guard import retired_launcher
+    retired_launcher()
     config=json.loads((HERE/'phase4_schedule.json').read_text())
     assert config['enabled'] and config['historical_limit']==0 and config['concurrency']==1
     epoch=datetime.fromisoformat(config['activated_at_utc']);end=datetime.fromisoformat(config['expires_at_utc'])

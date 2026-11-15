@@ -1,4 +1,11 @@
 """Host ownership gate and isolated read-only probe. No activation operations."""
+
+if __name__ == "__main__":
+    import sys as _legacy_sys
+    from pathlib import Path as _LegacyPath
+    _legacy_sys.path.insert(0, str(_LegacyPath(__file__).resolve().parents[3] / "ops/activation"))
+    from legacy_sqlite_guard import retired_launcher
+    retired_launcher()
 import hashlib
 import json
 import os
@@ -115,6 +122,9 @@ def writer_gate():
 
 
 def main():
+    sys.path.insert(0, str(ROOT / "ops/activation"))
+    from legacy_sqlite_guard import retired_launcher
+    retired_launcher()
     OUT.mkdir(parents=True, exist_ok=True)
     if (OUT / 'result.json').exists():
         print('Evidence already exists; refuse to overwrite or repeat probe', file=sys.stderr)

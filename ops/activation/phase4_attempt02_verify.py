@@ -1,4 +1,11 @@
 """Bounded production read-only inspection using the existing image and locks."""
+
+if __name__ == "__main__":
+    import sys as _legacy_sys
+    from pathlib import Path as _LegacyPath
+    _legacy_sys.path.insert(0, str(_LegacyPath(__file__).resolve().parents[2] / "ops/activation"))
+    from legacy_sqlite_guard import retired_launcher
+    retired_launcher()
 from datetime import datetime, timezone
 import argparse
 import fcntl
@@ -15,6 +22,8 @@ IMAGE = 'sha256:1a310808f878911b4bd0a324beaf2948f215e3743238c981a531656cf0eecbf9
 
 
 def main():
+    from legacy_sqlite_guard import retired_launcher
+    retired_launcher()
     global OUT
     parser = argparse.ArgumentParser()
     parser.add_argument('--output',type=Path)

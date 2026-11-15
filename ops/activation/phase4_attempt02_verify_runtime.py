@@ -1,4 +1,8 @@
 """Read-only verification of the failed exact canary; no worker or source access."""
+
+# Retained campaign input boundary; original SQL/identity/sidecar checks follow.
+from legacy_sqlite_guard import require_snapshot
+require_snapshot()
 import hashlib,json,sqlite3,sys
 from pathlib import Path
 from datetime import datetime,timezone

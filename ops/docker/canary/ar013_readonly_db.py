@@ -62,6 +62,9 @@ def require_readonly_mount(path, mountinfo):
 
 
 def main():
+    sys.path.insert(0, "/activation")
+    from legacy_sqlite_guard import require_snapshot
+    require_snapshot()
     result = {'CANARY_HARNESS': 'FAIL', 'READ_ONLY_DB_ACCESS': 'FAIL',
               'production_mutation': 'none'}
     conn = None

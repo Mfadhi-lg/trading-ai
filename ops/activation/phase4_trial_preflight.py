@@ -1,4 +1,11 @@
 """Reuse existing owner, storage, schema, source and expiry checks; no activation."""
+
+if __name__ == "__main__":
+    import sys as _legacy_sys
+    from pathlib import Path as _LegacyPath
+    _legacy_sys.path.insert(0, str(_LegacyPath(__file__).resolve().parents[2] / "ops/activation"))
+    from legacy_sqlite_guard import retired_launcher
+    retired_launcher()
 import fcntl, hashlib, json, os, subprocess, sys
 from datetime import datetime,timezone
 from pathlib import Path
@@ -9,6 +16,8 @@ from automatic_acquisition import verify_config
 from prepare_phase4_routine import sources
 
 def snapshot_trial(out,final=False,*,runtime="phase4_trial_snapshot_runtime.py"):
+    from legacy_sqlite_guard import retired_launcher
+    retired_launcher()
     if runtime not in ("phase4_trial_snapshot_runtime.py", "phase4_followup_snapshot_runtime.py"):
         raise ValueError("Unapproved read-only snapshot runtime")
     out.mkdir(parents=True,exist_ok=False)
@@ -36,6 +45,8 @@ def snapshot_trial(out,final=False,*,runtime="phase4_trial_snapshot_runtime.py")
     return data
 
 def main():
+    from legacy_sqlite_guard import retired_launcher
+    retired_launcher()
     seal=json.loads((ROOT/'artifacts/phase4/routine/rollout/seal.json').read_text())
     assert sources()==seal['sources'],'Prepared source drift'
     assert hashlib.sha256((HERE/'automatic-acquisition-manifest.json').read_bytes()).hexdigest()==seal['installed_dispatcher_manifest_sha256'],'Installed manifest drift'

@@ -6,7 +6,7 @@ services:
       file: compose.yml
       service: document-download-worker
     profiles: [browser-recovery]
-    entrypoint: [python, -m, scrapper.commands.browser_rating_recovery]
+    entrypoint: ["/bin/sh", "-c", "echo 'Retired SQLite production role; use the bounded native lifecycle. See docs/operations/legacy-sqlite-launchers.md' >&2; exit 2"]
     command: [--run-id, "${BROWSER_RATING_RUN_ID:?Select an explicitly reviewed browser run}", --apply, --operator-authorized, --host, www.crisil.com, --host, www.crisilratings.com, --throttle-seconds, "20"]
     restart: "on-failure:3"
     cpus: 0.6
@@ -18,7 +18,7 @@ services:
       file: compose.yml
       service: document-download-worker
     profiles: [browser-recovery]
-    entrypoint: [python, -m, scrapper.commands.browser_rating_recovery]
+    entrypoint: ["/bin/sh", "-c", "echo 'Retired SQLite production role; use the bounded native lifecycle. See docs/operations/legacy-sqlite-launchers.md' >&2; exit 2"]
     command: [--run-id, "${BROWSER_RATING_RUN_ID:?Select an explicitly reviewed browser run}", --apply, --operator-authorized, --host, www.icra.in]
     restart: "on-failure:3"
     cpus: 0.6
@@ -30,7 +30,7 @@ services:
       file: compose.yml
       service: document-download-worker
     profiles: [browser-recovery]
-    entrypoint: [python, -m, scrapper.commands.browser_rating_recovery]
+    entrypoint: ["/bin/sh", "-c", "echo 'Retired SQLite production role; use the bounded native lifecycle. See docs/operations/legacy-sqlite-launchers.md' >&2; exit 2"]
     command: [--run-id, "${BROWSER_RATING_RUN_ID:?Select an explicitly reviewed browser run}", --apply, --operator-authorized, --host, bcrisp.in, --host, www.bcrisp.in, --host, www.acuite.in, --host, connect.acuite.in, --host, www.infomerics.com, --host, www.indiaratings.co.in, --host, www.brickworkratings.com, --host, www.careratings.com]
     restart: "on-failure:3"
     cpus: 0.6
@@ -42,7 +42,7 @@ services:
       file: compose.yml
       service: document-download-worker
     profiles: [browser-recovery]
-    entrypoint: [python, -m, scrapper.commands.browser_rating_recovery]
+    entrypoint: ["/bin/sh", "-c", "echo 'Retired SQLite production role; use the bounded native lifecycle. See docs/operations/legacy-sqlite-launchers.md' >&2; exit 2"]
     command: [--run-id, "${BROWSER_RATING_RUN_ID:?Select an explicitly reviewed browser run}", --process, --follow, --operator-authorized]
     restart: "on-failure:3"
     cpus: 0.6

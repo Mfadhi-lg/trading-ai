@@ -1,4 +1,8 @@
 """Immutable read-only trial preflight/final census. No source access or writers."""
+
+# Retained campaign input boundary; original SQL/identity/sidecar checks follow.
+from legacy_sqlite_guard import require_snapshot
+require_snapshot()
 import hashlib, json, runpy, sqlite3, sys
 from datetime import datetime, timezone
 from pathlib import Path

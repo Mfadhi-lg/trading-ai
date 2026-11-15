@@ -3,6 +3,13 @@
 This supervisor only installs the fixed approved config, observes and reports.
 No new launchd job, wake action, source dispatch, migration, or extension.
 """
+
+if __name__ == "__main__":
+    import sys as _legacy_sys
+    from pathlib import Path as _LegacyPath
+    _legacy_sys.path.insert(0, str(_LegacyPath(__file__).resolve().parents[2] / "ops/activation"))
+    from legacy_sqlite_guard import retired_launcher
+    retired_launcher()
 import argparse,fcntl,hashlib,json,os,shutil,ssl,subprocess,time
 from contextlib import contextmanager
 from datetime import datetime,timedelta,timezone
@@ -72,6 +79,8 @@ def preservation():
     return expected
 
 def prepare():
+    from legacy_sqlite_guard import retired_launcher
+    retired_launcher()
     if (OUT/'authorization.json').exists():raise RuntimeError('Already prepared; retain authorization')
     checks=safety();phase3=preservation()
     cfg=json.loads(PREPARED.read_text())
@@ -87,6 +96,8 @@ def prepare():
     (OUT/'REPORT.md').write_text('# Phase 4 authorized follow-up — waiting for 14 October\n\nFixed window: 12:00–18:00 IST. Preliminary production safety checks passed. Fresh checks will run immediately before activation. No document work is authorized outside the window. Final outcomes will replace this report after expiry.\n')
 
 def activate(*,authorized_restart=False):
+    from legacy_sqlite_guard import retired_launcher
+    retired_launcher()
     auth=json.loads((OUT/'authorization.json').read_text())
     assert hashlib.sha256(Path(__file__).read_bytes()).hexdigest()==auth['supervisor_sha256']
     cfg=dict(auth['scope']);validate_window(cfg,datetime.now(timezone.utc),authorized_restart=authorized_restart)
@@ -174,6 +185,8 @@ def finalize(data):
 
 def run(*,authorized_restart=False):
     # A singleton read-only supervisor, not a production acquisition worker.
+    from legacy_sqlite_guard import retired_launcher
+    retired_launcher()
     with (OUT/'.supervisor.lock').open('a') as singleton:
         fcntl.flock(singleton,fcntl.LOCK_EX|fcntl.LOCK_NB)
         save('supervisor-started.json',{'pid':os.getpid(),'at_utc':datetime.now(timezone.utc),'start_utc':START,'end_utc':END})
@@ -187,6 +200,8 @@ def run(*,authorized_restart=False):
         finalize(json.loads((OUT/'status.json').read_text()))
 
 def prepare_authorized_restart():
+    from legacy_sqlite_guard import retired_launcher
+    retired_launcher()
     global OUT
     parent=OUT
     if json.loads((parent/'status.json').read_text())['phase']!='SUPERVISOR_STOPPED':
@@ -205,6 +220,8 @@ def prepare_authorized_restart():
     (parent/'restart-latest.json').write_text(json.dumps({'path':str(OUT),'at_utc':str(datetime.now(timezone.utc))},indent=2)+'\n')
 
 if __name__=='__main__':
+    from legacy_sqlite_guard import retired_launcher
+    retired_launcher()
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--prepare',action='store_true');p.add_argument('--run',action='store_true');p.add_argument('--restart',action='store_true');a=p.parse_args()
     try:
         if a.prepare:prepare()

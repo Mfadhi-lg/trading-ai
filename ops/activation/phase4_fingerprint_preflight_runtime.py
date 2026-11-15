@@ -1,4 +1,8 @@
 """Read-only exact-canary preflight exercising the repaired preservation helper."""
+
+# Retained campaign input boundary; original SQL/identity/sidecar checks follow.
+from legacy_sqlite_guard import require_snapshot
+require_snapshot()
 import hashlib,json,sqlite3,sys,time
 from datetime import datetime,timezone
 from pathlib import Path

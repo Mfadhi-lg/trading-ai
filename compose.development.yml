@@ -10,6 +10,7 @@ x-development-environment: &development-environment
   DOCUMENT_MIN_FREE_PERCENT: "0"
 
 x-development-service: &development-service
+  entrypoint: ["python", "-m", "scrapper.cli"]
   image: trading-ai-c052-development:local
   build:
     context: .
@@ -42,6 +43,7 @@ services:
 
   market-cap-monitor:
     <<: *development-service
+    entrypoint: ["/bin/sh", "-c"]
     volumes: !override
       - development-data:/development-data
       - development-documents:/development-documents
@@ -79,6 +81,7 @@ services:
 
   daemon:
     <<: *development-service
+    entrypoint: ["/bin/sh", "-c"]
     volumes: !override
       - development-data:/development-data
       - development-documents:/development-documents
@@ -86,6 +89,7 @@ services:
 
   artifact-reconciler:
     <<: *development-service
+    entrypoint: ["/bin/sh", "-c"]
     volumes: !override
       - development-data:/development-data
       - development-documents:/development-documents
@@ -100,6 +104,7 @@ services:
 
   document-processing-worker:
     <<: *development-service
+    entrypoint: ["python", "-m", "scrapper.commands.quarter_processing_role"]
     volumes: !override
       - development-data:/development-data
       - development-documents:/development-documents
@@ -107,6 +112,7 @@ services:
 
   rating-recovery-discovery:
     <<: *development-service
+    entrypoint: ["/bin/sh", "-c"]
     volumes: !override
       - development-data:/development-data
       - development-documents:/development-documents

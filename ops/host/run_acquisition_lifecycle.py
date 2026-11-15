@@ -13,8 +13,8 @@ if len(sys.argv)>1 and sys.argv[1]=='manual' and not (selected_root/'ops/activat
     manifest=selected_root/'ops/activation/automatic-acquisition-manifest.json'
     if manifest.exists() and 'ops/activation/postgresql-target.json' in json.loads(manifest.read_text()).get('files',{}):
         raise SystemExit('Lifecycle refused: declared native target is missing')
-    import subprocess
-    raise SystemExit(subprocess.run(['docker','compose','--profile','manual','run','--rm','cli',*sys.argv[2:]]).returncode)
+    from legacy_sqlite_guard import retired_launcher
+    retired_launcher()
 prepared = selected_root / 'ops/activation/com.trading-ai.automatic-acquisition.plist'
 config = plistlib.loads(prepared.read_bytes())
 args = config['ProgramArguments']

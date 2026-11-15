@@ -1,4 +1,8 @@
 """Cold read-only Phase 3 snapshot after the existing empty-WAL guard."""
+
+# Retained campaign input boundary; original SQL/identity/sidecar checks follow.
+from legacy_sqlite_guard import require_snapshot
+require_snapshot()
 import json, sqlite3, sys
 from datetime import datetime, timezone
 from pathlib import Path

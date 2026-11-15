@@ -176,3 +176,15 @@ census never opens the automatic retained SQLite comparison. See
 `test_postgresql_document_audits.NativeDocumentAuditTests` is required by the
 native smoke gate. Inventory acknowledgments cover these source branches and
 callers, not current production observations or authorization to activate them.
+
+## Historical operational fences (#100)
+
+The classified [legacy launcher inventory](../operations/legacy-sqlite-launchers.md)
+now retires the Step 3/Phase 3/Phase 4 inspection wrappers, historical benchmark
+and AR-01.3 host launchers, and root Compose production startup. Direct historical
+SQLite runtimes require explicit test snapshot path/hash and effective read-only
+mount checks before their original sidecar/identity/ledger checks. Recovery
+execution rejects native selection before accepting an old SQLite backup receipt.
+Current native preflight, reader and backup implementations are reused unchanged.
+The inventory reclassifies these fenced source sites and refreshes lexical caller
+locations; retained source SQL and migration identities remain unchanged.

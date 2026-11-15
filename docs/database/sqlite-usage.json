@@ -81,35 +81,59 @@
     },
     {
       "path": "compose.browser-recovery.development.yml",
-      "source_sha256": "3d32d207d8e06e62a7abfacdef7f6c91b5876ac8d37eb0876ad6c27d349e749c",
+      "source_sha256": "587120465c76581f73a09785cd6bceee98379750de16b9171bbe64685884631f",
       "owner": "Maintainers of .",
       "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/107",
-      "reviewed_source_sha256": "3d32d207d8e06e62a7abfacdef7f6c91b5876ac8d37eb0876ad6c27d349e749c",
+      "reviewed_source_sha256": "587120465c76581f73a09785cd6bceee98379750de16b9171bbe64685884631f",
       "classification": "compatibility/test",
       "store": "configuration references only; isolated CI roots/disposable PostgreSQL service or configured development/legacy runtime mounts",
       "intent": "Configuration/launcher evidence; inspect selected backend and mount/write-root wiring before runtime use.",
       "backend_guard": "No connection executed by inventory. CI job isolation and explicit runtime backend configuration are separate contracts.",
       "disposition": "Preserve CI isolation and legacy SQLite support; changes require source review. Existing workflow/configuration is not proof of live runtime health.",
       "sites": [
-        {"line": 5,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "29eab64c9583e358ccd0164dec0c1f3798d945afff11e1fc5a90b88a22d6bec3","scope_sha256": "3d32d207d8e06e62a7abfacdef7f6c91b5876ac8d37eb0876ad6c27d349e749c","branch_hints": []}
+        {"line": 5,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "29eab64c9583e358ccd0164dec0c1f3798d945afff11e1fc5a90b88a22d6bec3","scope_sha256": "587120465c76581f73a09785cd6bceee98379750de16b9171bbe64685884631f","branch_hints": []}
       ],
       "caller_references": [
         {"path": "scripts/audit/check_compose_release.py","line": 195}
       ]
     },
     {
+      "path": "compose.browser-recovery.yml",
+      "source_sha256": "7fd873aa5833f3067825c13b5743ddc4fd092f4211c3f70c8462b03c850c568d",
+      "owner": "Maintainers of root Compose",
+      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/100",
+      "reviewed_source_sha256": "7fd873aa5833f3067825c13b5743ddc4fd092f4211c3f70c8462b03c850c568d",
+      "classification": "historical snapshot",
+      "store": "Retired root SQLite document-worker volume topology",
+      "intent": "Retained finite browser compatibility launchers; startup refused",
+      "backend_guard": "All four entrypoints refuse rather than overriding the root production fence; isolated development overlay restores its own entrypoint",
+      "disposition": "Historical topology only; commands/run IDs preserved; no native runtime or backup certification",
+      "sites": [
+        {"line": 9,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "224a28d53914f59ccc99b22b40a1d28d4d67ce0b9ca8de567385e69535df93a8","scope_sha256": "7fd873aa5833f3067825c13b5743ddc4fd092f4211c3f70c8462b03c850c568d","branch_hints": []},
+        {"line": 21,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "224a28d53914f59ccc99b22b40a1d28d4d67ce0b9ca8de567385e69535df93a8","scope_sha256": "7fd873aa5833f3067825c13b5743ddc4fd092f4211c3f70c8462b03c850c568d","branch_hints": []},
+        {"line": 33,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "224a28d53914f59ccc99b22b40a1d28d4d67ce0b9ca8de567385e69535df93a8","scope_sha256": "7fd873aa5833f3067825c13b5743ddc4fd092f4211c3f70c8462b03c850c568d","branch_hints": []},
+        {"line": 45,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "224a28d53914f59ccc99b22b40a1d28d4d67ce0b9ca8de567385e69535df93a8","scope_sha256": "7fd873aa5833f3067825c13b5743ddc4fd092f4211c3f70c8462b03c850c568d","branch_hints": []}
+      ],
+      "caller_references": [
+        {"path": "ops/host/runtime_status.py","line": 230},
+        {"path": "scripts/audit/check_compose_release.py","line": 84},
+        {"path": "scripts/audit/check_compose_release.py","line": 188},
+        {"path": "scripts/audit/check_compose_release.py","line": 194}
+      ]
+    },
+    {
       "path": "compose.development.yml",
-      "source_sha256": "eb04a579611d88bfe9af121d82cdc7fd0f19090f5b4dc22ed4bde7cab51feec5",
+      "source_sha256": "e7c2d46c916ba6300f3a91abc522994e665d39aaa778ad1b17ca7fd57f82437d",
       "owner": "Maintainers of .",
       "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/107",
-      "reviewed_source_sha256": "eb04a579611d88bfe9af121d82cdc7fd0f19090f5b4dc22ed4bde7cab51feec5",
+      "reviewed_source_sha256": "e7c2d46c916ba6300f3a91abc522994e665d39aaa778ad1b17ca7fd57f82437d",
       "classification": "compatibility/test",
       "store": "configuration references only; isolated CI roots/disposable PostgreSQL service or configured development/legacy runtime mounts",
       "intent": "Configuration/launcher evidence; inspect selected backend and mount/write-root wiring before runtime use.",
       "backend_guard": "No connection executed by inventory. CI job isolation and explicit runtime backend configuration are separate contracts.",
       "disposition": "Preserve CI isolation and legacy SQLite support; changes require source review. Existing workflow/configuration is not proof of live runtime health.",
       "sites": [
-        {"line": 5,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "29eab64c9583e358ccd0164dec0c1f3798d945afff11e1fc5a90b88a22d6bec3","scope_sha256": "eb04a579611d88bfe9af121d82cdc7fd0f19090f5b4dc22ed4bde7cab51feec5","branch_hints": []}
+        {"line": 5,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "29eab64c9583e358ccd0164dec0c1f3798d945afff11e1fc5a90b88a22d6bec3","scope_sha256": "e7c2d46c916ba6300f3a91abc522994e665d39aaa778ad1b17ca7fd57f82437d","branch_hints": []}
       ],
       "caller_references": [
         {"path": "scripts/audit/check_compose_release.py","line": 82},
@@ -118,33 +142,50 @@
     },
     {
       "path": "compose.yml",
-      "source_sha256": "96b8316f51ad7974a40e004062c934f10c65b4aa4fb52f2572c9fdec526d3af7",
+      "source_sha256": "7e89313a782ab527011937a009e56be254bba9f642ad2d104a7f9d75abee3793",
       "owner": "Maintainers of .",
-      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/107",
-      "reviewed_source_sha256": "96b8316f51ad7974a40e004062c934f10c65b4aa4fb52f2572c9fdec526d3af7",
-      "classification": "live application",
+      "follow_up": "#100 fenced; use compose.development.yml only for isolated development",
+      "reviewed_source_sha256": "7e89313a782ab527011937a009e56be254bba9f642ad2d104a7f9d75abee3793",
+      "classification": "historical snapshot",
       "store": "configuration references only; isolated CI roots/disposable PostgreSQL service or configured development/legacy runtime mounts",
       "intent": "Configuration/launcher evidence; inspect selected backend and mount/write-root wiring before runtime use.",
-      "backend_guard": "No connection executed by inventory. CI job isolation and explicit runtime backend configuration are separate contracts.",
-      "disposition": "Preserve CI isolation and legacy SQLite support; changes require source review. Existing workflow/configuration is not proof of live runtime health.",
+      "backend_guard": "Every root production service entrypoint refuses startup regardless of host backend environment",
+      "disposition": "Retired topology; current bounded/native lifecycle replaces startup; historical manifests preserved",
       "sites": [
-        {"line": 26,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "6144ce5670bfab414a48c5c52219349f55cb3f20582a2ed20ab139454f334939","scope_sha256": "96b8316f51ad7974a40e004062c934f10c65b4aa4fb52f2572c9fdec526d3af7","branch_hints": []},
-        {"line": 47,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "6144ce5670bfab414a48c5c52219349f55cb3f20582a2ed20ab139454f334939","scope_sha256": "96b8316f51ad7974a40e004062c934f10c65b4aa4fb52f2572c9fdec526d3af7","branch_hints": []},
-        {"line": 71,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "6144ce5670bfab414a48c5c52219349f55cb3f20582a2ed20ab139454f334939","scope_sha256": "96b8316f51ad7974a40e004062c934f10c65b4aa4fb52f2572c9fdec526d3af7","branch_hints": []},
-        {"line": 89,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "6144ce5670bfab414a48c5c52219349f55cb3f20582a2ed20ab139454f334939","scope_sha256": "96b8316f51ad7974a40e004062c934f10c65b4aa4fb52f2572c9fdec526d3af7","branch_hints": []},
-        {"line": 110,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "6144ce5670bfab414a48c5c52219349f55cb3f20582a2ed20ab139454f334939","scope_sha256": "96b8316f51ad7974a40e004062c934f10c65b4aa4fb52f2572c9fdec526d3af7","branch_hints": []},
-        {"line": 128,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "6144ce5670bfab414a48c5c52219349f55cb3f20582a2ed20ab139454f334939","scope_sha256": "96b8316f51ad7974a40e004062c934f10c65b4aa4fb52f2572c9fdec526d3af7","branch_hints": []},
-        {"line": 141,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "6144ce5670bfab414a48c5c52219349f55cb3f20582a2ed20ab139454f334939","scope_sha256": "96b8316f51ad7974a40e004062c934f10c65b4aa4fb52f2572c9fdec526d3af7","branch_hints": []},
-        {"line": 153,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "6144ce5670bfab414a48c5c52219349f55cb3f20582a2ed20ab139454f334939","scope_sha256": "96b8316f51ad7974a40e004062c934f10c65b4aa4fb52f2572c9fdec526d3af7","branch_hints": []},
-        {"line": 179,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "6144ce5670bfab414a48c5c52219349f55cb3f20582a2ed20ab139454f334939","scope_sha256": "96b8316f51ad7974a40e004062c934f10c65b4aa4fb52f2572c9fdec526d3af7","branch_hints": []},
-        {"line": 212,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "6144ce5670bfab414a48c5c52219349f55cb3f20582a2ed20ab139454f334939","scope_sha256": "96b8316f51ad7974a40e004062c934f10c65b4aa4fb52f2572c9fdec526d3af7","branch_hints": []},
-        {"line": 233,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "6144ce5670bfab414a48c5c52219349f55cb3f20582a2ed20ab139454f334939","scope_sha256": "96b8316f51ad7974a40e004062c934f10c65b4aa4fb52f2572c9fdec526d3af7","branch_hints": []},
-        {"line": 259,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "6144ce5670bfab414a48c5c52219349f55cb3f20582a2ed20ab139454f334939","scope_sha256": "96b8316f51ad7974a40e004062c934f10c65b4aa4fb52f2572c9fdec526d3af7","branch_hints": []},
-        {"line": 291,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "6144ce5670bfab414a48c5c52219349f55cb3f20582a2ed20ab139454f334939","scope_sha256": "96b8316f51ad7974a40e004062c934f10c65b4aa4fb52f2572c9fdec526d3af7","branch_hints": []},
-        {"line": 315,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "6144ce5670bfab414a48c5c52219349f55cb3f20582a2ed20ab139454f334939","scope_sha256": "96b8316f51ad7974a40e004062c934f10c65b4aa4fb52f2572c9fdec526d3af7","branch_hints": []},
-        {"line": 342,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "6144ce5670bfab414a48c5c52219349f55cb3f20582a2ed20ab139454f334939","scope_sha256": "96b8316f51ad7974a40e004062c934f10c65b4aa4fb52f2572c9fdec526d3af7","branch_hints": []},
-        {"line": 365,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "6144ce5670bfab414a48c5c52219349f55cb3f20582a2ed20ab139454f334939","scope_sha256": "96b8316f51ad7974a40e004062c934f10c65b4aa4fb52f2572c9fdec526d3af7","branch_hints": []},
-        {"line": 388,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "6144ce5670bfab414a48c5c52219349f55cb3f20582a2ed20ab139454f334939","scope_sha256": "96b8316f51ad7974a40e004062c934f10c65b4aa4fb52f2572c9fdec526d3af7","branch_hints": []}
+        {"line": 21,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "224a28d53914f59ccc99b22b40a1d28d4d67ce0b9ca8de567385e69535df93a8","scope_sha256": "7e89313a782ab527011937a009e56be254bba9f642ad2d104a7f9d75abee3793","branch_hints": []},
+        {"line": 27,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "6144ce5670bfab414a48c5c52219349f55cb3f20582a2ed20ab139454f334939","scope_sha256": "7e89313a782ab527011937a009e56be254bba9f642ad2d104a7f9d75abee3793","branch_hints": []},
+        {"line": 38,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "224a28d53914f59ccc99b22b40a1d28d4d67ce0b9ca8de567385e69535df93a8","scope_sha256": "7e89313a782ab527011937a009e56be254bba9f642ad2d104a7f9d75abee3793","branch_hints": []},
+        {"line": 49,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "6144ce5670bfab414a48c5c52219349f55cb3f20582a2ed20ab139454f334939","scope_sha256": "7e89313a782ab527011937a009e56be254bba9f642ad2d104a7f9d75abee3793","branch_hints": []},
+        {"line": 67,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "224a28d53914f59ccc99b22b40a1d28d4d67ce0b9ca8de567385e69535df93a8","scope_sha256": "7e89313a782ab527011937a009e56be254bba9f642ad2d104a7f9d75abee3793","branch_hints": []},
+        {"line": 74,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "6144ce5670bfab414a48c5c52219349f55cb3f20582a2ed20ab139454f334939","scope_sha256": "7e89313a782ab527011937a009e56be254bba9f642ad2d104a7f9d75abee3793","branch_hints": []},
+        {"line": 80,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "224a28d53914f59ccc99b22b40a1d28d4d67ce0b9ca8de567385e69535df93a8","scope_sha256": "7e89313a782ab527011937a009e56be254bba9f642ad2d104a7f9d75abee3793","branch_hints": []},
+        {"line": 92,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "6144ce5670bfab414a48c5c52219349f55cb3f20582a2ed20ab139454f334939","scope_sha256": "7e89313a782ab527011937a009e56be254bba9f642ad2d104a7f9d75abee3793","branch_hints": []},
+        {"line": 105,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "224a28d53914f59ccc99b22b40a1d28d4d67ce0b9ca8de567385e69535df93a8","scope_sha256": "7e89313a782ab527011937a009e56be254bba9f642ad2d104a7f9d75abee3793","branch_hints": []},
+        {"line": 114,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "6144ce5670bfab414a48c5c52219349f55cb3f20582a2ed20ab139454f334939","scope_sha256": "7e89313a782ab527011937a009e56be254bba9f642ad2d104a7f9d75abee3793","branch_hints": []},
+        {"line": 122,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "224a28d53914f59ccc99b22b40a1d28d4d67ce0b9ca8de567385e69535df93a8","scope_sha256": "7e89313a782ab527011937a009e56be254bba9f642ad2d104a7f9d75abee3793","branch_hints": []},
+        {"line": 133,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "6144ce5670bfab414a48c5c52219349f55cb3f20582a2ed20ab139454f334939","scope_sha256": "7e89313a782ab527011937a009e56be254bba9f642ad2d104a7f9d75abee3793","branch_hints": []},
+        {"line": 141,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "224a28d53914f59ccc99b22b40a1d28d4d67ce0b9ca8de567385e69535df93a8","scope_sha256": "7e89313a782ab527011937a009e56be254bba9f642ad2d104a7f9d75abee3793","branch_hints": []},
+        {"line": 147,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "6144ce5670bfab414a48c5c52219349f55cb3f20582a2ed20ab139454f334939","scope_sha256": "7e89313a782ab527011937a009e56be254bba9f642ad2d104a7f9d75abee3793","branch_hints": []},
+        {"line": 154,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "224a28d53914f59ccc99b22b40a1d28d4d67ce0b9ca8de567385e69535df93a8","scope_sha256": "7e89313a782ab527011937a009e56be254bba9f642ad2d104a7f9d75abee3793","branch_hints": []},
+        {"line": 160,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "6144ce5670bfab414a48c5c52219349f55cb3f20582a2ed20ab139454f334939","scope_sha256": "7e89313a782ab527011937a009e56be254bba9f642ad2d104a7f9d75abee3793","branch_hints": []},
+        {"line": 173,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "224a28d53914f59ccc99b22b40a1d28d4d67ce0b9ca8de567385e69535df93a8","scope_sha256": "7e89313a782ab527011937a009e56be254bba9f642ad2d104a7f9d75abee3793","branch_hints": []},
+        {"line": 186,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "6144ce5670bfab414a48c5c52219349f55cb3f20582a2ed20ab139454f334939","scope_sha256": "7e89313a782ab527011937a009e56be254bba9f642ad2d104a7f9d75abee3793","branch_hints": []},
+        {"line": 201,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "224a28d53914f59ccc99b22b40a1d28d4d67ce0b9ca8de567385e69535df93a8","scope_sha256": "7e89313a782ab527011937a009e56be254bba9f642ad2d104a7f9d75abee3793","branch_hints": []},
+        {"line": 219,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "6144ce5670bfab414a48c5c52219349f55cb3f20582a2ed20ab139454f334939","scope_sha256": "7e89313a782ab527011937a009e56be254bba9f642ad2d104a7f9d75abee3793","branch_hints": []},
+        {"line": 234,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "224a28d53914f59ccc99b22b40a1d28d4d67ce0b9ca8de567385e69535df93a8","scope_sha256": "7e89313a782ab527011937a009e56be254bba9f642ad2d104a7f9d75abee3793","branch_hints": []},
+        {"line": 241,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "6144ce5670bfab414a48c5c52219349f55cb3f20582a2ed20ab139454f334939","scope_sha256": "7e89313a782ab527011937a009e56be254bba9f642ad2d104a7f9d75abee3793","branch_hints": []},
+        {"line": 258,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "224a28d53914f59ccc99b22b40a1d28d4d67ce0b9ca8de567385e69535df93a8","scope_sha256": "7e89313a782ab527011937a009e56be254bba9f642ad2d104a7f9d75abee3793","branch_hints": []},
+        {"line": 267,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "6144ce5670bfab414a48c5c52219349f55cb3f20582a2ed20ab139454f334939","scope_sha256": "7e89313a782ab527011937a009e56be254bba9f642ad2d104a7f9d75abee3793","branch_hints": []},
+        {"line": 278,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "224a28d53914f59ccc99b22b40a1d28d4d67ce0b9ca8de567385e69535df93a8","scope_sha256": "7e89313a782ab527011937a009e56be254bba9f642ad2d104a7f9d75abee3793","branch_hints": []},
+        {"line": 299,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "6144ce5670bfab414a48c5c52219349f55cb3f20582a2ed20ab139454f334939","scope_sha256": "7e89313a782ab527011937a009e56be254bba9f642ad2d104a7f9d75abee3793","branch_hints": []},
+        {"line": 316,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "224a28d53914f59ccc99b22b40a1d28d4d67ce0b9ca8de567385e69535df93a8","scope_sha256": "7e89313a782ab527011937a009e56be254bba9f642ad2d104a7f9d75abee3793","branch_hints": []},
+        {"line": 324,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "6144ce5670bfab414a48c5c52219349f55cb3f20582a2ed20ab139454f334939","scope_sha256": "7e89313a782ab527011937a009e56be254bba9f642ad2d104a7f9d75abee3793","branch_hints": []},
+        {"line": 345,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "224a28d53914f59ccc99b22b40a1d28d4d67ce0b9ca8de567385e69535df93a8","scope_sha256": "7e89313a782ab527011937a009e56be254bba9f642ad2d104a7f9d75abee3793","branch_hints": []},
+        {"line": 352,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "6144ce5670bfab414a48c5c52219349f55cb3f20582a2ed20ab139454f334939","scope_sha256": "7e89313a782ab527011937a009e56be254bba9f642ad2d104a7f9d75abee3793","branch_hints": []},
+        {"line": 369,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "224a28d53914f59ccc99b22b40a1d28d4d67ce0b9ca8de567385e69535df93a8","scope_sha256": "7e89313a782ab527011937a009e56be254bba9f642ad2d104a7f9d75abee3793","branch_hints": []},
+        {"line": 376,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "6144ce5670bfab414a48c5c52219349f55cb3f20582a2ed20ab139454f334939","scope_sha256": "7e89313a782ab527011937a009e56be254bba9f642ad2d104a7f9d75abee3793","branch_hints": []},
+        {"line": 393,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "224a28d53914f59ccc99b22b40a1d28d4d67ce0b9ca8de567385e69535df93a8","scope_sha256": "7e89313a782ab527011937a009e56be254bba9f642ad2d104a7f9d75abee3793","branch_hints": []},
+        {"line": 400,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "6144ce5670bfab414a48c5c52219349f55cb3f20582a2ed20ab139454f334939","scope_sha256": "7e89313a782ab527011937a009e56be254bba9f642ad2d104a7f9d75abee3793","branch_hints": []}
       ],
       "caller_references": [
         {"path": "compose.browser-recovery.yml","line": 6},
@@ -547,7 +588,7 @@
         {"path": "ops/activation/nse_results.py","line": 24},
         {"path": "ops/activation/nse_results.py","line": 44},
         {"path": "ops/activation/nse_results.py","line": 57},
-        {"path": "ops/activation/phase4_trial_snapshot_runtime.py","line": 50},
+        {"path": "ops/activation/phase4_trial_snapshot_runtime.py","line": 54},
         {"path": "ops/activation/step3_financial.py","line": 61},
         {"path": "ops/host/actual_download_audit.py","line": 88},
         {"path": "ops/host/document_audit_reader.py","line": 50},
@@ -633,78 +674,78 @@
     },
     {
       "path": "ops/activation/acquisition_recovery_backup_runtime.py",
-      "source_sha256": "04a760b1154364a95a0b9d0d00b94a2b11285af8d9e4cd385f7df16beb0e521b",
+      "source_sha256": "9b046a3900bb274db58af83f76f2a72c443c372e38c19a91a72166f265ff1b80",
       "owner": "Maintainers of ops/activation",
-      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/107",
-      "reviewed_source_sha256": "04a760b1154364a95a0b9d0d00b94a2b11285af8d9e4cd385f7df16beb0e521b",
-      "classification": "transfer/admin",
+      "follow_up": "#100 fenced; no production activation or retained-bundle replay certified",
+      "reviewed_source_sha256": "9b046a3900bb274db58af83f76f2a72c443c372e38c19a91a72166f265ff1b80",
+      "classification": "historical snapshot",
       "store": "explicitly selected SQLite source/ledger or authorized newly created backup/rehearsal target; postgresql_transfer also uses :memory: migration baseline",
       "intent": "Static SQL/query candidates: PRAGMA, SELECT; dynamic queries require caller review.",
-      "backend_guard": "SQLite-specific administrative contract; not an application runtime factory. Explicit source/target selection and existing safety guards remain authoritative.",
-      "disposition": "Keep immutable transfer, migration audit, queue rehearsal and sidecar interfaces usable. Never run as inventory generation or test setup against production.",
+      "backend_guard": "legacy_sqlite_guard.require_snapshot rejects native env/release and requires explicit hash-pinned read-only historical test input before legacy reads; original identity/sidecar checks retained",
+      "disposition": "Retained snapshot-only runtime; production wrappers retired; native alternatives documented in docs/operations/legacy-sqlite-launchers.md",
       "sites": [
-        {"line": 29,"symbol": "backup","kind": "direct connection","sha256": "3edaf5343ce3eeab4784af1c34bb4685d0adb5a81b6f23efd500a15e51f7e18e","scope_sha256": "0baf0f72010e84c16ec5c9d897ddc81fb4d691dbe0c8b55295480b6bf1afb023","branch_hints": []},
-        {"line": 35,"symbol": "backup","kind": "SQLite SQL","sha256": "eae29f4fac90e11a292df2a10239a52ce15d6564019fe8e0af9387fc400b1d2b","scope_sha256": "0baf0f72010e84c16ec5c9d897ddc81fb4d691dbe0c8b55295480b6bf1afb023","branch_hints": []},
-        {"line": 38,"symbol": "backup","kind": "direct connection","sha256": "5bbf5b3abe5a33d21aa00cc6847b8a2501cd66b06165308bd03fcd6ba5d98e50","scope_sha256": "0baf0f72010e84c16ec5c9d897ddc81fb4d691dbe0c8b55295480b6bf1afb023","branch_hints": []},
-        {"line": 40,"symbol": "backup","kind": "SQLite SQL","sha256": "1564d5d537e69c4089ee98a481865eac6ab562e9afa014405072c0348f6a2abe","scope_sha256": "0baf0f72010e84c16ec5c9d897ddc81fb4d691dbe0c8b55295480b6bf1afb023","branch_hints": []}
+        {"line": 33,"symbol": "backup","kind": "direct connection","sha256": "3edaf5343ce3eeab4784af1c34bb4685d0adb5a81b6f23efd500a15e51f7e18e","scope_sha256": "266aace964f83b900d1ed8e1a0dd88cca287443faa565f752a0ce52e17cc1760","branch_hints": []},
+        {"line": 39,"symbol": "backup","kind": "SQLite SQL","sha256": "eae29f4fac90e11a292df2a10239a52ce15d6564019fe8e0af9387fc400b1d2b","scope_sha256": "266aace964f83b900d1ed8e1a0dd88cca287443faa565f752a0ce52e17cc1760","branch_hints": []},
+        {"line": 42,"symbol": "backup","kind": "direct connection","sha256": "5bbf5b3abe5a33d21aa00cc6847b8a2501cd66b06165308bd03fcd6ba5d98e50","scope_sha256": "266aace964f83b900d1ed8e1a0dd88cca287443faa565f752a0ce52e17cc1760","branch_hints": []},
+        {"line": 44,"symbol": "backup","kind": "SQLite SQL","sha256": "1564d5d537e69c4089ee98a481865eac6ab562e9afa014405072c0348f6a2abe","scope_sha256": "266aace964f83b900d1ed8e1a0dd88cca287443faa565f752a0ce52e17cc1760","branch_hints": []}
       ],
       "caller_references": [
       ]
     },
     {
       "path": "ops/activation/acquisition_recovery_inspect_runtime.py",
-      "source_sha256": "e86c142390fef7d880d1998517ddb40a8af43abee7f345957a446540898d0d6c",
+      "source_sha256": "dc0a9886b7fd167e5d15f6f3807b5e6d264a35ad0080297b8004a4efc68e5eee",
       "owner": "Maintainers of ops/activation",
-      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/107",
-      "reviewed_source_sha256": "e86c142390fef7d880d1998517ddb40a8af43abee7f345957a446540898d0d6c",
-      "classification": "live application",
+      "follow_up": "#100 fenced; no production activation or retained-bundle replay certified",
+      "reviewed_source_sha256": "dc0a9886b7fd167e5d15f6f3807b5e6d264a35ad0080297b8004a4efc68e5eee",
+      "classification": "historical snapshot",
       "store": "explicit SQLite application snapshot, commonly /data/scraper.db; document_backlog_audit also compares a prior snapshot",
       "intent": "Static SQL/query candidates: INSERT, PRAGMA, SELECT, UPDATE; dynamic queries require caller review.",
-      "backend_guard": "No native backend guard established. Immutable/read-only/admission/sidecar guards do not prove PostgreSQL compatibility.",
-      "disposition": "Retained/manual operational reader baseline, not approved for native use. Trace callers and port or explicitly retire/disposition under #107 before selecting for native runtime.",
+      "backend_guard": "legacy_sqlite_guard.require_snapshot rejects native env/release and requires explicit hash-pinned read-only historical test input before legacy reads; original identity/sidecar checks retained",
+      "disposition": "Retained snapshot-only runtime; production wrappers retired; native alternatives documented in docs/operations/legacy-sqlite-launchers.md",
       "sites": [
-        {"line": 23,"symbol": "inspect","kind": "direct connection","sha256": "3edaf5343ce3eeab4784af1c34bb4685d0adb5a81b6f23efd500a15e51f7e18e","scope_sha256": "d674e44208d9b44f5d9cd128452671c2678dc7d7cefe0eb86c0cc632eedc1a92","branch_hints": []},
-        {"line": 25,"symbol": "inspect","kind": "SQLite SQL","sha256": "a28b203f21249ab8312986428d3b09520123b2d7328839a8a7a3b5f61f02af8f","scope_sha256": "d674e44208d9b44f5d9cd128452671c2678dc7d7cefe0eb86c0cc632eedc1a92","branch_hints": []},
-        {"line": 26,"symbol": "inspect","kind": "SQLite SQL","sha256": "c7e424fda0967e4cdffa4a79aceeca2eabc5718445a3f9cd9b6c2706503b38fe","scope_sha256": "d674e44208d9b44f5d9cd128452671c2678dc7d7cefe0eb86c0cc632eedc1a92","branch_hints": []},
-        {"line": 32,"symbol": "inspect.rows","kind": "dynamic query","sha256": "5408b7a929d8c0fdaa8b4013e3e481013601dab8f1037539bb8c0a47b85bc99c","scope_sha256": "6ca68415025e4163670fe47b0a15a5584ecb96aad4d3009a0eea638a105c1012","branch_hints": []},
-        {"line": 72,"symbol": "inspect","kind": "SQLite SQL","sha256": "8a0fc26aae4d862df0c50c1020e73174f0bcbc96c4a8a2c95faa2952874f7a6a","scope_sha256": "d674e44208d9b44f5d9cd128452671c2678dc7d7cefe0eb86c0cc632eedc1a92","branch_hints": []},
-        {"line": 130,"symbol": "<module>","kind": "SQLite SQL","sha256": "548f7928f757d39903cc1f653fd427e06dfc42e8685ad4621fb22333febfe077","scope_sha256": "548f7928f757d39903cc1f653fd427e06dfc42e8685ad4621fb22333febfe077","branch_hints": []}
+        {"line": 27,"symbol": "inspect","kind": "direct connection","sha256": "3edaf5343ce3eeab4784af1c34bb4685d0adb5a81b6f23efd500a15e51f7e18e","scope_sha256": "d674e44208d9b44f5d9cd128452671c2678dc7d7cefe0eb86c0cc632eedc1a92","branch_hints": []},
+        {"line": 29,"symbol": "inspect","kind": "SQLite SQL","sha256": "a28b203f21249ab8312986428d3b09520123b2d7328839a8a7a3b5f61f02af8f","scope_sha256": "d674e44208d9b44f5d9cd128452671c2678dc7d7cefe0eb86c0cc632eedc1a92","branch_hints": []},
+        {"line": 30,"symbol": "inspect","kind": "SQLite SQL","sha256": "c7e424fda0967e4cdffa4a79aceeca2eabc5718445a3f9cd9b6c2706503b38fe","scope_sha256": "d674e44208d9b44f5d9cd128452671c2678dc7d7cefe0eb86c0cc632eedc1a92","branch_hints": []},
+        {"line": 36,"symbol": "inspect.rows","kind": "dynamic query","sha256": "5408b7a929d8c0fdaa8b4013e3e481013601dab8f1037539bb8c0a47b85bc99c","scope_sha256": "6ca68415025e4163670fe47b0a15a5584ecb96aad4d3009a0eea638a105c1012","branch_hints": []},
+        {"line": 76,"symbol": "inspect","kind": "SQLite SQL","sha256": "8a0fc26aae4d862df0c50c1020e73174f0bcbc96c4a8a2c95faa2952874f7a6a","scope_sha256": "d674e44208d9b44f5d9cd128452671c2678dc7d7cefe0eb86c0cc632eedc1a92","branch_hints": []},
+        {"line": 134,"symbol": "<module>","kind": "SQLite SQL","sha256": "548f7928f757d39903cc1f653fd427e06dfc42e8685ad4621fb22333febfe077","scope_sha256": "548f7928f757d39903cc1f653fd427e06dfc42e8685ad4621fb22333febfe077","branch_hints": []}
       ],
       "caller_references": [
       ]
     },
     {
       "path": "ops/activation/acquisition_recovery_integrity_benchmark.py",
-      "source_sha256": "b7e8211227726ba44227c22e358b57d0953d604d40f95390cb514172ea976686",
+      "source_sha256": "b6baf8fb73ae2081aea8dfe377c777148ee22e8d2c121034bb8d96f8e2c76c4f",
       "owner": "Maintainers of ops/activation",
-      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/107",
-      "reviewed_source_sha256": "b7e8211227726ba44227c22e358b57d0953d604d40f95390cb514172ea976686",
-      "classification": "live application",
+      "follow_up": "#100 fenced; no production activation or retained-bundle replay certified",
+      "reviewed_source_sha256": "b6baf8fb73ae2081aea8dfe377c777148ee22e8d2c121034bb8d96f8e2c76c4f",
+      "classification": "historical snapshot",
       "store": "explicit SQLite application snapshot, commonly /data/scraper.db; document_backlog_audit also compares a prior snapshot",
       "intent": "Static SQL/query candidates: PRAGMA, UPDATE; dynamic queries require caller review.",
-      "backend_guard": "No native backend guard established. Immutable/read-only/admission/sidecar guards do not prove PostgreSQL compatibility.",
-      "disposition": "Retained/manual operational reader baseline, not approved for native use. Trace callers and port or explicitly retire/disposition under #107 before selecting for native runtime.",
+      "backend_guard": "legacy_sqlite_guard.require_snapshot rejects native env/release and requires explicit hash-pinned read-only historical test input before legacy reads; original identity/sidecar checks retained",
+      "disposition": "Retained snapshot-only runtime; production wrappers retired; native alternatives documented in docs/operations/legacy-sqlite-launchers.md",
       "sites": [
-        {"line": 17,"symbol": "benchmark","kind": "direct connection","sha256": "3edaf5343ce3eeab4784af1c34bb4685d0adb5a81b6f23efd500a15e51f7e18e","scope_sha256": "70f7a9168bda7db41e3440d88002077137f59c9541569173b0dcd52cbc025cf9","branch_hints": []},
-        {"line": 19,"symbol": "benchmark","kind": "SQLite SQL","sha256": "a28b203f21249ab8312986428d3b09520123b2d7328839a8a7a3b5f61f02af8f","scope_sha256": "70f7a9168bda7db41e3440d88002077137f59c9541569173b0dcd52cbc025cf9","branch_hints": []},
-        {"line": 19,"symbol": "benchmark","kind": "SQLite SQL","sha256": "c7e424fda0967e4cdffa4a79aceeca2eabc5718445a3f9cd9b6c2706503b38fe","scope_sha256": "70f7a9168bda7db41e3440d88002077137f59c9541569173b0dcd52cbc025cf9","branch_hints": []}
+        {"line": 21,"symbol": "benchmark","kind": "direct connection","sha256": "3edaf5343ce3eeab4784af1c34bb4685d0adb5a81b6f23efd500a15e51f7e18e","scope_sha256": "70f7a9168bda7db41e3440d88002077137f59c9541569173b0dcd52cbc025cf9","branch_hints": []},
+        {"line": 23,"symbol": "benchmark","kind": "SQLite SQL","sha256": "a28b203f21249ab8312986428d3b09520123b2d7328839a8a7a3b5f61f02af8f","scope_sha256": "70f7a9168bda7db41e3440d88002077137f59c9541569173b0dcd52cbc025cf9","branch_hints": []},
+        {"line": 23,"symbol": "benchmark","kind": "SQLite SQL","sha256": "c7e424fda0967e4cdffa4a79aceeca2eabc5718445a3f9cd9b6c2706503b38fe","scope_sha256": "70f7a9168bda7db41e3440d88002077137f59c9541569173b0dcd52cbc025cf9","branch_hints": []}
       ],
       "caller_references": [
       ]
     },
     {
       "path": "ops/activation/acquisition_recovery_processing_state.py",
-      "source_sha256": "43c473eeef6181c030f1839b37d9f5f19a8511bb11cb8cffdfa67ce74709e94a",
+      "source_sha256": "0fb9c290822d8277a75536e8344ba5d2c65d971cda0a92986b861e57ec2d839d",
       "owner": "Maintainers of ops/activation",
-      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/107",
-      "reviewed_source_sha256": "43c473eeef6181c030f1839b37d9f5f19a8511bb11cb8cffdfa67ce74709e94a",
-      "classification": "live application",
+      "follow_up": "#100 fenced; no production activation or retained-bundle replay certified",
+      "reviewed_source_sha256": "0fb9c290822d8277a75536e8344ba5d2c65d971cda0a92986b861e57ec2d839d",
+      "classification": "historical snapshot",
       "store": "explicit SQLite application snapshot, commonly /data/scraper.db; document_backlog_audit also compares a prior snapshot",
       "intent": "Static SQL/query candidates: SELECT; dynamic queries require caller review.",
-      "backend_guard": "No native backend guard established. Immutable/read-only/admission/sidecar guards do not prove PostgreSQL compatibility.",
-      "disposition": "Retained/manual operational reader baseline, not approved for native use. Trace callers and port or explicitly retire/disposition under #107 before selecting for native runtime.",
+      "backend_guard": "legacy_sqlite_guard.require_snapshot rejects native env/release and requires explicit hash-pinned read-only historical test input before legacy reads; original identity/sidecar checks retained",
+      "disposition": "Retained snapshot-only runtime; production wrappers retired; native alternatives documented in docs/operations/legacy-sqlite-launchers.md",
       "sites": [
-        {"line": 11,"symbol": "<module>","kind": "direct connection","sha256": "3edaf5343ce3eeab4784af1c34bb4685d0adb5a81b6f23efd500a15e51f7e18e","scope_sha256": "3edaf5343ce3eeab4784af1c34bb4685d0adb5a81b6f23efd500a15e51f7e18e","branch_hints": []}
+        {"line": 15,"symbol": "<module>","kind": "direct connection","sha256": "3edaf5343ce3eeab4784af1c34bb4685d0adb5a81b6f23efd500a15e51f7e18e","scope_sha256": "3edaf5343ce3eeab4784af1c34bb4685d0adb5a81b6f23efd500a15e51f7e18e","branch_hints": []}
       ],
       "caller_references": [
       ]
@@ -759,10 +800,10 @@
         {"line": 160,"symbol": "unaccepted_refresh","kind": "dynamic query","sha256": "bf1c26b4f2398fd92a59970b4600b4fc3c669fde544ff3b28954b8ab4d84480a","scope_sha256": "9dd1befc878b275f495e9b3be6087ddf326de13150ea9bd65fea7a7abc162efc","branch_hints": []}
       ],
       "caller_references": [
-        {"path": "ops/activation/acquisition_recovery_inspect_runtime.py","line": 106},
+        {"path": "ops/activation/acquisition_recovery_inspect_runtime.py","line": 110},
         {"path": "ops/activation/automatic_acquisition.phase4-candidate.py","line": 205},
         {"path": "ops/activation/automatic_acquisition.py","line": 262},
-        {"path": "ops/activation/phase3_inspect_runtime.py","line": 38},
+        {"path": "ops/activation/phase3_inspect_runtime.py","line": 42},
         {"path": "ops/activation/step3_financial.py","line": 84},
         {"path": "ops/activation/step3_financial_runtime.py","line": 100},
         {"path": "ops/activation/step3_financial_runtime.py","line": 117},
@@ -825,84 +866,84 @@
     },
     {
       "path": "ops/activation/phase3_inspect_runtime.py",
-      "source_sha256": "2a273166123f1ec5df2fe937240f1b699bae6c13a901b0b27e6f6b08086a33be",
+      "source_sha256": "0a1fd3e8ebd7171ec1f118fc200df0610135839fd77fff6207ef210659057982",
       "owner": "Maintainers of ops/activation",
-      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/107",
-      "reviewed_source_sha256": "2a273166123f1ec5df2fe937240f1b699bae6c13a901b0b27e6f6b08086a33be",
-      "classification": "live application",
+      "follow_up": "#100 fenced; no production activation or retained-bundle replay certified",
+      "reviewed_source_sha256": "0a1fd3e8ebd7171ec1f118fc200df0610135839fd77fff6207ef210659057982",
+      "classification": "historical snapshot",
       "store": "explicit SQLite application snapshot, commonly /data/scraper.db; document_backlog_audit also compares a prior snapshot",
       "intent": "Static SQL/query candidates: SELECT; dynamic queries require caller review.",
-      "backend_guard": "No native backend guard established. Immutable/read-only/admission/sidecar guards do not prove PostgreSQL compatibility.",
-      "disposition": "Retained/manual operational reader baseline, not approved for native use. Trace callers and port or explicitly retire/disposition under #107 before selecting for native runtime.",
+      "backend_guard": "legacy_sqlite_guard.require_snapshot rejects native env/release and requires explicit hash-pinned read-only historical test input before legacy reads; original identity/sidecar checks retained",
+      "disposition": "Retained snapshot-only runtime; production wrappers retired; native alternatives documented in docs/operations/legacy-sqlite-launchers.md",
       "sites": [
-        {"line": 10,"symbol": "<module>","kind": "direct connection","sha256": "3edaf5343ce3eeab4784af1c34bb4685d0adb5a81b6f23efd500a15e51f7e18e","scope_sha256": "3edaf5343ce3eeab4784af1c34bb4685d0adb5a81b6f23efd500a15e51f7e18e","branch_hints": []},
-        {"line": 13,"symbol": "q","kind": "dynamic query","sha256": "5408b7a929d8c0fdaa8b4013e3e481013601dab8f1037539bb8c0a47b85bc99c","scope_sha256": "9953e2e6869cb8807e118e7f8e9f868119a8b9f9da832165450a2fbb734b57f2","branch_hints": []},
-        {"line": 17,"symbol": "<module>","kind": "SQLite SQL","sha256": "c0c0ec6b3e84ec6e46fde9167dd0d0d412be39f727de03bf513dfea19ba857d4","scope_sha256": "c0c0ec6b3e84ec6e46fde9167dd0d0d412be39f727de03bf513dfea19ba857d4","branch_hints": []},
-        {"line": 20,"symbol": "<module>","kind": "SQLite SQL","sha256": "86ad1b5ae0d419cdbc89ab18a2d59b7c2641b9f6bdaab213b420318543ae8792","scope_sha256": "86ad1b5ae0d419cdbc89ab18a2d59b7c2641b9f6bdaab213b420318543ae8792","branch_hints": []},
-        {"line": 21,"symbol": "<module>","kind": "SQLite SQL","sha256": "b8c3fea9f2692797adde572401dea73d95085ee7b078ef6fedb63dcdb84663fb","scope_sha256": "b8c3fea9f2692797adde572401dea73d95085ee7b078ef6fedb63dcdb84663fb","branch_hints": []},
-        {"line": 22,"symbol": "<module>","kind": "SQLite SQL","sha256": "2ad3be51ddeca62423b4e25e01380579fbce071020e61629e76ab28e718542c9","scope_sha256": "2ad3be51ddeca62423b4e25e01380579fbce071020e61629e76ab28e718542c9","branch_hints": []}
+        {"line": 14,"symbol": "<module>","kind": "direct connection","sha256": "3edaf5343ce3eeab4784af1c34bb4685d0adb5a81b6f23efd500a15e51f7e18e","scope_sha256": "3edaf5343ce3eeab4784af1c34bb4685d0adb5a81b6f23efd500a15e51f7e18e","branch_hints": []},
+        {"line": 17,"symbol": "q","kind": "dynamic query","sha256": "5408b7a929d8c0fdaa8b4013e3e481013601dab8f1037539bb8c0a47b85bc99c","scope_sha256": "9953e2e6869cb8807e118e7f8e9f868119a8b9f9da832165450a2fbb734b57f2","branch_hints": []},
+        {"line": 21,"symbol": "<module>","kind": "SQLite SQL","sha256": "c0c0ec6b3e84ec6e46fde9167dd0d0d412be39f727de03bf513dfea19ba857d4","scope_sha256": "c0c0ec6b3e84ec6e46fde9167dd0d0d412be39f727de03bf513dfea19ba857d4","branch_hints": []},
+        {"line": 24,"symbol": "<module>","kind": "SQLite SQL","sha256": "86ad1b5ae0d419cdbc89ab18a2d59b7c2641b9f6bdaab213b420318543ae8792","scope_sha256": "86ad1b5ae0d419cdbc89ab18a2d59b7c2641b9f6bdaab213b420318543ae8792","branch_hints": []},
+        {"line": 25,"symbol": "<module>","kind": "SQLite SQL","sha256": "b8c3fea9f2692797adde572401dea73d95085ee7b078ef6fedb63dcdb84663fb","scope_sha256": "b8c3fea9f2692797adde572401dea73d95085ee7b078ef6fedb63dcdb84663fb","branch_hints": []},
+        {"line": 26,"symbol": "<module>","kind": "SQLite SQL","sha256": "2ad3be51ddeca62423b4e25e01380579fbce071020e61629e76ab28e718542c9","scope_sha256": "2ad3be51ddeca62423b4e25e01380579fbce071020e61629e76ab28e718542c9","branch_hints": []}
       ],
       "caller_references": [
-        {"path": "ops/activation/phase3_inspect.py","line": 25}
+        {"path": "ops/activation/phase3_inspect.py","line": 34}
       ]
     },
     {
       "path": "ops/activation/phase4_attempt02_verify_runtime.py",
-      "source_sha256": "c2660028dcadbbaea47208c248fbf986e51dc2ba9cb8de4f26ca7001e265cbb9",
+      "source_sha256": "1e9620b7db4fb3dd41f810ae9dc8d2d57bc4928788456d541c9345d0e368bb46",
       "owner": "Maintainers of ops/activation",
-      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/107",
-      "reviewed_source_sha256": "c2660028dcadbbaea47208c248fbf986e51dc2ba9cb8de4f26ca7001e265cbb9",
-      "classification": "live application",
+      "follow_up": "#100 fenced; no production activation or retained-bundle replay certified",
+      "reviewed_source_sha256": "1e9620b7db4fb3dd41f810ae9dc8d2d57bc4928788456d541c9345d0e368bb46",
+      "classification": "historical snapshot",
       "store": "explicit SQLite application snapshot, commonly /data/scraper.db; document_backlog_audit also compares a prior snapshot",
       "intent": "Static SQL/query candidates: SELECT; dynamic queries require caller review.",
-      "backend_guard": "No native backend guard established. Immutable/read-only/admission/sidecar guards do not prove PostgreSQL compatibility.",
-      "disposition": "Retained/manual operational reader baseline, not approved for native use. Trace callers and port or explicitly retire/disposition under #107 before selecting for native runtime.",
+      "backend_guard": "legacy_sqlite_guard.require_snapshot rejects native env/release and requires explicit hash-pinned read-only historical test input before legacy reads; original identity/sidecar checks retained",
+      "disposition": "Retained snapshot-only runtime; production wrappers retired; native alternatives documented in docs/operations/legacy-sqlite-launchers.md",
       "sites": [
-        {"line": 8,"symbol": "<module>","kind": "direct connection","sha256": "3edaf5343ce3eeab4784af1c34bb4685d0adb5a81b6f23efd500a15e51f7e18e","scope_sha256": "3edaf5343ce3eeab4784af1c34bb4685d0adb5a81b6f23efd500a15e51f7e18e","branch_hints": []},
-        {"line": 9,"symbol": "<module>","kind": "dynamic query","sha256": "5408b7a929d8c0fdaa8b4013e3e481013601dab8f1037539bb8c0a47b85bc99c","scope_sha256": "5408b7a929d8c0fdaa8b4013e3e481013601dab8f1037539bb8c0a47b85bc99c","branch_hints": []},
-        {"line": 24,"symbol": "<module>","kind": "SQLite SQL","sha256": "392f2db22b3184086b5540655392fc35138de77de52a1b8cafd5c985da5ef6bf","scope_sha256": "392f2db22b3184086b5540655392fc35138de77de52a1b8cafd5c985da5ef6bf","branch_hints": []}
+        {"line": 12,"symbol": "<module>","kind": "direct connection","sha256": "3edaf5343ce3eeab4784af1c34bb4685d0adb5a81b6f23efd500a15e51f7e18e","scope_sha256": "3edaf5343ce3eeab4784af1c34bb4685d0adb5a81b6f23efd500a15e51f7e18e","branch_hints": []},
+        {"line": 13,"symbol": "<module>","kind": "dynamic query","sha256": "5408b7a929d8c0fdaa8b4013e3e481013601dab8f1037539bb8c0a47b85bc99c","scope_sha256": "5408b7a929d8c0fdaa8b4013e3e481013601dab8f1037539bb8c0a47b85bc99c","branch_hints": []},
+        {"line": 28,"symbol": "<module>","kind": "SQLite SQL","sha256": "392f2db22b3184086b5540655392fc35138de77de52a1b8cafd5c985da5ef6bf","scope_sha256": "392f2db22b3184086b5540655392fc35138de77de52a1b8cafd5c985da5ef6bf","branch_hints": []}
       ],
       "caller_references": [
-        {"path": "ops/activation/phase4_attempt02_verify.py","line": 26}
+        {"path": "ops/activation/phase4_attempt02_verify.py","line": 35}
       ]
     },
     {
       "path": "ops/activation/phase4_attempt03_verify_runtime.py",
-      "source_sha256": "43baeb23b57c9f91d33e73c5573cd2d5d14b2c61cdcd7ada3e739c7a49881f63",
+      "source_sha256": "96453527e199ef06b62611d6942335bc89fa4c0576993526bf41a2931c76f2ed",
       "owner": "Maintainers of ops/activation",
-      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/107",
-      "reviewed_source_sha256": "43baeb23b57c9f91d33e73c5573cd2d5d14b2c61cdcd7ada3e739c7a49881f63",
-      "classification": "live application",
+      "follow_up": "#100 fenced; no production activation or retained-bundle replay certified",
+      "reviewed_source_sha256": "96453527e199ef06b62611d6942335bc89fa4c0576993526bf41a2931c76f2ed",
+      "classification": "historical snapshot",
       "store": "explicit SQLite application snapshot, commonly /data/scraper.db; document_backlog_audit also compares a prior snapshot",
       "intent": "Static SQL/query candidates: SELECT; dynamic queries require caller review.",
-      "backend_guard": "No native backend guard established. Immutable/read-only/admission/sidecar guards do not prove PostgreSQL compatibility.",
-      "disposition": "Retained/manual operational reader baseline, not approved for native use. Trace callers and port or explicitly retire/disposition under #107 before selecting for native runtime.",
+      "backend_guard": "legacy_sqlite_guard.require_snapshot rejects native env/release and requires explicit hash-pinned read-only historical test input before legacy reads; original identity/sidecar checks retained",
+      "disposition": "Retained snapshot-only runtime; production wrappers retired; native alternatives documented in docs/operations/legacy-sqlite-launchers.md",
       "sites": [
-        {"line": 8,"symbol": "<module>","kind": "direct connection","sha256": "3edaf5343ce3eeab4784af1c34bb4685d0adb5a81b6f23efd500a15e51f7e18e","scope_sha256": "3edaf5343ce3eeab4784af1c34bb4685d0adb5a81b6f23efd500a15e51f7e18e","branch_hints": []},
-        {"line": 9,"symbol": "<module>","kind": "dynamic query","sha256": "5408b7a929d8c0fdaa8b4013e3e481013601dab8f1037539bb8c0a47b85bc99c","scope_sha256": "5408b7a929d8c0fdaa8b4013e3e481013601dab8f1037539bb8c0a47b85bc99c","branch_hints": []}
+        {"line": 12,"symbol": "<module>","kind": "direct connection","sha256": "3edaf5343ce3eeab4784af1c34bb4685d0adb5a81b6f23efd500a15e51f7e18e","scope_sha256": "3edaf5343ce3eeab4784af1c34bb4685d0adb5a81b6f23efd500a15e51f7e18e","branch_hints": []},
+        {"line": 13,"symbol": "<module>","kind": "dynamic query","sha256": "5408b7a929d8c0fdaa8b4013e3e481013601dab8f1037539bb8c0a47b85bc99c","scope_sha256": "5408b7a929d8c0fdaa8b4013e3e481013601dab8f1037539bb8c0a47b85bc99c","branch_hints": []}
       ],
       "caller_references": [
-        {"path": "ops/activation/phase4_attempt03_verify.py","line": 28}
+        {"path": "ops/activation/phase4_attempt03_verify.py","line": 37}
       ]
     },
     {
       "path": "ops/activation/phase4_canary_verify_runtime.py",
-      "source_sha256": "f1c21c070673e4b3e531c68956d4fe5490e0bbb44cc3a7ea54856097b399b8e5",
+      "source_sha256": "2ca09ef3adaa23adfc54b374979683d1a32a8d904e509ccf1c43212489c67bea",
       "owner": "Maintainers of ops/activation",
-      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/107",
-      "reviewed_source_sha256": "f1c21c070673e4b3e531c68956d4fe5490e0bbb44cc3a7ea54856097b399b8e5",
-      "classification": "live application",
+      "follow_up": "#100 fenced; no production activation or retained-bundle replay certified",
+      "reviewed_source_sha256": "2ca09ef3adaa23adfc54b374979683d1a32a8d904e509ccf1c43212489c67bea",
+      "classification": "historical snapshot",
       "store": "explicit SQLite application snapshot, commonly /data/scraper.db; document_backlog_audit also compares a prior snapshot",
       "intent": "Static SQL/query candidates: SELECT; dynamic queries require caller review.",
-      "backend_guard": "No native backend guard established. Immutable/read-only/admission/sidecar guards do not prove PostgreSQL compatibility.",
-      "disposition": "Retained/manual operational reader baseline, not approved for native use. Trace callers and port or explicitly retire/disposition under #107 before selecting for native runtime.",
+      "backend_guard": "legacy_sqlite_guard.require_snapshot rejects native env/release and requires explicit hash-pinned read-only historical test input before legacy reads; original identity/sidecar checks retained",
+      "disposition": "Retained snapshot-only runtime; production wrappers retired; native alternatives documented in docs/operations/legacy-sqlite-launchers.md",
       "sites": [
-        {"line": 8,"symbol": "<module>","kind": "direct connection","sha256": "3edaf5343ce3eeab4784af1c34bb4685d0adb5a81b6f23efd500a15e51f7e18e","scope_sha256": "3edaf5343ce3eeab4784af1c34bb4685d0adb5a81b6f23efd500a15e51f7e18e","branch_hints": []},
-        {"line": 9,"symbol": "<module>","kind": "dynamic query","sha256": "5408b7a929d8c0fdaa8b4013e3e481013601dab8f1037539bb8c0a47b85bc99c","scope_sha256": "5408b7a929d8c0fdaa8b4013e3e481013601dab8f1037539bb8c0a47b85bc99c","branch_hints": []},
-        {"line": 20,"symbol": "<module>","kind": "SQLite SQL","sha256": "392f2db22b3184086b5540655392fc35138de77de52a1b8cafd5c985da5ef6bf","scope_sha256": "392f2db22b3184086b5540655392fc35138de77de52a1b8cafd5c985da5ef6bf","branch_hints": []}
+        {"line": 12,"symbol": "<module>","kind": "direct connection","sha256": "3edaf5343ce3eeab4784af1c34bb4685d0adb5a81b6f23efd500a15e51f7e18e","scope_sha256": "3edaf5343ce3eeab4784af1c34bb4685d0adb5a81b6f23efd500a15e51f7e18e","branch_hints": []},
+        {"line": 13,"symbol": "<module>","kind": "dynamic query","sha256": "5408b7a929d8c0fdaa8b4013e3e481013601dab8f1037539bb8c0a47b85bc99c","scope_sha256": "5408b7a929d8c0fdaa8b4013e3e481013601dab8f1037539bb8c0a47b85bc99c","branch_hints": []},
+        {"line": 24,"symbol": "<module>","kind": "SQLite SQL","sha256": "392f2db22b3184086b5540655392fc35138de77de52a1b8cafd5c985da5ef6bf","scope_sha256": "392f2db22b3184086b5540655392fc35138de77de52a1b8cafd5c985da5ef6bf","branch_hints": []}
       ],
       "caller_references": [
-        {"path": "ops/activation/phase4_canary_verify.py","line": 28}
+        {"path": "ops/activation/phase4_canary_verify.py","line": 37}
       ]
     },
     {
@@ -926,98 +967,98 @@
         {"line": 188,"symbol": "main","kind": "dynamic query","sha256": "bbce5d7a3a065513d0fb2124fe1bccdc9ffe0f8c62eb5a9b400082ef924f5352","scope_sha256": "58d1588cc660c12432066c6091b966589a981d3e1b81fd01db9301007959cffc","branch_hints": []}
       ],
       "caller_references": [
-        {"path": "ops/activation/acquisition_recovery_integrity_benchmark.py","line": 10},
-        {"path": "ops/activation/phase4_attempt02_verify_runtime.py","line": 25},
+        {"path": "ops/activation/acquisition_recovery_integrity_benchmark.py","line": 14},
+        {"path": "ops/activation/phase4_attempt02_verify_runtime.py","line": 29},
         {"path": "ops/activation/phase4_documents.py","line": 85},
         {"path": "ops/activation/phase4_documents.py","line": 104},
         {"path": "ops/activation/phase4_documents.py","line": 127},
-        {"path": "ops/activation/phase4_fingerprint_preflight_runtime.py","line": 8},
-        {"path": "ops/activation/phase4_fingerprint_preflight_runtime.py","line": 45},
+        {"path": "ops/activation/phase4_fingerprint_preflight_runtime.py","line": 12},
+        {"path": "ops/activation/phase4_fingerprint_preflight_runtime.py","line": 49},
         {"path": "ops/activation/phase4_offline_lifecycle.py","line": 7},
-        {"path": "ops/activation/phase4_retry_preflight_runtime.py","line": 8},
-        {"path": "ops/activation/phase4_retry_preflight_runtime.py","line": 16},
+        {"path": "ops/activation/phase4_retry_preflight_runtime.py","line": 12},
+        {"path": "ops/activation/phase4_retry_preflight_runtime.py","line": 20},
         {"path": "ops/activation/phase4_routine_runtime.py","line": 7},
         {"path": "ops/activation/phase4_routine_runtime.py","line": 39}
       ]
     },
     {
       "path": "ops/activation/phase4_fingerprint_preflight_runtime.py",
-      "source_sha256": "f3a379d1127b8c5b0078a0b0473e8d905bda8ef9ad4ccd99176e828ca1d88952",
+      "source_sha256": "a05af153626f355f50d8fd5609f4afc71c84811f0418f737c43738d543b3b2ca",
       "owner": "Maintainers of ops/activation",
-      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/107",
-      "reviewed_source_sha256": "f3a379d1127b8c5b0078a0b0473e8d905bda8ef9ad4ccd99176e828ca1d88952",
-      "classification": "live application",
+      "follow_up": "#100 fenced; no production activation or retained-bundle replay certified",
+      "reviewed_source_sha256": "a05af153626f355f50d8fd5609f4afc71c84811f0418f737c43738d543b3b2ca",
+      "classification": "historical snapshot",
       "store": "explicit SQLite application snapshot, commonly /data/scraper.db; document_backlog_audit also compares a prior snapshot",
       "intent": "Static SQL/query candidates: PRAGMA, SELECT; dynamic queries require caller review.",
-      "backend_guard": "No native backend guard established. Immutable/read-only/admission/sidecar guards do not prove PostgreSQL compatibility.",
-      "disposition": "Retained/manual operational reader baseline, not approved for native use. Trace callers and port or explicitly retire/disposition under #107 before selecting for native runtime.",
+      "backend_guard": "legacy_sqlite_guard.require_snapshot rejects native env/release and requires explicit hash-pinned read-only historical test input before legacy reads; original identity/sidecar checks retained",
+      "disposition": "Retained snapshot-only runtime; production wrappers retired; native alternatives documented in docs/operations/legacy-sqlite-launchers.md",
       "sites": [
-        {"line": 24,"symbol": "<module>","kind": "direct connection","sha256": "3edaf5343ce3eeab4784af1c34bb4685d0adb5a81b6f23efd500a15e51f7e18e","scope_sha256": "3edaf5343ce3eeab4784af1c34bb4685d0adb5a81b6f23efd500a15e51f7e18e","branch_hints": []},
-        {"line": 25,"symbol": "<module>","kind": "SQLite SQL","sha256": "a28b203f21249ab8312986428d3b09520123b2d7328839a8a7a3b5f61f02af8f","scope_sha256": "a28b203f21249ab8312986428d3b09520123b2d7328839a8a7a3b5f61f02af8f","branch_hints": []},
-        {"line": 29,"symbol": "<module>","kind": "SQLite SQL","sha256": "eae29f4fac90e11a292df2a10239a52ce15d6564019fe8e0af9387fc400b1d2b","scope_sha256": "eae29f4fac90e11a292df2a10239a52ce15d6564019fe8e0af9387fc400b1d2b","branch_hints": []},
-        {"line": 40,"symbol": "<module>","kind": "SQLite SQL","sha256": "63942491441da1ac58f4e883fe8521b0965db1f87d935b384f9912570d36540e","scope_sha256": "63942491441da1ac58f4e883fe8521b0965db1f87d935b384f9912570d36540e","branch_hints": []},
-        {"line": 40,"symbol": "<module>","kind": "dynamic query","sha256": "9c1c1f53f9c6e91cbbfdd3adbad5518c2ffe04572a23e2bb3e58c6c1c10bea2b","scope_sha256": "9c1c1f53f9c6e91cbbfdd3adbad5518c2ffe04572a23e2bb3e58c6c1c10bea2b","branch_hints": []}
+        {"line": 28,"symbol": "<module>","kind": "direct connection","sha256": "3edaf5343ce3eeab4784af1c34bb4685d0adb5a81b6f23efd500a15e51f7e18e","scope_sha256": "3edaf5343ce3eeab4784af1c34bb4685d0adb5a81b6f23efd500a15e51f7e18e","branch_hints": []},
+        {"line": 29,"symbol": "<module>","kind": "SQLite SQL","sha256": "a28b203f21249ab8312986428d3b09520123b2d7328839a8a7a3b5f61f02af8f","scope_sha256": "a28b203f21249ab8312986428d3b09520123b2d7328839a8a7a3b5f61f02af8f","branch_hints": []},
+        {"line": 33,"symbol": "<module>","kind": "SQLite SQL","sha256": "eae29f4fac90e11a292df2a10239a52ce15d6564019fe8e0af9387fc400b1d2b","scope_sha256": "eae29f4fac90e11a292df2a10239a52ce15d6564019fe8e0af9387fc400b1d2b","branch_hints": []},
+        {"line": 44,"symbol": "<module>","kind": "SQLite SQL","sha256": "63942491441da1ac58f4e883fe8521b0965db1f87d935b384f9912570d36540e","scope_sha256": "63942491441da1ac58f4e883fe8521b0965db1f87d935b384f9912570d36540e","branch_hints": []},
+        {"line": 44,"symbol": "<module>","kind": "dynamic query","sha256": "9c1c1f53f9c6e91cbbfdd3adbad5518c2ffe04572a23e2bb3e58c6c1c10bea2b","scope_sha256": "9c1c1f53f9c6e91cbbfdd3adbad5518c2ffe04572a23e2bb3e58c6c1c10bea2b","branch_hints": []}
       ],
       "caller_references": [
-        {"path": "ops/activation/phase4_canary_verify.py","line": 28}
+        {"path": "ops/activation/phase4_canary_verify.py","line": 37}
       ]
     },
     {
       "path": "ops/activation/phase4_inspect_runtime.py",
-      "source_sha256": "d657f822ffba1f144bda920d3bc6ffe0ba514aad2512d44d11bca20e0fe4df8c",
+      "source_sha256": "3602d75eb8bac46b96a6b9e53a63d47c968fe5588b4af105b0a760288932fe01",
       "owner": "Maintainers of ops/activation",
-      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/107",
-      "reviewed_source_sha256": "d657f822ffba1f144bda920d3bc6ffe0ba514aad2512d44d11bca20e0fe4df8c",
-      "classification": "live application",
+      "follow_up": "#100 fenced; no production activation or retained-bundle replay certified",
+      "reviewed_source_sha256": "3602d75eb8bac46b96a6b9e53a63d47c968fe5588b4af105b0a760288932fe01",
+      "classification": "historical snapshot",
       "store": "explicit SQLite application snapshot, commonly /data/scraper.db; document_backlog_audit also compares a prior snapshot",
       "intent": "Static SQL/query candidates: SELECT; dynamic queries require caller review.",
-      "backend_guard": "No native backend guard established. Immutable/read-only/admission/sidecar guards do not prove PostgreSQL compatibility.",
-      "disposition": "Retained/manual operational reader baseline, not approved for native use. Trace callers and port or explicitly retire/disposition under #107 before selecting for native runtime.",
+      "backend_guard": "legacy_sqlite_guard.require_snapshot rejects native env/release and requires explicit hash-pinned read-only historical test input before legacy reads; original identity/sidecar checks retained",
+      "disposition": "Retained snapshot-only runtime; production wrappers retired; native alternatives documented in docs/operations/legacy-sqlite-launchers.md",
       "sites": [
-        {"line": 10,"symbol": "<module>","kind": "direct connection","sha256": "3edaf5343ce3eeab4784af1c34bb4685d0adb5a81b6f23efd500a15e51f7e18e","scope_sha256": "3edaf5343ce3eeab4784af1c34bb4685d0adb5a81b6f23efd500a15e51f7e18e","branch_hints": []},
-        {"line": 13,"symbol": "q","kind": "dynamic query","sha256": "598823ec6bcb7e06d44f72620244b9d1224213e85353db0d38a2cbc8ef08a7a6","scope_sha256": "3ec7db0f1540151c89a8120f20e2d10595dd4b87cd666288b5ca9322a40befe7","branch_hints": []}
+        {"line": 14,"symbol": "<module>","kind": "direct connection","sha256": "3edaf5343ce3eeab4784af1c34bb4685d0adb5a81b6f23efd500a15e51f7e18e","scope_sha256": "3edaf5343ce3eeab4784af1c34bb4685d0adb5a81b6f23efd500a15e51f7e18e","branch_hints": []},
+        {"line": 17,"symbol": "q","kind": "dynamic query","sha256": "598823ec6bcb7e06d44f72620244b9d1224213e85353db0d38a2cbc8ef08a7a6","scope_sha256": "3ec7db0f1540151c89a8120f20e2d10595dd4b87cd666288b5ca9322a40befe7","branch_hints": []}
       ],
       "caller_references": [
-        {"path": "ops/activation/phase4_inspect.py","line": 25}
+        {"path": "ops/activation/phase4_inspect.py","line": 34}
       ]
     },
     {
       "path": "ops/activation/phase4_retry_preflight_runtime.py",
-      "source_sha256": "ddaa828be60e39a9e1d17b61979e2bd10b056d7f51eccf442591e1bdc40846ac",
+      "source_sha256": "f602dd43967754165a0360f11f55d147afe0f7bbe2915f0c51da68063d44432c",
       "owner": "Maintainers of ops/activation",
-      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/107",
-      "reviewed_source_sha256": "ddaa828be60e39a9e1d17b61979e2bd10b056d7f51eccf442591e1bdc40846ac",
-      "classification": "live application",
+      "follow_up": "#100 fenced; no production activation or retained-bundle replay certified",
+      "reviewed_source_sha256": "f602dd43967754165a0360f11f55d147afe0f7bbe2915f0c51da68063d44432c",
+      "classification": "historical snapshot",
       "store": "explicit SQLite application snapshot, commonly /data/scraper.db; document_backlog_audit also compares a prior snapshot",
       "intent": "Static SQL/query candidates: PRAGMA, SELECT; dynamic queries require caller review.",
-      "backend_guard": "No native backend guard established. Immutable/read-only/admission/sidecar guards do not prove PostgreSQL compatibility.",
-      "disposition": "Retained/manual operational reader baseline, not approved for native use. Trace callers and port or explicitly retire/disposition under #107 before selecting for native runtime.",
+      "backend_guard": "legacy_sqlite_guard.require_snapshot rejects native env/release and requires explicit hash-pinned read-only historical test input before legacy reads; original identity/sidecar checks retained",
+      "disposition": "Retained snapshot-only runtime; production wrappers retired; native alternatives documented in docs/operations/legacy-sqlite-launchers.md",
       "sites": [
-        {"line": 22,"symbol": "<module>","kind": "SQLite SQL","sha256": "a28b203f21249ab8312986428d3b09520123b2d7328839a8a7a3b5f61f02af8f","scope_sha256": "a28b203f21249ab8312986428d3b09520123b2d7328839a8a7a3b5f61f02af8f","branch_hints": []},
-        {"line": 22,"symbol": "<module>","kind": "direct connection","sha256": "3edaf5343ce3eeab4784af1c34bb4685d0adb5a81b6f23efd500a15e51f7e18e","scope_sha256": "3edaf5343ce3eeab4784af1c34bb4685d0adb5a81b6f23efd500a15e51f7e18e","branch_hints": []},
-        {"line": 25,"symbol": "<module>","kind": "SQLite SQL","sha256": "eae29f4fac90e11a292df2a10239a52ce15d6564019fe8e0af9387fc400b1d2b","scope_sha256": "eae29f4fac90e11a292df2a10239a52ce15d6564019fe8e0af9387fc400b1d2b","branch_hints": []}
+        {"line": 26,"symbol": "<module>","kind": "SQLite SQL","sha256": "a28b203f21249ab8312986428d3b09520123b2d7328839a8a7a3b5f61f02af8f","scope_sha256": "a28b203f21249ab8312986428d3b09520123b2d7328839a8a7a3b5f61f02af8f","branch_hints": []},
+        {"line": 26,"symbol": "<module>","kind": "direct connection","sha256": "3edaf5343ce3eeab4784af1c34bb4685d0adb5a81b6f23efd500a15e51f7e18e","scope_sha256": "3edaf5343ce3eeab4784af1c34bb4685d0adb5a81b6f23efd500a15e51f7e18e","branch_hints": []},
+        {"line": 29,"symbol": "<module>","kind": "SQLite SQL","sha256": "eae29f4fac90e11a292df2a10239a52ce15d6564019fe8e0af9387fc400b1d2b","scope_sha256": "eae29f4fac90e11a292df2a10239a52ce15d6564019fe8e0af9387fc400b1d2b","branch_hints": []}
       ],
       "caller_references": [
-        {"path": "ops/activation/phase4_canary_verify.py","line": 28}
+        {"path": "ops/activation/phase4_canary_verify.py","line": 37}
       ]
     },
     {
       "path": "ops/activation/phase4_routine_preflight_runtime.py",
-      "source_sha256": "b82f89bc66703aa3d9f9bbcc3ad682b309484f4889f33879dcd2d44c221e9ed4",
+      "source_sha256": "25247bb67ed6cbde1831f91b599d58052d31f4a9973aaed4e63d3b4beec7e97e",
       "owner": "Maintainers of ops/activation",
-      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/107",
-      "reviewed_source_sha256": "b82f89bc66703aa3d9f9bbcc3ad682b309484f4889f33879dcd2d44c221e9ed4",
-      "classification": "live application",
+      "follow_up": "#100 fenced; no production activation or retained-bundle replay certified",
+      "reviewed_source_sha256": "25247bb67ed6cbde1831f91b599d58052d31f4a9973aaed4e63d3b4beec7e97e",
+      "classification": "historical snapshot",
       "store": "explicit SQLite application snapshot, commonly /data/scraper.db; document_backlog_audit also compares a prior snapshot",
       "intent": "Static SQL/query candidates: PRAGMA, SELECT; dynamic queries require caller review.",
-      "backend_guard": "No native backend guard established. Immutable/read-only/admission/sidecar guards do not prove PostgreSQL compatibility.",
-      "disposition": "Retained/manual operational reader baseline, not approved for native use. Trace callers and port or explicitly retire/disposition under #107 before selecting for native runtime.",
+      "backend_guard": "legacy_sqlite_guard.require_snapshot rejects native env/release and requires explicit hash-pinned read-only historical test input before legacy reads; original identity/sidecar checks retained",
+      "disposition": "Retained snapshot-only runtime; production wrappers retired; native alternatives documented in docs/operations/legacy-sqlite-launchers.md",
       "sites": [
-        {"line": 15,"symbol": "<module>","kind": "direct connection","sha256": "3edaf5343ce3eeab4784af1c34bb4685d0adb5a81b6f23efd500a15e51f7e18e","scope_sha256": "3edaf5343ce3eeab4784af1c34bb4685d0adb5a81b6f23efd500a15e51f7e18e","branch_hints": []},
-        {"line": 16,"symbol": "<module>","kind": "SQLite SQL","sha256": "a28b203f21249ab8312986428d3b09520123b2d7328839a8a7a3b5f61f02af8f","scope_sha256": "a28b203f21249ab8312986428d3b09520123b2d7328839a8a7a3b5f61f02af8f","branch_hints": []}
+        {"line": 19,"symbol": "<module>","kind": "direct connection","sha256": "3edaf5343ce3eeab4784af1c34bb4685d0adb5a81b6f23efd500a15e51f7e18e","scope_sha256": "3edaf5343ce3eeab4784af1c34bb4685d0adb5a81b6f23efd500a15e51f7e18e","branch_hints": []},
+        {"line": 20,"symbol": "<module>","kind": "SQLite SQL","sha256": "a28b203f21249ab8312986428d3b09520123b2d7328839a8a7a3b5f61f02af8f","scope_sha256": "a28b203f21249ab8312986428d3b09520123b2d7328839a8a7a3b5f61f02af8f","branch_hints": []}
       ],
       "caller_references": [
-        {"path": "ops/activation/phase4_trial_snapshot_runtime.py","line": 53}
+        {"path": "ops/activation/phase4_trial_snapshot_runtime.py","line": 57}
       ]
     },
     {
@@ -1035,7 +1076,7 @@
         {"line": 138,"symbol": "main","kind": "dynamic query","sha256": "bbce5d7a3a065513d0fb2124fe1bccdc9ffe0f8c62eb5a9b400082ef924f5352","scope_sha256": "81192b3150967611c0952a30e8649d44a4be11a6322f42a3444096ac4d5231eb","branch_hints": []}
       ],
       "caller_references": [
-        {"path": "ops/activation/acquisition_recovery_integrity_benchmark.py","line": 11},
+        {"path": "ops/activation/acquisition_recovery_integrity_benchmark.py","line": 15},
         {"path": "ops/activation/local_document_campaign_runtime.py","line": 14},
         {"path": "ops/activation/paired_download_runtime.py","line": 20},
         {"path": "ops/activation/phase4_schedule.py","line": 263},
@@ -1046,29 +1087,29 @@
     },
     {
       "path": "ops/activation/phase4_trial_snapshot_runtime.py",
-      "source_sha256": "a2e2b78a612765743f616ac12f234f0cc168589e5b4ebc7443cfe88a05d92dba",
+      "source_sha256": "eeb06e3bf2a095aecf512e8b11a6e08b5b7b5a56affb4806a19378b6fe08af9c",
       "owner": "Maintainers of ops/activation",
-      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/107",
-      "reviewed_source_sha256": "a2e2b78a612765743f616ac12f234f0cc168589e5b4ebc7443cfe88a05d92dba",
-      "classification": "live application",
+      "follow_up": "#100 fenced; no production activation or retained-bundle replay certified",
+      "reviewed_source_sha256": "eeb06e3bf2a095aecf512e8b11a6e08b5b7b5a56affb4806a19378b6fe08af9c",
+      "classification": "historical snapshot",
       "store": "explicit SQLite application snapshot, commonly /data/scraper.db; document_backlog_audit also compares a prior snapshot",
       "intent": "Static SQL/query candidates: PRAGMA, SELECT; dynamic queries require caller review.",
-      "backend_guard": "No native backend guard established. Immutable/read-only/admission/sidecar guards do not prove PostgreSQL compatibility.",
-      "disposition": "Retained/manual operational reader baseline, not approved for native use. Trace callers and port or explicitly retire/disposition under #107 before selecting for native runtime.",
+      "backend_guard": "legacy_sqlite_guard.require_snapshot rejects native env/release and requires explicit hash-pinned read-only historical test input before legacy reads; original identity/sidecar checks retained",
+      "disposition": "Retained snapshot-only runtime; production wrappers retired; native alternatives documented in docs/operations/legacy-sqlite-launchers.md",
       "sites": [
-        {"line": 12,"symbol": "<module>","kind": "direct connection","sha256": "3edaf5343ce3eeab4784af1c34bb4685d0adb5a81b6f23efd500a15e51f7e18e","scope_sha256": "3edaf5343ce3eeab4784af1c34bb4685d0adb5a81b6f23efd500a15e51f7e18e","branch_hints": []},
-        {"line": 13,"symbol": "<module>","kind": "SQLite SQL","sha256": "a28b203f21249ab8312986428d3b09520123b2d7328839a8a7a3b5f61f02af8f","scope_sha256": "a28b203f21249ab8312986428d3b09520123b2d7328839a8a7a3b5f61f02af8f","branch_hints": []},
-        {"line": 17,"symbol": "q","kind": "dynamic query","sha256": "5408b7a929d8c0fdaa8b4013e3e481013601dab8f1037539bb8c0a47b85bc99c","scope_sha256": "9953e2e6869cb8807e118e7f8e9f868119a8b9f9da832165450a2fbb734b57f2","branch_hints": []},
-        {"line": 21,"symbol": "<module>","kind": "SQLite SQL","sha256": "eae29f4fac90e11a292df2a10239a52ce15d6564019fe8e0af9387fc400b1d2b","scope_sha256": "eae29f4fac90e11a292df2a10239a52ce15d6564019fe8e0af9387fc400b1d2b","branch_hints": []},
-        {"line": 37,"symbol": "<module>","kind": "dynamic query","sha256": "bbce5d7a3a065513d0fb2124fe1bccdc9ffe0f8c62eb5a9b400082ef924f5352","scope_sha256": "bbce5d7a3a065513d0fb2124fe1bccdc9ffe0f8c62eb5a9b400082ef924f5352","branch_hints": []}
+        {"line": 16,"symbol": "<module>","kind": "direct connection","sha256": "3edaf5343ce3eeab4784af1c34bb4685d0adb5a81b6f23efd500a15e51f7e18e","scope_sha256": "3edaf5343ce3eeab4784af1c34bb4685d0adb5a81b6f23efd500a15e51f7e18e","branch_hints": []},
+        {"line": 17,"symbol": "<module>","kind": "SQLite SQL","sha256": "a28b203f21249ab8312986428d3b09520123b2d7328839a8a7a3b5f61f02af8f","scope_sha256": "a28b203f21249ab8312986428d3b09520123b2d7328839a8a7a3b5f61f02af8f","branch_hints": []},
+        {"line": 21,"symbol": "q","kind": "dynamic query","sha256": "5408b7a929d8c0fdaa8b4013e3e481013601dab8f1037539bb8c0a47b85bc99c","scope_sha256": "9953e2e6869cb8807e118e7f8e9f868119a8b9f9da832165450a2fbb734b57f2","branch_hints": []},
+        {"line": 25,"symbol": "<module>","kind": "SQLite SQL","sha256": "eae29f4fac90e11a292df2a10239a52ce15d6564019fe8e0af9387fc400b1d2b","scope_sha256": "eae29f4fac90e11a292df2a10239a52ce15d6564019fe8e0af9387fc400b1d2b","branch_hints": []},
+        {"line": 41,"symbol": "<module>","kind": "dynamic query","sha256": "bbce5d7a3a065513d0fb2124fe1bccdc9ffe0f8c62eb5a9b400082ef924f5352","scope_sha256": "bbce5d7a3a065513d0fb2124fe1bccdc9ffe0f8c62eb5a9b400082ef924f5352","branch_hints": []}
       ],
       "caller_references": [
-        {"path": "ops/activation/phase4_followup_snapshot_runtime.py","line": 3},
-        {"path": "ops/activation/phase4_followup_snapshot_runtime.py","line": 29},
-        {"path": "ops/activation/phase4_gap_inspect_runtime.py","line": 3},
-        {"path": "ops/activation/phase4_gap_inspect_runtime.py","line": 38},
-        {"path": "ops/activation/phase4_trial_preflight.py","line": 11},
-        {"path": "ops/activation/phase4_trial_preflight.py","line": 12}
+        {"path": "ops/activation/phase4_followup_snapshot_runtime.py","line": 7},
+        {"path": "ops/activation/phase4_followup_snapshot_runtime.py","line": 33},
+        {"path": "ops/activation/phase4_gap_inspect_runtime.py","line": 7},
+        {"path": "ops/activation/phase4_gap_inspect_runtime.py","line": 42},
+        {"path": "ops/activation/phase4_trial_preflight.py","line": 18},
+        {"path": "ops/activation/phase4_trial_preflight.py","line": 21}
       ]
     },
     {
@@ -1120,8 +1161,8 @@
         {"line": 154,"symbol": "assert_no_conflicting_leases","kind": "dynamic query","sha256": "a3817a471ee1669c36f52c986200c3afa23d172177322ef3bcee3e632827b32f","scope_sha256": "cc5402d1b424016eba2a0d33cae1608422f922a64bc778a8f4dc27f03f7378d2","branch_hints": []}
       ],
       "caller_references": [
-        {"path": "ops/activation/acquisition_recovery_backup_runtime.py","line": 13},
-        {"path": "ops/activation/acquisition_recovery_inspect_runtime.py","line": 12},
+        {"path": "ops/activation/acquisition_recovery_backup_runtime.py","line": 17},
+        {"path": "ops/activation/acquisition_recovery_inspect_runtime.py","line": 16},
         {"path": "ops/activation/automatic_acquisition.phase4-candidate.py","line": 101},
         {"path": "ops/activation/automatic_acquisition.phase4-candidate.py","line": 134},
         {"path": "ops/activation/automatic_acquisition.phase4-candidate.py","line": 161},
@@ -1138,27 +1179,27 @@
         {"path": "ops/activation/nse_results_runtime.py","line": 113},
         {"path": "ops/activation/phase3_bse_reassess.py","line": 8},
         {"path": "ops/activation/phase3_bse_reassess.py","line": 53},
-        {"path": "ops/activation/phase3_inspect.py","line": 9},
-        {"path": "ops/activation/phase4_attempt02_verify.py","line": 9},
-        {"path": "ops/activation/phase4_attempt03_verify.py","line": 9},
-        {"path": "ops/activation/phase4_canary_verify.py","line": 9},
+        {"path": "ops/activation/phase3_inspect.py","line": 16},
+        {"path": "ops/activation/phase4_attempt02_verify.py","line": 16},
+        {"path": "ops/activation/phase4_attempt03_verify.py","line": 16},
+        {"path": "ops/activation/phase4_canary_verify.py","line": 16},
         {"path": "ops/activation/phase4_documents.py","line": 5},
-        {"path": "ops/activation/phase4_fingerprint_preflight_runtime.py","line": 7},
-        {"path": "ops/activation/phase4_followup.py","line": 13},
-        {"path": "ops/activation/phase4_inspect.py","line": 9},
-        {"path": "ops/activation/phase4_retry_preflight_runtime.py","line": 7},
+        {"path": "ops/activation/phase4_fingerprint_preflight_runtime.py","line": 11},
+        {"path": "ops/activation/phase4_followup.py","line": 20},
+        {"path": "ops/activation/phase4_inspect.py","line": 16},
+        {"path": "ops/activation/phase4_retry_preflight_runtime.py","line": 11},
         {"path": "ops/activation/phase4_schedule.py","line": 291},
-        {"path": "ops/activation/phase4_trial_preflight.py","line": 6},
-        {"path": "ops/activation/phase4_trial_snapshot_runtime.py","line": 7},
+        {"path": "ops/activation/phase4_trial_preflight.py","line": 13},
+        {"path": "ops/activation/phase4_trial_snapshot_runtime.py","line": 11},
         {"path": "ops/activation/postgresql_runtime.py","line": 101},
         {"path": "ops/activation/prepare_phase4_routine.py","line": 43},
         {"path": "ops/activation/screener_auth_check.py","line": 12},
-        {"path": "ops/activation/step3_canary_state.py","line": 7},
+        {"path": "ops/activation/step3_canary_state.py","line": 14},
         {"path": "ops/activation/step3_financial.py","line": 14},
         {"path": "ops/activation/step3_financial.py","line": 84},
-        {"path": "ops/activation/step3_inspect.py","line": 9},
+        {"path": "ops/activation/step3_inspect.py","line": 16},
         {"path": "ops/activation/step3_schedule.py","line": 42},
-        {"path": "ops/benchmarks/run_phase4_throughput.py","line": 6},
+        {"path": "ops/benchmarks/run_phase4_throughput.py","line": 13},
         {"path": "ops/host/acquisition_db_status.py","line": 10},
         {"path": "ops/host/acquisition_lifecycle.py","line": 142},
         {"path": "ops/host/acquisition_lifecycle.py","line": 188},
@@ -1208,10 +1249,10 @@
         {"line": 142,"symbol": "prepare_writer_startup","kind": "SQLite SQL","sha256": "66467031c8485d9bde9c974c827fd501f6f0f0d21b0ee277b348fed65978c8e8","scope_sha256": "82dc943a490a3d760ff5551370227adf51ef64ea669085a7dcf8b2c77bb33376","branch_hints": []}
       ],
       "caller_references": [
-        {"path": "ops/activation/acquisition_recovery_backup_runtime.py","line": 12},
-        {"path": "ops/activation/acquisition_recovery_inspect_runtime.py","line": 11},
-        {"path": "ops/activation/acquisition_recovery_integrity_benchmark.py","line": 9},
-        {"path": "ops/activation/acquisition_recovery_processing_state.py","line": 8},
+        {"path": "ops/activation/acquisition_recovery_backup_runtime.py","line": 16},
+        {"path": "ops/activation/acquisition_recovery_inspect_runtime.py","line": 15},
+        {"path": "ops/activation/acquisition_recovery_integrity_benchmark.py","line": 13},
+        {"path": "ops/activation/acquisition_recovery_processing_state.py","line": 12},
         {"path": "ops/activation/automatic_acquisition.phase4-candidate.py","line": 134},
         {"path": "ops/activation/automatic_acquisition.py","line": 175},
         {"path": "ops/activation/bse_retained.py","line": 80},
@@ -1222,110 +1263,110 @@
         {"path": "ops/activation/nse_results_runtime.py","line": 112},
         {"path": "ops/activation/nse_results_runtime.py","line": 132},
         {"path": "ops/activation/phase3_bse_reassess.py","line": 53},
-        {"path": "ops/activation/phase3_inspect_runtime.py","line": 6},
-        {"path": "ops/activation/phase4_attempt02_verify_runtime.py","line": 6},
-        {"path": "ops/activation/phase4_attempt03_verify_runtime.py","line": 6},
-        {"path": "ops/activation/phase4_canary_verify_runtime.py","line": 6},
-        {"path": "ops/activation/phase4_fingerprint_preflight_runtime.py","line": 6},
-        {"path": "ops/activation/phase4_inspect_runtime.py","line": 6},
-        {"path": "ops/activation/phase4_retry_preflight_runtime.py","line": 6},
-        {"path": "ops/activation/phase4_routine_preflight_runtime.py","line": 6},
-        {"path": "ops/activation/phase4_trial_snapshot_runtime.py","line": 6},
-        {"path": "ops/activation/step3_canary_state_runtime.py","line": 11},
-        {"path": "ops/activation/step3_detail_runtime.py","line": 10},
+        {"path": "ops/activation/phase3_inspect_runtime.py","line": 10},
+        {"path": "ops/activation/phase4_attempt02_verify_runtime.py","line": 10},
+        {"path": "ops/activation/phase4_attempt03_verify_runtime.py","line": 10},
+        {"path": "ops/activation/phase4_canary_verify_runtime.py","line": 10},
+        {"path": "ops/activation/phase4_fingerprint_preflight_runtime.py","line": 10},
+        {"path": "ops/activation/phase4_inspect_runtime.py","line": 10},
+        {"path": "ops/activation/phase4_retry_preflight_runtime.py","line": 10},
+        {"path": "ops/activation/phase4_routine_preflight_runtime.py","line": 10},
+        {"path": "ops/activation/phase4_trial_snapshot_runtime.py","line": 10},
+        {"path": "ops/activation/step3_canary_state_runtime.py","line": 15},
+        {"path": "ops/activation/step3_detail_runtime.py","line": 14},
         {"path": "ops/activation/step3_financial.py","line": 84},
-        {"path": "ops/activation/step3_inspect_runtime.py","line": 11},
+        {"path": "ops/activation/step3_inspect_runtime.py","line": 15},
         {"path": "ops/benchmarks/phase4_throughput.py","line": 10},
         {"path": "ops/host/acquisition_db_status.py","line": 9},
         {"path": "ops/host/acquisition_queries.py","line": 12},
         {"path": "ops/host/financial_diagnostic_reader.py","line": 8},
-        {"path": "ops/host/phase3_local_benchmark.py","line": 6}
+        {"path": "ops/host/phase3_local_benchmark.py","line": 12}
       ]
     },
     {
       "path": "ops/activation/step3_accepted_details_runtime.py",
-      "source_sha256": "2f6c0897f572b8fe27333c5284c09c6e77f30dad8ba4004bae6cfb60df6df173",
+      "source_sha256": "1dd69e9f96c30888620addb94bc97c8b93b9e0808080a468deca1d384f30897b",
       "owner": "Maintainers of ops/activation",
-      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/107",
-      "reviewed_source_sha256": "2f6c0897f572b8fe27333c5284c09c6e77f30dad8ba4004bae6cfb60df6df173",
-      "classification": "live application",
+      "follow_up": "#100 fenced; no production activation or retained-bundle replay certified",
+      "reviewed_source_sha256": "1dd69e9f96c30888620addb94bc97c8b93b9e0808080a468deca1d384f30897b",
+      "classification": "historical snapshot",
       "store": "explicit SQLite application snapshot, commonly /data/scraper.db; document_backlog_audit also compares a prior snapshot",
       "intent": "Static SQL/query candidates: PRAGMA, SELECT; dynamic queries require caller review.",
-      "backend_guard": "No native backend guard established. Immutable/read-only/admission/sidecar guards do not prove PostgreSQL compatibility.",
-      "disposition": "Retained/manual operational reader baseline, not approved for native use. Trace callers and port or explicitly retire/disposition under #107 before selecting for native runtime.",
+      "backend_guard": "legacy_sqlite_guard.require_snapshot rejects native env/release and requires explicit hash-pinned read-only historical test input before legacy reads; original identity/sidecar checks retained",
+      "disposition": "Retained snapshot-only runtime; production wrappers retired; native alternatives documented in docs/operations/legacy-sqlite-launchers.md",
       "sites": [
-        {"line": 10,"symbol": "main","kind": "direct connection","sha256": "468ce85ebbd3235be1efa067981c86f2980287e08ff6464aa3726276880c92c8","scope_sha256": "f27f7489aa4abcfae93a1df2127eea0b2d1d832cfa77ab623c90b3960c56188f","branch_hints": []},
-        {"line": 11,"symbol": "main","kind": "SQLite SQL","sha256": "a28b203f21249ab8312986428d3b09520123b2d7328839a8a7a3b5f61f02af8f","scope_sha256": "f27f7489aa4abcfae93a1df2127eea0b2d1d832cfa77ab623c90b3960c56188f","branch_hints": []},
-        {"line": 12,"symbol": "main.rows","kind": "dynamic query","sha256": "5408b7a929d8c0fdaa8b4013e3e481013601dab8f1037539bb8c0a47b85bc99c","scope_sha256": "6ca68415025e4163670fe47b0a15a5584ecb96aad4d3009a0eea638a105c1012","branch_hints": []}
+        {"line": 14,"symbol": "main","kind": "direct connection","sha256": "468ce85ebbd3235be1efa067981c86f2980287e08ff6464aa3726276880c92c8","scope_sha256": "f27f7489aa4abcfae93a1df2127eea0b2d1d832cfa77ab623c90b3960c56188f","branch_hints": []},
+        {"line": 15,"symbol": "main","kind": "SQLite SQL","sha256": "a28b203f21249ab8312986428d3b09520123b2d7328839a8a7a3b5f61f02af8f","scope_sha256": "f27f7489aa4abcfae93a1df2127eea0b2d1d832cfa77ab623c90b3960c56188f","branch_hints": []},
+        {"line": 16,"symbol": "main.rows","kind": "dynamic query","sha256": "5408b7a929d8c0fdaa8b4013e3e481013601dab8f1037539bb8c0a47b85bc99c","scope_sha256": "6ca68415025e4163670fe47b0a15a5584ecb96aad4d3009a0eea638a105c1012","branch_hints": []}
       ],
       "caller_references": [
-        {"path": "ops/activation/step3_canary_state.py","line": 29}
+        {"path": "ops/activation/step3_canary_state.py","line": 38}
       ]
     },
     {
       "path": "ops/activation/step3_canary_state_runtime.py",
-      "source_sha256": "b539c0d961c1a5f2429b72c1701dac706bc7587c217476fcbaf870c626207d78",
+      "source_sha256": "4e92d079bb88532b841fab7e364ba71d41ea3068de8f50b62d32bba6799b18cc",
       "owner": "Maintainers of ops/activation",
-      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/107",
-      "reviewed_source_sha256": "b539c0d961c1a5f2429b72c1701dac706bc7587c217476fcbaf870c626207d78",
-      "classification": "live application",
+      "follow_up": "#100 fenced; no production activation or retained-bundle replay certified",
+      "reviewed_source_sha256": "4e92d079bb88532b841fab7e364ba71d41ea3068de8f50b62d32bba6799b18cc",
+      "classification": "historical snapshot",
       "store": "explicit SQLite application snapshot, commonly /data/scraper.db; document_backlog_audit also compares a prior snapshot",
       "intent": "Static SQL/query candidates: PRAGMA, SELECT; dynamic queries require caller review.",
-      "backend_guard": "No native backend guard established. Immutable/read-only/admission/sidecar guards do not prove PostgreSQL compatibility.",
-      "disposition": "Retained/manual operational reader baseline, not approved for native use. Trace callers and port or explicitly retire/disposition under #107 before selecting for native runtime.",
+      "backend_guard": "legacy_sqlite_guard.require_snapshot rejects native env/release and requires explicit hash-pinned read-only historical test input before legacy reads; original identity/sidecar checks retained",
+      "disposition": "Retained snapshot-only runtime; production wrappers retired; native alternatives documented in docs/operations/legacy-sqlite-launchers.md",
       "sites": [
-        {"line": 28,"symbol": "read_state","kind": "direct connection","sha256": "468ce85ebbd3235be1efa067981c86f2980287e08ff6464aa3726276880c92c8","scope_sha256": "34516a3faee749fcbd572ae152d90d8feaecc84ffc0ffded7666e70fac2406dd","branch_hints": []},
-        {"line": 29,"symbol": "read_state","kind": "SQLite SQL","sha256": "a28b203f21249ab8312986428d3b09520123b2d7328839a8a7a3b5f61f02af8f","scope_sha256": "34516a3faee749fcbd572ae152d90d8feaecc84ffc0ffded7666e70fac2406dd","branch_hints": []},
-        {"line": 30,"symbol": "read_state.rows","kind": "dynamic query","sha256": "5408b7a929d8c0fdaa8b4013e3e481013601dab8f1037539bb8c0a47b85bc99c","scope_sha256": "6ca68415025e4163670fe47b0a15a5584ecb96aad4d3009a0eea638a105c1012","branch_hints": []},
-        {"line": 33,"symbol": "read_state.fingerprint","kind": "dynamic query","sha256": "5408b7a929d8c0fdaa8b4013e3e481013601dab8f1037539bb8c0a47b85bc99c","scope_sha256": "51df6cc279a4d5f8126ba66694105d7a6b1ece8073a6ad159652c7680ec9b304","branch_hints": []},
-        {"line": 41,"symbol": "read_state","kind": "SQLite SQL","sha256": "63942491441da1ac58f4e883fe8521b0965db1f87d935b384f9912570d36540e","scope_sha256": "34516a3faee749fcbd572ae152d90d8feaecc84ffc0ffded7666e70fac2406dd","branch_hints": []},
-        {"line": 41,"symbol": "read_state","kind": "dynamic query","sha256": "9c1c1f53f9c6e91cbbfdd3adbad5518c2ffe04572a23e2bb3e58c6c1c10bea2b","scope_sha256": "34516a3faee749fcbd572ae152d90d8feaecc84ffc0ffded7666e70fac2406dd","branch_hints": []}
+        {"line": 32,"symbol": "read_state","kind": "direct connection","sha256": "468ce85ebbd3235be1efa067981c86f2980287e08ff6464aa3726276880c92c8","scope_sha256": "34516a3faee749fcbd572ae152d90d8feaecc84ffc0ffded7666e70fac2406dd","branch_hints": []},
+        {"line": 33,"symbol": "read_state","kind": "SQLite SQL","sha256": "a28b203f21249ab8312986428d3b09520123b2d7328839a8a7a3b5f61f02af8f","scope_sha256": "34516a3faee749fcbd572ae152d90d8feaecc84ffc0ffded7666e70fac2406dd","branch_hints": []},
+        {"line": 34,"symbol": "read_state.rows","kind": "dynamic query","sha256": "5408b7a929d8c0fdaa8b4013e3e481013601dab8f1037539bb8c0a47b85bc99c","scope_sha256": "6ca68415025e4163670fe47b0a15a5584ecb96aad4d3009a0eea638a105c1012","branch_hints": []},
+        {"line": 37,"symbol": "read_state.fingerprint","kind": "dynamic query","sha256": "5408b7a929d8c0fdaa8b4013e3e481013601dab8f1037539bb8c0a47b85bc99c","scope_sha256": "51df6cc279a4d5f8126ba66694105d7a6b1ece8073a6ad159652c7680ec9b304","branch_hints": []},
+        {"line": 45,"symbol": "read_state","kind": "SQLite SQL","sha256": "63942491441da1ac58f4e883fe8521b0965db1f87d935b384f9912570d36540e","scope_sha256": "34516a3faee749fcbd572ae152d90d8feaecc84ffc0ffded7666e70fac2406dd","branch_hints": []},
+        {"line": 45,"symbol": "read_state","kind": "dynamic query","sha256": "9c1c1f53f9c6e91cbbfdd3adbad5518c2ffe04572a23e2bb3e58c6c1c10bea2b","scope_sha256": "34516a3faee749fcbd572ae152d90d8feaecc84ffc0ffded7666e70fac2406dd","branch_hints": []}
       ],
       "caller_references": [
-        {"path": "ops/activation/step3_canary_state.py","line": 29}
+        {"path": "ops/activation/step3_canary_state.py","line": 38}
       ]
     },
     {
       "path": "ops/activation/step3_detail_runtime.py",
-      "source_sha256": "f944e530e3d2da60d54f4072e8a13eff9da6a1cd11fbf3b79b1c576b5c8ac87f",
+      "source_sha256": "952ae634f9415c438e52be2f11b4487d68d52e6e60e5936ae4beb84d353d309e",
       "owner": "Maintainers of ops/activation",
-      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/107",
-      "reviewed_source_sha256": "f944e530e3d2da60d54f4072e8a13eff9da6a1cd11fbf3b79b1c576b5c8ac87f",
-      "classification": "live application",
+      "follow_up": "#100 fenced; no production activation or retained-bundle replay certified",
+      "reviewed_source_sha256": "952ae634f9415c438e52be2f11b4487d68d52e6e60e5936ae4beb84d353d309e",
+      "classification": "historical snapshot",
       "store": "explicit SQLite application snapshot, commonly /data/scraper.db; document_backlog_audit also compares a prior snapshot",
       "intent": "Static SQL/query candidates: PRAGMA, SELECT; dynamic queries require caller review.",
-      "backend_guard": "No native backend guard established. Immutable/read-only/admission/sidecar guards do not prove PostgreSQL compatibility.",
-      "disposition": "Retained/manual operational reader baseline, not approved for native use. Trace callers and port or explicitly retire/disposition under #107 before selecting for native runtime.",
+      "backend_guard": "legacy_sqlite_guard.require_snapshot rejects native env/release and requires explicit hash-pinned read-only historical test input before legacy reads; original identity/sidecar checks retained",
+      "disposition": "Retained snapshot-only runtime; production wrappers retired; native alternatives documented in docs/operations/legacy-sqlite-launchers.md",
       "sites": [
-        {"line": 17,"symbol": "main","kind": "direct connection","sha256": "468ce85ebbd3235be1efa067981c86f2980287e08ff6464aa3726276880c92c8","scope_sha256": "1fc6f9958db8004f8266c0dbd19a7451384b2c8045affca88f2bd6e552388750","branch_hints": []},
-        {"line": 19,"symbol": "main","kind": "SQLite SQL","sha256": "a28b203f21249ab8312986428d3b09520123b2d7328839a8a7a3b5f61f02af8f","scope_sha256": "1fc6f9958db8004f8266c0dbd19a7451384b2c8045affca88f2bd6e552388750","branch_hints": []},
-        {"line": 21,"symbol": "main.query","kind": "dynamic query","sha256": "5408b7a929d8c0fdaa8b4013e3e481013601dab8f1037539bb8c0a47b85bc99c","scope_sha256": "7193f9479f6bf0bac1375365d1fac8230e965626f7326744a5b4597733f1bc6f","branch_hints": []},
-        {"line": 48,"symbol": "main","kind": "SQLite SQL","sha256": "565d25c21ee6b6c3670c1b48d84e4243d557f4e628be8cc5d207ff0bda189687","scope_sha256": "1fc6f9958db8004f8266c0dbd19a7451384b2c8045affca88f2bd6e552388750","branch_hints": []}
+        {"line": 21,"symbol": "main","kind": "direct connection","sha256": "468ce85ebbd3235be1efa067981c86f2980287e08ff6464aa3726276880c92c8","scope_sha256": "1fc6f9958db8004f8266c0dbd19a7451384b2c8045affca88f2bd6e552388750","branch_hints": []},
+        {"line": 23,"symbol": "main","kind": "SQLite SQL","sha256": "a28b203f21249ab8312986428d3b09520123b2d7328839a8a7a3b5f61f02af8f","scope_sha256": "1fc6f9958db8004f8266c0dbd19a7451384b2c8045affca88f2bd6e552388750","branch_hints": []},
+        {"line": 25,"symbol": "main.query","kind": "dynamic query","sha256": "5408b7a929d8c0fdaa8b4013e3e481013601dab8f1037539bb8c0a47b85bc99c","scope_sha256": "7193f9479f6bf0bac1375365d1fac8230e965626f7326744a5b4597733f1bc6f","branch_hints": []},
+        {"line": 52,"symbol": "main","kind": "SQLite SQL","sha256": "565d25c21ee6b6c3670c1b48d84e4243d557f4e628be8cc5d207ff0bda189687","scope_sha256": "1fc6f9958db8004f8266c0dbd19a7451384b2c8045affca88f2bd6e552388750","branch_hints": []}
       ],
       "caller_references": [
-        {"path": "ops/activation/step3_inspect.py","line": 21}
+        {"path": "ops/activation/step3_inspect.py","line": 30}
       ]
     },
     {
       "path": "ops/activation/step3_inspect_runtime.py",
-      "source_sha256": "b022910b7fb257e60890c1bd4e7933b1929644676cc75720ead65b709333a5e7",
+      "source_sha256": "3f7e3eaf9f7dba2b1be49112dcc50a0f764cebb27c36ca0c650b570c57b57246",
       "owner": "Maintainers of ops/activation",
-      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/107",
-      "reviewed_source_sha256": "b022910b7fb257e60890c1bd4e7933b1929644676cc75720ead65b709333a5e7",
-      "classification": "live application",
+      "follow_up": "#100 fenced; no production activation or retained-bundle replay certified",
+      "reviewed_source_sha256": "3f7e3eaf9f7dba2b1be49112dcc50a0f764cebb27c36ca0c650b570c57b57246",
+      "classification": "historical snapshot",
       "store": "explicit SQLite application snapshot, commonly /data/scraper.db; document_backlog_audit also compares a prior snapshot",
       "intent": "Static SQL/query candidates: PRAGMA, SELECT; dynamic queries require caller review.",
-      "backend_guard": "No native backend guard established. Immutable/read-only/admission/sidecar guards do not prove PostgreSQL compatibility.",
-      "disposition": "Retained/manual operational reader baseline, not approved for native use. Trace callers and port or explicitly retire/disposition under #107 before selecting for native runtime.",
+      "backend_guard": "legacy_sqlite_guard.require_snapshot rejects native env/release and requires explicit hash-pinned read-only historical test input before legacy reads; original identity/sidecar checks retained",
+      "disposition": "Retained snapshot-only runtime; production wrappers retired; native alternatives documented in docs/operations/legacy-sqlite-launchers.md",
       "sites": [
-        {"line": 22,"symbol": "main","kind": "direct connection","sha256": "468ce85ebbd3235be1efa067981c86f2980287e08ff6464aa3726276880c92c8","scope_sha256": "4fadad16047d532dec4b0adcd29734d1c6ea09809656fb4f84ff6ce92f7a774d","branch_hints": []},
-        {"line": 24,"symbol": "main","kind": "SQLite SQL","sha256": "a28b203f21249ab8312986428d3b09520123b2d7328839a8a7a3b5f61f02af8f","scope_sha256": "4fadad16047d532dec4b0adcd29734d1c6ea09809656fb4f84ff6ce92f7a774d","branch_hints": []},
-        {"line": 27,"symbol": "main.query","kind": "dynamic query","sha256": "7cfc4f3ca8c602bd14eea0abaa48a63c6473202a598508f1f18eeeac136b276a","scope_sha256": "3877e1c978af6201a35fc7e685f49ae8c1e6f315ccc46a0fce7bc2611dac14fb","branch_hints": []},
-        {"line": 34,"symbol": "main","kind": "SQLite SQL","sha256": "63942491441da1ac58f4e883fe8521b0965db1f87d935b384f9912570d36540e","scope_sha256": "4fadad16047d532dec4b0adcd29734d1c6ea09809656fb4f84ff6ce92f7a774d","branch_hints": []},
-        {"line": 41,"symbol": "main","kind": "SQLite SQL","sha256": "8971f5d12be369e71f573337a7bb5911ce215082e46d1ef583bf621c31e5df83","scope_sha256": "4fadad16047d532dec4b0adcd29734d1c6ea09809656fb4f84ff6ce92f7a774d","branch_hints": []}
+        {"line": 26,"symbol": "main","kind": "direct connection","sha256": "468ce85ebbd3235be1efa067981c86f2980287e08ff6464aa3726276880c92c8","scope_sha256": "4fadad16047d532dec4b0adcd29734d1c6ea09809656fb4f84ff6ce92f7a774d","branch_hints": []},
+        {"line": 28,"symbol": "main","kind": "SQLite SQL","sha256": "a28b203f21249ab8312986428d3b09520123b2d7328839a8a7a3b5f61f02af8f","scope_sha256": "4fadad16047d532dec4b0adcd29734d1c6ea09809656fb4f84ff6ce92f7a774d","branch_hints": []},
+        {"line": 31,"symbol": "main.query","kind": "dynamic query","sha256": "7cfc4f3ca8c602bd14eea0abaa48a63c6473202a598508f1f18eeeac136b276a","scope_sha256": "3877e1c978af6201a35fc7e685f49ae8c1e6f315ccc46a0fce7bc2611dac14fb","branch_hints": []},
+        {"line": 38,"symbol": "main","kind": "SQLite SQL","sha256": "63942491441da1ac58f4e883fe8521b0965db1f87d935b384f9912570d36540e","scope_sha256": "4fadad16047d532dec4b0adcd29734d1c6ea09809656fb4f84ff6ce92f7a774d","branch_hints": []},
+        {"line": 45,"symbol": "main","kind": "SQLite SQL","sha256": "8971f5d12be369e71f573337a7bb5911ce215082e46d1ef583bf621c31e5df83","scope_sha256": "4fadad16047d532dec4b0adcd29734d1c6ea09809656fb4f84ff6ce92f7a774d","branch_hints": []}
       ],
       "caller_references": [
-        {"path": "ops/activation/step3_inspect.py","line": 21}
+        {"path": "ops/activation/step3_inspect.py","line": 30}
       ]
     },
     {
@@ -1343,51 +1384,51 @@
         {"line": 60,"symbol": "verify","kind": "dynamic query","sha256": "2462972dec19fde933ecd24321eaa3d69216eba49d26cbae0cde366901fc4d07","scope_sha256": "e1fda538bfa3795cbadf2ba2925aae8c9282e38364c219a18f78edbce846e86c","branch_hints": []}
       ],
       "caller_references": [
-        {"path": "ops/activation/phase4_gap_inspect_runtime.py","line": 37},
-        {"path": "ops/activation/phase4_trial_snapshot_runtime.py","line": 50},
+        {"path": "ops/activation/phase4_gap_inspect_runtime.py","line": 41},
+        {"path": "ops/activation/phase4_trial_snapshot_runtime.py","line": 54},
         {"path": "ops/activation/prepare_phase4_routine.py","line": 16}
       ]
     },
     {
       "path": "ops/benchmarks/phase4_throughput.py",
-      "source_sha256": "8a6c130864803853f45fe8f026bc90f8ea3cc413697357101d3621f1ef1581cf",
+      "source_sha256": "4961a98e605c64a71fd5d978da247825efc5248bf9fd02b99bdf04fcc17f316e",
       "owner": "Maintainers of ops/benchmarks",
-      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/107",
-      "reviewed_source_sha256": "8a6c130864803853f45fe8f026bc90f8ea3cc413697357101d3621f1ef1581cf",
-      "classification": "live application",
+      "follow_up": "#100 fenced; no production activation or retained-bundle replay certified",
+      "reviewed_source_sha256": "4961a98e605c64a71fd5d978da247825efc5248bf9fd02b99bdf04fcc17f316e",
+      "classification": "historical snapshot",
       "store": "explicit SQLite application snapshot, commonly /data/scraper.db; document_backlog_audit also compares a prior snapshot",
       "intent": "Static SQL/query candidates: PRAGMA, SELECT; dynamic queries require caller review.",
-      "backend_guard": "No native backend guard established. Immutable/read-only/admission/sidecar guards do not prove PostgreSQL compatibility.",
-      "disposition": "Retained/manual operational reader baseline, not approved for native use. Trace callers and port or explicitly retire/disposition under #107 before selecting for native runtime.",
+      "backend_guard": "legacy_sqlite_guard.require_snapshot rejects native env/release and requires explicit hash-pinned read-only historical test input before legacy reads; original identity/sidecar checks retained",
+      "disposition": "Retained snapshot-only runtime; production wrappers retired; native alternatives documented in docs/operations/legacy-sqlite-launchers.md",
       "sites": [
-        {"line": 54,"symbol": "main","kind": "direct connection","sha256": "3edaf5343ce3eeab4784af1c34bb4685d0adb5a81b6f23efd500a15e51f7e18e","scope_sha256": "e811c3d5492fe97a91166edf4f3154683282ff0ccc042d6b139744cb0d0b8b74","branch_hints": []},
-        {"line": 55,"symbol": "main.q","kind": "dynamic query","sha256": "598823ec6bcb7e06d44f72620244b9d1224213e85353db0d38a2cbc8ef08a7a6","scope_sha256": "3ec7db0f1540151c89a8120f20e2d10595dd4b87cd666288b5ca9322a40befe7","branch_hints": []},
-        {"line": 80,"symbol": "main","kind": "SQLite SQL","sha256": "29e22c579889639ae2718e5b95583d1b6f7f1d39d746a9d9b5add7100e63bf41","scope_sha256": "e811c3d5492fe97a91166edf4f3154683282ff0ccc042d6b139744cb0d0b8b74","branch_hints": []}
+        {"line": 57,"symbol": "main","kind": "direct connection","sha256": "3edaf5343ce3eeab4784af1c34bb4685d0adb5a81b6f23efd500a15e51f7e18e","scope_sha256": "3e544c0a0001c83d41107316f9a017d638b695c4e2b17bb9f192f27422bfd215","branch_hints": []},
+        {"line": 58,"symbol": "main.q","kind": "dynamic query","sha256": "598823ec6bcb7e06d44f72620244b9d1224213e85353db0d38a2cbc8ef08a7a6","scope_sha256": "3ec7db0f1540151c89a8120f20e2d10595dd4b87cd666288b5ca9322a40befe7","branch_hints": []},
+        {"line": 83,"symbol": "main","kind": "SQLite SQL","sha256": "29e22c579889639ae2718e5b95583d1b6f7f1d39d746a9d9b5add7100e63bf41","scope_sha256": "3e544c0a0001c83d41107316f9a017d638b695c4e2b17bb9f192f27422bfd215","branch_hints": []}
       ],
       "caller_references": [
-        {"path": "ops/benchmarks/run_phase4_throughput.py","line": 27},
-        {"path": "ops/host/phase3_local_benchmark.py","line": 5}
+        {"path": "ops/benchmarks/run_phase4_throughput.py","line": 36},
+        {"path": "ops/host/phase3_local_benchmark.py","line": 11}
       ]
     },
     {
       "path": "ops/docker/canary/ar013_readonly_db.py",
-      "source_sha256": "661648920750f947b1322bc1b375de78c1387e2ad8a9ce722582a0459f5433fa",
+      "source_sha256": "a8691c11f39e9ef26a5f25f1b4d20ec54ec319e193d7b577d462a8905ecc5739",
       "owner": "Maintainers of ops/docker/canary",
-      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/107",
-      "reviewed_source_sha256": "661648920750f947b1322bc1b375de78c1387e2ad8a9ce722582a0459f5433fa",
-      "classification": "live application",
+      "follow_up": "#100 fenced; no production activation or retained-bundle replay certified",
+      "reviewed_source_sha256": "a8691c11f39e9ef26a5f25f1b4d20ec54ec319e193d7b577d462a8905ecc5739",
+      "classification": "historical snapshot",
       "store": "explicit SQLite application snapshot, commonly /data/scraper.db; document_backlog_audit also compares a prior snapshot",
       "intent": "Static SQL/query candidates: PRAGMA, SELECT; dynamic queries require caller review.",
-      "backend_guard": "No native backend guard established. Immutable/read-only/admission/sidecar guards do not prove PostgreSQL compatibility.",
-      "disposition": "Retained/manual operational reader baseline, not approved for native use. Trace callers and port or explicitly retire/disposition under #107 before selecting for native runtime.",
+      "backend_guard": "legacy_sqlite_guard.require_snapshot rejects native env/release and requires explicit hash-pinned read-only historical test input before legacy reads; original identity/sidecar checks retained",
+      "disposition": "Retained snapshot-only runtime; production wrappers retired; native alternatives documented in docs/operations/legacy-sqlite-launchers.md",
       "sites": [
-        {"line": 86,"symbol": "main","kind": "direct connection","sha256": "3edaf5343ce3eeab4784af1c34bb4685d0adb5a81b6f23efd500a15e51f7e18e","scope_sha256": "a4d256f170b15aa8a6064c6c4647314af14ae759a40cb73cde60465584f8cd82","branch_hints": []},
-        {"line": 88,"symbol": "main","kind": "SQLite SQL","sha256": "a28b203f21249ab8312986428d3b09520123b2d7328839a8a7a3b5f61f02af8f","scope_sha256": "a4d256f170b15aa8a6064c6c4647314af14ae759a40cb73cde60465584f8cd82","branch_hints": []},
-        {"line": 89,"symbol": "main","kind": "SQLite SQL","sha256": "7a087095c6a50c603c9a1750e51dad9f10a9b43517d3938dbec1aeb71ab913ce","scope_sha256": "a4d256f170b15aa8a6064c6c4647314af14ae759a40cb73cde60465584f8cd82","branch_hints": []},
-        {"line": 111,"symbol": "main","kind": "SQLite SQL","sha256": "87cedaf7e1cf83491c3fbb4fe3db170a4e0632857d84a21fbe0e28982851baa8","scope_sha256": "a4d256f170b15aa8a6064c6c4647314af14ae759a40cb73cde60465584f8cd82","branch_hints": []}
+        {"line": 89,"symbol": "main","kind": "direct connection","sha256": "3edaf5343ce3eeab4784af1c34bb4685d0adb5a81b6f23efd500a15e51f7e18e","scope_sha256": "611057bcd467d59a857c5e38fcbc40e7a550fe6e2dac96172ddd5af91529ac78","branch_hints": []},
+        {"line": 91,"symbol": "main","kind": "SQLite SQL","sha256": "a28b203f21249ab8312986428d3b09520123b2d7328839a8a7a3b5f61f02af8f","scope_sha256": "611057bcd467d59a857c5e38fcbc40e7a550fe6e2dac96172ddd5af91529ac78","branch_hints": []},
+        {"line": 92,"symbol": "main","kind": "SQLite SQL","sha256": "7a087095c6a50c603c9a1750e51dad9f10a9b43517d3938dbec1aeb71ab913ce","scope_sha256": "611057bcd467d59a857c5e38fcbc40e7a550fe6e2dac96172ddd5af91529ac78","branch_hints": []},
+        {"line": 114,"symbol": "main","kind": "SQLite SQL","sha256": "87cedaf7e1cf83491c3fbb4fe3db170a4e0632857d84a21fbe0e28982851baa8","scope_sha256": "611057bcd467d59a857c5e38fcbc40e7a550fe6e2dac96172ddd5af91529ac78","branch_hints": []}
       ],
       "caller_references": [
-        {"path": "ops/docker/canary/ar013_readonly_host.py","line": 18}
+        {"path": "ops/docker/canary/ar013_readonly_host.py","line": 25}
       ]
     },
     {
@@ -1703,10 +1744,7 @@
         {"line": 267,"symbol": "_main","kind": "dynamic query","sha256": "fa79c55558ce521b495da2a36f2582555bea1c4765a39b36dd98ed8b07b47a32","scope_sha256": "5046fb3f90172c17f9c6487269085e15b6c0d9742bb91e1dea4a033a3931f5ab","branch_hints": []}
       ],
       "caller_references": [
-        {"path": "compose.browser-recovery.yml","line": 9},
-        {"path": "compose.browser-recovery.yml","line": 21},
-        {"path": "compose.browser-recovery.yml","line": 33},
-        {"path": "compose.browser-recovery.yml","line": 45},
+        {"path": "compose.browser-recovery.development.yml","line": 13},
         {"path": "scrapper/commands/browser_rating_host_config.py","line": 33}
       ]
     },
@@ -1729,7 +1767,7 @@
         {"line": 74,"symbol": "apply_observation","kind": "dynamic query","sha256": "8ea10c9f809fedbefcd24789022bcad90d6ca020e947aec1deeae74ff5fa41c1","scope_sha256": "fbbfc09ed74cf8ebcede29b34b15078dada23a29c53b5302f5db6f30d67eeb0d","branch_hints": []}
       ],
       "caller_references": [
-        {"path": "compose.yml","line": 83},
+        {"path": "compose.yml","line": 86},
         {"path": "ops/activation/step3_canary_source_runtime.py","line": 9},
         {"path": "ops/activation/step3_financial.py","line": 50},
         {"path": "ops/activation/step3_financial.py","line": 56},
@@ -1828,7 +1866,7 @@
         {"line": 163,"symbol": "accepted_scope","kind": "SQLite SQL","sha256": "41a87ddac082ecb601b1b34022af0af832da5acba5feea93666ca4bd169adf07","scope_sha256": "491e335ffc4375b32f6d7997b66800d92d972e69f96808b0725560ebb8f3cf0e","branch_hints": []}
       ],
       "caller_references": [
-        {"path": "ops/activation/acquisition_recovery_inspect_runtime.py","line": 130},
+        {"path": "ops/activation/acquisition_recovery_inspect_runtime.py","line": 134},
         {"path": "ops/activation/financial_priority.py","line": 165},
         {"path": "ops/activation/step3_financial.py","line": 46},
         {"path": "scrapper/commands/collection_scope.py","line": 16},
@@ -1864,23 +1902,23 @@
         {"line": 150,"symbol": "apply_migrations","kind": "dynamic query","sha256": "2d5d687cd41de67cc6b043da2fc88fc0b86cd8d7bf5b2670827081eaaf18b171","scope_sha256": "5b127ef3a9b98a567f479e34ec0ceb65d7c4c8947cd046eb1823ca953e8342e8","branch_hints": []}
       ],
       "caller_references": [
-        {"path": "ops/activation/acquisition_recovery_backup_runtime.py","line": 14},
-        {"path": "ops/activation/acquisition_recovery_inspect_runtime.py","line": 13},
+        {"path": "ops/activation/acquisition_recovery_backup_runtime.py","line": 18},
+        {"path": "ops/activation/acquisition_recovery_inspect_runtime.py","line": 17},
         {"path": "ops/activation/bse_retained.py","line": 44},
         {"path": "ops/activation/bse_retained_runtime.py","line": 39},
         {"path": "ops/activation/local_document_campaign_runtime.py","line": 15},
         {"path": "ops/activation/nse_results_runtime.py","line": 110},
         {"path": "ops/activation/nse_results_runtime.py","line": 117},
         {"path": "ops/activation/paired_download_runtime.py","line": 17},
-        {"path": "ops/activation/phase3_inspect_runtime.py","line": 7},
+        {"path": "ops/activation/phase3_inspect_runtime.py","line": 11},
         {"path": "ops/activation/phase4_documents_runtime.py","line": 116},
-        {"path": "ops/activation/phase4_fingerprint_preflight_runtime.py","line": 9},
-        {"path": "ops/activation/phase4_inspect_runtime.py","line": 7},
+        {"path": "ops/activation/phase4_fingerprint_preflight_runtime.py","line": 13},
+        {"path": "ops/activation/phase4_inspect_runtime.py","line": 11},
         {"path": "ops/activation/phase4_offline_lifecycle.py","line": 9},
-        {"path": "ops/activation/phase4_retry_preflight_runtime.py","line": 9},
-        {"path": "ops/activation/phase4_routine_preflight_runtime.py","line": 7},
+        {"path": "ops/activation/phase4_retry_preflight_runtime.py","line": 13},
+        {"path": "ops/activation/phase4_routine_preflight_runtime.py","line": 11},
         {"path": "ops/activation/phase4_routine_runtime.py","line": 49},
-        {"path": "ops/activation/phase4_trial_snapshot_runtime.py","line": 8},
+        {"path": "ops/activation/phase4_trial_snapshot_runtime.py","line": 12},
         {"path": "ops/activation/postgresql_runtime.py","line": 27},
         {"path": "ops/activation/postgresql_runtime.py","line": 100},
         {"path": "ops/activation/processing_pipeline.py","line": 179},
@@ -1891,10 +1929,10 @@
         {"path": "ops/activation/step3_financial.py","line": 46},
         {"path": "ops/activation/step3_financial_runtime.py","line": 102},
         {"path": "ops/activation/step3_financial_runtime.py","line": 149},
-        {"path": "ops/activation/step3_inspect_runtime.py","line": 12},
-        {"path": "ops/docker/canary/ar013_readonly_db.py","line": 85},
-        {"path": "ops/docker/canary/ar013_readonly_db.py","line": 98},
-        {"path": "ops/docker/canary/ar013_readonly_db.py","line": 100},
+        {"path": "ops/activation/step3_inspect_runtime.py","line": 16},
+        {"path": "ops/docker/canary/ar013_readonly_db.py","line": 88},
+        {"path": "ops/docker/canary/ar013_readonly_db.py","line": 101},
+        {"path": "ops/docker/canary/ar013_readonly_db.py","line": 103},
         {"path": "ops/docker/postgresql/Dockerfile","line": 14},
         {"path": "ops/host/document_audit_reader.py","line": 11},
         {"path": "ops/host/document_audit_reader.py","line": 22},
@@ -2092,8 +2130,8 @@
         {"line": 73,"symbol": "reconcile_processing","kind": "SQLite SQL","sha256": "6a8c5d88a82d3ffee4f43c691079568d168807d692a070c93991f167c2ce7e5e","scope_sha256": "79bcfe2fcf225c503c3f57704b2ac047afdd88ad8037e44fe4b38c2c63958af8","branch_hints": []}
       ],
       "caller_references": [
-        {"path": "ops/activation/acquisition_recovery_inspect_runtime.py","line": 76},
-        {"path": "ops/activation/phase4_routine_preflight_runtime.py","line": 9},
+        {"path": "ops/activation/acquisition_recovery_inspect_runtime.py","line": 80},
+        {"path": "ops/activation/phase4_routine_preflight_runtime.py","line": 13},
         {"path": "ops/activation/phase4_schedule.py","line": 179},
         {"path": "ops/host/document_backlog_report.py","line": 250},
         {"path": "ops/host/document_backlog_report.py","line": 357},
@@ -2123,7 +2161,7 @@
       ],
       "caller_references": [
         {"path": "experiments/earnings_reaction_v1/event_isolation.py","line": 79},
-        {"path": "ops/activation/acquisition_recovery_inspect_runtime.py","line": 130},
+        {"path": "ops/activation/acquisition_recovery_inspect_runtime.py","line": 134},
         {"path": "ops/activation/financial_screen_refresh.py","line": 82},
         {"path": "ops/activation/step3_financial_runtime.py","line": 51},
         {"path": "ops/host/acquisition_quarter_view.py","line": 49},
@@ -2223,7 +2261,7 @@
       ],
       "caller_references": [
         {"path": "experiments/subsector_index_v1/sources.py","line": 105},
-        {"path": "ops/activation/acquisition_recovery_inspect_runtime.py","line": 130},
+        {"path": "ops/activation/acquisition_recovery_inspect_runtime.py","line": 134},
         {"path": "scrapper/db/document_recovery_repo.py","line": 160},
         {"path": "scrapper/db/document_recovery_repo.py","line": 173},
         {"path": "scrapper/db/document_recovery_repo.py","line": 185},
@@ -2382,7 +2420,7 @@
       ],
       "caller_references": [
         {"path": "ops/activation/phase4_documents_runtime.py","line": 70},
-        {"path": "ops/activation/phase4_trial_snapshot_runtime.py","line": 9},
+        {"path": "ops/activation/phase4_trial_snapshot_runtime.py","line": 13},
         {"path": "scrapper/db/browser_host_defer.py","line": 5},
         {"path": "scrapper/db/host_request_defer.py","line": 4},
         {"path": "scrapper/db/screener_host_defer.py","line": 4},
@@ -3038,8 +3076,8 @@
         {"line": 643,"symbol": "fail_company","kind": "SQLite SQL","sha256": "41a87ddac082ecb601b1b34022af0af832da5acba5feea93666ca4bd169adf07","scope_sha256": "d541f6ba4d96456e4972adb0de711524accfc4ea783c6745d4305add7bf75748","branch_hints": []}
       ],
       "caller_references": [
-        {"path": "ops/activation/acquisition_recovery_inspect_runtime.py","line": 81},
-        {"path": "ops/activation/acquisition_recovery_inspect_runtime.py","line": 130},
+        {"path": "ops/activation/acquisition_recovery_inspect_runtime.py","line": 85},
+        {"path": "ops/activation/acquisition_recovery_inspect_runtime.py","line": 134},
         {"path": "ops/activation/bse_retained.py","line": 45},
         {"path": "ops/activation/financial_priority.py","line": 10},
         {"path": "ops/activation/financial_priority.py","line": 143},
@@ -3049,7 +3087,7 @@
         {"path": "ops/activation/step3_financial.py","line": 56},
         {"path": "ops/activation/step3_financial_runtime.py","line": 39},
         {"path": "ops/activation/step3_financial_runtime.py","line": 139},
-        {"path": "ops/activation/step3_inspect_runtime.py","line": 13},
+        {"path": "ops/activation/step3_inspect_runtime.py","line": 17},
         {"path": "ops/host/verify_actual_financial_overlay.py","line": 6},
         {"path": "scrapper/db/exchange/filings.py","line": 210},
         {"path": "scrapper/operations/coordinator/collection.py","line": 13},
@@ -3540,11 +3578,11 @@
         {"line": 266,"symbol": "handoff_browser_ratings","kind": "dynamic query","sha256": "f091fd583dcd7ceb7dfd5d6b40dd71339ea8fa34d8b687a8f3494d4081eb01bf","scope_sha256": "69ef4758a54e9e880bf76dc4a526687309a6d5894c76f26f8e0e1cd4ae6a9014","branch_hints": []}
       ],
       "caller_references": [
-        {"path": "ops/activation/acquisition_recovery_inspect_runtime.py","line": 75},
+        {"path": "ops/activation/acquisition_recovery_inspect_runtime.py","line": 79},
         {"path": "ops/activation/paired_download_runtime.py","line": 18},
-        {"path": "ops/activation/phase4_gap_inspect_runtime.py","line": 33},
+        {"path": "ops/activation/phase4_gap_inspect_runtime.py","line": 37},
         {"path": "ops/activation/phase4_offline_lifecycle.py","line": 14},
-        {"path": "ops/activation/phase4_routine_preflight_runtime.py","line": 8},
+        {"path": "ops/activation/phase4_routine_preflight_runtime.py","line": 12},
         {"path": "ops/activation/phase4_routine_runtime.py","line": 50},
         {"path": "ops/host/document_backlog_audit.py","line": 243},
         {"path": "scrapper/commands/automatic_documents.py","line": 5}
@@ -3755,14 +3793,14 @@
     {
       "path": "scrapper/pipeline/evaluate_document_acquisition_gate.py",
       "source_sha256": "674e73b9813c80439f68cd99eada40c615b44a8bc91ff10a8d473b1c395c030d",
+      "owner": "Maintainers of scrapper/pipeline",
+      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/97",
+      "reviewed_source_sha256": "674e73b9813c80439f68cd99eada40c615b44a8bc91ff10a8d473b1c395c030d",
       "classification": "live application",
       "store": "configured application database via public read-only database.connect; report output directory",
       "intent": "Read-only acquisition FK metadata/orphan and closure evidence; writes JSON/Markdown reports only.",
       "backend_guard": "_acquisition_integrity uses is_postgresql before the SQLite pragma query; native catalog/orphan queries use schema-qualified identifiers. evaluate wraps native reads in a read-only repeatable-read snapshot. main opens read_only=True without init_db.",
-      "owner": "Maintainers of scrapper/pipeline",
       "disposition": "Issue #97: preserve SQLite FK violation semantics and fail-closed machine contract; native constraint/orphan checks tested through public factory with disposable restricted reader. No runtime activation.",
-      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/97",
-      "reviewed_source_sha256": "674e73b9813c80439f68cd99eada40c615b44a8bc91ff10a8d473b1c395c030d",
       "sites": [
         {"line": 71,"symbol": "_acquisition_integrity","kind": "dynamic query","sha256": "6bde12a92c780e8dab19ddf5708f370050ee7a125e086a152e09db20cd0fb37c","scope_sha256": "d59e728c548d82ae8aa511c6154497f308ac8720fb4948e36dc7b142045f15a6","branch_hints": [{"condition_sha256": "e90de1dc1aa3e2a2cb2b84cb99b13993dae959aad2b68be50ccc32e88ebd9118","arm": "body","line": 69}]},
         {"line": 113,"symbol": "_acquisition_integrity","kind": "dynamic query","sha256": "9f9587b083317ce4ef3336428d545070ce342bb39a5932b6df70a54c6a097128","scope_sha256": "d59e728c548d82ae8aa511c6154497f308ac8720fb4948e36dc7b142045f15a6","branch_hints": []}
@@ -4266,7 +4304,7 @@
       "caller_references": [
         {"path": "experiments/technical_fix_v1/repair.py","line": 11},
         {"path": "ops/activation/scraper_storage_growth.py","line": 35},
-        {"path": "ops/docker/canary/ar013_readonly_db.py","line": 78},
+        {"path": "ops/docker/canary/ar013_readonly_db.py","line": 81},
         {"path": "ops/host/benchmark_storage_inventory.py","line": 13},
         {"path": "scrapper/research/subsector_ss02/full_universe.py","line": 14},
         {"path": "scrapper/research/subsector_ss02/reconcile.py","line": 11}
@@ -4491,7 +4529,7 @@
         {"line": 160,"symbol": "revision_patrol","kind": "dynamic query","sha256": "a760e809f0245524e523afbce2baa5824ff6acf2df9ed78c57d6f4886beeaaad","scope_sha256": "573e36aaf3004e0c928ebda4b04a6b514552fc09b79d8ea18b56b03066e217c3","branch_hints": []}
       ],
       "caller_references": [
-        {"path": "ops/activation/phase4_routine_preflight_runtime.py","line": 12},
+        {"path": "ops/activation/phase4_routine_preflight_runtime.py","line": 16},
         {"path": "ops/activation/phase4_routine_runtime.py","line": 55},
         {"path": "ops/activation/prepare_phase4_routine.py","line": 16},
         {"path": "scrapper/documents/recovery/finite_downloads.py","line": 1},
@@ -4516,7 +4554,7 @@
         {"line": 294,"symbol": "validate_parse","kind": "SQLite SQL","sha256": "bfa9408865ee4e65fa6b06a3030205134c24f7f08a0c44b475bce02ca8d57b7e","scope_sha256": "ad32510f37fb886f7503e9cc5c09727ef4587c0fdfdddf3f7ec7af0221a52d9b","branch_hints": []}
       ],
       "caller_references": [
-        {"path": "ops/activation/acquisition_recovery_inspect_runtime.py","line": 130},
+        {"path": "ops/activation/acquisition_recovery_inspect_runtime.py","line": 134},
         {"path": "ops/activation/financial_screen_refresh.py","line": 31},
         {"path": "ops/activation/screener_auth_check_runtime.py","line": 20},
         {"path": "ops/activation/screener_auth_check_runtime.py","line": 86},
@@ -4706,7 +4744,7 @@
       ],
       "caller_references": [
         {"path": "experiments/earnings_reaction_v1/event_isolation.py","line": 79},
-        {"path": "ops/activation/acquisition_recovery_inspect_runtime.py","line": 130},
+        {"path": "ops/activation/acquisition_recovery_inspect_runtime.py","line": 134},
         {"path": "ops/activation/financial_screen_refresh.py","line": 82},
         {"path": "ops/activation/step3_financial_runtime.py","line": 51},
         {"path": "ops/host/acquisition_quarter_view.py","line": 49},
@@ -4791,7 +4829,7 @@
         {"path": "ops/activation/automatic_acquisition.phase4-candidate.py","line": 47},
         {"path": "ops/activation/automatic_acquisition.py","line": 52},
         {"path": "ops/activation/nse_results.py","line": 35},
-        {"path": "ops/activation/phase4_trial_preflight.py","line": 51},
+        {"path": "ops/activation/phase4_trial_preflight.py","line": 62},
         {"path": "ops/activation/prepare_phase4_routine.py","line": 15},
         {"path": "ops/host/acquisition_lifecycle.py","line": 268},
         {"path": "ops/host/acquisition_lifecycle.py","line": 269},
