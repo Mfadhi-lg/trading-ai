@@ -5,10 +5,12 @@ Run from the repository root with Python 3.14 and PyArrow available. The pilot
 uses `execute_ta02d.secure_supplier` for credentials and `upstox_candles.url_for`
 for provider URLs. Credentials and error bodies never enter evidence files.
 
-`python3 -m experiments.historical_candle_archive_v1.prepare` creates deterministic
-universe/manifests from the read-only acquisition-table projection. It preserves
-the fixed pilot, whose historical eligibility comes from the retained October
-scope. The full-universe plan uses November's latest acquired scope observations.
+`python3 -m experiments.historical_candle_archive_v1.prepare` creates
+universe/manifests from a verified native read-only application observation.
+It fails if native input is unavailable and never selects a retained master or
+unverified JSON projection automatically. Existing pilot identities must match
+observed mappings. For explicit checksummed frozen replay and all retained-store
+decisions, see [research input boundaries](../../docs/research/research-input-stores.md).
 
 Identity resolution also uses existing canonical security identifiers and
 scraped Screener exchange-code paths. Missing registry links do not imply a

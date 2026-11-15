@@ -1,10 +1,12 @@
-"""Reuse retained canonical acquisition tables without mutating the company master."""
+"""Plan from verified native inputs or an explicitly checksummed frozen snapshot."""
 import csv
 from datetime import date, timedelta
 from decimal import Decimal
 import gzip
 import json
-import sqlite3
+import argparse
+from pathlib import Path
+from scrapper.research.input_reader import observation
 from .storage import ROOT, OUT, dump, sha
 from .identity import IdentityResolver
 
@@ -44,37 +46,31 @@ def requests(company):
         result.append(row)
     return result
 
-def main():
+def main(argv=None):
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--frozen-db',type=Path)
+    parser.add_argument('--frozen-sha256')
+    parser.add_argument('--observed-at')
+    args=parser.parse_args(argv)
+    with observation(args.frozen_db, frozen_sha256=args.frozen_sha256,
+                     observed_at=args.observed_at) as (c, source):
+        def bounded(sql):
+            rows=c.execute(sql+' LIMIT 100001').fetchall()
+            if len(rows)>100000:
+                raise ValueError('Candle planning input exceeds 100000-row read bound')
+            return rows
+        company={r['company_id']:dict(r) for r in bounded('select * from companies')}
+        scopes=[dict(r) for r in bounded('select * from screener_collection_scope order by company_path')]
+        history=[dict(r) for r in bounded('select * from screener_scope_observations order by observation_id')]
+        versions=[dict(r) for r in bounded('''select r.company_id,s.exchange,s.segment,s.nse_symbol,s.bse_scrip_code,
+            s.current_status,s.verification_status,v.* from exchange_securities s
+            join exchange_security_versions v using(exchange_security_id)
+            join exchange_company_links l using(exchange_security_id)
+            join exchange_company_registry r using(registry_company_id)
+            where r.company_id is not null order by r.company_id,s.exchange,v.version_id''')]
+        identifiers=[dict(r) for r in bounded('select * from security_identifiers order by company_id,security_identifier_id')]
+        exchange_securities=[dict(r) for r in bounded('select * from exchange_securities order by exchange_security_id')]
     OUT.mkdir(parents=True,exist_ok=True)
-    latest=OUT/'latest-acquisition-tables.json'
-    if latest.exists():
-        # Ephemeral query projection of existing tables, never a replacement master.
-        tables=json.loads(latest.read_text())
-        c=sqlite3.connect(':memory:')
-        for name,rows in tables.items():
-            if not rows: continue
-            columns=list(rows[0])
-            schema=','.join('"'+k+'" '+('INTEGER' if any(isinstance(r[k],int) for r in rows) else 'TEXT') for k in columns)
-            c.execute(f'CREATE TABLE "{name}" ({schema})')
-            c.executemany(f'INSERT INTO "{name}" VALUES ({",".join("?" for _ in columns)})',
-                          [tuple(r[k] for k in columns) for r in rows])
-        c.commit()
-    else:
-        c=sqlite3.connect(f'file:{MASTER}?mode=ro',uri=True)
-    c.row_factory=sqlite3.Row
-    c.execute('PRAGMA query_only=ON');c.execute('BEGIN')
-    company={r['company_id']:dict(r) for r in c.execute('select * from companies')}
-    scopes=[dict(r) for r in c.execute('select * from screener_collection_scope order by company_path')]
-    history=[dict(r) for r in c.execute('select * from screener_scope_observations order by observation_id')]
-    versions=[dict(r) for r in c.execute('''select r.company_id,s.exchange,s.segment,s.nse_symbol,s.bse_scrip_code,
-        s.current_status,s.verification_status,v.* from exchange_securities s
-        join exchange_security_versions v using(exchange_security_id)
-        join exchange_company_links l using(exchange_security_id)
-        join exchange_company_registry r using(registry_company_id)
-        where r.company_id is not null order by r.company_id,s.exchange,v.version_id''')]
-    identifiers=[dict(r) for r in c.execute('select * from security_identifiers order by company_id,security_identifier_id')]
-    exchange_securities=[dict(r) for r in c.execute('select * from exchange_securities order by exchange_security_id')]
-    c.rollback();c.close()
     metadata=json.loads(gzip.decompress(METADATA.read_bytes()))
     bse_path=OUT/'public-bse-instruments.json.gz'
     bse_metadata=json.loads(gzip.decompress(bse_path.read_bytes())) if bse_path.exists() else []
@@ -103,7 +99,7 @@ def main():
                     market_cap_observed_at=cap['observed_at_utc'],eligibility_source=cap['company_path'],
                     eligibility_evidence=cap['evidence_json'],cutoff_crore='580',
                     historical_membership='ONLY_DATED_RETAINED_SCOPE_OBSERVATIONS; never backdate current membership',
-                    snapshot_status='LATEST_ACQUISITION_VOLUME_READ_ONLY_2026-11-05' if latest.exists() else 'RETAINED_2026-10-08',
+                    snapshot_status=source['mode'],input_observed_at_utc=source['observed_at_utc'],
                     instrument_key=None,symbol=None,listing_date=None,
                     mapping_status='UNRESOLVED_OR_UNSUPPORTED',corporate_action_status='UNKNOWN')
         if len(candidates)==1:
@@ -141,7 +137,15 @@ def main():
     pilot=[]
     previous_pilot=OUT/'pilot-companies.json'
     if previous_pilot.exists():
-        pilot=json.loads(previous_pilot.read_text())
+        retained_pilot=json.loads(previous_pilot.read_text())
+        current_by_id={r['company_id']:r for r in universe}
+        for old in retained_pilot:
+            current=current_by_id.get(old['company_id'])
+            if (not current or not current['instrument_key'] or
+                    (current['instrument_key'],current['symbol']) !=
+                    (old.get('instrument_key'),old.get('symbol'))):
+                raise ValueError('Retained pilot identity is unavailable or changed; explicit cohort review required')
+            pilot.append(current)
     else:
         for symbol in PILOT:
             found=[r for r in universe if r['symbol']==symbol]
@@ -231,11 +235,9 @@ def main():
         historical_scope_observations=len(history),security_versions=len(versions),
         historical_failures_policy='Retain all canonical scope rows and security versions including delisted/suspended/absent; historical nonmembers are not deleted. Acquisition candidates outside retained eligible set need dated eligibility review.',
         full_native_requests=len(full),pilot_requests=len(pilot_requests),
-        source_master='trading-ai_scraper-data:/data/scraper.db read-only transaction' if latest.exists() else str(MASTER.relative_to(ROOT)),
-        source_projection_sha256=sha(latest.read_bytes()) if latest.exists() else None,
-        master_size=MASTER.stat().st_size,
+        database_source=source,
         source_metadata=str(METADATA.relative_to(ROOT)),metadata_sha256=sha(METADATA.read_bytes()),
-        current_live_source='Read-only latest acquisition-volume extraction; existing workers not started' if latest.exists() else 'Retained October snapshot',
+        current_live_source=source['mode'],
         limitations=['Not all currently eligible companies are proven historically eligible since January 2022',
                     'Historical delisted universe and old capitalization series are incomplete',
                     'Unresolved/BSE-only mappings remain in manifest; no guessed Upstox key']))
