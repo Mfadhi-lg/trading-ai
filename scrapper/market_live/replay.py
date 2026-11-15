@@ -46,12 +46,15 @@ def calendar(day):
                        evidence_ref='SYNTHETIC_OFFLINE_SESSION')])
 
 
-def run(output):
+def run(output, *, config=None):
     output=Path(output)
-    if output.exists() and any(output.iterdir()):
+    allowed = {'.live-target.json'} if config else set()
+    if output.exists() and any(p.name not in allowed for p in output.iterdir()):
         raise ValueError('replay requires a new empty output directory')
-    store=LiveStore(output,calendar)
+    store=LiveStore(output,calendar,config=config)
     try:
+        if store.db.execute('SELECT count(*) FROM frames').fetchone()[0] or store.db.execute('SELECT count(*) FROM observations').fetchone()[0]:
+            raise ValueError('replay requires an empty evidence target')
         for index in range(375):
             start=OPEN+timedelta(minutes=index)
             provider=start+timedelta(minutes=1,seconds=1)

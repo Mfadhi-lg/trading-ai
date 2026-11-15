@@ -28,27 +28,48 @@ def _number(value, integral=False):
 
 
 class LiveStore:
-    def __init__(self, root, calendar):
+    def __init__(self, root, calendar, *, config=None, lane="stream"):
         self.root = Path(root)
-        self.root.mkdir(parents=True,exist_ok=True)
+        self.read_only = lane == "reader"
+        if not self.read_only:
+            self.root.mkdir(parents=True,exist_ok=True)
         self.calendar = calendar
-        if not (self.root/'chart.html').exists():
-            shutil.copyfile(Path(__file__).with_name('chart.html'),self.root/'chart.html')
-        self.db = sqlite3.connect(self.root/'live.sqlite3')
-        self.db.execute('PRAGMA synchronous=FULL')
-        self.db.executescript('''CREATE TABLE IF NOT EXISTS frames(
-            id INTEGER PRIMARY KEY, provider_ms INTEGER, received_at TEXT, sha256 TEXT, raw_path TEXT);
-            CREATE TABLE IF NOT EXISTS observations(
-            frame_id INTEGER, instrument TEXT, start TEXT, provider_ms INTEGER,
-            received_at TEXT, completed INTEGER, payload TEXT,
-            PRIMARY KEY(frame_id,instrument,start));''')
-        self.db.execute('CREATE INDEX IF NOT EXISTS observation_lookup ON observations(instrument,start,provider_ms)')
-        self.db.commit()
+        self.db = None
+        self.writer_lock = None
+        try:
+            if lane not in ('stream','recovery','reader'):
+                raise ValueError('Unknown live writer lane')
+            if lane != 'reader':
+                self.writer_lock = (self.root/('.evidence-'+lane+'.lock')).open('a+b')
+                fcntl.flock(self.writer_lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
+            if not self.read_only and not (self.root/'chart.html').exists():
+                shutil.copyfile(Path(__file__).with_name('chart.html'),self.root/'chart.html')
+            from .repository import open_store
+            self.db = open_store(self.root, config, lane=lane)
+            if self.db is None:
+                self.db = sqlite3.connect(self.root/'live.sqlite3')
+                self.db.execute('PRAGMA synchronous=FULL')
+                self.db.executescript('''CREATE TABLE IF NOT EXISTS frames(
+                    id INTEGER PRIMARY KEY, provider_ms INTEGER, received_at TEXT, sha256 TEXT, raw_path TEXT);
+                    CREATE TABLE IF NOT EXISTS observations(
+                    frame_id INTEGER, instrument TEXT, start TEXT, provider_ms INTEGER,
+                    received_at TEXT, completed INTEGER, payload TEXT,
+                    PRIMARY KEY(frame_id,instrument,start));''')
+                self.db.execute('CREATE INDEX IF NOT EXISTS observation_lookup ON observations(instrument,start,provider_ms)')
+                self.db.commit()
+        except BaseException:
+            self.close()
+            raise
 
     def close(self):
-        self.db.close()
+        if self.db is not None:
+            self.db.close()
+        if self.writer_lock is not None:
+            self.writer_lock.close()
 
     def ingest(self, raw, received_at, allowed, *, _rest_frame=None):
+        if self.read_only:
+            raise PermissionError('Read-only live evidence session')
         frame = decode(raw) if _rest_frame is None else _rest_frame
         received = aware(received_at)
         provider = datetime.fromtimestamp(frame['currentTs']/1000,timezone.utc)
@@ -194,6 +215,8 @@ class LiveStore:
         return {timeframe:calculate(values) for timeframe,values in bars.items()}
 
     def publish(self, keys, day, now):
+        if self.read_only:
+            raise PermissionError("Read-only live evidence session")
         instruments=[]
         for key in sorted(keys):
             chart=self.chart(key,day,now)

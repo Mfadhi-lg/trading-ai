@@ -60,6 +60,9 @@
         {"path": "scrapper/db/postgresql_migration.py","line": 40},
         {"path": "scrapper/db/postgresql_setup.py","line": 12},
         {"path": "scrapper/db/postgresql_transfer.py","line": 188},
+        {"path": "scrapper/market_live/repository.py","line": 8},
+        {"path": "scrapper/market_live/transfer.py","line": 90},
+        {"path": "scrapper/market_live/transfer.py","line": 140},
         {"path": "scrapper/research/postgresql_benchmark.py","line": 19}
       ]
     },
@@ -480,6 +483,7 @@
         {"path": "scrapper/market_live/recovery.py","line": 10},
         {"path": "scrapper/market_live/recovery.py","line": 77},
         {"path": "scrapper/market_live/service.py","line": 15},
+        {"path": "scrapper/market_live/transfer.py","line": 12},
         {"path": "scrapper/market_refresh/derived.py","line": 8},
         {"path": "scrapper/market_refresh/explorer.py","line": 9},
         {"path": "scrapper/market_refresh/quota.py","line": 8},
@@ -1786,7 +1790,8 @@
         {"path": "experiments/historical_candle_archive_v1/rollout.py","line": 13},
         {"path": "experiments/historical_candle_archive_v1/storage.py","line": 15},
         {"path": "experiments/technical_fix_v2/verify.py","line": 2},
-        {"path": "ops/host/historical_candle_lifecycle.py","line": 12}
+        {"path": "ops/host/historical_candle_lifecycle.py","line": 12},
+        {"path": "scrapper/market_live/repository.py","line": 10}
       ]
     },
     {
@@ -1817,7 +1822,8 @@
         {"line": 211,"symbol": "transfer","kind": "dynamic query","sha256": "c9b3664c521b5b0bb7a9e19a2c0b7287c93cd2b37b5640a3f7d2e9fa32cbc4ed","scope_sha256": "7b66eb5cc6570fd329533c6faacbf3d5115298818a7ddba54d5df287e7f90f2d","branch_hints": []}
       ],
       "caller_references": [
-        {"path": "scrapper/db/candle_inventory.py","line": 17}
+        {"path": "scrapper/db/candle_inventory.py","line": 17},
+        {"path": "scrapper/market_live/repository.py","line": 10}
       ],
       "classification": "transfer/admin",
       "store": "Separate historical candle inventory SQLite snapshot and explicitly selected PostgreSQL target",
@@ -2565,6 +2571,12 @@
         {"path": "scrapper/db/postgresql_setup.py","line": 12},
         {"path": "scrapper/db/postgresql_transfer.py","line": 188},
         {"path": "scrapper/documents/discovery/promotion.py","line": 4},
+        {"path": "scrapper/market_live/repository.py","line": 8},
+        {"path": "scrapper/market_live/repository.py","line": 9},
+        {"path": "scrapper/market_live/transfer.py","line": 10},
+        {"path": "scrapper/market_live/transfer.py","line": 11},
+        {"path": "scrapper/market_live/transfer.py","line": 90},
+        {"path": "scrapper/market_live/transfer.py","line": 140},
         {"path": "scrapper/research/postgresql_benchmark.py","line": 19},
         {"path": "scrapper/research/postgresql_benchmark.py","line": 20}
       ]
@@ -2656,6 +2668,8 @@
         {"path": "scrapper/db/postgresql_setup.py","line": 15},
         {"path": "scrapper/db/postgresql_transfer.py","line": 18},
         {"path": "scrapper/db/queue_identity_recovery.py","line": 15},
+        {"path": "scrapper/market_live/repository.py","line": 9},
+        {"path": "scrapper/market_live/transfer.py","line": 11},
         {"path": "scrapper/research/postgresql_benchmark.py","line": 20}
       ]
     },
@@ -2703,7 +2717,8 @@
         {"path": "scrapper/db/candle_inventory_transfer.py","line": 16},
         {"path": "scrapper/db/postgresql_migration.py","line": 37},
         {"path": "scrapper/db/postgresql_migration.py","line": 48},
-        {"path": "scrapper/db/queue_identity_recovery.py","line": 16}
+        {"path": "scrapper/db/queue_identity_recovery.py","line": 16},
+        {"path": "scrapper/market_live/transfer.py","line": 10}
       ]
     },
     {
@@ -3466,25 +3481,26 @@
         {"path": "experiments/technical_integration_v2/verify.py","line": 9},
         {"path": "scrapper/indices/official.py","line": 185},
         {"path": "scrapper/indices/production.py","line": 14},
+        {"path": "scrapper/market_live/repository.py","line": 10},
         {"path": "scrapper/research/general_ai_experiment/final_report.py","line": 219},
         {"path": "scrapper/research/general_ai_experiment/runner.py","line": 276}
       ]
     },
     {
       "path": "scrapper/market_live/engine.py",
-      "source_sha256": "595692b29958bfe7faa6e83d4aba140cac2177c62cf5468b15c34427ecac6cd0",
+      "source_sha256": "bd3c8efa71405ba8a1d5a577d078cf7f2a8f8d6c14a6993087071ed7f4ae522f",
       "owner": "Maintainers of scrapper/market_live",
       "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/107",
-      "reviewed_source_sha256": "595692b29958bfe7faa6e83d4aba140cac2177c62cf5468b15c34427ecac6cd0",
+      "reviewed_source_sha256": "bd3c8efa71405ba8a1d5a577d078cf7f2a8f8d6c14a6993087071ed7f4ae522f",
       "classification": "secondary operational store",
       "store": "independent live.sqlite3 minute/feed store",
       "intent": "Static SQL/query candidates: CREATE, INSERT, PRAGMA, SELECT; dynamic queries require caller review.",
-      "backend_guard": "Deliberately SQLite secondary-store contract, independent of TRADING_AI_DB_BACKEND; no application backend guard expected.",
-      "disposition": "Keep secondary-store semantics and existing callers. A port requires separate subsystem selection; do not treat as application migration defect.",
+      "backend_guard": "LiveStore selects explicit checked native configuration or SQLite compatibility; native marker refuses fallback. Writer lanes are fenced; readers cannot write.",
+      "disposition": "Native live evidence implementation prepared in #103; no production selection, activation or transfer performed.",
       "sites": [
-        {"line": 37,"symbol": "LiveStore.__init__","kind": "direct connection","sha256": "907e1b0597daee030d9cda3729eb2163ddadbbcfcb618f1c20f30ebe9bd18c7a","scope_sha256": "db27452b82073b4514980bb1f556b9c67db2c498d697e28841d06b210b20257d","branch_hints": []},
-        {"line": 38,"symbol": "LiveStore.__init__","kind": "SQLite SQL","sha256": "6ff26153557e88d2e5617682f2c35a98e1fb9b20fffe386069f83ea85aa46a7e","scope_sha256": "db27452b82073b4514980bb1f556b9c67db2c498d697e28841d06b210b20257d","branch_hints": []},
-        {"line": 125,"symbol": "LiveStore.minutes","kind": "dynamic query","sha256": "3fc1b0ced3679326a2333a1594e1c9eea724429e6c773dff9b88885b1f15f1b3","scope_sha256": "e663c002cdf1ff09e9e267b61a5d4eb7dd6e6000073f42a4e78904f20b1c9f09","branch_hints": []}
+        {"line": 50,"symbol": "LiveStore.__init__","kind": "direct connection","sha256": "907e1b0597daee030d9cda3729eb2163ddadbbcfcb618f1c20f30ebe9bd18c7a","scope_sha256": "d928ee70991fa5f784331e6c4fd0e4aad5a67a73e2f46cd974e5c5575a6b4fe4","branch_hints": []},
+        {"line": 51,"symbol": "LiveStore.__init__","kind": "SQLite SQL","sha256": "6ff26153557e88d2e5617682f2c35a98e1fb9b20fffe386069f83ea85aa46a7e","scope_sha256": "d928ee70991fa5f784331e6c4fd0e4aad5a67a73e2f46cd974e5c5575a6b4fe4","branch_hints": []},
+        {"line": 146,"symbol": "LiveStore.minutes","kind": "dynamic query","sha256": "3fc1b0ced3679326a2333a1594e1c9eea724429e6c773dff9b88885b1f15f1b3","scope_sha256": "e663c002cdf1ff09e9e267b61a5d4eb7dd6e6000073f42a4e78904f20b1c9f09","branch_hints": []}
       ],
       "caller_references": [
         {"path": "experiments/finance_only_v1/SHA256SUMS","line": 4},
@@ -3495,6 +3511,81 @@
         {"path": "scrapper/market_live/replay.py","line": 7},
         {"path": "scrapper/market_live/service.py","line": 17}
       ]
+    },
+    {
+      "path": "scrapper/market_live/repository.py",
+      "source_sha256": "797ccce11eb15c52a700630ee75a5b074e13f84d1159a0559dfea62dc2313c19",
+      "sites": [
+        {"line": 33,"symbol": "contract","kind": "dynamic query","sha256": "9e8b9c0ca7155ab30e1b1fda929be3da0b1f3f8d076c83e0e41e620e79421ab1","scope_sha256": "5a6a2ebf845549c6a5f7af832945b5cce232f2f44bead72762743f7b1971fbb5","branch_hints": []},
+        {"line": 37,"symbol": "contract","kind": "dynamic query","sha256": "f035dc53e40300b271e21381942dd718a3a877d8564c0c859d1a2c241d78a96e","scope_sha256": "5a6a2ebf845549c6a5f7af832945b5cce232f2f44bead72762743f7b1971fbb5","branch_hints": []},
+        {"line": 58,"symbol": "provision","kind": "dynamic query","sha256": "6a42e2f21b6a8f5e831a07ffa17f8917b5fe670f31d19f0f2e9578504af2925d","scope_sha256": "b4142bed7e7ef89b114506ebebc27c703d694775737f4fd51567c6aa5bffcf90","branch_hints": []},
+        {"line": 59,"symbol": "provision","kind": "dynamic query","sha256": "61f3d4c45f365458e24a83ef15b3b1d19b49bc9798537c3d9ebd5c57b061221c","scope_sha256": "b4142bed7e7ef89b114506ebebc27c703d694775737f4fd51567c6aa5bffcf90","branch_hints": []},
+        {"line": 60,"symbol": "provision","kind": "dynamic query","sha256": "68d30717f4f4f910ce59787d0801bcaad13549e13fe6280aa457f6a6b14716c4","scope_sha256": "b4142bed7e7ef89b114506ebebc27c703d694775737f4fd51567c6aa5bffcf90","branch_hints": []},
+        {"line": 62,"symbol": "provision","kind": "dynamic query","sha256": "57ed4fd4fcce0e7b3ea7703ec3f86083f77591823f12a98c0bcc8b43d203ddb9","scope_sha256": "b4142bed7e7ef89b114506ebebc27c703d694775737f4fd51567c6aa5bffcf90","branch_hints": []},
+        {"line": 63,"symbol": "provision","kind": "dynamic query","sha256": "f618373379a375d8505017352a2e2ab92211c69e7a3ff7f810d526a8e3617818","scope_sha256": "b4142bed7e7ef89b114506ebebc27c703d694775737f4fd51567c6aa5bffcf90","branch_hints": []},
+        {"line": 65,"symbol": "provision","kind": "dynamic query","sha256": "b072a9ab619fe19f3f608177d0a94af034773a70983d81f20c7918f2344d58eb","scope_sha256": "b4142bed7e7ef89b114506ebebc27c703d694775737f4fd51567c6aa5bffcf90","branch_hints": []},
+        {"line": 66,"symbol": "provision","kind": "dynamic query","sha256": "0573cfe14647905f6011075a65a1d63b25440930db64f4193f62a74e2983f061","scope_sha256": "b4142bed7e7ef89b114506ebebc27c703d694775737f4fd51567c6aa5bffcf90","branch_hints": []},
+        {"line": 68,"symbol": "provision","kind": "dynamic query","sha256": "56121829a1a2a0ddd5d78fc5239e8984f8b1c9af9e740568ef71b319cd0505d1","scope_sha256": "b4142bed7e7ef89b114506ebebc27c703d694775737f4fd51567c6aa5bffcf90","branch_hints": []},
+        {"line": 100,"symbol": "NativeRepository.__init__","kind": "dynamic query","sha256": "181f93a3eea55ba4a0b311c4b857d1f0587215e4adf972e28fa0113cb4a4593e","scope_sha256": "8b0420a4c4cd3b073c4673964151bf112a743809074dffda95ab4c66240c0e9e","branch_hints": []},
+        {"line": 145,"symbol": "NativeRepository.execute","kind": "dynamic query","sha256": "2152216cc6c6d2a0ba4d4872e29feed48d67b5391216e67ffa13f89a73db177e","scope_sha256": "dc3bca676b3d90eedb964f1e7782b7d349d0782fccbed96759fe9309e5e1de4c","branch_hints": []},
+        {"line": 165,"symbol": "open_store","kind": "direct connection","sha256": "78ea391a6ef5ff875375ff57627dba1bb2f5b4274b59d2e53e19d62d63c03b6b","scope_sha256": "f3f9aff266f771be8d31e672fafa74b6399e636e03646e8f434a4fde62ff4c20","branch_hints": []},
+        {"line": 166,"symbol": "open_store","kind": "SQLite SQL","sha256": "a28b203f21249ab8312986428d3b09520123b2d7328839a8a7a3b5f61f02af8f","scope_sha256": "f3f9aff266f771be8d31e672fafa74b6399e636e03646e8f434a4fde62ff4c20","branch_hints": []}
+      ],
+      "caller_references": [
+        {"path": "experiments/earnings_reaction_v1/er03_chart_upgrade.py","line": 355},
+        {"path": "experiments/earnings_reaction_v1/market_context_report.py","line": 150},
+        {"path": "experiments/earnings_reaction_v1/market_context_report.py","line": 152},
+        {"path": "experiments/finance_only_v1/pilot.py","line": 3},
+        {"path": "experiments/subsector_index_v2/report.py","line": 23},
+        {"path": "experiments/technical_integration_v1/report.py","line": 110},
+        {"path": "experiments/technical_integration_v2/package.py","line": 54},
+        {"path": "experiments/unified_financial_pilot/provider.py","line": 64},
+        {"path": "ops/market_live/service.py","line": 74},
+        {"path": "scrapper/documents/recovery/browser_rating/bridge.py","line": 6},
+        {"path": "scrapper/documents/recovery/browser_rating/ledger.py","line": 9},
+        {"path": "scrapper/market_live/engine.py","line": 47},
+        {"path": "scrapper/market_live/transfer.py","line": 13}
+      ],
+      "classification": "secondary operational store",
+      "store": "Independent live evidence store; explicit SQLite compatibility or verified PostgreSQL target",
+      "intent": "Preserve frames, observations, raw file references and exact payload text independently of application/archive stores.",
+      "backend_guard": "Explicit live_store configuration and target marker; no native fallback. Transfer requires snapshot hash and isolated target pin.",
+      "owner": "Maintainers of scrapper/market_live",
+      "disposition": "Runtime never provisions or transfers. SQLite is offline/legacy compatibility; transfers are separately authorized admin operations.",
+      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/103",
+      "reviewed_source_sha256": "797ccce11eb15c52a700630ee75a5b074e13f84d1159a0559dfea62dc2313c19"
+    },
+    {
+      "path": "scrapper/market_live/transfer.py",
+      "source_sha256": "a615b68ec22edf8a8046aa2922d20a1f4fdc0124cb6170d67cc8eadda06a66b3",
+      "sites": [
+        {"line": 40,"symbol": "inspect","kind": "direct connection","sha256": "15de8f22bc76bef3142136f792454c6a5bf9098c84c4a620ff30c5391cb251dd","scope_sha256": "7a1aaaf2419bf1ed86590b6eb374998b0fb3fecf8edc43ad326bef48cdd9cbc9","branch_hints": []},
+        {"line": 41,"symbol": "inspect","kind": "dynamic query","sha256": "993fffa60c04ea991bf7a82fbe357a0d183214072059519849119cce7e4f5baa","scope_sha256": "7a1aaaf2419bf1ed86590b6eb374998b0fb3fecf8edc43ad326bef48cdd9cbc9","branch_hints": []},
+        {"line": 44,"symbol": "inspect","kind": "SQLite SQL","sha256": "327d734d78fcb10ee3ebb74486585efb705d6c50022db01116fc2d30c22eb8d8","scope_sha256": "7a1aaaf2419bf1ed86590b6eb374998b0fb3fecf8edc43ad326bef48cdd9cbc9","branch_hints": []},
+        {"line": 62,"symbol": "inspect","kind": "dynamic query","sha256": "d385830f4a69dfafe8eae18e9f36aa61b147bb98d9655906ec1adc7154a1b873","scope_sha256": "7a1aaaf2419bf1ed86590b6eb374998b0fb3fecf8edc43ad326bef48cdd9cbc9","branch_hints": []},
+        {"line": 70,"symbol": "export_snapshot","kind": "direct connection","sha256": "5bbf5b3abe5a33d21aa00cc6847b8a2501cd66b06165308bd03fcd6ba5d98e50","scope_sha256": "d564a3ad86f7a5099a110deea22a6d02dea582e30aa043a8879a88b02dde3a8c","branch_hints": []},
+        {"line": 72,"symbol": "export_snapshot","kind": "SQLite SQL","sha256": "919fcbb953f0ceb602e1ffe35fe82f3b925e994354fe6f97b388deaf00ba4587","scope_sha256": "d564a3ad86f7a5099a110deea22a6d02dea582e30aa043a8879a88b02dde3a8c","branch_hints": []},
+        {"line": 83,"symbol": "transfer","kind": "SQLite SQL","sha256": "da3d64b15a1c1ef3d28c45d6683dbaaada70480095e1d18e68f40b22fe2be514","scope_sha256": "d69c4deeb1a383288ae6750e359d453f17a1c8af8965cb4bddd11a8fa8618100","branch_hints": []},
+        {"line": 99,"symbol": "transfer","kind": "dynamic query","sha256": "05ef9476c1f4f385b9b1cc039a1db6ba3282b2531fd3fb14ee98e516d0c4b081","scope_sha256": "d69c4deeb1a383288ae6750e359d453f17a1c8af8965cb4bddd11a8fa8618100","branch_hints": []},
+        {"line": 102,"symbol": "transfer","kind": "dynamic query","sha256": "e302c04a6717e150cfede029e81600d402e0d4932103e3c112f7c39295867b42","scope_sha256": "d69c4deeb1a383288ae6750e359d453f17a1c8af8965cb4bddd11a8fa8618100","branch_hints": []},
+        {"line": 103,"symbol": "transfer","kind": "dynamic query","sha256": "37a024c4e687100f83a2b255939b95569dda5cb53f3b3152ff218050f7f7a6f0","scope_sha256": "d69c4deeb1a383288ae6750e359d453f17a1c8af8965cb4bddd11a8fa8618100","branch_hints": []},
+        {"line": 106,"symbol": "transfer","kind": "dynamic query","sha256": "d385830f4a69dfafe8eae18e9f36aa61b147bb98d9655906ec1adc7154a1b873","scope_sha256": "d69c4deeb1a383288ae6750e359d453f17a1c8af8965cb4bddd11a8fa8618100","branch_hints": []},
+        {"line": 109,"symbol": "transfer","kind": "dynamic query","sha256": "89f8bfb2bcb184e8c06f906f391ab13db3a548044d39392e1aa140be0b336bcf","scope_sha256": "d69c4deeb1a383288ae6750e359d453f17a1c8af8965cb4bddd11a8fa8618100","branch_hints": []},
+        {"line": 112,"symbol": "transfer","kind": "dynamic query","sha256": "b19e78a31d3793bd3f3df17914710fefd55ab0e85a460949165eeaab7e6c5ced","scope_sha256": "d69c4deeb1a383288ae6750e359d453f17a1c8af8965cb4bddd11a8fa8618100","branch_hints": []},
+        {"line": 117,"symbol": "transfer","kind": "dynamic query","sha256": "10805e58c92de647933a699bb44e4805d840b5cacf842fd2133ee7950d8110e3","scope_sha256": "d69c4deeb1a383288ae6750e359d453f17a1c8af8965cb4bddd11a8fa8618100","branch_hints": []}
+      ],
+      "caller_references": [
+        {"path": "scrapper/db/candle_inventory.py","line": 17},
+        {"path": "scrapper/db/postgresql_migration.py","line": 48}
+      ],
+      "classification": "transfer/admin",
+      "store": "Independent live evidence store; explicit SQLite compatibility or verified PostgreSQL target",
+      "intent": "Preserve frames, observations, raw file references and exact payload text independently of application/archive stores.",
+      "backend_guard": "Explicit live_store configuration and target marker; no native fallback. Transfer requires snapshot hash and isolated target pin.",
+      "owner": "Maintainers of scrapper/market_live",
+      "disposition": "Runtime never provisions or transfers. SQLite is offline/legacy compatibility; transfers are separately authorized admin operations.",
+      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/103",
+      "reviewed_source_sha256": "a615b68ec22edf8a8046aa2922d20a1f4fdc0124cb6170d67cc8eadda06a66b3"
     },
     {
       "path": "scrapper/operations/workers/automatic_documents.py",

@@ -25,7 +25,7 @@ def recover(config, keys, now, stop_event, *, supplier, fetch=get, clock=lambda:
     with (root/'.recovery.lock').open('a+b') as lock:
         try: fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
         except BlockingIOError: return dict(status='BLOCKED',reason='RECOVERY_BUSY')
-        store=LiveStore(root,calendar)
+        store=LiveStore(root,calendar,config=config,lane="recovery")
         attempted=0
         try:
             for key in sorted(keys):

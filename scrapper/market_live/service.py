@@ -42,7 +42,7 @@ def stream(config, stop_event, recovery_after=None, *, connector=None,
     with account_lock.open('a+b') as account, (root/'.stream.lock').open('a+b') as lock:
         fcntl.flock(account,fcntl.LOCK_EX|fcntl.LOCK_NB)
         fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
-        store=LiveStore(root,calendar)
+        store=LiveStore(root,calendar,config=config,lane="stream")
         failures=0; last_received=None; last_provider=None; prices={}; versions={}
         recovery_thread=None; recovery_last=None; published_at=None; chart=None
         def reconcile(keys, at):
