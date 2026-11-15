@@ -65,6 +65,10 @@ native connection API and isolated development service. SQLite remains the
 application runtime until repository parity, verified data transfer and operator
 acceptance pass; this transition does not activate a production backend.
 
+Release preparation pins experiment code together with its package dependencies;
+see [release code consistency](docs/operations/acquisition-release-code.md). Existing
+installed releases require a separately authorized replacement deployment.
+
 ## Repository and evidence
 
 | Location | Purpose |

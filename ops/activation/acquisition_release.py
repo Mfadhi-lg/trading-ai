@@ -1,7 +1,9 @@
 """Separate deployed acquisition code from the editable workspace.
 
 Only code/configuration is copied. Queues, receipts, credentials and locks stay
-at their existing locations. Deployment is performed under both existing locks.
+at their existing locations. Experiment modules and their scrapper dependencies
+are pinned together.
+Deployment is performed under both existing locks.
 """
 import json
 import os
@@ -34,14 +36,19 @@ def prepare_release(workspace, release, *, source=None):
     source_root=workspace if source is None else Path(source).resolve()
     if source_root==release or source_root.is_relative_to(release):
         raise ValueError('Release source cannot be inside its destination')
+    code_directories = ('scrapper', 'ops/activation', 'ops/host', 'experiments')
+    for directory in code_directories:
+        path = source_root / directory
+        if path.is_symlink() or not path.is_dir():
+            raise ValueError('Release code must be a complete source snapshot: ' + directory)
     release.mkdir(parents=True, exist_ok=False)
     ignore = shutil.ignore_patterns('__pycache__', '.venv', 'store', '*.pyc', '*.lock')
-    for directory in ('scrapper', 'ops/activation', 'ops/host'):
+    for directory in code_directories:
         shutil.copytree(source_root / directory, release / directory, ignore=ignore)
     marker={'workspace_root':str(workspace)}
     if source is not None:marker['source_root']=str(source_root)
     (release / '.acquisition-release.json').write_text(json.dumps(marker)+'\n')
-    for directory in ('artifacts', 'docs', 'ops/docker', '.git', 'experiments'):
+    for directory in ('artifacts', 'docs', 'ops/docker', '.git'):
         (release / directory).symlink_to(workspace / directory, target_is_directory=True)
     # Credentials remain live and private; they are never copied into releases.
     (release / '.screener_session').symlink_to(workspace / '.screener_session')
@@ -62,11 +69,15 @@ def activate_release(release):
     import os
     import plistlib
     import subprocess
-    import automatic_acquisition as scheduler
     release = Path(release).resolve()
     workspace = workspace_root(release)
     if release.parent != workspace/'artifacts/acquisition-releases' or release == workspace:
         raise ValueError('Expected a prepared acquisition release')
+    for directory in ('scrapper', 'ops/activation', 'ops/host', 'experiments'):
+        path = release / directory
+        if path.is_symlink() or not path.is_dir():
+            raise RuntimeError('Mixed-version release refused; prepare a fresh complete code snapshot: ' + directory)
+    import automatic_acquisition as scheduler
     manifest = json.loads((release/'ops/activation/automatic-acquisition-manifest.json').read_text())
     for name, digest in manifest['files'].items():
         if scheduler.runtime_dependency(name) and hashlib.sha256((release/name).read_bytes()).hexdigest() != digest:

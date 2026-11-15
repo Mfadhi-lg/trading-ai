@@ -31,7 +31,7 @@ def test_disabled_growth_never_scans_or_reads_ledger(tmp_path, monkeypatch):
 
 def make_release(tmp_path):
     workspace = tmp_path/'workspace'
-    for directory in ('scrapper', 'ops/activation', 'ops/host', 'docs', 'ops/docker', '.git'):
+    for directory in ('scrapper', 'ops/activation', 'ops/host', 'docs', 'ops/docker', '.git', 'experiments'):
         (workspace/directory).mkdir(parents=True, exist_ok=True)
     for name in ('.scheduler-admission.lock', '.nse-owner.lock', '.monitor-readers.lock'):
         (workspace/'ops/activation'/name).touch()

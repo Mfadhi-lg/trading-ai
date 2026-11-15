@@ -71,6 +71,8 @@ def authorized_config(path, digest, now):
         if (not config.get('provider_quota_path') or not child.get('provider_quota_path')
                 or Path(config['provider_quota_path']).resolve() != Path(child['provider_quota_path']).resolve()):
             raise ValueError('Live and incremental workers must share the provider quota ledger')
+    from scrapper.market_live.repository import selection
+    selection(config)
     return config
 
 
@@ -284,6 +286,8 @@ def status(config_path, now=None):
                 worker_running=running, supervisor=supervisor,
                 supervisor_age_seconds=age, stream=stream, last_message_age_seconds=message_age,
                 chart_coverage=chart_coverage,
+                live_store_backend=config.get("live_store",{}).get("backend","sqlite"),
+                live_store_target_verified=False,
                 refresh=read(root/'refresh_status.json'),
                 always_on_host_required=True,
                 caveat='launchd cannot collect while the Mac sleeps; reconciliation is required on recovery')
@@ -315,7 +319,15 @@ def main(argv=None):
         if not args.output:
             parser.error('--output is required for the isolated replay')
         from scrapper.market_live.replay import run
-        result = run(args.output)
+        replay_config = None
+        if args.config:
+            raw = args.config.read_bytes()
+            replay_config = json.loads(raw)
+            if (not args.authorize or hashlib.sha256(raw).hexdigest() != args.authorize
+                    or replay_config.get('synthetic_replay') is not True
+                    or Path(replay_config['state_dir']).resolve() != args.output.resolve()):
+                raise ValueError('Native replay requires exact synthetic configuration authorization and output root')
+        result = run(args.output, config=replay_config)
     elif args.action in ('status', 'health'):
         result = status(args.config, now)
     elif args.action in ('start', 'supervise'):

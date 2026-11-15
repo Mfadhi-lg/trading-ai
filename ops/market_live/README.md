@@ -103,3 +103,8 @@ found no running retired Compose roles and no unclassified trading-ai roles in
 the selected Docker context. These probes do not certify scheduler completion,
 host backfill state, throughput, deployed revision, database health, or other
 Docker contexts. No production database or document store was opened.
+
+Native live-store selection and offline transfer/rollback APIs are documented in
+[Focus streaming](../../scrapper/market_live/README.md#opt-in-postgresql-live-evidence-103).
+The approved configuration pins the target; status/health remain receipt-only.
+Changing the store does not authorize activation or provider subscriptions.
