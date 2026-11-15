@@ -35,7 +35,7 @@ Offline regressions:
 
 ```sh
 python3 -B -m unittest scrapper.tests.test_acquisition_release_dependencies scrapper.tests.test_postgresql_operations.NativeReleaseWiringTests -v
-PYTHONPATH=ops/activation:ops/host python -B -m pytest -q -p no:cacheprovider ops/activation/test_protocol_simplification.py ops/host/test_acquisition_lifecycle.py ops/activation/test_automatic_acquisition.py
+PYTHONPATH=ops/activation:ops/host python -B -m pytest -q -p no:cacheprovider ops/activation/test_protocol_simplification.py ops/host/test_acquisition_lifecycle.py
 ```
 
 The isolated subprocess regression reproduces the exact missing
@@ -43,3 +43,8 @@ The isolated subprocess regression reproduces the exact missing
 experiment update cannot break an older copied package. A second regression
 verifies that both sides come from `--source`, not one side from the workspace.
 These tests do not open production storage or activate a release.
+
+The older `test_automatic_acquisition.py` schedule test also reads retained
+operator canary evidence that is not in a source-only checkout. It is outside
+these synthetic release regressions; absence of those files does not authorize
+access to production evidence.
