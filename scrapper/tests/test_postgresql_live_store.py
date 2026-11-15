@@ -72,12 +72,12 @@ class NativeLiveTests(unittest.TestCase):
         self.temp=tempfile.TemporaryDirectory();self.addCleanup(self.temp.cleanup)
         self.root=Path(self.temp.name)
         with psycopg.connect(self.settings.dsn,autocommit=True) as admin:
-            admin.execute(sql.SQL('CREATE ROLE {} LOGIN').format(sql.Identifier(self.role)))
+            admin.execute(sql.SQL('CREATE ROLE {} LOGIN PASSWORD {}').format(sql.Identifier(self.role),sql.Literal('synthetic-test-only')))
         self.addCleanup(self.drop)
         self.target=repo.provision(self.settings,self.schema,self.root,self.role)
         url=urlsplit(self.settings.dsn)
         host=url.hostname or '127.0.0.1'
-        native=urlunsplit(url._replace(netloc=self.role+'@'+host+(':'+str(url.port) if url.port else '')))
+        native=urlunsplit(url._replace(netloc=self.role+':synthetic-test-only@'+host+(':'+str(url.port) if url.port else '')))
         self.env=patch.dict(os.environ,{'LIVE_TEST_DATABASE_URL':native});self.env.start();self.addCleanup(self.env.stop)
         self.config={'live_store':dict(backend='postgresql',schema=self.schema,database_url_env='LIVE_TEST_DATABASE_URL',target=self.target)}
         self.old=LiveStore(self.root,calendar)
