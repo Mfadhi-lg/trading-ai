@@ -62,7 +62,7 @@ def main():
     profile=dict(archive=str(a.root),volume_uuid=a.info['VolumeUUID'],
         physical_bytes=physical_bytes,raw_gzip_bytes=raw_bytes,files=len(files),indexed_parquet_files=len(datasets),
         active_native_parquet_bytes=total_native,active_native_rows=sum(r['row_count'] for r in native.values()),
-        index_bytes=(a.root/'inventory.sqlite3').stat().st_size,
+        index_bytes=(a.root/'inventory.sqlite3').stat().st_size if not hasattr(a.db,'raw') else None,
         checksum_verified_files=verified,checksum_seconds=checksum_seconds,
         active_native_schema_variants=len(schemas),exact_price_type='decimal128(38,18)',
         measured_reads=dict(files=len(timings),rows=read_rows,seconds=sum(timings),

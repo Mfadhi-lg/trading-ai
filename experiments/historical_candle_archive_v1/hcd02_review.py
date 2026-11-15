@@ -1,4 +1,5 @@
 """Measured HCD-02 defect and operational review; original evidence stays intact."""
+from scrapper.db.candle_inventory import integrity_check, integrity_scope
 from collections import Counter, defaultdict
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
@@ -6,7 +7,6 @@ import csv
 import gzip
 import json
 import shutil
-import sqlite3
 import statistics
 import subprocess
 import time
@@ -134,7 +134,7 @@ def defect_review(store):
 def review():
     store=HistoricalStore();start=time.monotonic()
     try:
-        integrity=store.db.execute('PRAGMA integrity_check').fetchall()
+        integrity=[(integrity_check(store.db),)]
         if [r[0] for r in integrity]!=['ok']:
             raise RuntimeError('STOP_INDEX_INTEGRITY')
         defect=defect_review(store);adjustment=adjustment_review(store)
@@ -226,7 +226,8 @@ def review():
                             successful_requests_per_second=new/seconds if seconds else None,
                             active_run_requests_per_second=new/active_seconds if active_seconds else None),
             acquisition_stop_history=execution.get('stop_history',[]),
-            integrity=dict(sqlite='ok',checksums_checked=checked,checksum_errors=digest_errors),
+            integrity=dict(sqlite='NOT_APPLICABLE' if hasattr(store.db,'raw') else 'ok',
+                           scope=integrity_scope(store.db),checksums_checked=checked,checksum_errors=digest_errors),
             full_manifest_authorized=False,full_manifest_sha256=sha((OUT/'full-universe-manifest.json').read_bytes()),
             review_elapsed_seconds=time.monotonic()-start,
             remaining_uncertainties=['BSE session calendar and historical identity continuity',
@@ -517,7 +518,7 @@ def write_report():
             'Retrospective mode is explicitly revision-selected completed history. Receipt timestamps are never backdated. '
             'Strict delivery mode requires actual receipt before the decision. Retrospective minute prefixes are not historical live snapshots.','',
             '## Validation and activation','',
-            f"SQLite integrity: {result['integrity']['sqlite']}; checksum validations: {result['integrity']['checksums_checked']:,}; "
+            f"Inventory check: {result['integrity'].get('scope', result['integrity']['sqlite'])}; checksum validations: {result['integrity']['checksums_checked']:,}; "
             f"checksum errors: {len(result['integrity']['checksum_errors'])}. Operational checks passed: {result['operational_checks_passed']}. "
             f"Source reconciliations: {result['source_reconciliation']}; preserved HCD-01 minute sample: 135 matches.",'',
             f"Existing indicator engines pass {result['indicator_compatibility']['compatible_clean_windows']} clean representative windows. "

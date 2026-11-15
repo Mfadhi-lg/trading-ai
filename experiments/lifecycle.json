@@ -91,6 +91,10 @@
   ],
   "operational_imports": [
     {
+      "consumer": "scrapper/db/candle_inventory.py",
+      "module": "experiments.historical_candle_archive_v1.storage"
+    },
+    {
       "consumer": "scrapper/research/features/technical.py",
       "module": "experiments.earnings_reaction_v1.indicators"
     },

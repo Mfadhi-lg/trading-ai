@@ -10,6 +10,7 @@ import gzip
 import json
 import shutil
 import sqlite3
+from scrapper.db.candle_inventory import completed_requests_sql, InventoryError
 import time
 
 from . import acquire
@@ -218,7 +219,7 @@ def execute(kind='defect', batch_size=200, authorize=None, interrupt_after_raw_s
         # Most rows are complete. The status index is not covering and would
         # cause one random table-page read per result on the external drive.
         completed = ({row[0] for row in a.db.execute(
-            "SELECT request_id FROM requests NOT INDEXED WHERE status='SUCCESS'")}
+            completed_requests_sql(a.db))}
             if fast_resume else set())
         for position, q in enumerate(manifest['requests']):
             checkpoint()
@@ -251,7 +252,7 @@ def execute(kind='defect', batch_size=200, authorize=None, interrupt_after_raw_s
             started = time.monotonic()
             state['stage'] = 'ACQUIRING'
             a.db.execute('''INSERT INTO requests(request_id,company_id,instrument_key,unit,interval,from_date,to_date,status,attempts)
-                VALUES(?,?,?,?,?,?,?,'IN_FLIGHT',1) ON CONFLICT(request_id) DO UPDATE SET status='IN_FLIGHT',attempts=attempts+1''',
+                VALUES(?,?,?,?,?,?,?,'IN_FLIGHT',1) ON CONFLICT(request_id) DO UPDATE SET status='IN_FLIGHT',attempts=requests.attempts+1''',
                 (q['request_id'],q['company_id'],q['instrument_key'],q['unit'],q['interval'],q['from_date'],q['to_date']))
             a.db.commit()
             # Curl plus alternate TLS can issue at most six attempts per fetch.
@@ -341,6 +342,7 @@ def execute(kind='defect', batch_size=200, authorize=None, interrupt_after_raw_s
         # Keep durable RAW_SAVED evidence recoverable, but do not describe a
         # stopped provider call as still in flight.
         try:
+            a.db.rollback()
             a.guard()
             if 'q' in locals():
                 a.db.execute("UPDATE requests SET status='STOPPED',error_kind=? WHERE request_id=? AND status='IN_FLIGHT'",
@@ -363,6 +365,11 @@ def execute(kind='defect', batch_size=200, authorize=None, interrupt_after_raw_s
                 acquisition_inventory(a.db,manifest,EVIDENCE/f'{kind}-inventory.json')
                 from .repair_queue import refresh
                 refresh(a,manifest,kind)
+        except InventoryError:
+            # Preserve the original stop/uncertainty and saved filesystem receipts
+            # if the target is unavailable during best-effort reporting.
+            if state['status'] not in ('STOPPED', 'PAUSED'):
+                raise
         finally:
             a.db.close()
             a.writer_lock.close()

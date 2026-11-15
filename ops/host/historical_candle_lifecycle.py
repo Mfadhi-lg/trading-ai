@@ -9,6 +9,7 @@ import sqlite3
 import subprocess
 import time
 
+from scrapper.db.candle_inventory import backend, open_inventory, integrity_check, integrity_scope, writer_busy
 from experiments.historical_candle_archive_v1 import control
 from experiments.historical_candle_archive_v1.storage import ROOT,OUT,discover,verify,dump,sha
 
@@ -94,12 +95,18 @@ def status():
 def pause(wait=660):
     if not (STATE/'owner-authorization.json').exists():return dict(status='NOT_CONFIGURED')
     if not control.PAUSE.exists():dump(control.PAUSE,dict(reason='SCRAPER_SHUTDOWN',owner_authorization_preserved=True))
+    native_root = None
+    if backend() == 'postgresql':
+        mount,_=discover();verify(mount,mount.stat().st_dev)
+        native_root=mount/'passport/trading-ai/market-data/historical-candle-archive-v1'
     deadline=time.monotonic()+wait
     while True:
         unowned=legacy()
         if unowned:raise RuntimeError('Unmanaged historical candle process requires reviewed handoff; shutdown is not safe')
         running=any(registered(role) or busy(STATE/f'.{role}-owner.lock') for role in ROLES)
         locked=busy(STATE/'.full-campaign.lock')
+        if native_root is not None:
+            locked = locked or writer_busy(native_root)
         if not running and not locked:break
         if time.monotonic()>=deadline:raise RuntimeError('Historical candle workers have not drained; keep Passport connected')
         time.sleep(.2)
@@ -156,6 +163,8 @@ def handoff_legacy(wait=660):
     Ordinary shutdown never signals a writer. This migration is needed only for
     the campaign launched before cooperative request-boundary controls existed.
     """
+    if backend() == 'postgresql':
+        return pause(wait=wait)  # Native drain refuses unmanaged owners; never opens legacy SQLite.
     dump(control.PAUSE,dict(reason='INSTALL_LIFECYCLE_HANDOFF',authorization_preserved=True))
     old=legacy();deadline=time.monotonic()+wait
     for item in sorted(old,key=lambda r:r['role']=='acquisition'):
@@ -205,18 +214,18 @@ def handoff_legacy(wait=660):
 def install_handoff():
     mount,_=discover();verify(mount,mount.stat().st_dev)
     database=mount/'passport/trading-ai/market-data/historical-candle-archive-v1/inventory.sqlite3'
-    db=sqlite3.connect(f'file:{database}?mode=ro',uri=True,timeout=30)
+    db=open_inventory(database.parent)
     previous={r[0]:tuple(r[1:]) for r in db.execute("SELECT request_id,raw_sha256,received_at,attempts,row_count FROM requests WHERE status='SUCCESS'").fetchall()};db.close()
     drained=handoff_legacy()
-    db=sqlite3.connect(f'file:{database}?mode=ro',uri=True,timeout=30)
+    db=open_inventory(database.parent)
     current={r[0]:tuple(r[1:]) for r in db.execute("SELECT request_id,raw_sha256,received_at,attempts,row_count FROM requests WHERE status='SUCCESS'").fetchall()}
-    integrity=db.execute('PRAGMA quick_check').fetchone()[0]
+    integrity=integrity_check(db, quick=True)
     pending=db.execute("SELECT COUNT(*) FROM requests WHERE status IN ('IN_FLIGHT','RAW_SAVED')").fetchone()[0];db.close()
     if integrity!='ok' or pending or any(current.get(k)!=v for k,v in previous.items()):
         raise RuntimeError('Candle lifecycle handoff verification failed; left paused')
     resumed=wake() if not control.SHARED_PAUSE.exists() else dict(status='PAUSED_BY_SHARED_LIFECYCLE')
     result=dict(status='PASS',previous_successful_requests_preserved=len(previous),successful_requests_after_drain=len(current),
-        sqlite_integrity=integrity,in_flight_after_drain=pending,drained=drained,resumed=resumed)
+        sqlite_integrity=integrity if backend()=='sqlite' else 'NOT_APPLICABLE', inventory_check_scope=integrity_scope(db),in_flight_after_drain=pending,drained=drained,resumed=resumed)
     dump(STATE/'lifecycle-installation-verification.json',result)
     return result
 
@@ -225,7 +234,7 @@ def verify_pause_resume():
     mount,_=discover();verify(mount,mount.stat().st_dev)
     root=mount/'passport/trading-ai/market-data/historical-candle-archive-v1'
     def snapshot():
-        db=sqlite3.connect(f'file:{root}/inventory.sqlite3?mode=ro',uri=True,timeout=30)
+        db=open_inventory(root)
         try:
             rows={r[0]:tuple(r[1:]) for r in db.execute("SELECT request_id,raw_sha256,received_at,attempts,row_count FROM requests WHERE status='SUCCESS'").fetchall()}
             pending=db.execute("SELECT COUNT(*) FROM requests WHERE status IN ('IN_FLIGHT','RAW_SAVED')").fetchone()[0]
