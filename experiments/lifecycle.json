@@ -211,6 +211,10 @@
       "module": "experiments.historical_candle_archive_v1.storage"
     },
     {
+      "consumer": "scrapper/market_live/transfer.py",
+      "module": "experiments.historical_candle_archive_v1.storage"
+    },
+    {
       "consumer": "scrapper/market_live/watchlist.py",
       "module": "experiments.historical_candle_archive_v1.identity"
     },

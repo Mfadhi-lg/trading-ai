@@ -2,7 +2,9 @@
 
 The existing Aqua LaunchAgent runs a separate code/configuration copy selected
 by `artifacts/acquisition-releases/active.json`. Editing the workspace does not
-change the running release. Queue/database volumes, document storage, receipts,
+change the running release. `scrapper`, `ops/activation`, `ops/host` and
+`experiments` are copied from the same reviewed source snapshot. Queue/database
+volumes, document storage, receipts,
 credentials and ownership locks retain their existing locations.
 
 With `concurrent_processing_enabled`, each download batch starts one supervised
@@ -50,7 +52,12 @@ Activation requires an idle scheduler and owner lock, updates the existing
 LaunchAgent, and restores its previous definition and release pointer if loading
 fails. It does not start legacy workers, replay consumed slots, or change queue
 and source budgets. It requires access to `~/Library/LaunchAgents` and launchctl.
-To roll back, activate a retained release with the same command.
+To roll back, activate a retained **complete** release with the same command.
+Legacy releases with workspace-linked experiment code are refused: prepare a new
+complete snapshot from the reviewed compatible source instead. Quiesce candle
+and recovery workers as well as the scheduler before an authorized code switch.
+See [release code consistency](../../docs/operations/acquisition-release-code.md).
+This source fix does not rewrite or activate an existing installed release.
 
 Release ownership lock files are hard links to the existing files: symlinks to
 host paths are inaccessible inside the Docker `/activation` mount. Release code

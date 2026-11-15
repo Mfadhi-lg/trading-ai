@@ -211,13 +211,15 @@ class NativeReleaseWiringTests(unittest.TestCase):
         from acquisition_release import prepare_release,workspace_root
         workspace=(self.root/'workspace').resolve();source=(self.root/'reviewed').resolve()
         for root in (workspace,source):
-            for directory in ('scrapper','ops/activation','ops/host'):(root/directory).mkdir(parents=True)
+            for directory in ('scrapper','ops/activation','ops/host','experiments'):(root/directory).mkdir(parents=True)
         for directory in ('artifacts','docs','ops/docker','.git','experiments'):(workspace/directory).mkdir(parents=True,exist_ok=True)
         (workspace/'.screener_session').write_text('fixture')
         for name in ('.scheduler-admission.lock','.nse-owner.lock','.monitor-readers.lock'):
             (workspace/'ops/activation'/name).touch()
         (workspace/'scrapper/code.py').write_text('editable workspace bytes')
         (source/'scrapper/code.py').write_text('reviewed source bytes')
+        (source/'experiments/code.py').write_text('reviewed experiment bytes')
+        (workspace/'experiments/code.py').write_text('editable experiment bytes')
         release=workspace/'artifacts/acquisition-releases/native'
         prepare_release(workspace,release,source=source)
         self.assertEqual((release/'scrapper/code.py').read_text(),'reviewed source bytes')
@@ -226,7 +228,10 @@ class NativeReleaseWiringTests(unittest.TestCase):
         self.assertEqual((release/'ops/activation/.nse-owner.lock').stat().st_ino,
                          (workspace/'ops/activation/.nse-owner.lock').stat().st_ino)
         self.assertTrue((release/'.screener_session').is_symlink())
-        self.assertEqual((release/'experiments').resolve(),workspace/'experiments')
+        self.assertFalse((release/'experiments').is_symlink())
+        self.assertEqual((release/'experiments/code.py').read_text(),'reviewed experiment bytes')
+        (workspace/'experiments/code.py').write_text('later incompatible edit')
+        self.assertEqual((release/'experiments/code.py').read_text(),'reviewed experiment bytes')
         old_style=workspace/'artifacts/acquisition-releases/default'
         prepare_release(workspace,old_style)
         self.assertEqual((old_style/'scrapper/code.py').read_text(),'editable workspace bytes')
