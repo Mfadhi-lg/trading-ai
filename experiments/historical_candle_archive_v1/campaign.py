@@ -1,4 +1,5 @@
 """One owner-authorized finite backfill, not a recurring update schedule."""
+from scrapper.db.candle_inventory import integrity_check, integrity_scope
 from collections import Counter,defaultdict
 import fcntl
 import gzip
@@ -62,7 +63,7 @@ def finalize(state):
         manifest=json.loads((OUT/'full-universe-manifest.json').read_text())
         acquisition_inventory(a.db,manifest,EVIDENCE/'full-inventory.json')
         refresh(a,manifest,'FULL_ACQUISITION_PASS_FINISHED')
-        if [r[0] for r in a.db.execute('PRAGMA integrity_check').fetchall()]!=['ok']:
+        if integrity_check(a.db)!='ok':
             raise RuntimeError('STOP_FINAL_INDEX_INTEGRITY')
         checked=0
         for digest,path in a.db.execute("SELECT raw_sha256,raw_path FROM requests WHERE status='SUCCESS'").fetchall():
@@ -90,7 +91,7 @@ def finalize(state):
         repairs=json.loads((EVIDENCE/'repair-queue-summary.json').read_text())
         result=dict(created_at=now(),status='ACQUISITION_PASS_FINISHED; SOURCE_EXCEPTIONS_RETAINED',
             inventory=inventory,source_coverage=source,repair_queue=repairs,checksums_verified=checked,
-            sqlite_integrity='ok',preservation_changed_files=changed,storage=dict(logical_bytes=physical,allocated_bytes=allocated,files=files,free_bytes=shutil.disk_usage(a.mount).free),
+            sqlite_integrity='ok' if not hasattr(a.db,'raw') else 'NOT_APPLICABLE', inventory_check_scope=integrity_scope(a.db),preservation_changed_files=changed,storage=dict(logical_bytes=physical,allocated_bytes=allocated,files=files,free_bytes=shutil.disk_usage(a.mount).free),
             full_universe_complete=inventory['successful_requests']==83688 and not repairs['items'],
             schedules_enabled=False,incremental_daily_safe_to_enable=False,
             indicator_compatibility='Existing engines passed scaled clean-window checks; weekly DSS/RS limitations and adjustment/calendar flags remain',
@@ -103,7 +104,7 @@ def finalize(state):
             f"Owner repair queue: {repairs['items']:,} items across {repairs['companies']:,} companies. "
             'See `repair-queue.csv`, `full-inventory.json` and `full-completion.json` for actual per-company results, source dates, reasons and original-response paths. '
             'A completed acquisition pass is not a claim that quarantined or unsupported history is usable.\n\n'
-            f"Archive logical bytes: {physical:,}; allocated file bytes: {allocated:,}; checksums verified: {checked:,}; SQLite integrity: ok.\n\n"
+            f"Archive logical bytes: {physical:,}; allocated file bytes: {allocated:,}; checksums verified: {checked:,}; Inventory check: {integrity_scope(a.db)}.\n\n"
             'Schedules remain disabled. Known calendar, historical eligibility, security continuity and corporate-action uncertainties remain explicit. '
             'Original provider responses are on Passport; no bad observation was repaired with an invented value.\n')
     finally:

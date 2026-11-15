@@ -1,4 +1,5 @@
 """Independent raw/Parquet/source preservation checks on actual acquisitions."""
+from scrapper.db.candle_inventory import integrity_check, integrity_scope
 from collections import Counter,defaultdict
 from decimal import Decimal
 import fcntl,gzip,json
@@ -83,12 +84,12 @@ def main():
         # is committing updates under SQLite's deliberately retained DELETE mode.
         integrity='DEFERRED_WHILE_ARCHIVE_WRITER_ACTIVE'
         if state['status']=='COMPLETE' and not archive_writer_active(store.root):
-            integrity=store.db.execute('PRAGMA quick_check').fetchone()[0]
+            integrity=integrity_check(store.db, quick=True)
             if integrity!='ok':raise AssertionError('Archive integrity '+integrity)
         result=dict(passed=True,batch_state=state['status'],manifest_requests=len(queries),retained_receipts=len(state['requests']),
             raw_checksums_verified=raw_checked,parquet_checksums_verified=parquet_checked,stock_requests_reconciled=len(request_checks),
             exact_source_value_comparisons=value_fields,normalization_quality_counts=dict(quality),
-            original_request_ids_unchanged=True,strict_historical_delivery_gate='PASS',sqlite_quick_check=integrity,
+            original_request_ids_unchanged=True,strict_historical_delivery_gate='PASS',sqlite_quick_check=integrity if not hasattr(store.db,'raw') else 'NOT_APPLICABLE', inventory_check_scope=integrity_scope(store.db),
             frozen_original_files_verified=len(baseline)-len(allowed),unexpected_preservation_changes=unexpected,
             document_intelligence_files_preserved=len(di),recurring_acquisition_enabled=False,requests=request_checks)
         result['actual_lock_failure_recovery']=recovered

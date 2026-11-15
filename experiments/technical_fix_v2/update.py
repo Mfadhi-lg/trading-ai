@@ -47,9 +47,9 @@ def get(q, token):
 def persist_stock(a, q, rec, raw):
     """Same archive schema/parser, with raw-before-normalization recovery."""
     params = dict(q)
-    a.db.execute('''INSERT OR IGNORE INTO requests
+    a.db.execute('''INSERT INTO requests
         (request_id,company_id,instrument_key,unit,interval,from_date,to_date,status,attempts)
-        VALUES (?,?,?,?,?,?,?,'RAW_SAVED',1)''', tuple(q[k] for k in
+        VALUES (?,?,?,?,?,?,?,'RAW_SAVED',1) ON CONFLICT(request_id) DO NOTHING''', tuple(q[k] for k in
         ('request_id','company_id','instrument_key','unit','interval','from_date','to_date')))
     a.db.execute("UPDATE requests SET raw_sha256=?,raw_path=?,received_at=?,http_status=200,status='RAW_SAVED' WHERE request_id=?",
         (rec['sha256'],rec['raw_path'],rec['received_at'],q['request_id']))

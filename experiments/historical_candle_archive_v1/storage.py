@@ -12,6 +12,8 @@ import sqlite3
 import subprocess
 import time
 
+from scrapper.db.candle_inventory import backend, open_inventory
+
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / 'artifacts/historical-candle-archive-v1'
 UUID = '60E1204B-CB98-48C4-9398-1D2FBAC9B44A'
@@ -122,11 +124,27 @@ class Archive:
         self.root = self.mount / 'passport/trading-ai/market-data/historical-candle-archive-v1'
         self.guard()
         self.root.mkdir(parents=True, exist_ok=True)
+        if backend() == 'postgresql':
+            self.db = open_inventory(self.root, read_only=False, writer=True)
+            self.writer_lock = self.db.writer_lock
+            return
         self.writer_lock=(self.root/'.writer.lock').open('a+b')
         try:
             fcntl.flock(self.writer_lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
         except BlockingIOError:
+            self.writer_lock.close()
             raise RuntimeError('STOP_ARCHIVE_WRITER_BUSY; resume after current writer exits') from None
+        try:
+            # Validate the pinned selection before any legacy initialization.
+            marker = self.root / '.inventory-target.json'
+            if marker.exists() and json.loads(marker.read_text())['backend'] != 'sqlite':
+                raise RuntimeError('STOP_ARCHIVE_TARGET_MISMATCH; no SQLite fallback')
+            self._sqlite()
+        except BaseException:
+            self.writer_lock.close()
+            raise
+
+    def _sqlite(self):
         self.db = sqlite3.connect(self.root / 'inventory.sqlite3')
         self.db.execute('PRAGMA busy_timeout=30000')
         self.db.execute('PRAGMA cache_size=-131072')
@@ -224,7 +242,14 @@ class Archive:
         os.replace(tmp,p)
         fsync_directory(p.parent)
         checksum = sha(p.read_bytes())
-        self.db.execute('INSERT OR REPLACE INTO datasets VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+        self.db.execute('''INSERT INTO datasets VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+            ON CONFLICT(dataset_id) DO UPDATE SET request_id=excluded.request_id,company_id=excluded.company_id,
+            instrument_key=excluded.instrument_key,timeframe=excluded.timeframe,definition=excluded.definition,
+            observation_status=excluded.observation_status,first_start=excluded.first_start,last_start=excluded.last_start,
+            row_count=excluded.row_count,parquet_path=excluded.parquet_path,parquet_sha256=excluded.parquet_sha256,
+            bytes=excluded.bytes,raw_sha256=excluded.raw_sha256,observed_at=excluded.observed_at,
+            completeness=excluded.completeness,corporate_action_status=excluded.corporate_action_status,
+            write_seconds=excluded.write_seconds''',
             (ident,request['request_id'],request['company_id'],request['instrument_key'],request['timeframe'],definition,
              ','.join(sorted({r['status'] for r in records})), min(r['start'] for r in records), max(r['start'] for r in records),len(records),
              str(p.relative_to(self.root)),checksum,p.stat().st_size,digest,received,'CALENDAR_NOT_YET_CERTIFIED',

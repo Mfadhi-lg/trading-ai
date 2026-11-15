@@ -2,9 +2,11 @@
 
 This store is **separate** from application `scraper.db`. No archive runtime
 reader, writer, lifecycle command, market refresh or technical-update consumer is
-switched. Production transfer and runtime port/cutover require separate approval.
+switched. Production transfer and runtime cutover require separate approval. The subsequent
+[runtime port (#102)](CANDLE_INVENTORY_RUNTIME.md) is opt-in and does not change
+this transfer-only contract.
 
-The reviewed source is `Archive.__init__` in
+The reviewed source is `Archive._sqlite` in
 `experiments/historical_candle_archive_v1/storage.py`. Its DDL is pinned in
 `scrapper/db/candle_inventory_v1.sql`; a regression test compares that baseline to
 the actual bootstrap. Unknown tables, indexes, constraints or columns fail closed.

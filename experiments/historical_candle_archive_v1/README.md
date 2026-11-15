@@ -114,3 +114,7 @@ HCD-02 rejects requests for one. Cross-source differences and receipt revisions
 are evidence for review, never inferred corporate actions. Certifying an adjusted
 series requires separately sourced action dates/factors and versioned lineage;
 that work is outside this audit fix.
+
+The opt-in [PostgreSQL inventory runtime](../../docs/database/CANDLE_INVENTORY_RUNTIME.md)
+preserves these file and request contracts. SQLite stays the default; runtime
+selection and production cutover require separate explicit configuration and approval.

@@ -160,7 +160,7 @@ def execute(limit=1):
         if executed>=limit: break
         started=time.monotonic();received=datetime.now(timezone.utc).isoformat()
         archive.db.execute('''INSERT INTO requests(request_id,company_id,instrument_key,unit,interval,from_date,to_date,status,attempts)
-            VALUES(?,?,?,?,?,?,?,'IN_FLIGHT',1) ON CONFLICT(request_id) DO UPDATE SET status='IN_FLIGHT',attempts=attempts+1''',
+            VALUES(?,?,?,?,?,?,?,'IN_FLIGHT',1) ON CONFLICT(request_id) DO UPDATE SET status='IN_FLIGHT',attempts=requests.attempts+1''',
             (q['request_id'],q['company_id'],q['instrument_key'],q['unit'],q['interval'],q['from_date'],q['to_date']))
         archive.db.commit()
         status=None

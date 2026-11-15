@@ -38,20 +38,22 @@
     },
     {
       "path": ".github/workflows/postgresql.yml",
-      "source_sha256": "c7d208149a7af3f187bdf6ba89221a0ead08109a3df49f425388e7399f9c59ea",
+      "source_sha256": "438265eac0168f381ed7394b226bbf4c00ae9d11e00eed429f56c61733946933",
       "owner": "Maintainers of .github/workflows",
       "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/107",
-      "reviewed_source_sha256": "c7d208149a7af3f187bdf6ba89221a0ead08109a3df49f425388e7399f9c59ea",
+      "reviewed_source_sha256": "438265eac0168f381ed7394b226bbf4c00ae9d11e00eed429f56c61733946933",
       "classification": "compatibility/test",
       "store": "configuration references only; isolated CI roots/disposable PostgreSQL service or configured development/legacy runtime mounts",
       "intent": "Configuration/launcher evidence; inspect selected backend and mount/write-root wiring before runtime use.",
       "backend_guard": "No connection executed by inventory. CI job isolation and explicit runtime backend configuration are separate contracts.",
       "disposition": "Preserve CI isolation and legacy SQLite support; changes require source review. Existing workflow/configuration is not proof of live runtime health.",
       "sites": [
-        {"line": 44,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "7e9023d0bb5fc1e282edb2c5b6c885d08f97efe6b0c27b1d6974f794e03c37ec","scope_sha256": "c7d208149a7af3f187bdf6ba89221a0ead08109a3df49f425388e7399f9c59ea","branch_hints": []}
+        {"line": 44,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "7e9023d0bb5fc1e282edb2c5b6c885d08f97efe6b0c27b1d6974f794e03c37ec","scope_sha256": "438265eac0168f381ed7394b226bbf4c00ae9d11e00eed429f56c61733946933","branch_hints": []}
       ],
       "caller_references": [
         {"path": "scrapper/cli_groups/operations.py","line": 15},
+        {"path": "scrapper/db/candle_inventory.py","line": 13},
+        {"path": "scrapper/db/candle_inventory.py","line": 59},
         {"path": "scrapper/db/candle_inventory_transfer.py","line": 14},
         {"path": "scrapper/db/database.py","line": 57},
         {"path": "scrapper/db/postgresql_application.py","line": 15},
@@ -331,83 +333,33 @@
     },
     {
       "path": "experiments/historical_candle_archive_v1/access.py",
-      "source_sha256": "01b21071e72bfe5534600b8546b4d9d4184f3bdf4a634efe3014964249fe6101",
+      "source_sha256": "0dfe97fd80fb0ed05e127c5a7e80169518ebe72cad0a4dbea6e7e66a60620e55",
       "owner": "Maintainers of experiments/historical_candle_archive_v1",
-      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/107",
-      "reviewed_source_sha256": "01b21071e72bfe5534600b8546b4d9d4184f3bdf4a634efe3014964249fe6101",
+      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/102",
+      "reviewed_source_sha256": "0dfe97fd80fb0ed05e127c5a7e80169518ebe72cad0a4dbea6e7e66a60620e55",
       "classification": "secondary operational store",
       "store": "independent historical candle inventory.sqlite3 and archive metadata",
       "intent": "Static SQL/query candidates: PRAGMA, SELECT; dynamic queries require caller review.",
-      "backend_guard": "Deliberately SQLite secondary-store contract, independent of TRADING_AI_DB_BACKEND; no application backend guard expected.",
-      "disposition": "Keep secondary-store semantics and existing callers. A port requires separate subsystem selection; do not treat as application migration defect.",
+      "backend_guard": "Archive target marker and TRADING_AI_CANDLE_BACKEND select checked native inventory sessions; SQLite path is guarded against native-selected roots. Legacy SQLite process handoff is refused in native mode; native lifecycle drain checks both writer fences.",
+      "disposition": "Native archive port implemented by #102; preserve legacy/offline SQLite support and existing mount/source/receipt contracts. No production switch authorized.",
       "sites": [
-        {"line": 129,"symbol": "HistoricalStore.__init__","kind": "direct connection","sha256": "f1a8abf324e6adda2294bd5cd969b925c065b69e5f006ddc890ff133083fad58","scope_sha256": "cf74f307309c387f4235cac2c9e12ba72ea7d0f842872ab5a7eee00ea63de49f","branch_hints": []},
-        {"line": 131,"symbol": "HistoricalStore.__init__","kind": "SQLite SQL","sha256": "3631763d13970b9a6968a1aee56124f8352a5d64e4c14e68741ad38cabeb9b1e","scope_sha256": "cf74f307309c387f4235cac2c9e12ba72ea7d0f842872ab5a7eee00ea63de49f","branch_hints": []},
-        {"line": 132,"symbol": "HistoricalStore.__init__","kind": "SQLite SQL","sha256": "a28b203f21249ab8312986428d3b09520123b2d7328839a8a7a3b5f61f02af8f","scope_sha256": "cf74f307309c387f4235cac2c9e12ba72ea7d0f842872ab5a7eee00ea63de49f","branch_hints": []},
-        {"line": 187,"symbol": "HistoricalStore.native","kind": "dynamic query","sha256": "829f46d07822ccdbd0955762ce5f6e9d9b1be5cca1de28a2114b49610091d102","scope_sha256": "dc5c81eaf0b83af7c38e42d59861cc6ec53e4aa0ac225388b8a93cb8d4a6809e","branch_hints": []}
+        {"line": 184,"symbol": "HistoricalStore.native","kind": "dynamic query","sha256": "829f46d07822ccdbd0955762ce5f6e9d9b1be5cca1de28a2114b49610091d102","scope_sha256": "dc5c81eaf0b83af7c38e42d59861cc6ec53e4aa0ac225388b8a93cb8d4a6809e","branch_hints": []}
       ],
       "caller_references": [
         {"path": "experiments/historical_candle_archive_v1/analyze.py","line": 1},
-        {"path": "experiments/historical_candle_archive_v1/campaign.py","line": 123},
+        {"path": "experiments/historical_candle_archive_v1/campaign.py","line": 124},
         {"path": "experiments/historical_candle_archive_v1/hcd02_review.py","line": 14},
-        {"path": "experiments/historical_candle_archive_v1/hcd02_review.py","line": 444},
-        {"path": "experiments/historical_candle_archive_v1/hcd02_review.py","line": 512},
+        {"path": "experiments/historical_candle_archive_v1/hcd02_review.py","line": 445},
+        {"path": "experiments/historical_candle_archive_v1/hcd02_review.py","line": 513},
         {"path": "experiments/technical_fix_v2/finish.py","line": 56},
         {"path": "experiments/technical_fix_v2/integrate.py","line": 16},
-        {"path": "experiments/technical_fix_v2/verify.py","line": 7},
+        {"path": "experiments/technical_fix_v2/verify.py","line": 8},
         {"path": "ops/host/document_backlog_report.py","line": 357},
         {"path": "ops/host/document_backlog_report.py","line": 379},
         {"path": "scrapper/indices/frames_build.py","line": 9},
         {"path": "scrapper/indices/production.py","line": 16},
         {"path": "scrapper/market_refresh/service.py","line": 12},
         {"path": "scrapper/research/features/technical.py","line": 6}
-      ]
-    },
-    {
-      "path": "experiments/historical_candle_archive_v1/campaign.py",
-      "source_sha256": "20757d4645995fbe40a01e6bf92473e97f05cb04c88dd33e07751fbb56021755",
-      "owner": "Maintainers of experiments/historical_candle_archive_v1",
-      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/107",
-      "reviewed_source_sha256": "20757d4645995fbe40a01e6bf92473e97f05cb04c88dd33e07751fbb56021755",
-      "classification": "secondary operational store",
-      "store": "independent historical candle inventory.sqlite3 and archive metadata",
-      "intent": "Static SQL/query candidates: PRAGMA, SELECT; dynamic queries require caller review.",
-      "backend_guard": "Deliberately SQLite secondary-store contract, independent of TRADING_AI_DB_BACKEND; no application backend guard expected.",
-      "disposition": "Keep secondary-store semantics and existing callers. A port requires separate subsystem selection; do not treat as application migration defect.",
-      "sites": [
-        {"line": 65,"symbol": "finalize","kind": "SQLite SQL","sha256": "327d734d78fcb10ee3ebb74486585efb705d6c50022db01116fc2d30c22eb8d8","scope_sha256": "67a8b118f8efcbe70de38dee983ebc25e2bf7ca268f950287b1313ec3cdaec66","branch_hints": []}
-      ],
-      "caller_references": [
-        {"path": "experiments/historical_candle_archive_v1/rollout.py","line": 429},
-        {"path": "experiments/historical_candle_archive_v1/rollout.py","line": 432},
-        {"path": "experiments/technical_fix_v2/report.py","line": 53},
-        {"path": "ops/host/document_backlog_recovery.py","line": 204},
-        {"path": "ops/host/document_backlog_report.py","line": 268},
-        {"path": "ops/host/document_backlog_report.py","line": 270}
-      ]
-    },
-    {
-      "path": "experiments/historical_candle_archive_v1/hcd02_review.py",
-      "source_sha256": "35141c6fba5c7a6723109174b8a38e5c8f9d8cfdca98ea7a4014d1c472ef9ea2",
-      "owner": "Maintainers of experiments/historical_candle_archive_v1",
-      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/107",
-      "reviewed_source_sha256": "35141c6fba5c7a6723109174b8a38e5c8f9d8cfdca98ea7a4014d1c472ef9ea2",
-      "classification": "secondary operational store",
-      "store": "independent historical candle inventory.sqlite3 and archive metadata",
-      "intent": "Static SQL/query candidates: PRAGMA, SELECT; dynamic queries require caller review.",
-      "backend_guard": "Deliberately SQLite secondary-store contract, independent of TRADING_AI_DB_BACKEND; no application backend guard expected.",
-      "disposition": "Keep secondary-store semantics and existing callers. A port requires separate subsystem selection; do not treat as application migration defect.",
-      "sites": [
-        {"line": 137,"symbol": "review","kind": "SQLite SQL","sha256": "327d734d78fcb10ee3ebb74486585efb705d6c50022db01116fc2d30c22eb8d8","scope_sha256": "b69d2b8247b83bf9e6b854c90d64d93c65bddd799d8303dddf19fa68e0dfa55b","branch_hints": []}
-      ],
-      "caller_references": [
-        {"path": "experiments/historical_candle_archive_v1/campaign.py","line": 124},
-        {"path": "experiments/historical_candle_archive_v1/rollout.py","line": 411},
-        {"path": "experiments/historical_candle_archive_v1/rollout.py","line": 414},
-        {"path": "experiments/historical_candle_archive_v1/rollout.py","line": 417},
-        {"path": "experiments/historical_candle_archive_v1/rollout.py","line": 420},
-        {"path": "experiments/historical_candle_archive_v1/rollout.py","line": 423},
-        {"path": "experiments/historical_candle_archive_v1/rollout.py","line": 426}
       ]
     },
     {
@@ -454,32 +406,53 @@
       ]
     },
     {
+      "path": "experiments/historical_candle_archive_v1/rollout.py",
+      "source_sha256": "8a89528194dbdf10204c4a8848a911b3dd12279c4f415fdda4c2951be254e679",
+      "owner": "Archive inventory maintainers",
+      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/102",
+      "reviewed_source_sha256": "8a89528194dbdf10204c4a8848a911b3dd12279c4f415fdda4c2951be254e679",
+      "classification": "secondary operational store",
+      "store": "Historical candle inventory; explicitly pinned SQLite or PostgreSQL target",
+      "intent": "Shared archive runtime sessions and separately authorized verified cutover/rollback; no automatic migration.",
+      "backend_guard": "Explicit TRADING_AI_CANDLE_BACKEND and archive-local target marker; native verifies cluster/database/schema/catalog, read-only observers and filesystem plus session writer fences. No SQLite fallback.",
+      "disposition": "Opt-in native runtime implemented; production transfer/cutover remains separately authorized. SQLite retained for declared offline snapshots.",
+      "sites": [
+        {"line": 221,"symbol": "execute","kind": "dynamic query","sha256": "ea84d6c2326e884e69e4f8748f3b794922f0a48059ea6e0899ee85eae79b7bfe","scope_sha256": "e2318c535fd1caca66ce88869e2b01bd214591b22183f9fe64ebd998da9eff4e","branch_hints": []}
+      ],
+      "caller_references": [
+        {"path": "experiments/historical_candle_archive_v1/campaign.py","line": 13},
+        {"path": "experiments/historical_candle_archive_v1/hcd02_review.py","line": 17},
+        {"path": "experiments/historical_candle_archive_v1/hcd02_review.py","line": 252},
+        {"path": "experiments/historical_candle_archive_v1/hcd02_review.py","line": 552},
+        {"path": "ops/host/historical_candle_lifecycle.py","line": 18}
+      ]
+    },
+    {
       "path": "experiments/historical_candle_archive_v1/storage.py",
-      "source_sha256": "2dcfd5f5b6fb6d7882b671c871a00e3549114b09859b1658676285c12a0a5334",
+      "source_sha256": "01295590818a6c63d4c47254aaddf173b2068519ca1d68399b1addc62bdfdf7c",
       "owner": "Maintainers of experiments/historical_candle_archive_v1",
-      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/107",
-      "reviewed_source_sha256": "2dcfd5f5b6fb6d7882b671c871a00e3549114b09859b1658676285c12a0a5334",
+      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/102",
+      "reviewed_source_sha256": "01295590818a6c63d4c47254aaddf173b2068519ca1d68399b1addc62bdfdf7c",
       "classification": "secondary operational store",
       "store": "independent historical candle inventory.sqlite3 and archive metadata",
       "intent": "Static SQL/query candidates: CREATE, DELETE, INSERT, PRAGMA, SELECT, UPDATE; dynamic queries require caller review.",
-      "backend_guard": "Deliberately SQLite secondary-store contract, independent of TRADING_AI_DB_BACKEND; no application backend guard expected.",
-      "disposition": "Keep secondary-store semantics and existing callers. A port requires separate subsystem selection; do not treat as application migration defect.",
+      "backend_guard": "Archive target marker and TRADING_AI_CANDLE_BACKEND select checked native inventory sessions; SQLite path is guarded against native-selected roots. Legacy SQLite process handoff is refused in native mode; native lifecycle drain checks both writer fences.",
+      "disposition": "Native archive port implemented by #102; preserve legacy/offline SQLite support and existing mount/source/receipt contracts. No production switch authorized.",
       "sites": [
-        {"line": 130,"symbol": "Archive.__init__","kind": "direct connection","sha256": "956c796fd01598f643b4847cca8ea2fcce7b99492fcb8e6f03cdb5fabec16e68","scope_sha256": "03b170cc1be8e043f558fe4751579698ad9c3c85d6bbd6150a0e2e3a73f84b20","branch_hints": []},
-        {"line": 131,"symbol": "Archive.__init__","kind": "SQLite SQL","sha256": "3631763d13970b9a6968a1aee56124f8352a5d64e4c14e68741ad38cabeb9b1e","scope_sha256": "03b170cc1be8e043f558fe4751579698ad9c3c85d6bbd6150a0e2e3a73f84b20","branch_hints": []},
-        {"line": 132,"symbol": "Archive.__init__","kind": "SQLite SQL","sha256": "8162b23adb497fda7151da155a7e8ce703b3e41415aaac67249f5636a567abb9","scope_sha256": "03b170cc1be8e043f558fe4751579698ad9c3c85d6bbd6150a0e2e3a73f84b20","branch_hints": []},
-        {"line": 133,"symbol": "Archive.__init__","kind": "SQLite SQL","sha256": "c7e424fda0967e4cdffa4a79aceeca2eabc5718445a3f9cd9b6c2706503b38fe","scope_sha256": "03b170cc1be8e043f558fe4751579698ad9c3c85d6bbd6150a0e2e3a73f84b20","branch_hints": []},
-        {"line": 134,"symbol": "Archive.__init__","kind": "SQLite SQL","sha256": "919fcbb953f0ceb602e1ffe35fe82f3b925e994354fe6f97b388deaf00ba4587","scope_sha256": "03b170cc1be8e043f558fe4751579698ad9c3c85d6bbd6150a0e2e3a73f84b20","branch_hints": []},
-        {"line": 135,"symbol": "Archive.__init__","kind": "SQLite SQL","sha256": "6ff26153557e88d2e5617682f2c35a98e1fb9b20fffe386069f83ea85aa46a7e","scope_sha256": "03b170cc1be8e043f558fe4751579698ad9c3c85d6bbd6150a0e2e3a73f84b20","branch_hints": []},
-        {"line": 227,"symbol": "Archive._parquet","kind": "SQLite SQL","sha256": "e74920d1b3f75acbdffc7ecb238e3f198d56074d2b83941f87eb6d5835007bf5","scope_sha256": "745f0b79301dadcc47b46fbd9a3549f538d37dc4cc3201189dc57980fbdec069","branch_hints": []}
+        {"line": 148,"symbol": "Archive._sqlite","kind": "direct connection","sha256": "956c796fd01598f643b4847cca8ea2fcce7b99492fcb8e6f03cdb5fabec16e68","scope_sha256": "a23d7aaeb210fb47ff154eddaf9048ae9ad2ebc73fdc80cbf70fc88911c91c4f","branch_hints": []},
+        {"line": 149,"symbol": "Archive._sqlite","kind": "SQLite SQL","sha256": "3631763d13970b9a6968a1aee56124f8352a5d64e4c14e68741ad38cabeb9b1e","scope_sha256": "a23d7aaeb210fb47ff154eddaf9048ae9ad2ebc73fdc80cbf70fc88911c91c4f","branch_hints": []},
+        {"line": 150,"symbol": "Archive._sqlite","kind": "SQLite SQL","sha256": "8162b23adb497fda7151da155a7e8ce703b3e41415aaac67249f5636a567abb9","scope_sha256": "a23d7aaeb210fb47ff154eddaf9048ae9ad2ebc73fdc80cbf70fc88911c91c4f","branch_hints": []},
+        {"line": 151,"symbol": "Archive._sqlite","kind": "SQLite SQL","sha256": "c7e424fda0967e4cdffa4a79aceeca2eabc5718445a3f9cd9b6c2706503b38fe","scope_sha256": "a23d7aaeb210fb47ff154eddaf9048ae9ad2ebc73fdc80cbf70fc88911c91c4f","branch_hints": []},
+        {"line": 152,"symbol": "Archive._sqlite","kind": "SQLite SQL","sha256": "919fcbb953f0ceb602e1ffe35fe82f3b925e994354fe6f97b388deaf00ba4587","scope_sha256": "a23d7aaeb210fb47ff154eddaf9048ae9ad2ebc73fdc80cbf70fc88911c91c4f","branch_hints": []},
+        {"line": 153,"symbol": "Archive._sqlite","kind": "SQLite SQL","sha256": "6ff26153557e88d2e5617682f2c35a98e1fb9b20fffe386069f83ea85aa46a7e","scope_sha256": "a23d7aaeb210fb47ff154eddaf9048ae9ad2ebc73fdc80cbf70fc88911c91c4f","branch_hints": []}
       ],
       "caller_references": [
-        {"path": "experiments/historical_candle_archive_v1/access.py","line": 17},
+        {"path": "experiments/historical_candle_archive_v1/access.py","line": 16},
         {"path": "experiments/historical_candle_archive_v1/acquire.py","line": 14},
         {"path": "experiments/historical_candle_archive_v1/analyze.py","line": 9},
         {"path": "experiments/historical_candle_archive_v1/calendar.py","line": 4},
-        {"path": "experiments/historical_candle_archive_v1/campaign.py","line": 13},
-        {"path": "experiments/historical_candle_archive_v1/campaign.py","line": 125},
+        {"path": "experiments/historical_candle_archive_v1/campaign.py","line": 14},
+        {"path": "experiments/historical_candle_archive_v1/campaign.py","line": 126},
         {"path": "experiments/historical_candle_archive_v1/control.py","line": 8},
         {"path": "experiments/historical_candle_archive_v1/cross_source.py","line": 6},
         {"path": "experiments/historical_candle_archive_v1/hcd02_review.py","line": 16},
@@ -491,16 +464,17 @@
         {"path": "experiments/historical_candle_archive_v1/repair_identity.py","line": 7},
         {"path": "experiments/historical_candle_archive_v1/repair_queue.py","line": 9},
         {"path": "experiments/historical_candle_archive_v1/report.py","line": 9},
-        {"path": "experiments/historical_candle_archive_v1/rollout.py","line": 17},
+        {"path": "experiments/historical_candle_archive_v1/rollout.py","line": 18},
         {"path": "experiments/historical_candle_archive_v1/snapshot.py","line": 4},
         {"path": "experiments/technical_fix_v2/finish.py","line": 17},
         {"path": "experiments/technical_fix_v2/integrate.py","line": 18},
         {"path": "experiments/technical_fix_v2/portable.py","line": 9},
         {"path": "experiments/technical_fix_v2/schedule.py","line": 10},
         {"path": "experiments/technical_fix_v2/update.py","line": 15},
-        {"path": "experiments/technical_fix_v2/verify.py","line": 8},
-        {"path": "ops/host/historical_candle_lifecycle.py","line": 13},
+        {"path": "experiments/technical_fix_v2/verify.py","line": 9},
+        {"path": "ops/host/historical_candle_lifecycle.py","line": 14},
         {"path": "ops/host/technical_market_updates.py","line": 12},
+        {"path": "scrapper/db/candle_inventory.py","line": 60},
         {"path": "scrapper/market_live/engine.py","line": 17},
         {"path": "scrapper/market_live/identity_refresh.py","line": 12},
         {"path": "scrapper/market_live/recovery.py","line": 10},
@@ -537,68 +511,6 @@
         {"path": "scrapper/cli_groups/registration.py","line": 802},
         {"path": "scrapper/cli_groups/registration.py","line": 815},
         {"path": "scrapper/sources/screener/manifest.py","line": 83}
-      ]
-    },
-    {
-      "path": "experiments/technical_fix_v2/update.py",
-      "source_sha256": "26d8671beb443838afecb3f219e1bc246f6a993248856ca3c6887129765ded54",
-      "owner": "Maintainers of experiments/technical_fix_v2",
-      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/107",
-      "reviewed_source_sha256": "26d8671beb443838afecb3f219e1bc246f6a993248856ca3c6887129765ded54",
-      "classification": "historical snapshot",
-      "store": "retained research SQLite source/catalog and isolated research copies/output; some functions also use :memory: comparison/metadata clones",
-      "intent": "Static SQL/query candidates: INSERT, UPDATE; dynamic queries require caller review.",
-      "backend_guard": "Offline/snapshot research contract, not native application routing; source selection, read-only URI modes and copy guards must be reviewed at the listed symbols.",
-      "disposition": "Preserve source bytes, provenance, offline fixtures and retained research outputs. Classification does not authorize running historical mutation scripts.",
-      "sites": [
-        {"line": 50,"symbol": "persist_stock","kind": "SQLite SQL","sha256": "867d8a161faeb3ba736bfec36a71683b1522c658f0fbd26319d3649c03745c0f","scope_sha256": "7d80bd436a67e440f6c14a489527538a45e97419ba6650dab30696376112407c","branch_hints": []}
-      ],
-      "caller_references": [
-        {"path": "experiments/technical_fix_v2/finish.py","line": 18},
-        {"path": "experiments/technical_fix_v2/integrate.py","line": 27},
-        {"path": "experiments/technical_fix_v2/report.py","line": 5},
-        {"path": "experiments/technical_fix_v2/schedule.py","line": 11},
-        {"path": "experiments/technical_fix_v2/verify.py","line": 9},
-        {"path": "ops/host/technical_market_updates.py","line": 14},
-        {"path": "scrapper/market_live/recovery.py","line": 11},
-        {"path": "scrapper/market_refresh/runner.py","line": 21},
-        {"path": "scripts/technical-data","line": 22}
-      ]
-    },
-    {
-      "path": "experiments/technical_fix_v2/verify.py",
-      "source_sha256": "fa8141b6b9457736f1fb8923fa1046ac171e8f3cb6ce66a02255bf204d7e25b4",
-      "owner": "Maintainers of experiments/technical_fix_v2",
-      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/107",
-      "reviewed_source_sha256": "fa8141b6b9457736f1fb8923fa1046ac171e8f3cb6ce66a02255bf204d7e25b4",
-      "classification": "historical snapshot",
-      "store": "retained research SQLite source/catalog and isolated research copies/output; some functions also use :memory: comparison/metadata clones",
-      "intent": "Static SQL/query candidates: DELETE, PRAGMA, SELECT; dynamic queries require caller review.",
-      "backend_guard": "Offline/snapshot research contract, not native application routing; source selection, read-only URI modes and copy guards must be reviewed at the listed symbols.",
-      "disposition": "Preserve source bytes, provenance, offline fixtures and retained research outputs. Classification does not authorize running historical mutation scripts.",
-      "sites": [
-        {"line": 86,"symbol": "main","kind": "SQLite SQL","sha256": "1564d5d537e69c4089ee98a481865eac6ab562e9afa014405072c0348f6a2abe","scope_sha256": "825835f21623df9fe16a9b31661d9883254bd73c4be29a5de126870b070f7a58","branch_hints": []}
-      ],
-      "caller_references": [
-        {"path": "experiments/historical_candle_archive_v1/access.py","line": 17},
-        {"path": "experiments/historical_candle_archive_v1/campaign.py","line": 125},
-        {"path": "experiments/historical_candle_archive_v1/hcd02_review.py","line": 16},
-        {"path": "experiments/technical_fix_v2/finish.py","line": 97},
-        {"path": "experiments/technical_integration_v2/report.py","line": 43},
-        {"path": "ops/activation/bse_production.py","line": 17},
-        {"path": "ops/activation/nse_results.py","line": 24},
-        {"path": "ops/activation/nse_results.py","line": 44},
-        {"path": "ops/activation/nse_results.py","line": 57},
-        {"path": "ops/activation/phase4_trial_snapshot_runtime.py","line": 54},
-        {"path": "ops/activation/step3_financial.py","line": 61},
-        {"path": "ops/host/actual_download_audit.py","line": 88},
-        {"path": "ops/host/document_audit_reader.py","line": 50},
-        {"path": "ops/host/historical_candle_lifecycle.py","line": 13},
-        {"path": "ops/host/postgresql_backup.py","line": 21},
-        {"path": "ops/host/postgresql_cli.py","line": 15},
-        {"path": "scrapper/research/general_ai_experiment/local.py","line": 17},
-        {"path": "scrapper/research/general_ai_experiment/results.py","line": 6},
-        {"path": "scrapper/research/general_ai_experiment/runner.py","line": 30}
       ]
     },
     {
@@ -1648,26 +1560,22 @@
     },
     {
       "path": "ops/host/historical_candle_lifecycle.py",
-      "source_sha256": "c13ed0ee6394633ec585936ababcfd5d4a450202bde63b199a1a6690f7921ef2",
+      "source_sha256": "a18e5cf40bb2f06af21950d67f02ee4d95b1737f334554b0df028971550047a7",
       "owner": "Maintainers of ops/host",
-      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/107",
-      "reviewed_source_sha256": "c13ed0ee6394633ec585936ababcfd5d4a450202bde63b199a1a6690f7921ef2",
+      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/102",
+      "reviewed_source_sha256": "a18e5cf40bb2f06af21950d67f02ee4d95b1737f334554b0df028971550047a7",
       "classification": "secondary operational store",
       "store": "historical candle archive/inventory.sqlite3; read-only inspection and explicit mode=rw maintenance",
       "intent": "Static SQL/query candidates: PRAGMA, SELECT; dynamic queries require caller review.",
-      "backend_guard": "Deliberately SQLite secondary-store contract, independent of TRADING_AI_DB_BACKEND; no application backend guard expected.",
-      "disposition": "Keep secondary-store semantics and existing callers. A port requires separate subsystem selection; do not treat as application migration defect.",
+      "backend_guard": "Archive target marker and TRADING_AI_CANDLE_BACKEND select checked native inventory sessions; SQLite path is guarded against native-selected roots. Legacy SQLite process handoff is refused in native mode; native lifecycle drain checks both writer fences.",
+      "disposition": "Native archive port implemented by #102; preserve legacy/offline SQLite support and existing mount/source/receipt contracts. No production switch authorized.",
       "sites": [
-        {"line": 173,"symbol": "handoff_legacy","kind": "direct connection","sha256": "4a829a6ebe4a85c6bfbb0390bb688b7d72a48326e89b39426e7dc4722e61c0c2","scope_sha256": "a079ee614e257c14979a8dc6315dd130c4e17e1310faf1c1d611675515b23d83","branch_hints": []},
-        {"line": 208,"symbol": "install_handoff","kind": "direct connection","sha256": "c6fea0a71170d1d2f15c71734d38de0405c31563f6f17d3fe281a90378e7a15a","scope_sha256": "f9e88ff2555637d21785eb4a4c8de1cf3dca4eac3d99129df8e69ce100bbbb31","branch_hints": []},
-        {"line": 211,"symbol": "install_handoff","kind": "direct connection","sha256": "c6fea0a71170d1d2f15c71734d38de0405c31563f6f17d3fe281a90378e7a15a","scope_sha256": "f9e88ff2555637d21785eb4a4c8de1cf3dca4eac3d99129df8e69ce100bbbb31","branch_hints": []},
-        {"line": 213,"symbol": "install_handoff","kind": "SQLite SQL","sha256": "1564d5d537e69c4089ee98a481865eac6ab562e9afa014405072c0348f6a2abe","scope_sha256": "f9e88ff2555637d21785eb4a4c8de1cf3dca4eac3d99129df8e69ce100bbbb31","branch_hints": []},
-        {"line": 228,"symbol": "verify_pause_resume.snapshot","kind": "direct connection","sha256": "a996f0d39c2d0306368292bf11e990d3d63bb86cba42fcee45ec33415c1507d7","scope_sha256": "0b2193bc3b09aa491c66526eef2eb737409006cd27f8dcda272429473cc353d5","branch_hints": []}
+        {"line": 182,"symbol": "handoff_legacy","kind": "direct connection","sha256": "4a829a6ebe4a85c6bfbb0390bb688b7d72a48326e89b39426e7dc4722e61c0c2","scope_sha256": "a7202890d3ff2f99ecfbf5b63f59229b218112688fe91c42eefc2ce1be62644b","branch_hints": []}
       ],
       "caller_references": [
-        {"path": "experiments/historical_candle_archive_v1/rollout.py","line": 435},
-        {"path": "experiments/historical_candle_archive_v1/rollout.py","line": 438},
-        {"path": "experiments/historical_candle_archive_v1/rollout.py","line": 441},
+        {"path": "experiments/historical_candle_archive_v1/rollout.py","line": 442},
+        {"path": "experiments/historical_candle_archive_v1/rollout.py","line": 445},
+        {"path": "experiments/historical_candle_archive_v1/rollout.py","line": 448},
         {"path": "experiments/technical_fix_v2/finish.py","line": 57},
         {"path": "experiments/technical_fix_v2/schedule.py","line": 155},
         {"path": "ops/host/acquisition_lifecycle.py","line": 19}
@@ -1848,6 +1756,77 @@
       "caller_references": [
         {"path": "scrapper/cli_groups/screener.py","line": 102}
       ]
+    },
+    {
+      "path": "scrapper/db/candle_inventory.py",
+      "source_sha256": "915ab28169d2b63f7fdb877f86437b2c657f9eed055a9aa1b2fe3f7d4990dce1",
+      "owner": "Archive inventory maintainers",
+      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/102",
+      "reviewed_source_sha256": "915ab28169d2b63f7fdb877f86437b2c657f9eed055a9aa1b2fe3f7d4990dce1",
+      "classification": "secondary operational store",
+      "store": "Historical candle inventory; explicitly pinned SQLite or PostgreSQL target",
+      "intent": "Shared archive runtime sessions and separately authorized verified cutover/rollback; no automatic migration.",
+      "backend_guard": "Explicit TRADING_AI_CANDLE_BACKEND and archive-local target marker; native verifies cluster/database/schema/catalog, read-only observers and filesystem plus session writer fences. No SQLite fallback.",
+      "disposition": "Opt-in native runtime implemented; production transfer/cutover remains separately authorized. SQLite retained for declared offline snapshots.",
+      "sites": [
+        {"line": 48,"symbol": "target_contract","kind": "dynamic query","sha256": "c357858429fbbaf092f3f6e3e7dfce97ee4fe402e5795223f39c03a0c4a09fa0","scope_sha256": "2744053a1a84f53570b8f4fbb389769bc349ee0aa8025afe1ce2424040f5b4d9","branch_hints": []},
+        {"line": 116,"symbol": "NativeInventory.__init__","kind": "dynamic query","sha256": "7894f7c68b2972ab9bf9f0a5a1ce8818a465d530d5fc2b99104531d024f9da80","scope_sha256": "5172ab3d29c0076f8d5a4d963315c038a129827aad9fa73f383164433fe66ea6","branch_hints": []},
+        {"line": 120,"symbol": "NativeInventory.__init__","kind": "dynamic query","sha256": "181f93a3eea55ba4a0b311c4b857d1f0587215e4adf972e28fa0113cb4a4593e","scope_sha256": "5172ab3d29c0076f8d5a4d963315c038a129827aad9fa73f383164433fe66ea6","branch_hints": []},
+        {"line": 157,"symbol": "NativeInventory.execute","kind": "dynamic query","sha256": "cf6bf8b5c1630e4628d20acbb564862722a04019288c3d8486fe68e7ef4611dd","scope_sha256": "b4414e6f0ed20de40dcd0cb720d8f2014a698e350d986115105a9008af562477","branch_hints": []},
+        {"line": 165,"symbol": "NativeInventory.executemany","kind": "dynamic query","sha256": "3039413b161bb7d881dab8f7c8881ea20aa5e5c8215cc7dfa7a3b4981546cb8d","scope_sha256": "fa35ba6ae714f89ac7600fe5bd404e63e304ebbc9d7f6ca75881a5561a41ae21","branch_hints": []},
+        {"line": 202,"symbol": "open_inventory","kind": "direct connection","sha256": "ad35c60118262c905fd755bfc305cb671b70e79d817674b67b5cfa133f6391c0","scope_sha256": "15e551dbdbc265eba62fbc9b94428e95583f234c6ada601dfe9c0d1f73096311","branch_hints": []},
+        {"line": 205,"symbol": "open_inventory","kind": "SQLite SQL","sha256": "a28b203f21249ab8312986428d3b09520123b2d7328839a8a7a3b5f61f02af8f","scope_sha256": "15e551dbdbc265eba62fbc9b94428e95583f234c6ada601dfe9c0d1f73096311","branch_hints": []},
+        {"line": 216,"symbol": "integrity_check","kind": "SQLite SQL","sha256": "1564d5d537e69c4089ee98a481865eac6ab562e9afa014405072c0348f6a2abe","scope_sha256": "13cd160342bd749107416c5799cc80a9468beae60e21c3459e8705a470529810","branch_hints": []},
+        {"line": 217,"symbol": "integrity_check","kind": "SQLite SQL","sha256": "327d734d78fcb10ee3ebb74486585efb705d6c50022db01116fc2d30c22eb8d8","scope_sha256": "13cd160342bd749107416c5799cc80a9468beae60e21c3459e8705a470529810","branch_hints": []}
+      ],
+      "caller_references": [
+        {"path": "experiments/historical_candle_archive_v1/access.py","line": 128},
+        {"path": "experiments/historical_candle_archive_v1/campaign.py","line": 2},
+        {"path": "experiments/historical_candle_archive_v1/hcd02_review.py","line": 2},
+        {"path": "experiments/historical_candle_archive_v1/rollout.py","line": 13},
+        {"path": "experiments/historical_candle_archive_v1/storage.py","line": 15},
+        {"path": "experiments/technical_fix_v2/verify.py","line": 2},
+        {"path": "ops/host/historical_candle_lifecycle.py","line": 12}
+      ]
+    },
+    {
+      "path": "scrapper/db/candle_inventory_transfer.py",
+      "source_sha256": "61a21b6cb4194207fdee998e5c265e114c43aa3a334fca8f7ea40150d1cee718",
+      "sites": [
+        {"line": 26,"symbol": "source_tables","kind": "direct connection","sha256": "15de8f22bc76bef3142136f792454c6a5bf9098c84c4a620ff30c5391cb251dd","scope_sha256": "6b5d516ad8121279b088406aeb9929216bbb7b4d20dba283b11e87fae08d87a6","branch_hints": []},
+        {"line": 27,"symbol": "source_tables","kind": "dynamic query","sha256": "5bf5696775fb127216c9da57b3a7512461172f79d57ea1a8ce9a89c717fa48fc","scope_sha256": "6b5d516ad8121279b088406aeb9929216bbb7b4d20dba283b11e87fae08d87a6","branch_hints": []},
+        {"line": 30,"symbol": "source_tables","kind": "SQLite SQL","sha256": "327d734d78fcb10ee3ebb74486585efb705d6c50022db01116fc2d30c22eb8d8","scope_sha256": "6b5d516ad8121279b088406aeb9929216bbb7b4d20dba283b11e87fae08d87a6","branch_hints": []},
+        {"line": 36,"symbol": "source_tables","kind": "SQLite SQL","sha256": "29e22c579889639ae2718e5b95583d1b6f7f1d39d746a9d9b5add7100e63bf41","scope_sha256": "6b5d516ad8121279b088406aeb9929216bbb7b4d20dba283b11e87fae08d87a6","branch_hints": []},
+        {"line": 36,"symbol": "source_tables","kind": "dynamic query","sha256": "c5fa8fc765a3f33244073ba992318599724b4e9f5a5f75b2a4c007ee3529f56e","scope_sha256": "6b5d516ad8121279b088406aeb9929216bbb7b4d20dba283b11e87fae08d87a6","branch_hints": []},
+        {"line": 39,"symbol": "source_tables","kind": "dynamic query","sha256": "f0a9806567bc1e2e4359c251de989e28d6c2e35d625762c23248acb1d988ab94","scope_sha256": "6b5d516ad8121279b088406aeb9929216bbb7b4d20dba283b11e87fae08d87a6","branch_hints": []},
+        {"line": 55,"symbol": "migrate","kind": "dynamic query","sha256": "6a42e2f21b6a8f5e831a07ffa17f8917b5fe670f31d19f0f2e9578504af2925d","scope_sha256": "0eeee59899d50b86daf0669829fccfca79b613ac013e2e9ee54b067cb49dcab3","branch_hints": []},
+        {"line": 56,"symbol": "migrate","kind": "dynamic query","sha256": "61f3d4c45f365458e24a83ef15b3b1d19b49bc9798537c3d9ebd5c57b061221c","scope_sha256": "0eeee59899d50b86daf0669829fccfca79b613ac013e2e9ee54b067cb49dcab3","branch_hints": []},
+        {"line": 57,"symbol": "migrate","kind": "dynamic query","sha256": "5cbe44e27205e3ffde06716ed0f010b12434e439ad2eaea9bf8708435cf184d5","scope_sha256": "0eeee59899d50b86daf0669829fccfca79b613ac013e2e9ee54b067cb49dcab3","branch_hints": []},
+        {"line": 73,"symbol": "catalog","kind": "dynamic query","sha256": "c28c2e41f936f86bfe03fbeb3354020f81b4689170f32fdb933a398d572715c6","scope_sha256": "e485f59049d88efd9d888ebc631d49cf6c5b07d06dc8b2ef6d67f1466d8481e7","branch_hints": []},
+        {"line": 86,"symbol": "check_schema","kind": "dynamic query","sha256": "f7f74cfb1ff246abca63ef691b134c52b0845f6ed85b658ba252d509da2e792f","scope_sha256": "35bd6fb2ebb333f6c8b89a81df2f88023ed991e1b4ac5412e724be5263c0a9c6","branch_hints": []},
+        {"line": 117,"symbol": "reference_check","kind": "dynamic query","sha256": "efc7fd2c1be8ab0d6b867ad3b73cc43e04098ff7c4031e0e49e4968d16b57dcd","scope_sha256": "7947aab14b8cc3c65fc1e4cec95c36333c7289800a4b4de6ca2b536368645252","branch_hints": []},
+        {"line": 141,"symbol": "inspect","kind": "dynamic query","sha256": "5032f07b58a8b6fd164fd712966713e98d31981f13b2ce17869cabc69efedfb5","scope_sha256": "943231082c070ede8a6cdb706e1d4ad3c15e0ae5186bbddfc1e87a0b7454395d","branch_hints": []},
+        {"line": 154,"symbol": "inspect","kind": "dynamic query","sha256": "9f9587b083317ce4ef3336428d545070ce342bb39a5932b6df70a54c6a097128","scope_sha256": "943231082c070ede8a6cdb706e1d4ad3c15e0ae5186bbddfc1e87a0b7454395d","branch_hints": []},
+        {"line": 162,"symbol": "export_snapshot","kind": "direct connection","sha256": "5bbf5b3abe5a33d21aa00cc6847b8a2501cd66b06165308bd03fcd6ba5d98e50","scope_sha256": "10f75905272598fa2039b7ec90d0a81319d650380977f41cc3eeb6f607c4122c","branch_hints": []},
+        {"line": 164,"symbol": "export_snapshot","kind": "SQLite SQL","sha256": "919fcbb953f0ceb602e1ffe35fe82f3b925e994354fe6f97b388deaf00ba4587","scope_sha256": "10f75905272598fa2039b7ec90d0a81319d650380977f41cc3eeb6f607c4122c","branch_hints": []},
+        {"line": 183,"symbol": "transfer","kind": "SQLite SQL","sha256": "da3d64b15a1c1ef3d28c45d6683dbaaada70480095e1d18e68f40b22fe2be514","scope_sha256": "7b66eb5cc6570fd329533c6faacbf3d5115298818a7ddba54d5df287e7f90f2d","branch_hints": []},
+        {"line": 193,"symbol": "transfer","kind": "dynamic query","sha256": "915daf2c26af257a1afc4f4276d44858014d3bf4248aa8c52335e670cfecf383","scope_sha256": "7b66eb5cc6570fd329533c6faacbf3d5115298818a7ddba54d5df287e7f90f2d","branch_hints": []},
+        {"line": 195,"symbol": "transfer","kind": "dynamic query","sha256": "d61cd4c964d8bd2d26e581dd371678d0434bce767d9ad2788268d18cb98d26f2","scope_sha256": "7b66eb5cc6570fd329533c6faacbf3d5115298818a7ddba54d5df287e7f90f2d","branch_hints": []},
+        {"line": 196,"symbol": "transfer","kind": "dynamic query","sha256": "c008c5f1d46aeea192c662ae75ad5255ccdb8806119d39ae9c3db8c583788aa5","scope_sha256": "7b66eb5cc6570fd329533c6faacbf3d5115298818a7ddba54d5df287e7f90f2d","branch_hints": []},
+        {"line": 204,"symbol": "transfer","kind": "dynamic query","sha256": "823cf2ad03676475119fe58e037dd3345e0387c56cc32e99bfda4a60cb8510e8","scope_sha256": "7b66eb5cc6570fd329533c6faacbf3d5115298818a7ddba54d5df287e7f90f2d","branch_hints": []},
+        {"line": 211,"symbol": "transfer","kind": "dynamic query","sha256": "c9b3664c521b5b0bb7a9e19a2c0b7287c93cd2b37b5640a3f7d2e9fa32cbc4ed","scope_sha256": "7b66eb5cc6570fd329533c6faacbf3d5115298818a7ddba54d5df287e7f90f2d","branch_hints": []}
+      ],
+      "caller_references": [
+        {"path": "scrapper/db/candle_inventory.py","line": 17}
+      ],
+      "classification": "transfer/admin",
+      "store": "Separate historical candle inventory SQLite snapshot and explicitly selected PostgreSQL target",
+      "intent": "Issue #101 reviewed schema, snapshot, bounded exact transfer and reconciliation; no runtime switch",
+      "backend_guard": "Explicit offline paths and settings; read-only SQLite snapshots, hash authorization, standalone journal guard, native PostgreSQL target only",
+      "owner": "Historical candle archive metadata transfer",
+      "disposition": "Explicit offline verified transfer; mutable target marker joins inventory/lock state exclusions. Runtime selection is separate and production transfer/cutover remains separately authorized.",
+      "follow_up": "Runtime archive port and production cutover require separate authorization",
+      "reviewed_source_sha256": "61a21b6cb4194207fdee998e5c265e114c43aa3a334fca8f7ea40150d1cee718"
     },
     {
       "path": "scrapper/db/collection_scope_repo.py",
@@ -2574,6 +2553,8 @@
         {"path": "ops/activation/postgresql_runtime.py","line": 123},
         {"path": "ops/host/document_backlog_audit.py","line": 101},
         {"path": "scrapper/cli_groups/operations.py","line": 15},
+        {"path": "scrapper/db/candle_inventory.py","line": 13},
+        {"path": "scrapper/db/candle_inventory.py","line": 59},
         {"path": "scrapper/db/candle_inventory_transfer.py","line": 14},
         {"path": "scrapper/db/credit_rating_repo.py","line": 18},
         {"path": "scrapper/db/database.py","line": 57},
@@ -2608,6 +2589,7 @@
         {"line": 371,"symbol": "open_application","kind": "dynamic query","sha256": "8607ed18ffc7599c2b3958f85b1f4b17be316694aef46c44ebe3e6d6211ccde2","scope_sha256": "0ab23abf3a9113f55df878fc8042e4c2e9cb37f82e373afa65d520fefad9ed71","branch_hints": []}
       ],
       "caller_references": [
+        {"path": "scrapper/db/candle_inventory.py","line": 14},
         {"path": "scrapper/db/database.py","line": 59},
         {"path": "scrapper/db/postgresql_setup.py","line": 13}
       ]
@@ -2663,6 +2645,7 @@
       ],
       "caller_references": [
         {"path": "scrapper/cli_groups/operations.py","line": 16},
+        {"path": "scrapper/db/candle_inventory.py","line": 16},
         {"path": "scrapper/db/candle_inventory_transfer.py","line": 15},
         {"path": "scrapper/db/database.py","line": 58},
         {"path": "scrapper/db/database.py","line": 98},
@@ -2934,6 +2917,7 @@
         {"path": "scrapper/commands/exchange_bulk_enqueue.py","line": 16},
         {"path": "scrapper/commands/exchange_unaccepted_backfill.py","line": 4},
         {"path": "scrapper/db/browser_host_defer.py","line": 7},
+        {"path": "scrapper/db/candle_inventory.py","line": 15},
         {"path": "scrapper/db/collection_scope_repo.py","line": 3},
         {"path": "scrapper/db/credit_rating_repo.py","line": 19},
         {"path": "scrapper/db/database.py","line": 96},
@@ -3044,7 +3028,7 @@
       "caller_references": [
         {"path": "experiments/earnings_reaction_v1/er03d.py","line": 51},
         {"path": "experiments/earnings_reaction_v1/market_context_report.py","line": 170},
-        {"path": "experiments/historical_candle_archive_v1/access.py","line": 16},
+        {"path": "experiments/historical_candle_archive_v1/access.py","line": 15},
         {"path": "experiments/historical_candle_archive_v1/analyze.py","line": 13},
         {"path": "experiments/historical_candle_archive_v1/hcd02_review.py","line": 19},
         {"path": "experiments/historical_candle_archive_v1/snapshot.py","line": 7},
@@ -3510,42 +3494,6 @@
         {"path": "scrapper/market_live/recovery.py","line": 14},
         {"path": "scrapper/market_live/replay.py","line": 7},
         {"path": "scrapper/market_live/service.py","line": 17}
-      ]
-    },
-    {
-      "path": "scrapper/market_refresh/runner.py",
-      "source_sha256": "74d4f3ccddf9af7ff87cfc0fc7af2225c17b0aac04ecf06cc351ceee3d0d591e",
-      "owner": "Maintainers of scrapper/market_refresh",
-      "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/107",
-      "reviewed_source_sha256": "74d4f3ccddf9af7ff87cfc0fc7af2225c17b0aac04ecf06cc351ceee3d0d591e",
-      "classification": "live application",
-      "store": "canonical application database through caller-supplied connection; logical SCRAPER_DB_PATH",
-      "intent": "Static SQL/query candidates: INSERT, UPDATE; dynamic queries require caller review.",
-      "backend_guard": "No local backend selector detected. Caller-owned connection/routing; not certified native-compatible by this inventory.",
-      "disposition": "Retain reviewed source baseline; explicit backend alternatives/caller routing remain required. New or changed query sites require review; native compatibility is not inferred from classification.",
-      "sites": [
-        {"line": 46,"symbol": "_persist","kind": "SQLite SQL","sha256": "56372a54216fd2c17fab21331c8234b6f1b0d888c25a9fd5f92bc57924fd40c8","scope_sha256": "36ff938f06df1890f2b36c1018ba002ca341d67d1ad2322f4ef2f6ae1d16ebf2","branch_hints": []}
-      ],
-      "caller_references": [
-        {"path": "experiments/unified_financial_pilot/build_geometry_review.py","line": 11},
-        {"path": "experiments/unified_financial_pilot/evaluate.py","line": 11},
-        {"path": "experiments/unified_financial_pilot/evaluate.py","line": 56},
-        {"path": "experiments/unified_financial_pilot/prepare_vimta_regression.py","line": 9},
-        {"path": "experiments/unified_financial_pilot/prepare_vimta_regression.py","line": 127},
-        {"path": "experiments/unified_financial_pilot/summarize.py","line": 7},
-        {"path": "experiments/unified_financial_pilot/verify_geometry_review.py","line": 8},
-        {"path": "experiments/unified_financial_pilot/verify_vimta_regression.py","line": 4},
-        {"path": "scrapper/market_refresh/service.py","line": 16},
-        {"path": "scrapper/research/document_intelligence/credit_fresh.py","line": 200},
-        {"path": "scrapper/research/document_intelligence/credit_fresh.py","line": 351},
-        {"path": "scrapper/research/document_intelligence/credit_fresh.py","line": 392},
-        {"path": "scrapper/research/general_ai_experiment/classification.py","line": 9},
-        {"path": "scrapper/research/general_ai_experiment/final_report.py","line": 8},
-        {"path": "scrapper/research/general_ai_experiment/holdout_score.py","line": 6},
-        {"path": "scrapper/research/general_ai_experiment/local.py","line": 16},
-        {"path": "scrapper/research/general_ai_experiment/prepare_local.py","line": 3},
-        {"path": "scrapper/research/general_ai_experiment/results.py","line": 5},
-        {"path": "scrapper/research/general_ai_experiment/review.py","line": 8}
       ]
     },
     {
@@ -4232,7 +4180,7 @@
         {"path": "experiments/subsector_index_v2/report.py","line": 4},
         {"path": "experiments/subsector_index_v2/verify.py","line": 6},
         {"path": "experiments/technical_fix_v2/integrate.py","line": 20},
-        {"path": "experiments/technical_fix_v2/verify.py","line": 75},
+        {"path": "experiments/technical_fix_v2/verify.py","line": 76},
         {"path": "experiments/technical_integration_v1/build.py","line": 10},
         {"path": "experiments/technical_integration_v1/report.py","line": 6},
         {"path": "experiments/technical_integration_v1/report.py","line": 44},
@@ -4410,7 +4358,7 @@
         {"path": "experiments/subsector_index_v2/report.py","line": 4},
         {"path": "experiments/subsector_index_v2/verify.py","line": 6},
         {"path": "experiments/technical_fix_v2/integrate.py","line": 20},
-        {"path": "experiments/technical_fix_v2/verify.py","line": 75},
+        {"path": "experiments/technical_fix_v2/verify.py","line": 76},
         {"path": "experiments/technical_integration_v1/build.py","line": 10},
         {"path": "experiments/technical_integration_v1/report.py","line": 6},
         {"path": "experiments/technical_integration_v1/report.py","line": 44},
@@ -4495,7 +4443,7 @@
         {"path": "experiments/subsector_index_v2/report.py","line": 4},
         {"path": "experiments/subsector_index_v2/verify.py","line": 6},
         {"path": "experiments/technical_fix_v2/integrate.py","line": 20},
-        {"path": "experiments/technical_fix_v2/verify.py","line": 75},
+        {"path": "experiments/technical_fix_v2/verify.py","line": 76},
         {"path": "experiments/technical_integration_v1/build.py","line": 10},
         {"path": "experiments/technical_integration_v1/report.py","line": 6},
         {"path": "experiments/technical_integration_v1/report.py","line": 44},
@@ -4925,7 +4873,7 @@
         {"line": 18,"symbol": "<module>","kind": "SQLite SQL","sha256": "da9a0d9618b33c84ba7f4d8aafe0414e9d0f3f35addd178cd7caf2b0f5c71584","scope_sha256": "da9a0d9618b33c84ba7f4d8aafe0414e9d0f3f35addd178cd7caf2b0f5c71584","branch_hints": []}
       ],
       "caller_references": [
-        {"path": ".github/workflows/postgresql.yml","line": 64}
+        {"path": ".github/workflows/postgresql.yml","line": 66}
       ]
     },
     {
@@ -4945,44 +4893,6 @@
       ],
       "caller_references": [
       ]
-    },
-    {
-      "path": "scrapper/db/candle_inventory_transfer.py",
-      "source_sha256": "ad6ef3d3c51aac61a537f9d948a4dccfd7fc1baad80813fe52824b162c0a64ea",
-      "sites": [
-        {"line": 26,"symbol": "source_tables","kind": "direct connection","sha256": "15de8f22bc76bef3142136f792454c6a5bf9098c84c4a620ff30c5391cb251dd","scope_sha256": "6b5d516ad8121279b088406aeb9929216bbb7b4d20dba283b11e87fae08d87a6","branch_hints": []},
-        {"line": 27,"symbol": "source_tables","kind": "dynamic query","sha256": "5bf5696775fb127216c9da57b3a7512461172f79d57ea1a8ce9a89c717fa48fc","scope_sha256": "6b5d516ad8121279b088406aeb9929216bbb7b4d20dba283b11e87fae08d87a6","branch_hints": []},
-        {"line": 30,"symbol": "source_tables","kind": "SQLite SQL","sha256": "327d734d78fcb10ee3ebb74486585efb705d6c50022db01116fc2d30c22eb8d8","scope_sha256": "6b5d516ad8121279b088406aeb9929216bbb7b4d20dba283b11e87fae08d87a6","branch_hints": []},
-        {"line": 36,"symbol": "source_tables","kind": "SQLite SQL","sha256": "29e22c579889639ae2718e5b95583d1b6f7f1d39d746a9d9b5add7100e63bf41","scope_sha256": "6b5d516ad8121279b088406aeb9929216bbb7b4d20dba283b11e87fae08d87a6","branch_hints": []},
-        {"line": 36,"symbol": "source_tables","kind": "dynamic query","sha256": "c5fa8fc765a3f33244073ba992318599724b4e9f5a5f75b2a4c007ee3529f56e","scope_sha256": "6b5d516ad8121279b088406aeb9929216bbb7b4d20dba283b11e87fae08d87a6","branch_hints": []},
-        {"line": 39,"symbol": "source_tables","kind": "dynamic query","sha256": "f0a9806567bc1e2e4359c251de989e28d6c2e35d625762c23248acb1d988ab94","scope_sha256": "6b5d516ad8121279b088406aeb9929216bbb7b4d20dba283b11e87fae08d87a6","branch_hints": []},
-        {"line": 55,"symbol": "migrate","kind": "dynamic query","sha256": "6a42e2f21b6a8f5e831a07ffa17f8917b5fe670f31d19f0f2e9578504af2925d","scope_sha256": "0eeee59899d50b86daf0669829fccfca79b613ac013e2e9ee54b067cb49dcab3","branch_hints": []},
-        {"line": 56,"symbol": "migrate","kind": "dynamic query","sha256": "61f3d4c45f365458e24a83ef15b3b1d19b49bc9798537c3d9ebd5c57b061221c","scope_sha256": "0eeee59899d50b86daf0669829fccfca79b613ac013e2e9ee54b067cb49dcab3","branch_hints": []},
-        {"line": 57,"symbol": "migrate","kind": "dynamic query","sha256": "5cbe44e27205e3ffde06716ed0f010b12434e439ad2eaea9bf8708435cf184d5","scope_sha256": "0eeee59899d50b86daf0669829fccfca79b613ac013e2e9ee54b067cb49dcab3","branch_hints": []},
-        {"line": 73,"symbol": "catalog","kind": "dynamic query","sha256": "c28c2e41f936f86bfe03fbeb3354020f81b4689170f32fdb933a398d572715c6","scope_sha256": "e485f59049d88efd9d888ebc631d49cf6c5b07d06dc8b2ef6d67f1466d8481e7","branch_hints": []},
-        {"line": 86,"symbol": "check_schema","kind": "dynamic query","sha256": "f7f74cfb1ff246abca63ef691b134c52b0845f6ed85b658ba252d509da2e792f","scope_sha256": "35bd6fb2ebb333f6c8b89a81df2f88023ed991e1b4ac5412e724be5263c0a9c6","branch_hints": []},
-        {"line": 117,"symbol": "reference_check","kind": "dynamic query","sha256": "efc7fd2c1be8ab0d6b867ad3b73cc43e04098ff7c4031e0e49e4968d16b57dcd","scope_sha256": "7947aab14b8cc3c65fc1e4cec95c36333c7289800a4b4de6ca2b536368645252","branch_hints": []},
-        {"line": 141,"symbol": "inspect","kind": "dynamic query","sha256": "5032f07b58a8b6fd164fd712966713e98d31981f13b2ce17869cabc69efedfb5","scope_sha256": "943231082c070ede8a6cdb706e1d4ad3c15e0ae5186bbddfc1e87a0b7454395d","branch_hints": []},
-        {"line": 154,"symbol": "inspect","kind": "dynamic query","sha256": "9f9587b083317ce4ef3336428d545070ce342bb39a5932b6df70a54c6a097128","scope_sha256": "943231082c070ede8a6cdb706e1d4ad3c15e0ae5186bbddfc1e87a0b7454395d","branch_hints": []},
-        {"line": 162,"symbol": "export_snapshot","kind": "direct connection","sha256": "5bbf5b3abe5a33d21aa00cc6847b8a2501cd66b06165308bd03fcd6ba5d98e50","scope_sha256": "10f75905272598fa2039b7ec90d0a81319d650380977f41cc3eeb6f607c4122c","branch_hints": []},
-        {"line": 164,"symbol": "export_snapshot","kind": "SQLite SQL","sha256": "919fcbb953f0ceb602e1ffe35fe82f3b925e994354fe6f97b388deaf00ba4587","scope_sha256": "10f75905272598fa2039b7ec90d0a81319d650380977f41cc3eeb6f607c4122c","branch_hints": []},
-        {"line": 183,"symbol": "transfer","kind": "SQLite SQL","sha256": "da3d64b15a1c1ef3d28c45d6683dbaaada70480095e1d18e68f40b22fe2be514","scope_sha256": "7b66eb5cc6570fd329533c6faacbf3d5115298818a7ddba54d5df287e7f90f2d","branch_hints": []},
-        {"line": 193,"symbol": "transfer","kind": "dynamic query","sha256": "915daf2c26af257a1afc4f4276d44858014d3bf4248aa8c52335e670cfecf383","scope_sha256": "7b66eb5cc6570fd329533c6faacbf3d5115298818a7ddba54d5df287e7f90f2d","branch_hints": []},
-        {"line": 195,"symbol": "transfer","kind": "dynamic query","sha256": "d61cd4c964d8bd2d26e581dd371678d0434bce767d9ad2788268d18cb98d26f2","scope_sha256": "7b66eb5cc6570fd329533c6faacbf3d5115298818a7ddba54d5df287e7f90f2d","branch_hints": []},
-        {"line": 196,"symbol": "transfer","kind": "dynamic query","sha256": "c008c5f1d46aeea192c662ae75ad5255ccdb8806119d39ae9c3db8c583788aa5","scope_sha256": "7b66eb5cc6570fd329533c6faacbf3d5115298818a7ddba54d5df287e7f90f2d","branch_hints": []},
-        {"line": 204,"symbol": "transfer","kind": "dynamic query","sha256": "823cf2ad03676475119fe58e037dd3345e0387c56cc32e99bfda4a60cb8510e8","scope_sha256": "7b66eb5cc6570fd329533c6faacbf3d5115298818a7ddba54d5df287e7f90f2d","branch_hints": []},
-        {"line": 211,"symbol": "transfer","kind": "dynamic query","sha256": "c9b3664c521b5b0bb7a9e19a2c0b7287c93cd2b37b5640a3f7d2e9fa32cbc4ed","scope_sha256": "7b66eb5cc6570fd329533c6faacbf3d5115298818a7ddba54d5df287e7f90f2d","branch_hints": []}
-      ],
-      "caller_references": [
-      ],
-      "classification": "transfer/admin",
-      "store": "Separate historical candle inventory SQLite snapshot and explicitly selected PostgreSQL target",
-      "intent": "Issue #101 reviewed schema, snapshot, bounded exact transfer and reconciliation; no runtime switch",
-      "backend_guard": "Explicit offline paths and settings; read-only SQLite snapshots, hash authorization, standalone journal guard, native PostgreSQL target only",
-      "owner": "Historical candle archive metadata transfer",
-      "disposition": "Retain SQLite source as immutable transfer evidence; runtime remains unchanged",
-      "follow_up": "Runtime archive port and production cutover require separate authorization",
-      "reviewed_source_sha256": "ad6ef3d3c51aac61a537f9d948a4dccfd7fc1baad80813fe52824b162c0a64ea"
     }
   ]
 }

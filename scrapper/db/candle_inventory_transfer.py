@@ -103,7 +103,7 @@ def file_inventory(root):
         if not path.is_file():
             raise RuntimeError('Archive special file refused')
         # Inventory snapshots/locks are separate mutable operational state.
-        if path.name.startswith('inventory.sqlite3') or path.name == '.writer.lock':
+        if path.name.startswith('inventory.sqlite3') or path.name in ('.writer.lock', '.inventory-target.json'):
             continue
         result[str(path.relative_to(root))] = {'bytes': path.stat().st_size, 'sha256': file_sha256(path)}
     return result

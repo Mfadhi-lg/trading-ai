@@ -43,9 +43,9 @@ def _persist(archive, query, receipt, raw, calendar):
                    end_basis='LIVE_FRESH_VERIFIED_SESSION;' + ';'.join(record.get('source_refs', [])),
                    status='COMPLETED_RETROSPECTIVE' if completion <= now else 'PROVISIONAL')
     if query['kind'] == 'STOCK':
-        archive.db.execute('''INSERT OR IGNORE INTO requests
+        archive.db.execute('''INSERT INTO requests
             (request_id,company_id,instrument_key,unit,interval,from_date,to_date,status,attempts)
-            VALUES (?,?,?,?,?,?,?,'RAW_SAVED',1)''', tuple(query[k] for k in
+            VALUES (?,?,?,?,?,?,?,'RAW_SAVED',1) ON CONFLICT(request_id) DO NOTHING''', tuple(query[k] for k in
             ('request_id','company_id','instrument_key','unit','interval','from_date','to_date')))
         archive.db.execute('''UPDATE requests SET raw_sha256=?,raw_path=?,received_at=?,http_status=200,
             status='RAW_SAVED' WHERE request_id=?''',

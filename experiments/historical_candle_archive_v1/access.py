@@ -9,7 +9,6 @@ from collections import defaultdict
 from datetime import datetime, date, timedelta, timezone
 from decimal import Decimal
 import gzip
-import sqlite3
 
 from .acquire import normalize
 from .calendar import day_record
@@ -126,10 +125,8 @@ class HistoricalStore:
         verify(self.mount, self.device)
         if self.root.is_symlink() or self.root.resolve().stat().st_dev != self.device:
             raise RuntimeError('STOP_ACCESS_ARCHIVE_NOT_ON_PASSPORT')
-        self.db = sqlite3.connect(f'file:{self.root}/inventory.sqlite3?mode=ro', uri=True)
-        self.db.row_factory = sqlite3.Row
-        self.db.execute('PRAGMA busy_timeout=30000')
-        self.db.execute('PRAGMA query_only=ON')
+        from scrapper.db.candle_inventory import open_inventory
+        self.db = open_inventory(self.root)
 
     def close(self):
         self.db.close()
