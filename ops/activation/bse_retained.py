@@ -1,4 +1,8 @@
 """Prepare/execute one authorized BSE retained-input operation; never retry."""
+
+if __name__ == '__main__':
+    from legacy_sqlite_guard import retired_bse_ingestion
+    retired_bse_ingestion()
 from datetime import datetime, timezone
 import fcntl
 import hashlib
@@ -30,6 +34,8 @@ def require(condition,message):
 
 
 def main():
+    from legacy_sqlite_guard import retired_bse_ingestion
+    retired_bse_ingestion()
     from production_ownership import owner_gate
     require('--execute' in sys.argv, 'This selected operation requires --execute')
     OUT.mkdir(exist_ok=True)

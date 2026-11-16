@@ -58,6 +58,39 @@ class LegacyLauncherTests(unittest.TestCase):
                     namespace['main']()
                 connect.assert_not_called()
 
+    def test_retained_bse_refuses_before_campaign_reads_writes_or_connections(self):
+        for filename, calls in (
+            ('bse_retained.py', (('main', ()),)),
+            ('bse_retained_runtime.py', (('run', ()), ('_run_owned', (None,)))),
+        ):
+            namespace = runpy.run_path(str(ACTIVATION / filename))
+            for backend in ('sqlite', 'postgresql'):
+                for name, args in calls:
+                    with self.subTest(file=filename, backend=backend, entry=name), \
+                            patch.dict(os.environ, {'TRADING_AI_DB_BACKEND': backend}), \
+                            patch.object(sys, 'argv', [filename, '--execute']), \
+                            patch.object(Path, 'read_text') as read, \
+                            patch.object(Path, 'mkdir') as mkdir, \
+                            patch('subprocess.check_output') as docker, \
+                            patch('sqlite3.connect') as connect:
+                        with self.assertRaisesRegex(RuntimeError, 'Retained BSE ingestion retired'):
+                            namespace[name](*args)
+                        read.assert_not_called()
+                        mkdir.assert_not_called()
+                        docker.assert_not_called()
+                        connect.assert_not_called()
+
+    def test_retained_bse_direct_entrypoints_refuse_without_stop_receipt(self):
+        for filename in ('bse_retained.py', 'bse_retained_runtime.py'):
+            with self.subTest(file=filename), patch.object(Path, 'mkdir') as mkdir, \
+                    patch.object(Path, 'write_text') as write, \
+                    patch('sqlite3.connect') as connect:
+                with self.assertRaisesRegex(RuntimeError, 'Retained BSE ingestion retired'):
+                    runpy.run_path(str(ACTIVATION / filename), run_name='__main__')
+                mkdir.assert_not_called()
+                write.assert_not_called()
+                connect.assert_not_called()
+
     def test_release_and_missing_declared_target_reject_without_native_env(self):
         for active, declared in ((False, False), (True, False), (True, True)):
             with self.subTest(active=active, declared=declared), tempfile.TemporaryDirectory() as tmp, patch.dict(os.environ, {}, clear=True):

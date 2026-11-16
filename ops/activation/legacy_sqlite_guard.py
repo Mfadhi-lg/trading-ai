@@ -38,6 +38,13 @@ def retired_launcher():
     raise RuntimeError('Historical snapshot-only launcher retired; production volume access refused. ' + ALTERNATIVES)
 
 
+def retired_bse_ingestion():
+    """The dated eight-filing write operation has no supported replay/native mode."""
+    raise RuntimeError('Retained BSE ingestion retired; production volume access refused. '
+                       'The October authorization is historical, not permission to replay. '
+                       + ALTERNATIVES)
+
+
 def require_snapshot():
     """Only an explicitly named/hash-pinned, read-only historical container input."""
     reject_native()

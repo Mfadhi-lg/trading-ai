@@ -153,3 +153,13 @@ Browser compatibility configuration was also rendered with
 All four isolated development entrypoints match the original browser command;
 rendering `compose.browser-recovery.yml` alone confirms four refusal entrypoints.
 No containers were started.
+
+## Retained BSE writer (#107)
+
+`bse_retained.py` and `bse_retained_runtime.py` are retired on every backend,
+including their callable `main`, `run` and `_run_owned` entry points. The dated
+eight-filing writer mounts production storage writable and cannot use the
+read-only snapshot replay contract above. Refusal precedes receipt/output access
+and the old stop-receipt handlers. Original source/evidence is preserved; no
+replay or native use is selected. See the [complete reader disposition and caller
+review](retained-reader-dispositions.md) for #107's native and retained entries.
