@@ -12,7 +12,7 @@ from ...core.nums import clean_text
 
 
 RESULT_SCREEN_PARSER_NAME = "screener-result-screen"
-RESULT_SCREEN_PARSER_VERSION = "1.0.1"
+RESULT_SCREEN_PARSER_VERSION = "1.0.2"
 
 
 @dataclass(frozen=True)
@@ -72,6 +72,11 @@ _BLOCKED_MARKERS = (
 )
 _RESULT_DATE_HEADERS = {"last result date", "qtr date"}
 _PERIOD_RE = re.compile(r"^(\d{4})(\d{2})(?:\.0+)?$")
+_MONTH_ABBREVIATIONS = (
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+)
+_DISPLAY_PERIOD_RE = re.compile(r"^(" + "|".join(_MONTH_ABBREVIATIONS) + r")-([0-9]{2})$")
 _PAGE_INFO_RE = re.compile(
     r"([\d,]+)\s+results?\s+found(?:\s*:\s*showing\s+page\s+(\d+)\s+of\s+(\d+))?",
     re.IGNORECASE,
@@ -111,11 +116,23 @@ def canonical_company_path(href: str) -> str:
 
 
 def normalize_result_period(display: str) -> str:
+    """Normalize numeric YYYYMM or English Mon-YY, retaining raw text in rows.
+
+    Screener's abbreviated two-digit years explicitly mean 2000 through 2099
+    (YY + 2000), independent of locale, current date or strptime's year pivot.
+    Calendar validity is checked here; admission retains its separate current
+    reporting-period fence, so parsing a future display does not authorize it.
+    """
     value = clean_text(display)
     match = _PERIOD_RE.fullmatch(value)
     if match is None:
-        raise ValueError(f"Invalid Last result date: {display!r}")
-    year, month = int(match.group(1)), int(match.group(2))
+        display_match = _DISPLAY_PERIOD_RE.fullmatch(value)
+        if display_match is None:
+            raise ValueError(f"Invalid Last result date: {display!r}")
+        year = 2000 + int(display_match.group(2))
+        month = _MONTH_ABBREVIATIONS.index(display_match.group(1)) + 1
+    else:
+        year, month = int(match.group(1)), int(match.group(2))
     if not 1900 <= year <= 2200 or not 1 <= month <= 12:
         raise ValueError(f"Invalid Last result date: {display!r}")
     return f"{year:04d}-{month:02d}"

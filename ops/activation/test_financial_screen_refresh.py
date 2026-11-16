@@ -101,6 +101,36 @@ def test_access_rejection_retains_evidence_and_does_not_admit(database,tmp_path)
     assert database.execute("SELECT count(*) FROM screener_screen_runs WHERE validation_status='failed'").fetchone()[0]==1
 
 
+def test_mixed_month_formats_admit_once_without_live_requests(database,tmp_path):
+    pages = [body(1).replace(b"202609", b"Sep-26"), body(2)]
+    # Match the retained publisher header without copying authenticated HTML or
+    # pretending its 37-page partial capture is a complete admission fixture.
+    pages = [page.replace(b'<th>Last result date</th>',
+        b'<th data-tooltip="Last result date">Qtr Date YYYYMM</th>') for page in pages]
+    result,clients=run(database,tmp_path,pages)
+    assert result['status']=='refreshed' and result['enqueue']['new']==2
+    assert len(clients[0].urls)==2 and clients[0].closed
+    rows=database.execute('SELECT company_path_normalized,result_period,reporting_scope FROM screener_company_queue ORDER BY queue_item_id').fetchall()
+    assert [(r['company_path_normalized'],r['result_period'],r['reporting_scope']) for r in rows]==[
+        ('/company/TEST1/','2026-09','standalone'),('/company/TEST2/','2026-09','standalone')]
+    result,_=run(database,tmp_path,pages,'2026-11-05T08:00:00+00:00')
+    assert result['status']=='refreshed' and result['enqueue']['new']==0
+    assert database.execute('SELECT count(*) FROM screener_company_queue').fetchone()[0]==2
+
+
+@pytest.mark.parametrize('display',[b'Dec-26',b'Sep-99',b'202612',b'Sept-26'])
+def test_future_or_malformed_period_never_admits(database,tmp_path,display):
+    result,_=run(database,tmp_path,[body(1).replace(b'202609',display)])
+    assert result['status']=='deferred' and result['queue_admission'] is False
+    assert database.execute('SELECT count(*) FROM screener_company_queue').fetchone()[0]==0
+
+
+def test_abbreviated_duplicate_page_never_admits(database,tmp_path):
+    result,_=run(database,tmp_path,[body(1).replace(b'202609',b'Sep-26'),body(2,identifier='1')])
+    assert result['status']=='deferred'
+    assert database.execute('SELECT count(*) FROM screener_company_queue').fetchone()[0]==0
+
+
 def test_same_saved_bytes_can_be_reconsidered_after_pagination_bound_correction(database,tmp_path,monkeypatch):
     monkeypatch.setattr(refresh,'MAX_PAGES',1)
     assert run(database,tmp_path,[body(1)])[0]['status']=='deferred'

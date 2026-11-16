@@ -55,6 +55,7 @@ jobs:
           python -B -m pytest -q -p no:cacheprovider
           ops/activation/test_processing_pipeline.py
           ops/activation/test_paired_downloads.py
+          ops/activation/test_financial_screen_refresh.py
           ops/host/test_acquisition_terminal.py
           ops/host/test_monitor_usability.py
       - name: Data-integrity and fixture gates

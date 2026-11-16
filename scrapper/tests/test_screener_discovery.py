@@ -41,6 +41,66 @@ def screen_html(*, result_count: int = 3, page_count: int = 1) -> bytes:
 
 
 class ResultScreenParserTests(unittest.TestCase):
+    def test_numeric_and_abbreviated_periods_with_explicit_century(self) -> None:
+        for display, expected in (
+            ("202609", "2026-09"), ("202609.00", "2026-09"),
+            ("Sep-26", "2026-09"), ("Jan-00", "2000-01"),
+            ("Dec-68", "2068-12"), ("Dec-69", "2069-12"),
+            ("Dec-99", "2099-12"),
+        ):
+            with self.subTest(display=display):
+                self.assertEqual(normalize_result_period(display), expected)
+        for month, name in enumerate(
+            ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"),
+            start=1,
+        ):
+            self.assertEqual(normalize_result_period(f"{name}-26"), f"2026-{month:02d}")
+
+    def test_abbreviated_periods_reject_unverified_formats(self) -> None:
+        for display in ("Sep-2026", "Sept-26", "sep-26", "SEP-26", "Sep/26",
+                        "Sep-6", "Sep--26", "Sep-26.00", "Sep-٢٦", "Foo-26",
+                        "202600", "202613", "189912", "220101", "202609.5", ""):
+            with self.subTest(display=display), self.assertRaises(ValueError):
+                normalize_result_period(display)
+
+    def test_mixed_periods_preserve_raw_cells_identities_and_scope(self) -> None:
+        html = screen_html().replace(b"202606.00", b"Sep-26")
+        # Header/tooltip layout verified in the retained 14 November response;
+        # companies and numeric values in this fixture remain synthetic.
+        html = html.replace(b"Qtr Date", b"Qtr Date YYYYMM").replace(
+            b'title="Last result date"', b'data-tooltip="Last result date"'
+        )
+        parsed = parse_result_screen(html, "x", "u")
+        row = parsed.rows[0]
+        self.assertTrue(parsed.is_complete_capture)
+        self.assertEqual(row.result_period, "2026-09")
+        self.assertEqual(row.last_result_date_display, "Sep-26")
+        self.assertEqual(row.source_cells[-1].raw_text, "Sep-26")
+        self.assertEqual(row.screen_row_company_id, "11")
+        self.assertEqual(row.company_path_normalized, "/company/ALPHA/consolidated/")
+        self.assertEqual(row.reporting_scope_hint, "consolidated")
+        self.assertEqual(parsed.rows[1].result_period, "2026-05")
+        self.assertEqual(parsed.rows[1].reporting_scope_hint, "standalone")
+        partial = parse_result_screen(html.replace(b"3 results", b"4 results"), "x", "u")
+        self.assertFalse(partial.is_complete_capture)
+
+    def test_abbreviated_period_does_not_relax_page_or_identity_checks(self) -> None:
+        html = screen_html().replace(b"202606.00", b"Sep-26")
+        for invalid in (
+            b"<html>Access denied captcha</html>",
+            html.replace(b"Qtr Date", b"Unknown").replace(b'title="Last result date"', b""),
+            html.replace(b">2.</td>", b">1.</td>"),
+            html.replace(b"/company/500002/", b"/company/ALPHA/consolidated/"),
+            html.replace(b"202605", b"Bogus-26"),
+        ):
+            with self.subTest(html=invalid[:50]), self.assertRaises(ValueError):
+                parse_result_screen(invalid, "x", "u")
+
+    def test_recorded_parser_versions_agree(self) -> None:
+        from scrapper import config
+        from scrapper.sources.screener import result_screen
+        self.assertEqual(config.RESULT_SCREEN_PARSER_VERSION, result_screen.RESULT_SCREEN_PARSER_VERSION)
+
     def test_real_tbody_layout_and_repeated_headers_are_preserved(self) -> None:
         html = b"""<div data-page-info>2 results found: Showing page 1 of 1</div>
         <div data-page-results><table><tbody>
