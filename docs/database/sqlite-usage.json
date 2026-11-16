@@ -2575,7 +2575,8 @@
         {"path": "scrapper/market_live/transfer.py","line": 90},
         {"path": "scrapper/market_live/transfer.py","line": 140},
         {"path": "scrapper/research/postgresql_benchmark.py","line": 19},
-        {"path": "scrapper/research/postgresql_benchmark.py","line": 20}
+        {"path": "scrapper/research/postgresql_benchmark.py","line": 20},
+        {"path": "scripts/audit/postgresql_cutover_evidence.py","line": 14}
       ]
     },
     {
@@ -2667,7 +2668,8 @@
         {"path": "scrapper/db/queue_identity_recovery.py","line": 15},
         {"path": "scrapper/market_live/repository.py","line": 9},
         {"path": "scrapper/market_live/transfer.py","line": 11},
-        {"path": "scrapper/research/postgresql_benchmark.py","line": 20}
+        {"path": "scrapper/research/postgresql_benchmark.py","line": 20},
+        {"path": "scripts/audit/postgresql_cutover_evidence.py","line": 14}
       ]
     },
     {
