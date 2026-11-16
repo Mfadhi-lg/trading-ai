@@ -50,9 +50,11 @@ debt. It is not a semantic SQL validator or an automatic proof of backend safety
   quarter and diagnostic native dispatch and supported SQLite fallbacks.
   `repository_backend.statement` selects explicit dialect alternatives; many
   repository/command/view sites use it without a local conditional branch.
-- Secondary operational store: `live.sqlite3` and historical candle
-  `inventory.sqlite3` remain separate SQLite contracts. The application backend
-  setting does not migrate these stores.
+- Secondary operational store: live evidence and historical candle inventory
+  now support independently selected native stores under #101–#103; their SQLite
+  compatibility contracts remain. The application backend setting migrates or
+  selects neither store. See the individual acceptance items in
+  [PostgreSQL acceptance](POSTGRESQL_ACCEPTANCE.md).
 - Historical snapshot: explicit quiescent freshness/ledger readers, the research
   catalog and retained research sources/copies remain SQLite. Some research modules
   write isolated research copies and in-memory clones; this classification does
@@ -63,13 +65,14 @@ debt. It is not a semantic SQL validator or an automatic proof of backend safety
   rehearsals and explicitly authorized sidecar/backup tools retain SQLite behavior.
 - Ephemeral scratch: in-memory FTS5 and migration-baseline stores need no native port.
 
-Legacy/manual operational readers and the root Dockerfile healthcheck have no
-established native backend guard. Their baseline records that limitation, rather
-than certifying compatibility or inferring inactivity from dated names. Port or
-retained/manual-only disposition is tracked by
-[#107](https://github.com/Mfadhi-lg/trading-ai/issues/107). Application dynamic SQL
-without locally established routing also requires review there before native
-expansion. Issues #63 and #64 concern engineering quality and domain contracts,
+The root Dockerfile healthcheck now uses the canonical read-only application
+factory and schema check, matching the native image; native failure never opens
+SQLite. #98/#99 ported the named financial/document operational readers and #100
+fenced the retained campaign, benchmark and canary entry points. Remaining
+per-entry-point dispositions and application dynamic SQL without locally
+established routing still require review under
+[#107](https://github.com/Mfadhi-lg/trading-ai/issues/107) before native expansion.
+These source boundaries do not certify installed native health. Issues #63 and #64 concern engineering quality and domain contracts,
 respectively; they are not subsystem port issues.
 
 ## Native execution evidence

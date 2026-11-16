@@ -7,6 +7,47 @@ tracks aggregate completion, [#107](https://github.com/Mfadhi-lg/trading-ai/issu
 retained operational readers, and [#33](https://github.com/Mfadhi-lg/trading-ai/issues/33)
 health consolidation. No production access or runtime changes occurred in this task.
 
+## Aggregate follow-up (#106), checked 16 November 2026
+
+GitHub inspection found #96–#105 CLOSED with merged implementation PRs
+[#108](https://github.com/Mfadhi-lg/trading-ai/pull/108) through
+[#117](https://github.com/Mfadhi-lg/trading-ai/pull/117), respectively. This records
+source delivery only. The acceptance evidence below still contains UNKNOWN items;
+#106 must remain open until those have verified evidence or explicit accepted
+operator dispositions. The unchecked boxes in the original issue are not a new
+implementation backlog, and closed children are not production sign-off.
+
+One additional source defect was reproduced during this follow-up: root
+`Dockerfile` health reported success against an empty SQLite database and created
+a missing database, ignoring PostgreSQL selection. Both image health commands now
+use `database.connect(read_only=True)` and `init_db`, closing the connection even
+on failure. Native target identity, restricted login and schema checks therefore
+remain authoritative; native failure cannot fall back to SQLite. A health pass
+covers connection/schema readiness only, not acquisition progress, backup
+freshness, original cutover reconciliation or secondary-store acceptance.
+The root image still lacks the optional native driver; use the existing
+`ops/docker/postgresql/Dockerfile` for prepared native images. Missing native
+prerequisites fail health rather than probing SQLite. No image was built or deployed.
+
+Remaining closeout work is bounded as follows:
+
+- #107: finish the per-entry-point disposition and dynamic-query review. #98/#99
+  already ported the named financial/document readers; #100 fenced the dated
+  campaign, benchmark and canary entry points. This health correction resolves
+  the root Dockerfile defect, not all inventory SQL review.
+- Database operator plus independent verifier: recover original frozen cutover
+  snapshot custody and all-table export/import evidence, then reconcile subsequent
+  native changes under the original-watermark procedure below.
+- Release operator: obtain separately authorized current target/schema/role,
+  installed release and scheduled lane/CLI receipts. Do not activate work to
+  manufacture a successful observation.
+- Backup/store owners: establish installed backup/retention/key recovery and
+  disposable full-size restore evidence, including external document/candle/live
+  bytes and individual store selection/transfer decisions.
+
+No production probe, recovery, migration or deployment is authorized by this
+source PR. The authorization gates below remain necessary for operational work.
+
 ## Application acceptance matrix
 
 Each item separates source contracts from missing operational evidence. UNKNOWN
@@ -234,3 +275,33 @@ environment. Installing locked test dependencies resolved those failures before
 the passing runs above. Full repository/retained-data audits and production probes
 were NOT RUN. Independent read-only review found no material blocker and
 independently passed all six evidence tests; it did not certify live parity.
+
+## Aggregate follow-up verification, 16 November 2026
+
+- PASS: `python3 -B -m unittest scrapper.tests.test_container_healthcheck.ContainerHealthcheckTests -v`
+  — four tests. Before the fix, three tests exposed four failing subcases across
+  the root/native health commands, including native connection cleanup on failure.
+- PASS: `python3 -B /private/tmp/issue106-native.py -m unittest scrapper.tests.test_container_healthcheck -v`
+  — five tests, no skips; actual restricted native login and mismatched target.
+- PASS: `python3 -B /private/tmp/issue106-native.py scripts/audit/native_runtime_smoke.py`
+  — 58 tests, no skips, including the new public health commands.
+- PASS: `python3 -B -m unittest scrapper.tests.test_ci_database_isolation scrapper.tests.test_postgresql_cutover_evidence -v`
+  — ten tests; `python3 -B scripts/audit/check_migration_manifest.py` — unchanged
+  canonical migration identities.
+
+The temporary native wrapper initialized a new PostgreSQL 16 cluster per command,
+selected only `127.0.0.1:55506/trading_ai_test`, cleared inherited backend/PG
+settings, isolated all application write roots and stopped each cluster afterward.
+It reused the locked test/native dependencies in `/private/tmp/issue105-venv`.
+An initial attempt using the previous test cluster failed (sandbox socket denial,
+then connection refused); only the new disposable clusters supplied passing native
+evidence. Independent read-only review found no material blockers and independently
+passed the four offline health tests. Image builds, production observations and
+retained-data reconciliation were NOT RUN. #106 remains PARTIAL.
+
+- PASS: `python3 -B scripts/audit/sqlite_usage.py --index` — 174 classified files,
+  755 sites; reviewed root health SQL removal and the added factory caller.
+- PASS: `/private/tmp/issue105-venv/bin/python -B -m pytest -q scrapper/tests/test_sqlite_usage_inventory.py -k 'not tracked_inventory_matches_reviewed_evidence'`
+  — eight passed, one deselected. The working-tree scan is excluded because
+  unrelated local edits are preserved; the staged-source gate above covers the PR.
+- PASS: `git diff --cached --check` — no whitespace errors.

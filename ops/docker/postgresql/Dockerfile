@@ -11,4 +11,4 @@ ARG SOURCE_REVISION
 LABEL org.opencontainers.image.revision=$SOURCE_REVISION
 USER scraper
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
-  CMD ["python", "-c", "from scrapper.db.database import connect,init_db; c=connect(read_only=True); init_db(c); c.execute('SELECT 1'); c.close()"]
+  CMD ["python", "-c", "from contextlib import closing; from scrapper.db.database import connect,init_db\nwith closing(connect(read_only=True)) as c: init_db(c); c.execute('SELECT 1')"]
