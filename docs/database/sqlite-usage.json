@@ -38,17 +38,17 @@
     },
     {
       "path": ".github/workflows/postgresql.yml",
-      "source_sha256": "438265eac0168f381ed7394b226bbf4c00ae9d11e00eed429f56c61733946933",
+      "source_sha256": "db2e583eded8c8a68badde4540688b5c613d59ac448f22562f4f4eeec7e13537",
       "owner": "Maintainers of .github/workflows",
       "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/107",
-      "reviewed_source_sha256": "438265eac0168f381ed7394b226bbf4c00ae9d11e00eed429f56c61733946933",
+      "reviewed_source_sha256": "db2e583eded8c8a68badde4540688b5c613d59ac448f22562f4f4eeec7e13537",
       "classification": "compatibility/test",
       "store": "configuration references only; isolated CI roots/disposable PostgreSQL service or configured development/legacy runtime mounts",
       "intent": "Configuration/launcher evidence; inspect selected backend and mount/write-root wiring before runtime use.",
       "backend_guard": "No connection executed by inventory. CI job isolation and explicit runtime backend configuration are separate contracts.",
       "disposition": "Preserve CI isolation and legacy SQLite support; changes require source review. Existing workflow/configuration is not proof of live runtime health.",
       "sites": [
-        {"line": 44,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "7e9023d0bb5fc1e282edb2c5b6c885d08f97efe6b0c27b1d6974f794e03c37ec","scope_sha256": "438265eac0168f381ed7394b226bbf4c00ae9d11e00eed429f56c61733946933","branch_hints": []}
+        {"line": 44,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "7e9023d0bb5fc1e282edb2c5b6c885d08f97efe6b0c27b1d6974f794e03c37ec","scope_sha256": "db2e583eded8c8a68badde4540688b5c613d59ac448f22562f4f4eeec7e13537","branch_hints": []}
       ],
       "caller_references": [
         {"path": "scrapper/cli_groups/operations.py","line": 15},

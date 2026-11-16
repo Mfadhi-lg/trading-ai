@@ -149,3 +149,15 @@ Production rows, original retained bytes and metadata were read; no production
 business data, stops, services, release pointers or runtime controls were changed.
 The existing schedule may continue independently. Sustained throughput and live
 fresh-result admission remain unverified acceptance stages.
+
+## CI runner compatibility follow-up
+
+The initial PR PostgreSQL jobs failed before tests at client installation:
+`E: Unable to locate package postgresql-client-16`. The runner log identifies
+Ubuntu 26.04 selected by `ubuntu-latest`. This PR pins only that native job to
+`ubuntu-24.04`, whose [official runner inventory](https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2404-Readme.md)
+includes PostgreSQL 16. The disposable 16.14 service, matching client-major
+installation, isolation, credentials and required tests are unchanged. The
+reviewed workflow source/scope fingerprints are refreshed. This corrects the
+observed CI environment failure; it does not change PostgreSQL architecture or
+production configuration. CI outcome is reported on PR #120.
