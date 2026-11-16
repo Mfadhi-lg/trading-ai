@@ -1,5 +1,10 @@
 # Current status and supersession index
 
+16 November 2026 source review: [PostgreSQL acceptance and remaining evidence
+(#105)](database/POSTGRESQL_ACCEPTANCE.md) separates implemented native contracts
+from dated runtime observations and UNKNOWN production reconciliation, lane,
+secondary-store and recovery evidence. It does not certify migration completion.
+
 Runtime freshness: this index preserves dated project evidence, not live health.
 Use [read-only runtime verification](operations/runtime-verification.md) and
 `python3 -B scripts/runtime-status`. The latest operator observation belongs at

@@ -1,5 +1,9 @@
 # Configured PostgreSQL application backend
 
+For the current source acceptance matrix, dated runtime observations and missing
+operator evidence, see [PostgreSQL acceptance (#105)](POSTGRESQL_ACCEPTANCE.md).
+Backend support does not establish production parity or migrate secondary stores.
+
 Issue #53's application path selects PostgreSQL explicitly through the existing
 database factory. SQLite remains the default for existing installations and
 offline fixtures. Financial values and original source bytes retain their
