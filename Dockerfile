@@ -32,7 +32,7 @@ RUN mkdir -p /data && chown -R scraper:scraper /app /data
 USER scraper
 VOLUME ["/data"]
 HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
-  CMD ["python", "-c", "from scrapper.config import DB_PATH; import sqlite3; c=sqlite3.connect(DB_PATH); c.execute('SELECT 1'); c.close()"]
+  CMD ["python", "-c", "from contextlib import closing; from scrapper.db.database import connect,init_db\nwith closing(connect(read_only=True)) as c: init_db(c); c.execute('SELECT 1')"]
 
 ENTRYPOINT ["python", "-m", "scrapper.cli"]
 CMD ["--help"]

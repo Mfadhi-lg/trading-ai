@@ -68,18 +68,17 @@
     },
     {
       "path": "Dockerfile",
-      "source_sha256": "1b8cf841d05db3f361f7ca80271c4c6adc8a2c19d3d825f0ed54173668db27ef",
+      "source_sha256": "55f792bd9e5b5aa0c0b1024d420c16c188ab9cfaea09b79247249ae32f4e922d",
       "owner": "Maintainers of .",
       "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/107",
-      "reviewed_source_sha256": "1b8cf841d05db3f361f7ca80271c4c6adc8a2c19d3d825f0ed54173668db27ef",
+      "reviewed_source_sha256": "55f792bd9e5b5aa0c0b1024d420c16c188ab9cfaea09b79247249ae32f4e922d",
       "classification": "live application",
       "store": "configured application DB_PATH in embedded healthcheck",
-      "intent": "Embedded sqlite3.connect is write-capable; SELECT 1 healthcheck.",
-      "backend_guard": "No native backend guard in root legacy Dockerfile healthcheck.",
-      "disposition": "Retain configuration evidence; do not certify this healthcheck for native deployments. Backend-aware port or explicit deployment disposition tracked by #107.",
+      "intent": "Read-only canonical application factory and schema readiness check; no directory/database creation.",
+      "backend_guard": "database.connect(read_only=True) selects explicit backend and verifies native login/target; init_db checks schema; closing releases connection on failure.",
+      "disposition": "Root image retains SQLite development support; native driver/image remains separately prepared. Health fails on missing native prerequisites without SQLite fallback; no installed health certification.",
       "sites": [
-        {"line": 8,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "f35fb7094810041185e4784889b650502ed7163312b8dc1d74d67bc57775d857","scope_sha256": "1b8cf841d05db3f361f7ca80271c4c6adc8a2c19d3d825f0ed54173668db27ef","branch_hints": []},
-        {"line": 35,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "94558ba85be60c99495bc15b1e3c1995ece9110b51bd8a547344f0228d857129","scope_sha256": "1b8cf841d05db3f361f7ca80271c4c6adc8a2c19d3d825f0ed54173668db27ef","branch_hints": []}
+        {"line": 8,"symbol": "<embedded/config>","kind": "embedded/config","sha256": "f35fb7094810041185e4784889b650502ed7163312b8dc1d74d67bc57775d857","scope_sha256": "55f792bd9e5b5aa0c0b1024d420c16c188ab9cfaea09b79247249ae32f4e922d","branch_hints": []}
       ],
       "caller_references": [
         {"path": "scripts/audit/sqlite_usage.py","line": 140}
@@ -1884,6 +1883,7 @@
         {"line": 150,"symbol": "apply_migrations","kind": "dynamic query","sha256": "2d5d687cd41de67cc6b043da2fc88fc0b86cd8d7bf5b2670827081eaaf18b171","scope_sha256": "5b127ef3a9b98a567f479e34ec0ceb65d7c4c8947cd046eb1823ca953e8342e8","branch_hints": []}
       ],
       "caller_references": [
+        {"path": "Dockerfile","line": 35},
         {"path": "ops/activation/acquisition_recovery_backup_runtime.py","line": 18},
         {"path": "ops/activation/acquisition_recovery_inspect_runtime.py","line": 17},
         {"path": "ops/activation/bse_retained.py","line": 44},
