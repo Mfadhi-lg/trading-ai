@@ -1,4 +1,8 @@
 """One retained-response ingestion, using only the pinned canonical workflow."""
+
+if __name__ == '__main__':
+    from legacy_sqlite_guard import retired_bse_ingestion
+    retired_bse_ingestion()
 from contextlib import ExitStack, closing
 from dataclasses import asdict
 from datetime import datetime, timezone
@@ -26,11 +30,15 @@ def emit(stage, **payload):
 
 
 def run():
+    from legacy_sqlite_guard import retired_bse_ingestion
+    retired_bse_ingestion()
     with ExitStack() as owners:
         return _run_owned(owners)
 
 
 def _run_owned(owners):
+    from legacy_sqlite_guard import retired_bse_ingestion
+    retired_bse_ingestion()
     import production_ownership
     import sqlite_sidecar_guard
     from production_ownership import assert_no_conflicting_leases

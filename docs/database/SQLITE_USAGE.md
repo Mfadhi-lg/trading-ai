@@ -68,10 +68,11 @@ debt. It is not a semantic SQL validator or an automatic proof of backend safety
 The root Dockerfile healthcheck now uses the canonical read-only application
 factory and schema check, matching the native image; native failure never opens
 SQLite. #98/#99 ported the named financial/document operational readers and #100
-fenced the retained campaign, benchmark and canary entry points. Remaining
-per-entry-point dispositions and application dynamic SQL without locally
-established routing still require review under
-[#107](https://github.com/Mfadhi-lg/trading-ai/issues/107) before native expansion.
+fenced the retained campaign, benchmark and canary entry points. The [#107 disposition review](../operations/retained-reader-dispositions.md)
+accounts for all named entry points, retires the dated BSE ingestion writer and
+records the retained SQL/dynamic-query boundaries. Other application dynamic SQL
+without locally established routing still requires review before any future
+native expansion.
 These source boundaries do not certify installed native health. Issues #63 and #64 concern engineering quality and domain contracts,
 respectively; they are not subsystem port issues.
 
