@@ -1,5 +1,6 @@
 """Operator observations match SQLite using synthetic rows and a disposable PG schema."""
 from contextlib import closing
+from datetime import datetime
 import os
 from pathlib import Path
 import sqlite3
@@ -356,7 +357,7 @@ class NativeFinancialPriorityTests(DisposablePostgreSQLTestCase):
     def test_screen_refresh_and_cooldown_use_native_json_and_preserve_config(self):
         import json
         import financial_screen_refresh as refresh
-        from ops.activation.test_financial_screen_refresh import body, Client, NOW
+        from ops.activation.test_financial_screen_refresh import body, Client, NOW, grant
         with tempfile.TemporaryDirectory() as directory, self.session() as conn:
             clients=[]
             def factory(c, **kwargs):
@@ -364,7 +365,7 @@ class NativeFinancialPriorityTests(DisposablePostgreSQLTestCase):
                 clients.append(client)
                 return client
             result=refresh.refresh_if_due(conn,now_utc=NOW,client_factory=factory,
-                snapshot_root=Path(directory)/'snapshots')
+                snapshot_root=Path(directory)/'snapshots', budget=grant(), clock=lambda:datetime.fromisoformat(NOW))
             self.assertEqual(result['enqueue']['new'],2)
             self.assertEqual([r['result_period'] for r in conn.execute(
                 'SELECT result_period FROM screener_company_queue ORDER BY queue_item_id')],
@@ -376,6 +377,30 @@ class NativeFinancialPriorityTests(DisposablePostgreSQLTestCase):
             self.assertEqual(config['max_pages'],refresh.MAX_PAGES)
             self.assertEqual(refresh.refresh_if_due(conn,now_utc=NOW,client_factory=factory)['status'],'not_due')
             self.assertEqual(len(clients),1)
+
+    def test_complete_37_page_admission_and_failure_contracts(self):
+        from ops.activation import test_financial_screen_refresh as checks
+        # Each case gets a fresh UUID schema, never a runtime target or shared data.
+        cases=[(checks.test_complete_37_page_capture_admits_1833_canonical_jobs_once,()),
+               (checks.test_interrupted_reservation_consumes_day_capacity_and_cannot_be_reused,()),
+               (checks.test_no_budget_never_starts_source_requests,()),
+               (checks.test_expired_utc_day_never_dispatches,()),
+               (checks.test_transport_preserves_limits_and_rejects_midnight_during_permit_wait,()),
+               (checks.test_same_day_unmetered_legacy_run_defers_without_guessing_redirect_usage,()),
+               (checks.test_redirect_response_is_retained_without_following_or_admitting,())]
+        cases += [(checks.test_remaining_37_pages_must_fit_each_budget_before_page_two,(key,))
+                  for key in ('requests_per_capture','source_requests_per_day','requests_per_day')]
+        cases += [(checks.test_37_page_capture_faults_never_admit,(fault,))
+                  for fault in ('page_number','page_count','count','duplicate','query','missing','interrupt')]
+        for check,args in cases:
+            with self.subTest(check=check.__name__,args=args):
+                fixture=DisposablePostgreSQLTestCase()
+                fixture.setUp()
+                try:
+                    with tempfile.TemporaryDirectory() as directory, fixture.session() as conn:
+                        check(conn,Path(directory),*args)
+                finally:
+                    fixture.doCleanups()
 
     def test_priority_and_revision_events_match_sqlite_without_sqlite_json_functions(self):
         import financial_priority as priority

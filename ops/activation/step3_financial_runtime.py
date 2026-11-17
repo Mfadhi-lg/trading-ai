@@ -101,7 +101,8 @@ def main():
             from financial_screen_refresh import refresh_if_due
             from scrapper.db.database import connect
             with closing(connect(db)) as writable:
-                discovery=refresh_if_due(writable,now_utc=datetime.now(timezone.utc).isoformat())
+                discovery=refresh_if_due(writable,now_utc=datetime.now(timezone.utc).isoformat(),
+                    budget=plan.get('financial_screen_budget'))
                 print(json.dumps({'stage':'financial_screen_refresh',**discovery}),flush=True)
                 refreshed=refresh_revisions(writable,now_utc=datetime.now(timezone.utc).isoformat(),activated_at=plan['priority_activated_at'])
                 print(json.dumps({'stage':'revision_refresh','queue_ids':refreshed}),flush=True)
