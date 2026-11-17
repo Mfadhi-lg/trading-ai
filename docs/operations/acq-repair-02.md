@@ -157,11 +157,16 @@ activation, service restart, stop clearing or downloader change was performed.
 
 ## Publication status
 
+Publication retry succeeded: [draft PR #121](https://github.com/Mfadhi-lg/trading-ai/pull/121)
+is open from `fadhi` to `main`. The original-source replay gap remains; CI status
+belongs to the current PR checks and is not inferred from local verification.
+
+Earlier publication observations (retained as history):
+
 Local implementation and independent review are complete. Publication is blocked:
 `git push origin fadhi` repeatedly timed out connecting to github.com:443, and
 `gh pr list --head fadhi --state open --json number,url,title` timed out connecting
 to api.github.com:443. No PR was created and remote CI is **NOT RUN** for this
 repair. The focused commits remain on `fadhi`; unrelated local work is preserved.
-After connectivity is restored, publish this branch, open the focused draft PR,
-and require passing CI. Original retained-page replay remains a separate missing
+Publication has since succeeded as recorded above; passing CI is still required. Original retained-page replay remains a separate missing
 evidence item. No production deployment or acquisition is authorized by publication.
