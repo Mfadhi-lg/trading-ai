@@ -360,12 +360,15 @@ class NativeFinancialPriorityTests(DisposablePostgreSQLTestCase):
         with tempfile.TemporaryDirectory() as directory, self.session() as conn:
             clients=[]
             def factory(c, **kwargs):
-                client=Client(c,responses=[body(1),body(2)],**kwargs)
+                client=Client(c,responses=[body(1).replace(b'202609',b'Sep-26'),body(2)],**kwargs)
                 clients.append(client)
                 return client
             result=refresh.refresh_if_due(conn,now_utc=NOW,client_factory=factory,
                 snapshot_root=Path(directory)/'snapshots')
             self.assertEqual(result['enqueue']['new'],2)
+            self.assertEqual([r['result_period'] for r in conn.execute(
+                'SELECT result_period FROM screener_company_queue ORDER BY queue_item_id')],
+                ['2026-09','2026-09'])
             config=json.loads(conn.execute('SELECT config_json FROM scrape_runs WHERE code_version=?',
                 (refresh.RUN_VERSION,)).fetchone()[0])
             self.assertIs(config['capture_complete'],True)
