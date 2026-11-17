@@ -154,3 +154,14 @@ check. Reviewer did not claim independent native execution or production health.
 
 Production systems/data were not touched. No publisher request, migration,
 activation, service restart, stop clearing or downloader change was performed.
+
+## Publication status
+
+Local implementation and independent review are complete. Publication is blocked:
+`git push origin fadhi` repeatedly timed out connecting to github.com:443, and
+`gh pr list --head fadhi --state open --json number,url,title` timed out connecting
+to api.github.com:443. No PR was created and remote CI is **NOT RUN** for this
+repair. The focused commits remain on `fadhi`; unrelated local work is preserved.
+After connectivity is restored, publish this branch, open the focused draft PR,
+and require passing CI. Original retained-page replay remains a separate missing
+evidence item. No production deployment or acquisition is authorized by publication.
