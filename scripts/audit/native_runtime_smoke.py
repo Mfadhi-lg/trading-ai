@@ -9,6 +9,7 @@ import unittest
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 MODULES = (
+    'scrapper.tests.test_postgresql_exchange_handoff.NativeExchangeHandoffTests',
     'scrapper.tests.test_container_healthcheck.NativeHealthcheckTests',
     'scrapper.tests.test_postgresql_transfer.TransferIntegrationTests',
     'scrapper.tests.test_postgresql_backup.BackupRestoreTests',

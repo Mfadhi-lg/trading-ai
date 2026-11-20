@@ -642,11 +642,14 @@ def discover_exchange_results(
     thresholds: GuardThresholds | None = None,
     override_validation: bool = False,
     max_new_queue_entries: int | None = None,
+    register_document_expectations: bool = True,
     RESULT_FILING_DATASETS=RESULT_FILING_DATASETS, _ingest=_ingest, _readonly=_readonly, enqueue_result_filings=enqueue_result_filings, finish_run=finish_run, ingest_result_filings=ingest_result_filings, preview_filing_decisions=preview_filing_decisions, resolve_url=resolve_url,
 ) -> dict[str, Any]:
     """Ingest one official result feed and queue only advanced reporting periods."""
     if max_new_queue_entries is not None and (type(max_new_queue_entries) is not int or max_new_queue_entries < 0):
         raise ValueError('Queue admission limit must be a nonnegative integer')
+    if type(register_document_expectations) is not bool:
+        raise ValueError('Document expectation handoff selection must be boolean')
     if dataset not in RESULT_FILING_DATASETS:
         raise ValueError(
             f"{dataset!r} is not a result dataset; use exchange-refresh-universe"
@@ -689,6 +692,10 @@ def discover_exchange_results(
                             'filing_keys': tuple(f.filing_key for f in parsed.filings)}
                            if max_new_queue_entries is not None else
                            {'snapshot_id': int(payload['snapshot_id'])})
+        if not register_document_expectations:
+            # The scheduled exchange role cannot write document metadata. The
+            # existing document discovery role repairs this bounded handoff.
+            enqueue_options['register_document_expectations'] = False
         enqueue = enqueue_result_filings(conn, now_utc=str(payload['observed_at_utc']), **enqueue_options)
         finish_run(conn, run_id, "ok")
         return payload | {"filings": filings, "enqueue": enqueue}

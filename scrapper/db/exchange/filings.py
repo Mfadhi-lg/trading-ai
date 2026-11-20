@@ -332,8 +332,11 @@ def preview_filing_decisions(
 def enqueue_result_filings(
     conn: sqlite3.Connection, *, snapshot_id: int | None = None, now_utc: str,
     max_new_queue_entries: int | None = None, filing_keys: tuple[str, ...] | None = None,
+    register_document_expectations: bool = True,
 ) -> dict[str, int]:
     """Queue only undecided filings; a company enters work when its period advances."""
+    if type(register_document_expectations) is not bool:
+        raise ValueError('Document expectation handoff selection must be boolean')
     if max_new_queue_entries is not None and (type(max_new_queue_entries) is not int or max_new_queue_entries < 0):
         raise ValueError('Queue admission limit must be a nonnegative integer')
     if filing_keys is not None and snapshot_id is not None:
@@ -391,6 +394,7 @@ def enqueue_result_filings(
     # A result establishes an expectation, not document availability. This
     # separate idempotent handoff cannot commit a half-finished queue decision.
     # It also repairs a previous interrupted handoff on the next bounded poll.
-    from ..documents.freshness import register_recent_filing_expectations
-    register_recent_filing_expectations(conn, now_utc=now_utc)
+    if register_document_expectations:
+        from ..documents.freshness import register_recent_filing_expectations
+        register_recent_filing_expectations(conn, now_utc=now_utc)
     return counts

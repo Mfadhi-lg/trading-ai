@@ -162,9 +162,14 @@ def run_automatic_discovery(*, db_path, epoch, limit=2, historical_limit=0,
         with ownership(db_path,'periodic-executor') as acquired:
             if not acquired: return {'status':'busy','selected':[]}
             now=now_utc()
+            bounded_lanes([],limit=limit,historical_limit=historical_limit,epoch=epoch,now=now)
+            # Exchange ingestion keeps its narrow SQL role. Complete its fresh,
+            # idempotent document handoff under this existing document writer,
+            # after ownership and bounds checks and before selecting due work.
+            from ...db.documents.freshness import register_recent_filing_expectations
+            register_recent_filing_expectations(conn, now_utc=now)
             from ...documents.late_publications import extend_exhausted_waits
             extended=extend_exhausted_waits(conn,now=now,limit=1)
-            bounded_lanes([],limit=limit,historical_limit=historical_limit,epoch=epoch,now=now)
             common='''SELECT expectation.expectation_id,expectation.company_id,expectation.event_id,CASE WHEN json_extract(expectation.schedule_json,'$.long_tail_v1')=1 THEN expectation.updated_at_utc ELSE expectation.created_at_utc END first_observed_at_utc,event.period_end
                 FROM artifact_expectations expectation JOIN artifact_events event USING(event_id)
                 WHERE expectation.artifact_type IN ('presentation','transcript')

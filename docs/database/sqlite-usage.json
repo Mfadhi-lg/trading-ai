@@ -747,18 +747,18 @@
     },
     {
       "path": "ops/activation/nse_results_runtime.py",
-      "source_sha256": "98a4a9b336c7724bb3c9fde106d747726e445612437da8de099417f3367f44ae",
+      "source_sha256": "b21ad0586d3c03eb4de0250d71fc1f6e24877c148e952c8b407fca034a93b683",
       "owner": "Maintainers of ops/activation",
       "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/107",
-      "reviewed_source_sha256": "98a4a9b336c7724bb3c9fde106d747726e445612437da8de099417f3367f44ae",
+      "reviewed_source_sha256": "b21ad0586d3c03eb4de0250d71fc1f6e24877c148e952c8b407fca034a93b683",
       "classification": "live application",
       "store": "canonical application database through caller-supplied connection; logical SCRAPER_DB_PATH",
       "intent": "Static SQL/query candidates: PRAGMA, SELECT; dynamic queries require caller review.",
       "backend_guard": "Routing evidence in hashed source: connect. Review the listed symbols and callers; helper presence alone is not proof of native safety.",
       "disposition": "Retain reviewed source baseline; explicit backend alternatives/caller routing remain required. New or changed query sites require review; native compatibility is not inferred from classification.",
       "sites": [
-        {"line": 150,"symbol": "run_owned","kind": "SQLite SQL","sha256": "a28b203f21249ab8312986428d3b09520123b2d7328839a8a7a3b5f61f02af8f","scope_sha256": "bed9211ed8f67fb679cdf610b6bc13999d2844370c80f0ca5591aed26b6998e2","branch_hints": []},
-        {"line": 156,"symbol": "run_owned","kind": "SQLite SQL","sha256": "eae29f4fac90e11a292df2a10239a52ce15d6564019fe8e0af9387fc400b1d2b","scope_sha256": "bed9211ed8f67fb679cdf610b6bc13999d2844370c80f0ca5591aed26b6998e2","branch_hints": []}
+        {"line": 150,"symbol": "run_owned","kind": "SQLite SQL","sha256": "a28b203f21249ab8312986428d3b09520123b2d7328839a8a7a3b5f61f02af8f","scope_sha256": "b9eda76138610a355ddd725011fe24e086835c5e75ac0442d6236b342987d891","branch_hints": []},
+        {"line": 156,"symbol": "run_owned","kind": "SQLite SQL","sha256": "eae29f4fac90e11a292df2a10239a52ce15d6564019fe8e0af9387fc400b1d2b","scope_sha256": "b9eda76138610a355ddd725011fe24e086835c5e75ac0442d6236b342987d891","branch_hints": []}
       ],
       "caller_references": [
         {"path": "ops/activation/automatic_acquisition.phase4-candidate.py","line": 134},
@@ -2303,10 +2303,10 @@
     },
     {
       "path": "scrapper/db/exchange/filings.py",
-      "source_sha256": "ba471dda7c94336ea2178dcdde698a6bd4c79e6296dd56ca96184e0f86286373",
+      "source_sha256": "beb9f94d4b985a34827d1c8c87553e04d3f306176020172b3c1c9b5e44464655",
       "owner": "Maintainers of scrapper/db/exchange",
       "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/107",
-      "reviewed_source_sha256": "ba471dda7c94336ea2178dcdde698a6bd4c79e6296dd56ca96184e0f86286373",
+      "reviewed_source_sha256": "beb9f94d4b985a34827d1c8c87553e04d3f306176020172b3c1c9b5e44464655",
       "classification": "live application",
       "store": "canonical application database through caller-supplied connection; logical SCRAPER_DB_PATH",
       "intent": "Static SQL/query candidates: INSERT, SELECT, UPDATE; dynamic queries require caller review.",
@@ -2316,7 +2316,7 @@
         {"line": 44,"symbol": "ingest_result_filings","kind": "SQLite SQL","sha256": "b99c6b8a7ee566eba6122a079229ca191540b43b8401d7e2c6948cd7dbe8913c","scope_sha256": "c600291808da3329e2cecd2b4d2a3ed19630ae7ba02aed2488bf2117eea9f04f","branch_hints": []},
         {"line": 62,"symbol": "ingest_result_filings","kind": "SQLite SQL","sha256": "16d9317a60ef32a4fcacc47fc661597f8c2952b12ee37976edf019fd03fbfd0c","scope_sha256": "c600291808da3329e2cecd2b4d2a3ed19630ae7ba02aed2488bf2117eea9f04f","branch_hints": []},
         {"line": 227,"symbol": "_decide","kind": "SQLite SQL","sha256": "2b16c1167b5f229080c269e1ccff2df406872bdc3b92aed83c6e41a4c737c4ff","scope_sha256": "4216d42a89e1a6a1b890f2ba39444a0fb5b5c01b181b7beaf57258a7c89296bd","branch_hints": []},
-        {"line": 372,"symbol": "enqueue_result_filings","kind": "SQLite SQL","sha256": "9aaf859d7b11f96a02b98ae120a5d30c31493a9cbdd2523929debf1fcfe4e48c","scope_sha256": "fafa8123756d53c0e557fbe35e6cd1c591dd74dbca211ba3318d17051ca041ac","branch_hints": []}
+        {"line": 375,"symbol": "enqueue_result_filings","kind": "SQLite SQL","sha256": "9aaf859d7b11f96a02b98ae120a5d30c31493a9cbdd2523929debf1fcfe4e48c","scope_sha256": "7fc75018c542afaa476e1ac9767cae07a9055156df5935c010e6b8e8f29e2afb","branch_hints": []}
       ],
       "caller_references": [
         {"path": "experiments/earnings_reaction_v1/er02.py","line": 288},
@@ -3205,7 +3205,7 @@
         {"line": 13,"symbol": "extend_exhausted_waits","kind": "dynamic query","sha256": "18bb21eabefbb349962701db3c614fad09c4774c3ba3738e75cf991987e23268","scope_sha256": "7a6130a20711aa6bbb53d1fa9e64aeb76cda080f70b73ecdc37a91cde6b3b7a8","branch_hints": []}
       ],
       "caller_references": [
-        {"path": "scrapper/operations/workers/automatic_documents.py","line": 165}
+        {"path": "scrapper/operations/workers/automatic_documents.py","line": 171}
       ]
     },
     {
@@ -3592,10 +3592,10 @@
     },
     {
       "path": "scrapper/operations/workers/automatic_documents.py",
-      "source_sha256": "dc9c66ac3d8e3e6a9777f5d1eb78e3df25fe15b1a2823b61b9e26572fbacee63",
+      "source_sha256": "a90debcd5123ded73825ee5c0436752944fe8c4e4142e2627aed1a3ff481a68e",
       "owner": "Maintainers of scrapper/operations/workers",
       "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/107",
-      "reviewed_source_sha256": "dc9c66ac3d8e3e6a9777f5d1eb78e3df25fe15b1a2823b61b9e26572fbacee63",
+      "reviewed_source_sha256": "a90debcd5123ded73825ee5c0436752944fe8c4e4142e2627aed1a3ff481a68e",
       "classification": "live application",
       "store": "canonical application database through caller-supplied connection; logical SCRAPER_DB_PATH",
       "intent": "Static SQL/query candidates: SELECT; dynamic queries require caller review.",
@@ -3609,19 +3609,19 @@
         {"line": 51,"symbol": "select_downloads","kind": "dynamic query","sha256": "36b41078d190b33aa1a6ccddc0c73f8b03b097b21ce6434b2647dde9b5e4513a","scope_sha256": "95bbf056e007aaf731b9cf16bee4f3851521e13a158fbbf6db0514b43b462b95","branch_hints": []},
         {"line": 67,"symbol": "select_downloads","kind": "dynamic query","sha256": "8b698b1a90fa6ffeaf612f7df9bd34b0cf43576894f7aa15fc58f703d6511564","scope_sha256": "95bbf056e007aaf731b9cf16bee4f3851521e13a158fbbf6db0514b43b462b95","branch_hints": []},
         {"line": 101,"symbol": "run_automatic_downloads","kind": "dynamic query","sha256": "161870c1910e61b5f28b6c8641ce3249addf07cf12ecdc8f62ad97572d36694d","scope_sha256": "4a50db4df95b780bc015f652d9e26c9a5ecf2f373a7ff0a94eb9907074dd94fc","branch_hints": []},
-        {"line": 168,"symbol": "run_automatic_discovery","kind": "SQLite SQL","sha256": "f1bb31bb40c42891501a8c380accbd4e8f3acecffbf16c9912b4f3fc421c8045","scope_sha256": "a46f04a58aae1fbd7a560cdb88acd536f2d9ef40a909457cf3eb74649c40dbc9","branch_hints": []},
-        {"line": 176,"symbol": "run_automatic_discovery","kind": "SQLite SQL","sha256": "e87a8c4c5e44e0560e6a9d00007e6fb8334950df955c206b87684c60cc7ea537","scope_sha256": "a46f04a58aae1fbd7a560cdb88acd536f2d9ef40a909457cf3eb74649c40dbc9","branch_hints": [{"condition_sha256": "5519f801c8ae344fa30dc835ff9fbf21ccc7d8a56be510edf419937cc0363691","arm": "body","line": 175}]},
-        {"line": 179,"symbol": "run_automatic_discovery","kind": "SQLite SQL","sha256": "8e3becba2955a1311c97d36081712e4e1d88d3558f7582ec91895f752890dbc3","scope_sha256": "a46f04a58aae1fbd7a560cdb88acd536f2d9ef40a909457cf3eb74649c40dbc9","branch_hints": []},
-        {"line": 180,"symbol": "run_automatic_discovery","kind": "SQLite SQL","sha256": "75366e4ad21c8f63c00c9178f17c9653fec219b717012f41eb982a1661610fae","scope_sha256": "a46f04a58aae1fbd7a560cdb88acd536f2d9ef40a909457cf3eb74649c40dbc9","branch_hints": []},
-        {"line": 184,"symbol": "run_automatic_discovery","kind": "SQLite SQL","sha256": "e87a8c4c5e44e0560e6a9d00007e6fb8334950df955c206b87684c60cc7ea537","scope_sha256": "a46f04a58aae1fbd7a560cdb88acd536f2d9ef40a909457cf3eb74649c40dbc9","branch_hints": [{"condition_sha256": "5519f801c8ae344fa30dc835ff9fbf21ccc7d8a56be510edf419937cc0363691","arm": "body","line": 183}]},
-        {"line": 196,"symbol": "run_automatic_discovery","kind": "dynamic query","sha256": "9646272729b24a1271b31732fcad365565329d7e238d34bd6e61b4b86f14c32f","scope_sha256": "a46f04a58aae1fbd7a560cdb88acd536f2d9ef40a909457cf3eb74649c40dbc9","branch_hints": []},
-        {"line": 206,"symbol": "run_automatic_discovery","kind": "SQLite SQL","sha256": "d80a33b435dbb72b9c5bddad72b89a1a636f5798dad66d7d571ec04ffe9bcf90","scope_sha256": "a46f04a58aae1fbd7a560cdb88acd536f2d9ef40a909457cf3eb74649c40dbc9","branch_hints": []},
-        {"line": 208,"symbol": "run_automatic_discovery","kind": "SQLite SQL","sha256": "e87a8c4c5e44e0560e6a9d00007e6fb8334950df955c206b87684c60cc7ea537","scope_sha256": "a46f04a58aae1fbd7a560cdb88acd536f2d9ef40a909457cf3eb74649c40dbc9","branch_hints": [{"condition_sha256": "5519f801c8ae344fa30dc835ff9fbf21ccc7d8a56be510edf419937cc0363691","arm": "body","line": 207}]},
-        {"line": 209,"symbol": "run_automatic_discovery","kind": "dynamic query","sha256": "6f6873c0dba7ab6762307d3381fd0595847fc183b7695caf6e27ba7dbef89b92","scope_sha256": "a46f04a58aae1fbd7a560cdb88acd536f2d9ef40a909457cf3eb74649c40dbc9","branch_hints": []},
-        {"line": 213,"symbol": "run_automatic_discovery","kind": "dynamic query","sha256": "ae389c27191260b7c7fcf809ca6e07bf25973f04ad508582f1eece7ff73e23f8","scope_sha256": "a46f04a58aae1fbd7a560cdb88acd536f2d9ef40a909457cf3eb74649c40dbc9","branch_hints": []},
-        {"line": 214,"symbol": "run_automatic_discovery","kind": "dynamic query","sha256": "3e614f214bdeb117a4a90b7a9a97939cdab5b818f6cef36cf19c952ae168f700","scope_sha256": "a46f04a58aae1fbd7a560cdb88acd536f2d9ef40a909457cf3eb74649c40dbc9","branch_hints": []},
-        {"line": 224,"symbol": "run_automatic_discovery","kind": "dynamic query","sha256": "7c7faa34c0b71b5e31a44df61f3d336ff1beb758db79b03cf0bfacd967e88f07","scope_sha256": "a46f04a58aae1fbd7a560cdb88acd536f2d9ef40a909457cf3eb74649c40dbc9","branch_hints": []},
-        {"line": 266,"symbol": "handoff_browser_ratings","kind": "dynamic query","sha256": "f091fd583dcd7ceb7dfd5d6b40dd71339ea8fa34d8b687a8f3494d4081eb01bf","scope_sha256": "69ef4758a54e9e880bf76dc4a526687309a6d5894c76f26f8e0e1cd4ae6a9014","branch_hints": []}
+        {"line": 173,"symbol": "run_automatic_discovery","kind": "SQLite SQL","sha256": "f1bb31bb40c42891501a8c380accbd4e8f3acecffbf16c9912b4f3fc421c8045","scope_sha256": "5b3d3b99aafb74a9e9b709cd6b9c5ccbe5cc6c4ec3f8e6442c74714ee5c7bb8f","branch_hints": []},
+        {"line": 181,"symbol": "run_automatic_discovery","kind": "SQLite SQL","sha256": "e87a8c4c5e44e0560e6a9d00007e6fb8334950df955c206b87684c60cc7ea537","scope_sha256": "5b3d3b99aafb74a9e9b709cd6b9c5ccbe5cc6c4ec3f8e6442c74714ee5c7bb8f","branch_hints": [{"condition_sha256": "5519f801c8ae344fa30dc835ff9fbf21ccc7d8a56be510edf419937cc0363691","arm": "body","line": 180}]},
+        {"line": 184,"symbol": "run_automatic_discovery","kind": "SQLite SQL","sha256": "8e3becba2955a1311c97d36081712e4e1d88d3558f7582ec91895f752890dbc3","scope_sha256": "5b3d3b99aafb74a9e9b709cd6b9c5ccbe5cc6c4ec3f8e6442c74714ee5c7bb8f","branch_hints": []},
+        {"line": 185,"symbol": "run_automatic_discovery","kind": "SQLite SQL","sha256": "75366e4ad21c8f63c00c9178f17c9653fec219b717012f41eb982a1661610fae","scope_sha256": "5b3d3b99aafb74a9e9b709cd6b9c5ccbe5cc6c4ec3f8e6442c74714ee5c7bb8f","branch_hints": []},
+        {"line": 189,"symbol": "run_automatic_discovery","kind": "SQLite SQL","sha256": "e87a8c4c5e44e0560e6a9d00007e6fb8334950df955c206b87684c60cc7ea537","scope_sha256": "5b3d3b99aafb74a9e9b709cd6b9c5ccbe5cc6c4ec3f8e6442c74714ee5c7bb8f","branch_hints": [{"condition_sha256": "5519f801c8ae344fa30dc835ff9fbf21ccc7d8a56be510edf419937cc0363691","arm": "body","line": 188}]},
+        {"line": 201,"symbol": "run_automatic_discovery","kind": "dynamic query","sha256": "9646272729b24a1271b31732fcad365565329d7e238d34bd6e61b4b86f14c32f","scope_sha256": "5b3d3b99aafb74a9e9b709cd6b9c5ccbe5cc6c4ec3f8e6442c74714ee5c7bb8f","branch_hints": []},
+        {"line": 211,"symbol": "run_automatic_discovery","kind": "SQLite SQL","sha256": "d80a33b435dbb72b9c5bddad72b89a1a636f5798dad66d7d571ec04ffe9bcf90","scope_sha256": "5b3d3b99aafb74a9e9b709cd6b9c5ccbe5cc6c4ec3f8e6442c74714ee5c7bb8f","branch_hints": []},
+        {"line": 213,"symbol": "run_automatic_discovery","kind": "SQLite SQL","sha256": "e87a8c4c5e44e0560e6a9d00007e6fb8334950df955c206b87684c60cc7ea537","scope_sha256": "5b3d3b99aafb74a9e9b709cd6b9c5ccbe5cc6c4ec3f8e6442c74714ee5c7bb8f","branch_hints": [{"condition_sha256": "5519f801c8ae344fa30dc835ff9fbf21ccc7d8a56be510edf419937cc0363691","arm": "body","line": 212}]},
+        {"line": 214,"symbol": "run_automatic_discovery","kind": "dynamic query","sha256": "6f6873c0dba7ab6762307d3381fd0595847fc183b7695caf6e27ba7dbef89b92","scope_sha256": "5b3d3b99aafb74a9e9b709cd6b9c5ccbe5cc6c4ec3f8e6442c74714ee5c7bb8f","branch_hints": []},
+        {"line": 218,"symbol": "run_automatic_discovery","kind": "dynamic query","sha256": "ae389c27191260b7c7fcf809ca6e07bf25973f04ad508582f1eece7ff73e23f8","scope_sha256": "5b3d3b99aafb74a9e9b709cd6b9c5ccbe5cc6c4ec3f8e6442c74714ee5c7bb8f","branch_hints": []},
+        {"line": 219,"symbol": "run_automatic_discovery","kind": "dynamic query","sha256": "3e614f214bdeb117a4a90b7a9a97939cdab5b818f6cef36cf19c952ae168f700","scope_sha256": "5b3d3b99aafb74a9e9b709cd6b9c5ccbe5cc6c4ec3f8e6442c74714ee5c7bb8f","branch_hints": []},
+        {"line": 229,"symbol": "run_automatic_discovery","kind": "dynamic query","sha256": "7c7faa34c0b71b5e31a44df61f3d336ff1beb758db79b03cf0bfacd967e88f07","scope_sha256": "5b3d3b99aafb74a9e9b709cd6b9c5ccbe5cc6c4ec3f8e6442c74714ee5c7bb8f","branch_hints": []},
+        {"line": 271,"symbol": "handoff_browser_ratings","kind": "dynamic query","sha256": "f091fd583dcd7ceb7dfd5d6b40dd71339ea8fa34d8b687a8f3494d4081eb01bf","scope_sha256": "69ef4758a54e9e880bf76dc4a526687309a6d5894c76f26f8e0e1cd4ae6a9014","branch_hints": []}
       ],
       "caller_references": [
         {"path": "ops/activation/acquisition_recovery_inspect_runtime.py","line": 79},
@@ -3753,7 +3753,7 @@
         {"path": "ops/host/verify_actual_financial_overlay.py","line": 8},
         {"path": "scrapper/commands/recover_quarter_document_links.py","line": 13},
         {"path": "scrapper/operations/workers/automatic_documents.py","line": 112},
-        {"path": "scrapper/operations/workers/automatic_documents.py","line": 231},
+        {"path": "scrapper/operations/workers/automatic_documents.py","line": 236},
         {"path": "scrapper/pipeline/screener_vertical.py","line": 46},
         {"path": "scrapper/workflows/documents/saved_link_refresh.py","line": 8},
         {"path": "scrapper/workflows/documents/screener_refresh.py","line": 5},
@@ -3829,8 +3829,8 @@
         {"line": 62,"symbol": "queue_credit_rating_downloads","kind": "SQLite SQL","sha256": "9ca118610bd2af247ca4f75df653390a648ca1049884872e84ff81bd029fa0b2","scope_sha256": "b961d3448931e82147ac4b4afb992a5fa5e2b5f4b9b59e38bacfd042ebd6d27d","branch_hints": []}
       ],
       "caller_references": [
-        {"path": "scrapper/operations/workers/automatic_documents.py","line": 265},
-        {"path": "scrapper/operations/workers/automatic_documents.py","line": 288},
+        {"path": "scrapper/operations/workers/automatic_documents.py","line": 270},
+        {"path": "scrapper/operations/workers/automatic_documents.py","line": 293},
         {"path": "scrapper/operations/workers/rating.py","line": 36},
         {"path": "scrapper/pipeline/accepted_document_downloads.py","line": 11},
         {"path": "scrapper/sources/documents/routine.py","line": 98}
@@ -4595,7 +4595,7 @@
         {"path": "ops/activation/phase4_routine_runtime.py","line": 55},
         {"path": "ops/activation/prepare_phase4_routine.py","line": 16},
         {"path": "scrapper/documents/recovery/finite_downloads.py","line": 1},
-        {"path": "scrapper/operations/workers/automatic_documents.py","line": 220}
+        {"path": "scrapper/operations/workers/automatic_documents.py","line": 225}
       ]
     },
     {

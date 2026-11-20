@@ -103,6 +103,8 @@ class NativeObservationTests(DisposablePostgreSQLTestCase):
             self.assertEqual(runtime.run_owned(('2026-09',),Path('/data/scraper.db'),{}),0)
             fetch.assert_called_once()
             self.assertEqual(discover.call_count,2)
+            for call in discover.call_args_list:
+                self.assertIs(call.kwargs['register_document_expectations'],False)
             self.assertTrue(discover.call_args_list[0].kwargs['dry_run'])
             self.assertEqual(discover.call_args_list[1].kwargs['max_new_queue_entries'],100)
 
