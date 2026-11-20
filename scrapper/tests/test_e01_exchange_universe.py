@@ -349,6 +349,26 @@ class ParserTests(unittest.TestCase):
                 validate_exchange_dataset_url(url, exchange)
 
 
+class HandoffInputTests(unittest.TestCase):
+    def test_invalid_document_handoff_selection_fails_before_ingestion(self):
+        from unittest.mock import Mock
+        from scrapper.workflows.exchange.universe import discover_exchange_results
+        from scrapper.db.exchange.filings import enqueue_result_filings
+        for value in (None,0,1,'false'):
+            with self.subTest(value=value):
+                ingest=Mock()
+                with self.assertRaises(ValueError):
+                    discover_exchange_results(dataset='bse_financial_results',
+                        register_document_expectations=value,_ingest=ingest)
+                ingest.assert_not_called()
+                # Native repository decorators may inspect a connection before
+                # calling the function; an ordinary SQLite fixture has no writes.
+                with sqlite3.connect(':memory:') as conn:
+                    with self.assertRaises(ValueError):
+                        enqueue_result_filings(conn,now_utc='2026-11-17T00:00:00+00:00',
+                            register_document_expectations=value)
+
+
 class ExchangeCase(unittest.TestCase):
     def setUp(self) -> None:
         self.temporary = tempfile.TemporaryDirectory()

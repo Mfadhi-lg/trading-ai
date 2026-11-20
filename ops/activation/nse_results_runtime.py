@@ -210,7 +210,8 @@ def run_owned(periods, db, baseline, source=None, verify_only=False):
         def retained_response(requested, exchange):
             require(requested == url and exchange == exchange_name, 'Unexpected source request')
             return response
-        options = dict(dataset=dataset, result_period=selected_period, fetcher=retained_response)
+        options = dict(dataset=dataset, result_period=selected_period, fetcher=retained_response,
+                       register_document_expectations=False)
         if source:
             options.update(url=url, now_utc=lambda: source.captured_at_utc,
                 effective_date=datetime.fromisoformat(source.captured_at_utc).astimezone(

@@ -10,6 +10,22 @@ from scrapper.operations.workers.automatic_documents import run_automatic_discov
 NOW='2026-10-11T15:00:00+00:00';EPOCH='2026-10-09T00:00:00+00:00'
 
 class DiscoverySelectionTests(unittest.TestCase):
+    def test_busy_or_invalid_selection_cannot_register_filing_expectations(self):
+        from contextlib import contextmanager
+        @contextmanager
+        def busy(*_):
+            yield False
+        handoff='scrapper.db.documents.freshness.register_recent_filing_expectations'
+        with patch(handoff) as register, patch('scrapper.operations.workers.automatic_documents.ownership', busy):
+            result=run_automatic_discovery(db_path=self.fixture.db_path,epoch=EPOCH,now_utc=lambda:NOW)
+            self.assertEqual(result['status'],'busy')
+            register.assert_not_called()
+        with patch(handoff) as register:
+            with self.assertRaises(ValueError):
+                run_automatic_discovery(db_path=self.fixture.db_path,epoch=EPOCH,
+                    now_utc=lambda:NOW,limit=-1)
+            register.assert_not_called()
+
     def setUp(self):
         self.fixture=fixtures.DocumentExtractionD03Tests();self.fixture.setUp();self.addCleanup(self.fixture.tearDown)
         self.c=connect(self.fixture.db_path);self.addCleanup(self.c.close)
