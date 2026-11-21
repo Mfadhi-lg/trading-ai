@@ -10,7 +10,7 @@ from scrapper.db.repository_backend import statement
 SCREEN_URL = 'https://www.screener.in/screens/3844820/new-results/'
 QUERY_ROLE = 'september_3844820'  # Preserve the existing immutable capture identity.
 RUN_VERSION = 'financial-screen-refresh-v2'
-MAX_PAGES = 37  # ACQ-REPAIR-02: explicitly bounded observed screen, never open-ended.
+MAX_PAGES = 39  # Observed pagination ceiling; every capture still needs an explicit grant.
 REFRESH_SECONDS = 6 * 3600
 RETRY_SECONDS = 3600
 

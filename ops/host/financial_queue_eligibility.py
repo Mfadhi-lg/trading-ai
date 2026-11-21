@@ -6,9 +6,10 @@ from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
 
-sys.path[:0] = [str(Path(__file__).resolve().parent),
-                str(Path(__file__).resolve().parents[1] / 'activation'),
-                str(Path(__file__).resolve().parents[2]), '/activation', '/app']
+HERE = Path(__file__).resolve().parent
+# A reader mounts this directory at /host; its application lives at /app.
+ROOT = next((parent for parent in HERE.parents if (parent / 'scrapper').is_dir()), Path('/app'))
+sys.path[:0] = [str(HERE), str(ROOT / 'ops/activation'), '/activation', str(ROOT)]
 from financial_diagnostic_reader import observation
 from scrapper.sources.exchange.reporting_periods import priority_result_periods
 

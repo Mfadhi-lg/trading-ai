@@ -5,10 +5,13 @@ from pathlib import Path
 import sqlite3
 import sys
 import time
+# Direct execution is part of the sealed reader profile, alongside live_reader.
+HERE = Path(__file__).resolve().parent
+ROOT = next((parent for parent in HERE.parents if (parent / 'scrapper').is_dir()), Path('/app'))
+sys.path[:0] = [str(HERE), str(ROOT / 'ops/activation'), '/activation', str(ROOT)]
 from postgresql_runtime import query_deadline
 from scrapper.db.repository_backend import is_postgresql, statement
 from datetime import datetime, timezone
-sys.path[:0]=['/activation','/app']
 from sqlite_sidecar_guard import assert_safe_empty_wal, snapshot
 
 
