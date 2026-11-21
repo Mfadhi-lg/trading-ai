@@ -380,7 +380,7 @@ class NativeFinancialPriorityTests(DisposablePostgreSQLTestCase):
             self.assertEqual(refresh.refresh_if_due(conn,now_utc=NOW,client_factory=factory)['status'],'not_due')
             self.assertEqual(len(clients),1)
 
-    def test_complete_37_page_admission_and_failure_contracts(self):
+    def test_complete_bounded_page_admission_and_failure_contracts(self):
         from ops.activation import test_financial_screen_refresh as checks
         # Each case gets a fresh UUID schema, never a runtime target or shared data.
         cases=[(checks.test_complete_37_page_capture_admits_1833_canonical_jobs_once,()),
@@ -393,6 +393,11 @@ class NativeFinancialPriorityTests(DisposablePostgreSQLTestCase):
         cases += [(checks.test_remaining_37_pages_must_fit_each_budget_before_page_two,(key,))
                   for key in ('requests_per_capture','source_requests_per_day','requests_per_day')]
         cases += [(checks.test_37_page_capture_faults_never_admit,(fault,))
+                  for fault in ('page_number','page_count','count','duplicate','query','missing','interrupt')]
+        cases += [(checks.test_complete_39_pages_admit_once,())]
+        cases += [(checks.test_39_pages_require_full_explicit_reservation,(key,))
+                  for key in ('max_pages','requests_per_capture','source_requests_per_day','requests_per_day')]
+        cases += [(checks.test_39_page_faults_reject_partial_capture,(fault,))
                   for fault in ('page_number','page_count','count','duplicate','query','missing','interrupt')]
         for check,args in cases:
             with self.subTest(check=check.__name__,args=args):

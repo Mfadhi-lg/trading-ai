@@ -726,10 +726,10 @@
     },
     {
       "path": "ops/activation/financial_screen_refresh.py",
-      "source_sha256": "c2a6b37a943cdf53ab3f3de5595ea769846bd7e0b64453ca207776997be89900",
+      "source_sha256": "b38b795ec7709764ed37ee1fc130da0608ef408101158f56a64b55c7127eda90",
       "owner": "Maintainers of ops/activation",
       "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/107",
-      "reviewed_source_sha256": "c2a6b37a943cdf53ab3f3de5595ea769846bd7e0b64453ca207776997be89900",
+      "reviewed_source_sha256": "b38b795ec7709764ed37ee1fc130da0608ef408101158f56a64b55c7127eda90",
       "classification": "live application",
       "store": "canonical application database through caller-supplied connection; logical SCRAPER_DB_PATH",
       "intent": "Static SQL/query candidates: SELECT, UPDATE; dynamic queries require caller review.",
@@ -1052,8 +1052,8 @@
         {"path": "ops/host/acquisition_db_status.py","line": 14},
         {"path": "ops/host/acquisition_live_reader.py","line": 46},
         {"path": "ops/host/acquisition_quarter_queries.py","line": 4},
-        {"path": "ops/host/acquisition_queries.py","line": 8},
-        {"path": "ops/host/acquisition_queries.py","line": 248},
+        {"path": "ops/host/acquisition_queries.py","line": 13},
+        {"path": "ops/host/acquisition_queries.py","line": 252},
         {"path": "ops/host/document_backlog_audit.py","line": 178},
         {"path": "ops/host/financial_diagnostic_reader.py","line": 7},
         {"path": "ops/host/runtime_status.py","line": 77}
@@ -1117,7 +1117,7 @@
         {"path": "ops/host/acquisition_lifecycle.py","line": 142},
         {"path": "ops/host/acquisition_lifecycle.py","line": 188},
         {"path": "ops/host/acquisition_observations.py","line": 213},
-        {"path": "ops/host/acquisition_queries.py","line": 257},
+        {"path": "ops/host/acquisition_queries.py","line": 261},
         {"path": "ops/host/actual_download_audit.py","line": 25},
         {"path": "ops/host/document_audit_reader.py","line": 12},
         {"path": "ops/host/document_backlog_recovery.py","line": 32},
@@ -1191,7 +1191,7 @@
         {"path": "ops/activation/step3_inspect_runtime.py","line": 15},
         {"path": "ops/benchmarks/phase4_throughput.py","line": 10},
         {"path": "ops/host/acquisition_db_status.py","line": 9},
-        {"path": "ops/host/acquisition_queries.py","line": 12},
+        {"path": "ops/host/acquisition_queries.py","line": 16},
         {"path": "ops/host/financial_diagnostic_reader.py","line": 8},
         {"path": "ops/host/phase3_local_benchmark.py","line": 12}
       ]
@@ -1407,34 +1407,34 @@
         {"line": 98,"symbol": "monitor","kind": "SQLite SQL","sha256": "bf55b330a25bb8736fe22e14727f1b05c21448719f7fd133fff2a2acb9cefa5a","scope_sha256": "62c213289f78424536c9d5a55406d79d73d54a4725f2e47a7436219da5f3f13e","branch_hints": []}
       ],
       "caller_references": [
-        {"path": "ops/host/acquisition_queries.py","line": 99},
-        {"path": "ops/host/acquisition_queries.py","line": 102},
-        {"path": "ops/host/acquisition_queries.py","line": 105},
-        {"path": "ops/host/acquisition_queries.py","line": 137},
+        {"path": "ops/host/acquisition_queries.py","line": 103},
+        {"path": "ops/host/acquisition_queries.py","line": 106},
+        {"path": "ops/host/acquisition_queries.py","line": 109},
+        {"path": "ops/host/acquisition_queries.py","line": 141},
         {"path": "ops/host/actual_download_audit.py","line": 189}
       ]
     },
     {
       "path": "ops/host/acquisition_queries.py",
-      "source_sha256": "aa4ab361c928dc34bded7438a5e0df2296aaea8d42bd0318cb9b7c21b8e5fb55",
+      "source_sha256": "f8e309339fcfd75d879461a1ef7954a7dc2c7f7b38032c02e884b2811e01bb0e",
       "owner": "Maintainers of ops/host",
       "follow_up": "https://github.com/Mfadhi-lg/trading-ai/issues/107",
-      "reviewed_source_sha256": "aa4ab361c928dc34bded7438a5e0df2296aaea8d42bd0318cb9b7c21b8e5fb55",
+      "reviewed_source_sha256": "f8e309339fcfd75d879461a1ef7954a7dc2c7f7b38032c02e884b2811e01bb0e",
       "classification": "live application",
       "store": "canonical application database through caller-supplied connection; logical SCRAPER_DB_PATH",
       "intent": "Static SQL/query candidates: PRAGMA, SELECT; dynamic queries require caller review.",
       "backend_guard": "Routing evidence in hashed source: is_postgresql, statement. Review the listed symbols and callers; helper presence alone is not proof of native safety.",
       "disposition": "Retain reviewed source baseline; explicit backend alternatives/caller routing remain required. New or changed query sites require review; native compatibility is not inferred from classification.",
       "sites": [
-        {"line": 20,"symbol": "monitor_details.rows","kind": "dynamic query","sha256": "dead3d656849b7fa6b9dd04abb8c0a76c9d408bca1bf37cf5ac98469c585a542","scope_sha256": "c91e439c01dc326f0dec9cca7f979736dd69726e14ab464cf5479c1fd5bafc0b","branch_hints": []},
-        {"line": 49,"symbol": "monitor_details","kind": "SQLite SQL","sha256": "c9294d06f86124233844a329e204f63ee649854abd5698009a8a4512c99d5824","scope_sha256": "480d52f0dc205ec42449d2b8e9869dab59752e49b5ff44676d8e2b8924fae094","branch_hints": []},
-        {"line": 50,"symbol": "monitor_details","kind": "SQLite SQL","sha256": "fafd970f6a8e609d8c50493087d0aff8fcd3735ecc49721dd24fa97f8d174a14","scope_sha256": "480d52f0dc205ec42449d2b8e9869dab59752e49b5ff44676d8e2b8924fae094","branch_hints": []},
-        {"line": 51,"symbol": "monitor_details","kind": "dynamic query","sha256": "481364bf0098fc5093a99877f68b72ea78c4152a7e4d5df563b200a0b9b9891d","scope_sha256": "480d52f0dc205ec42449d2b8e9869dab59752e49b5ff44676d8e2b8924fae094","branch_hints": []},
-        {"line": 71,"symbol": "query.rows","kind": "dynamic query","sha256": "621338501a484365bc2aaec2a965382ed19a0f1ad96f301547e4cb139f7b6ee4","scope_sha256": "0fc619b221603974c6206c59592e2b930cee2d917fda625abf043eff810b7338","branch_hints": []},
-        {"line": 96,"symbol": "query","kind": "SQLite SQL","sha256": "bbaf89116b8b8881a2aad4011edc7dca6986f74dbf30c4f2ce4360eb6f8e9656","scope_sha256": "d3f43abea0d5e0be4fbbb84d80d8c84ef9c8b57f990888d0b6d4c2b64d100b16","branch_hints": []},
-        {"line": 109,"symbol": "query","kind": "SQLite SQL","sha256": "7c86d73df94923e4338923459e27c5018a334c8054b7603a7ff9a61d0d7cdd29","scope_sha256": "d3f43abea0d5e0be4fbbb84d80d8c84ef9c8b57f990888d0b6d4c2b64d100b16","branch_hints": []},
-        {"line": 226,"symbol": "query","kind": "SQLite SQL","sha256": "88709979cb0c835013eba5bc29db527e8b1e676998228f17107a88021c1bf67e","scope_sha256": "d3f43abea0d5e0be4fbbb84d80d8c84ef9c8b57f990888d0b6d4c2b64d100b16","branch_hints": []},
-        {"line": 254,"symbol": "inspect","kind": "SQLite SQL","sha256": "c7e424fda0967e4cdffa4a79aceeca2eabc5718445a3f9cd9b6c2706503b38fe","scope_sha256": "c0027b29c4e6b01d8d20ba29558e6d994142d8625fbfa6be8adbf6bb69a25379","branch_hints": []}
+        {"line": 24,"symbol": "monitor_details.rows","kind": "dynamic query","sha256": "dead3d656849b7fa6b9dd04abb8c0a76c9d408bca1bf37cf5ac98469c585a542","scope_sha256": "c91e439c01dc326f0dec9cca7f979736dd69726e14ab464cf5479c1fd5bafc0b","branch_hints": []},
+        {"line": 53,"symbol": "monitor_details","kind": "SQLite SQL","sha256": "c9294d06f86124233844a329e204f63ee649854abd5698009a8a4512c99d5824","scope_sha256": "480d52f0dc205ec42449d2b8e9869dab59752e49b5ff44676d8e2b8924fae094","branch_hints": []},
+        {"line": 54,"symbol": "monitor_details","kind": "SQLite SQL","sha256": "fafd970f6a8e609d8c50493087d0aff8fcd3735ecc49721dd24fa97f8d174a14","scope_sha256": "480d52f0dc205ec42449d2b8e9869dab59752e49b5ff44676d8e2b8924fae094","branch_hints": []},
+        {"line": 55,"symbol": "monitor_details","kind": "dynamic query","sha256": "481364bf0098fc5093a99877f68b72ea78c4152a7e4d5df563b200a0b9b9891d","scope_sha256": "480d52f0dc205ec42449d2b8e9869dab59752e49b5ff44676d8e2b8924fae094","branch_hints": []},
+        {"line": 75,"symbol": "query.rows","kind": "dynamic query","sha256": "621338501a484365bc2aaec2a965382ed19a0f1ad96f301547e4cb139f7b6ee4","scope_sha256": "0fc619b221603974c6206c59592e2b930cee2d917fda625abf043eff810b7338","branch_hints": []},
+        {"line": 100,"symbol": "query","kind": "SQLite SQL","sha256": "bbaf89116b8b8881a2aad4011edc7dca6986f74dbf30c4f2ce4360eb6f8e9656","scope_sha256": "d3f43abea0d5e0be4fbbb84d80d8c84ef9c8b57f990888d0b6d4c2b64d100b16","branch_hints": []},
+        {"line": 113,"symbol": "query","kind": "SQLite SQL","sha256": "7c86d73df94923e4338923459e27c5018a334c8054b7603a7ff9a61d0d7cdd29","scope_sha256": "d3f43abea0d5e0be4fbbb84d80d8c84ef9c8b57f990888d0b6d4c2b64d100b16","branch_hints": []},
+        {"line": 230,"symbol": "query","kind": "SQLite SQL","sha256": "88709979cb0c835013eba5bc29db527e8b1e676998228f17107a88021c1bf67e","scope_sha256": "d3f43abea0d5e0be4fbbb84d80d8c84ef9c8b57f990888d0b6d4c2b64d100b16","branch_hints": []},
+        {"line": 258,"symbol": "inspect","kind": "SQLite SQL","sha256": "c7e424fda0967e4cdffa4a79aceeca2eabc5718445a3f9cd9b6c2706503b38fe","scope_sha256": "c0027b29c4e6b01d8d20ba29558e6d994142d8625fbfa6be8adbf6bb69a25379","branch_hints": []}
       ],
       "caller_references": [
         {"path": "ops/activation/postgresql_release.py","line": 190},
@@ -1553,9 +1553,9 @@
         {"line": 49,"symbol": "observation","kind": "SQLite SQL","sha256": "c7e424fda0967e4cdffa4a79aceeca2eabc5718445a3f9cd9b6c2706503b38fe","scope_sha256": "9d4873093cd9e1ffd7f217761f9fcfc24eb6d9b1f4240cc1c4f3a8b7e3c8c388","branch_hints": []}
       ],
       "caller_references": [
-        {"path": "ops/host/diagnose_financial_pending.py","line": 12},
+        {"path": "ops/host/diagnose_financial_pending.py","line": 14},
         {"path": "ops/host/document_audit_reader.py","line": 6},
-        {"path": "ops/host/financial_queue_eligibility.py","line": 12}
+        {"path": "ops/host/financial_queue_eligibility.py","line": 14}
       ]
     },
     {
@@ -2780,7 +2780,7 @@
         {"path": "ops/activation/step3_financial.py","line": 56},
         {"path": "ops/activation/step3_financial.py","line": 60},
         {"path": "ops/host/acquisition_quarter_queries.py","line": 5},
-        {"path": "ops/host/acquisition_queries.py","line": 9},
+        {"path": "ops/host/acquisition_queries.py","line": 14},
         {"path": "ops/host/actual_download_audit.py","line": 26},
         {"path": "ops/host/document_backlog_audit.py","line": 93},
         {"path": "ops/host/document_backlog_audit.py","line": 121},
@@ -2925,7 +2925,7 @@
         {"path": "ops/activation/postgresql_runtime.py","line": 50},
         {"path": "ops/activation/postgresql_runtime.py","line": 59},
         {"path": "ops/host/acquisition_quarter_queries.py","line": 5},
-        {"path": "ops/host/acquisition_queries.py","line": 9},
+        {"path": "ops/host/acquisition_queries.py","line": 14},
         {"path": "ops/host/actual_download_audit.py","line": 26},
         {"path": "ops/host/document_backlog_audit.py","line": 93},
         {"path": "ops/host/document_backlog_audit.py","line": 121},
@@ -4738,9 +4738,9 @@
       "caller_references": [
         {"path": "ops/activation/step3_financial_runtime.py","line": 149},
         {"path": "ops/host/acquisition_monitor_view.py","line": 12},
-        {"path": "ops/host/acquisition_queries.py","line": 102},
-        {"path": "ops/host/acquisition_queries.py","line": 105},
-        {"path": "ops/host/acquisition_queries.py","line": 137},
+        {"path": "ops/host/acquisition_queries.py","line": 106},
+        {"path": "ops/host/acquisition_queries.py","line": 109},
+        {"path": "ops/host/acquisition_queries.py","line": 141},
         {"path": "ops/host/acquisition_terminal.py","line": 23},
         {"path": "ops/host/acquisition_terminal.py","line": 375},
         {"path": "ops/host/actual_download_audit.py","line": 189},
@@ -4784,7 +4784,7 @@
         {"path": "ops/activation/production_ownership.py","line": 45},
         {"path": "ops/activation/production_ownership.py","line": 101},
         {"path": "ops/host/acquisition_lifecycle.py","line": 173},
-        {"path": "ops/host/acquisition_queries.py","line": 164},
+        {"path": "ops/host/acquisition_queries.py","line": 168},
         {"path": "ops/host/acquisition_terminal.py","line": 348},
         {"path": "scrapper/view/__init__.py","line": 3},
         {"path": "scrapper/view/shell.py","line": 35}

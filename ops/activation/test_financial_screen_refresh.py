@@ -91,7 +91,7 @@ def test_dynamic_complete_screen_admits_once_and_respects_refresh_interval(datab
 @pytest.mark.parametrize('html',[
     [body(1),body(2,identifier='1')],
     [body(1,query='Last result date >202605')],
-    [body(1,pages=38)],
+    [body(1,pages=40)],
 ])
 def test_changed_or_incomplete_screen_never_admits_jobs(database,tmp_path,html):
     result,clients=run(database,tmp_path,html)
@@ -225,7 +225,7 @@ def test_interrupted_reservation_consumes_day_capacity_and_cannot_be_reused(data
 
 @pytest.mark.parametrize('change',[
     {'url':refresh.SCREEN_URL+'?page=1'}, {'query':QUERY+' AND Sales >0'},
-    {'day_utc':'2026-11-03'}, {'max_pages':38}, {'requests_per_capture':True},
+    {'day_utc':'2026-11-03'}, {'max_pages':40}, {'requests_per_capture':True},
     {'authorization':''},
 ])
 def test_budget_requires_exact_explicit_identity_and_bounds(database,tmp_path,change):
@@ -334,3 +334,58 @@ def test_redirect_response_is_retained_without_following_or_admitting(database,t
     assert database.execute('SELECT count(*) FROM screener_company_queue').fetchone()[0]==0
     assert database.execute("SELECT count(*) FROM fetch_observations WHERE resource_kind='shared_partial'").fetchone()[0]==1
     assert any(path.read_bytes()==b'original redirect bytes' for path in (tmp_path/'snapshots').rglob('*') if path.is_file())
+
+
+def complete_39_pages():
+    """Synthetic growth beyond the old limit: 38 full pages and 33 final rows."""
+    return [page.replace(b'1833', b'1933').replace(b'of 37', b'of 39')
+        for page in complete_37_pages()[:-1]] + [
+        (f'<textarea name="query">{QUERY}</textarea>'
+         f'<div data-page-info>1933 results found: Showing page {page} of 39</div>'
+         '<div data-page-results><table><tr><th>Name</th><th>Last result date</th></tr>' +
+         ''.join(f'<tr data-row-company-id="{i}"><td><a href="/company/TEST{i}/">Company {i}</a></td><td>Sep-26</td></tr>'
+                 for i in range((page-1)*50+1, min(page*50,1933)+1)) +
+         '</table></div>').encode() for page in range(37,40)]
+
+
+def test_complete_39_pages_admit_once(database,tmp_path):
+    first,clients=run(database,tmp_path,complete_39_pages())
+    assert first['complete'] and first['enqueue']['new']==1933
+    assert first['page_count']==39 and len(clients[0].urls)==39
+    again,_=run(database,tmp_path,complete_39_pages(),'2026-11-05T08:00:00+00:00')
+    assert again['complete'] and again['enqueue']['new']==0
+
+
+@pytest.mark.parametrize('field',['max_pages','requests_per_capture','source_requests_per_day','requests_per_day'])
+def test_39_pages_require_full_explicit_reservation(database,tmp_path,field):
+    budget=grant();budget[field]=37  # The installed smaller grant stays insufficient.
+    result,clients=run(database,tmp_path,[complete_39_pages()[0]],budget=budget)
+    assert result['status']=='deferred' and result['source_requests']==1
+    assert len(clients[0].urls)==1
+    assert database.execute('SELECT count(*) FROM screener_company_queue').fetchone()[0]==0
+
+
+@pytest.mark.parametrize('fault',['page_number','page_count','count','duplicate','query','missing','interrupt'])
+def test_39_page_faults_reject_partial_capture(database,tmp_path,fault):
+    pages=complete_39_pages()
+    # Fail on the final page, after reserving/retaining all earlier pages.
+    replacements={'page_number':(b'page 39 of',b'page 38 of'),
+        'page_count':(b'of 39',b'of 38'),'count':(b'1933 results',b'1934 results'),
+        'duplicate':(b'TEST1901/',b'TEST1/'),'query':(b'>202608',b'>202605')}
+    if fault in replacements:
+        pages[-1]=pages[-1].replace(*replacements[fault])
+        if fault=='duplicate': pages[-1]=pages[-1].replace(b'"1901"',b'"1"')
+        assert run(database,tmp_path,pages)[0]['status']=='deferred'
+    else:
+        if fault=='missing':
+            with pytest.raises(StopIteration):run(database,tmp_path,pages[:-1])
+        else:
+            class Interrupted:
+                def __iter__(self):
+                    yield from pages[:-1]
+                    raise KeyboardInterrupt()
+            with pytest.raises(KeyboardInterrupt):run(database,tmp_path,Interrupted())
+    assert database.execute('SELECT count(*) FROM screener_company_queue').fetchone()[0]==0
+    config=json.loads(database.execute('SELECT config_json FROM scrape_runs WHERE code_version=?',
+        (refresh.RUN_VERSION,)).fetchone()[0])
+    assert config['reserved_requests']==39 and config['capture_complete'] is False
